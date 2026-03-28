@@ -50,7 +50,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;min-height:100vh;d
 var SUPABASE_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
 var SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
 
-if(sessionStorage.getItem('tc_user'))window.location.href='admin-site.html';
+if(sessionStorage.getItem('tc_user'))window.location.href='admin.html';
 
 async function login(){
   var username=document.getElementById('username').value.trim();
@@ -66,7 +66,7 @@ async function login(){
     var data=await res.json();
     if(data&&data.length>0){
       sessionStorage.setItem('tc_user',JSON.stringify({username:data[0].username,role:data[0].role}));
-      window.location.href='admin-site.html';
+      window.location.href='admin.html';
     }else{
       document.getElementById('error-msg').textContent='아이디 또는 비밀번호가 올바르지 않습니다.';
       btn.disabled=false;btn.textContent='로그인';
