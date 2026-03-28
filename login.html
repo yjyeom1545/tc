@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TC 환경관리 시스템 — 로그인</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.login-wrap{width:100%;max-width:380px;padding:1rem;}
+.login-card{background:white;border-radius:16px;padding:2.5rem 2rem;box-shadow:0 4px 24px rgba(0,0,0,0.08);}
+.logo-area{text-align:center;margin-bottom:2rem;}
+.logo-badge{display:inline-block;background:#1a3a5c;color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:1px;margin-bottom:12px;}
+.logo-title{font-size:20px;font-weight:700;color:#1a3a5c;margin-bottom:4px;}
+.logo-sub{font-size:12px;color:#6b7280;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;color:#6b7280;font-weight:500;margin-bottom:6px;}
+.field input{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:11px 14px;font-size:14px;font-family:'Noto Sans KR',sans-serif;color:#111827;outline:none;}
+.field input:focus{border-color:#1a3a5c;}
+.login-btn{width:100%;padding:13px;background:#1a3a5c;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:6px;}
+.login-btn:hover{background:#15304d;}
+.login-btn:disabled{background:#9ca3af;cursor:not-allowed;}
+.error-msg{color:#ef4444;font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+.notice{font-size:11px;color:#9ca3af;text-align:center;margin-top:16px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="logo-area">
+      <div class="logo-badge">TC 도장시설</div>
+      <div class="logo-title">환경관리 시스템</div>
+      <div class="logo-sub">관리자 전용 페이지입니다</div>
+    </div>
+    <div class="field">
+      <label>아이디</label>
+      <input type="text" id="username" placeholder="아이디 입력" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <div class="field">
+      <label>비밀번호</label>
+      <input type="password" id="password" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="login()">로그인</button>
+    <div class="error-msg" id="error-msg"></div>
+    <div class="notice">권한이 없으신 경우 환경관리자에게 문의하세요.</div>
+  </div>
+</div>
+<script>
+var SUPABASE_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
+var SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
+
+if(sessionStorage.getItem('tc_user'))window.location.href='admin-site.html';
+
+async function login(){
+  var username=document.getElementById('username').value.trim();
+  var password=document.getElementById('password').value;
+  if(!username||!password){document.getElementById('error-msg').textContent='아이디와 비밀번호를 입력해주세요.';return;}
+  var btn=document.getElementById('login-btn');
+  btn.disabled=true;btn.textContent='확인 중...';
+  document.getElementById('error-msg').textContent='';
+  try{
+    var res=await fetch(SUPABASE_URL+'/rest/v1/users?username=eq.'+encodeURIComponent(username)+'&password_hash=eq.'+encodeURIComponent(password)+'&select=id,username,role',{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+    var data=await res.json();
+    if(data&&data.length>0){
+      sessionStorage.setItem('tc_user',JSON.stringify({username:data[0].username,role:data[0].role}));
+      window.location.href='admin-site.html';
+    }else{
+      document.getElementById('error-msg').textContent='아이디 또는 비밀번호가 올바르지 않습니다.';
+      btn.disabled=false;btn.textContent='로그인';
+    }
+  }catch(e){
+    document.getElementById('error-msg').textContent='서버 연결 오류. 잠시 후 다시 시도해주세요.';
+    btn.disabled=false;btn.textContent='로그인';
+  }
+}
+</script>
+</body>
+</html>
