@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TC 환경관리 시스템</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;min-height:100vh;}
+.topbar{background:#1a3a5c;color:white;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar h1{font-size:15px;font-weight:700;}
+.topbar-sub{font-size:11px;opacity:0.6;margin-top:1px;}
+.topbar-right{display:flex;gap:8px;align-items:center;}
+.user-badge{font-size:12px;background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:20px;}
+.top-btn{background:rgba(255,255,255,0.15);border:none;color:white;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
+.top-btn:hover{background:rgba(255,255,255,0.25);}
+.top-btn.excel{background:#217346;}
+.top-btn.logout{background:rgba(239,68,68,0.7);}
+.tab-bar{background:white;border-bottom:1px solid #e5e7eb;display:flex;padding:0 1rem;overflow-x:auto;}
+.tab-btn{padding:13px 16px;font-size:13px;font-weight:500;color:#6b7280;border:none;background:transparent;cursor:pointer;font-family:'Noto Sans KR',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+.tab-btn.active{color:#1a3a5c;border-bottom-color:#1a3a5c;}
+.content{max-width:960px;margin:0 auto;padding:1.5rem 1rem;}
+.hidden{display:none;}
+
+/* 공통 카드 */
+.card{background:white;border-radius:10px;padding:1.1rem 1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:12px;}
+.card-title{font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:1rem;}
+.section-title{font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:10px;}
+
+/* 통계 */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1rem;}
+.stat-card{background:white;border-radius:10px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.stat-label{font-size:11px;color:#6b7280;margin-bottom:5px;}
+.stat-value{font-size:22px;font-weight:700;color:#1a3a5c;}
+.stat-unit{font-size:12px;font-weight:400;color:#6b7280;margin-left:2px;}
+
+/* 차트 */
+.chart-wrap{position:relative;height:240px;}
+
+/* 필터바 */
+.filter-bar{background:white;border-radius:10px;padding:1rem 1.1rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.filter-bar select,.filter-bar input[type=month],.filter-bar input[type=text]{border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;}
+.filter-label{font-size:12px;color:#6b7280;font-weight:500;}
+.clear-btn{border:1px solid #e5e7eb;background:white;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;color:#6b7280;font-family:'Noto Sans KR',sans-serif;}
+
+/* 테이블 */
+.table-wrap{background:white;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden;margin-bottom:12px;}
+.table-header{padding:1rem 1.1rem;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.table-title{font-size:14px;font-weight:700;color:#1a3a5c;}
+.record-count{font-size:12px;color:#6b7280;}
+table{width:100%;border-collapse:collapse;}
+th{padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;font-weight:500;border-bottom:1px solid #f3f4f6;background:#f9fafb;}
+td{padding:10px 12px;font-size:13px;color:#374151;border-bottom:1px solid #f9fafb;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafafa;}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;}
+.badge-sangdo{background:#dbeafe;color:#1e40af;}
+.badge-ha1{background:#d1fae5;color:#065f46;}
+.badge-ha2{background:#fef3c7;color:#92400e;}
+.qty-badge{background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:700;}
+.note-cell{color:#6b7280;font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.empty{text-align:center;padding:3rem;color:#9ca3af;font-size:14px;}
+.loading{text-align:center;padding:3rem;color:#6b7280;font-size:14px;}
+.del-btn{background:none;border:none;color:#d1d5db;font-size:14px;cursor:pointer;padding:2px 6px;border-radius:4px;}
+.del-btn:hover{background:#fee2e2;color:#ef4444;}
+
+/* 재고 */
+.stock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:1rem;}
+.stock-card{background:white;border-radius:10px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);text-align:center;}
+.stock-room{font-size:12px;color:#6b7280;margin-bottom:6px;}
+.stock-qty{font-size:28px;font-weight:700;color:#1a3a5c;}
+.stock-unit{font-size:12px;color:#6b7280;}
+.stock-low{color:#ef4444;}
+.stock-edit{display:flex;gap:6px;margin-top:10px;justify-content:center;}
+.stock-input{width:60px;border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:13px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;}
+.stock-save{padding:5px 10px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+
+/* 체크리스트 */
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f9fafb;cursor:pointer;}
+.check-item:last-child{border-bottom:none;}
+.check-box{width:18px;height:18px;border-radius:4px;border:1.5px solid #d1d5db;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:white;}
+.check-item.done .check-box{background:#1a3a5c;border-color:#1a3a5c;}
+.check-mark{display:none;width:10px;height:7px;border-left:2px solid white;border-bottom:2px solid white;transform:rotate(-45deg) translate(1px,-1px);}
+.check-item.done .check-mark{display:block;}
+.check-text{font-size:13px;color:#374151;line-height:1.5;}
+.check-item.done .check-text{color:#9ca3af;text-decoration:line-through;}
+.check-badge{font-size:10px;padding:2px 6px;border-radius:10px;margin-left:6px;font-weight:500;}
+.badge-legal{background:#fef3c7;color:#92400e;}
+.badge-daily{background:#d1fae5;color:#065f46;}
+
+/* 폐기물 보관량 */
+.waste-table input[type=number]{width:80px;border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:13px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;}
+
+/* 폼 입력 */
+.form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
+.form-group label{font-size:12px;color:#6b7280;font-weight:500;}
+.form-group input,.form-group select,.form-group textarea{border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#374151;outline:none;background:white;}
+.form-group textarea{resize:none;height:70px;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a3a5c;}
+.add-btn{padding:8px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.save-btn{width:100%;padding:11px;background:#1a3a5c;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:10px;}
+
+/* 위탁업체 */
+.contractor-card{background:white;border-radius:10px;padding:1.1rem 1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:10px;}
+.contractor-name{font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:4px;}
+.contractor-info{font-size:12px;color:#6b7280;line-height:2;}
+.badge-valid{background:#d1fae5;color:#065f46;}
+.badge-warn{background:#fef3c7;color:#92400e;}
+.badge-expired{background:#fee2e2;color:#991b1b;}
+
+/* 사용자 관리 */
+.role-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.role-admin{background:#dbeafe;color:#1e40af;}
+.role-viewer{background:#f3f4f6;color:#6b7280;}
+
+/* 모달 */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;}
+.modal-bg.show{display:flex;align-items:center;justify-content:center;}
+.modal{background:white;border-radius:12px;padding:1.5rem;width:90%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.15);}
+.modal-title{font-size:15px;font-weight:700;color:#1a3a5c;margin-bottom:1rem;}
+.modal-btns{display:flex;gap:8px;margin-top:1rem;justify-content:flex-end;}
+.modal-cancel{padding:8px 16px;border:1px solid #e5e7eb;background:white;border-radius:6px;font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.modal-confirm{padding:8px 16px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
+
+/* 상태 뱃지 */
+.status-planned{background:#dbeafe;color:#1e40af;}
+.status-done{background:#d1fae5;color:#065f46;}
+.status-cancel{background:#f3f4f6;color:#6b7280;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <div style="display:flex;align-items:center;gap:8px;"><h1>TC 환경관리 시스템</h1></div>
+    <div class="topbar-sub">도장시설 · 폐기물 · 대기 통합 관리</div>
+  </div>
+  <div class="topbar-right">
+    <span class="user-badge" id="user-badge">-</span>
+    <button class="top-btn excel" onclick="exportExcel()">엑셀 내보내기</button>
+    <button class="top-btn" onclick="loadCurrentTab()">새로고침</button>
+    <button class="top-btn logout" onclick="logout()">로그아웃</button>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('filter')">필터 교체</button>
+  <button class="tab-btn" onclick="showTab('stock')">필터 재고</button>
+  <button class="tab-btn" onclick="showTab('waste')">폐기물</button>
+  <button class="tab-btn" onclick="showTab('dust')">집진설비</button>
+  <button class="tab-btn" onclick="showTab('air')">대기측정</button>
+  <button class="tab-btn" onclick="showTab('env')">환경청 대응</button>
+  <button class="tab-btn" onclick="showTab('users')">사용자 관리</button>
+</div>
+
+<!-- ===== 필터 교체 탭 ===== -->
+<div id="tab-filter" class="content">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">전체 교체 기록</div><div class="stat-value" id="stat-total">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 교체</div><div class="stat-value" id="stat-month">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 수량</div><div class="stat-value" id="stat-qty">-<span class="stat-unit">개</span></div></div>
+    <div class="stat-card"><div class="stat-label">최근 교체일</div><div class="stat-value" style="font-size:15px;padding-top:4px;" id="stat-last">-</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">당해 연도 월별 교체 현황</div>
+    <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+  </div>
+  <div class="filter-bar">
+    <span class="filter-label">필터</span>
+    <select id="filter-room" onchange="applyFilter()">
+      <option value="">전체 시설</option>
+      <option value="상도룸">상도룸</option>
+      <option value="하도룸 #1">하도룸 #1</option>
+      <option value="하도룸 #2">하도룸 #2</option>
+    </select>
+    <select id="filter-person" onchange="applyFilter()"><option value="">전체 담당자</option></select>
+    <input type="month" id="filter-month" onchange="applyFilter()">
+    <button class="clear-btn" onclick="clearFilter()">초기화</button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">교체 기록</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="record-count" id="record-count"></span>
+        <button class="top-btn excel" style="font-size:11px;padding:5px 10px;" onclick="exportExcel()">엑셀</button>
+      </div>
+    </div>
+    <div id="table-body"><div class="loading">데이터를 불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- ===== 필터 재고 탭 ===== -->
+<div id="tab-stock" class="content hidden">
+  <div class="card">
+    <div class="card-title">시설별 필터 재고 현황</div>
+    <div class="stock-grid" id="stock-grid"><div class="loading">불러오는 중...</div></div>
+    <div style="font-size:12px;color:#9ca3af;margin-top:4px;">※ 재고 3개 이하 시 빨간색으로 표시됩니다.</div>
+  </div>
+</div>
+
+<!-- ===== 폐기물 탭 ===== -->
+<div id="tab-waste" class="content hidden">
+  <div class="card">
+    <div class="card-title">폐기물 보관 현황</div>
+    <div id="waste-storage-table"><div class="loading">불러오는 중...</div></div>
+    <button class="save-btn" onclick="saveWasteStorage()">보관량 저장</button>
+  </div>
+  <div class="card">
+    <div class="card-title">폐기물 보관소 점검 체크리스트</div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">점검일: <span id="check-date"></span></div>
+    <div id="checklist">
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">보관용기 파손·균열·누출 여부 확인 <span class="check-badge badge-legal">법적의무</span></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">보관용기 뚜껑 밀폐 상태 확인 <span class="check-badge badge-legal">법적의무</span></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">폐기물 종류별 분리 보관 여부 확인 <span class="check-badge badge-legal">법적의무</span></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">보관 표지판 부착 상태 확인 <span class="check-badge badge-legal">법적의무</span></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">보관소 주변 청결 상태 확인 <span class="check-badge badge-daily">일상점검</span></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">소화기 비치 및 작동 상태 확인 <span class="check-badge badge-daily">일상점검</span></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">보관 기간 초과 여부 확인 <span class="check-badge badge-legal">법적의무</span></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">우수(빗물) 유입 차단 상태 확인 <span class="check-badge badge-daily">일상점검</span></div></div>
+    </div>
+    <button class="save-btn" onclick="saveChecklist()">점검 완료 저장</button>
+  </div>
+  <div class="card">
+    <div class="card-title">위탁업체 관리</div>
+    <div class="form-row">
+      <div class="form-group"><label>업체명</label><input type="text" id="wc-name" placeholder="업체명"></div>
+      <div class="form-group"><label>허가번호</label><input type="text" id="wc-license" placeholder="허가번호"></div>
+      <div class="form-group"><label>허가 만료일</label><input type="date" id="wc-expire"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>담당자</label><input type="text" id="wc-contact" placeholder="담당자명"></div>
+      <div class="form-group"><label>연락처</label><input type="text" id="wc-phone" placeholder="연락처"></div>
+      <div class="form-group"><label>처리 폐기물 종류</label><input type="text" id="wc-type" placeholder="예: 지정폐기물"></div>
+    </div>
+    <button class="add-btn" onclick="addContractor()">업체 추가</button>
+    <div id="contractor-list" style="margin-top:14px;"></div>
+  </div>
+</div>
+
+<!-- ===== 집진설비 탭 ===== -->
+<div id="tab-dust" class="content hidden">
+  <div class="card">
+    <div class="card-title">집진설비 점검 기록 추가</div>
+    <div class="form-row">
+      <div class="form-group"><label>점검일</label><input type="date" id="dust-date"></div>
+      <div class="form-group"><label>점검자</label><input type="text" id="dust-checker" placeholder="점검자명"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px;"><label>특이사항</label><textarea id="dust-notes" placeholder="이상 없음 / 필터 교체 필요 / 모터 소음 등"></textarea></div>
+    <button class="add-btn" onclick="addDustCheck()">점검 기록 추가</button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-header"><span class="table-title">점검 이력</span></div>
+    <div id="dust-table"><div class="loading">불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- ===== 대기측정 탭 ===== -->
+<div id="tab-air" class="content hidden">
+  <div class="card">
+    <div class="card-title">대기측정 일정 추가</div>
+    <div class="form-row">
+      <div class="form-group"><label>측정일</label><input type="date" id="air-date"></div>
+      <div class="form-group"><label>측정업체</label><input type="text" id="air-company" placeholder="업체명"></div>
+      <div class="form-group"><label>상태</label>
+        <select id="air-status">
+          <option value="예정">예정</option>
+          <option value="완료">완료</option>
+          <option value="취소">취소</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px;"><label>비고</label><textarea id="air-notes" placeholder="측정 항목, 결과 등"></textarea></div>
+    <button class="add-btn" onclick="addAirMeasure()">일정 추가</button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-header"><span class="table-title">대기측정 이력</span></div>
+    <div id="air-table"><div class="loading">불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- ===== 환경청 대응 탭 ===== -->
+<div id="tab-env" class="content hidden">
+  <div class="card">
+    <div class="card-title">환경청 대응 이력 추가</div>
+    <div class="form-row">
+      <div class="form-group"><label>일자</label><input type="date" id="env-date"></div>
+      <div class="form-group"><label>구분</label>
+        <select id="env-category">
+          <option value="지도점검">지도점검</option>
+          <option value="행정처분">행정처분</option>
+          <option value="민원">민원</option>
+          <option value="보고">보고</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div class="form-group"><label>제목</label><input type="text" id="env-title" placeholder="제목"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>내용</label><textarea id="env-content" placeholder="상세 내용"></textarea></div>
+      <div class="form-group"><label>결과/조치사항</label><textarea id="env-result" placeholder="결과 또는 조치사항"></textarea></div>
+    </div>
+    <button class="add-btn" onclick="addEnvLog()">이력 추가</button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-header"><span class="table-title">대응 이력</span></div>
+    <div id="env-table"><div class="loading">불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- ===== 사용자 관리 탭 ===== -->
+<div id="tab-users" class="content hidden">
+  <div class="card">
+    <div class="card-title">새 사용자 추가</div>
+    <div class="form-row">
+      <div class="form-group"><label>아이디</label><input type="text" id="new-username" placeholder="아이디"></div>
+      <div class="form-group"><label>비밀번호</label><input type="password" id="new-password" placeholder="비밀번호"></div>
+      <div class="form-group"><label>권한</label>
+        <select id="new-role">
+          <option value="viewer">뷰어 (조회만)</option>
+          <option value="admin">관리자 (전체)</option>
+        </select>
+      </div>
+    </div>
+    <button class="add-btn" onclick="addUser()">사용자 추가</button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-header"><span class="table-title">사용자 목록</span></div>
+    <div id="users-table"><div class="loading">불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- 삭제 확인 모달 -->
+<div class="modal-bg" id="del-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">삭제 확인</div>
+    <div style="font-size:13px;color:#374151;">이 기록을 삭제하시겠습니까? 삭제 후 복구가 불가합니다.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">취소</button>
+      <button class="modal-confirm" id="modal-confirm-btn">삭제</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var SB_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
+var currentTab='filter', allData=[], monthlyChart=null, currentUser=null;
+
+// 인증 확인
+function checkAuth(){
+  var u=sessionStorage.getItem('tc_user');
+  if(!u){window.location.href='login.html';return false;}
+  currentUser=JSON.parse(u);
+  document.getElementById('user-badge').textContent=currentUser.username+' ('+currentUser.role+')';
+  if(currentUser.role!=='admin'){
+    document.querySelector('[onclick="showTab(\'users\')"]').style.display='none';
+  }
+  return true;
+}
+function logout(){sessionStorage.removeItem('tc_user');window.location.href='login.html';}
+
+// 공통 fetch
+async function sb(table,opts){
+  opts=opts||{};
+  var url=SB_URL+'/rest/v1/'+table+(opts.query||'');
+  var res=await fetch(url,{method:opts.method||'GET',headers:Object.assign({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},opts.headers||{}),body:opts.body?JSON.stringify(opts.body):undefined});
+  if(opts.method&&opts.method!=='GET')return res;
+  return res.json();
+}
+
+// 탭 전환
+function showTab(tab){
+  document.querySelectorAll('[id^="tab-"]').forEach(function(el){el.classList.add('hidden');});
+  document.getElementById('tab-'+tab).classList.remove('hidden');
+  document.querySelectorAll('.tab-btn').forEach(function(b,i){b.classList.remove('active');});
+  var tabs=['filter','stock','waste','dust','air','env','users'];
+  var idx=tabs.indexOf(tab);
+  if(idx>=0)document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  currentTab=tab;
+  loadCurrentTab();
+}
+
+function loadCurrentTab(){
+  if(currentTab==='filter')loadFilterData();
+  else if(currentTab==='stock')loadStock();
+  else if(currentTab==='waste'){loadWasteStorage();loadContractors();}
+  else if(currentTab==='dust')loadDustChecks();
+  else if(currentTab==='air')loadAirMeasures();
+  else if(currentTab==='env')loadEnvLogs();
+  else if(currentTab==='users')loadUsers();
+}
+
+// ===== 필터 탭 =====
+async function loadFilterData(){
+  document.getElementById('table-body').innerHTML='<div class="loading">불러오는 중...</div>';
+  allData=await sb('filter_records','?select=*&order=record_date.desc,created_at.desc');
+  updateStats(allData);
+  updatePersonFilter(allData);
+  renderMonthlyChart(allData);
+  applyFilter();
+}
+
+function updateStats(data){
+  document.getElementById('stat-total').innerHTML=data.length+'<span class="stat-unit">건</span>';
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var md=data.filter(function(r){return r.record_date&&r.record_date.startsWith(ym);});
+  document.getElementById('stat-month').innerHTML=md.length+'<span class="stat-unit">건</span>';
+  document.getElementById('stat-qty').innerHTML=md.reduce(function(s,r){return s+(r.quantity||0);},0)+'<span class="stat-unit">개</span>';
+  document.getElementById('stat-last').textContent=data.length>0?(data[0].record_date||'-'):'-';
+}
+
+function renderMonthlyChart(data){
+  var year=new Date().getFullYear();
+  var months=[];
+  for(var i=1;i<=12;i++)months.push(year+'-'+String(i).padStart(2,'0'));
+  var labels=months.map(function(m){return parseInt(m.split('-')[1])+'월';});
+  var rooms=['상도룸','하도룸 #1','하도룸 #2'];
+  var colors=['#3b82f6','#10b981','#f59e0b'];
+  var datasets=rooms.map(function(room,ri){
+    return{label:room,data:months.map(function(m){return data.filter(function(r){return r.record_date&&r.record_date.startsWith(m)&&r.room_name===room;}).reduce(function(s,r){return s+(r.quantity||0);},0);}),backgroundColor:colors[ri],borderRadius:3};
+  });
+  if(monthlyChart)monthlyChart.destroy();
+  monthlyChart=new Chart(document.getElementById('monthlyChart').getContext('2d'),{
+    type:'bar',data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:11},stepSize:1}}}}
+  });
+}
+
+function updatePersonFilter(data){
+  var persons=[...new Set(data.map(function(r){return r.technician;}).filter(Boolean))].sort();
+  var sel=document.getElementById('filter-person');
+  var cur=sel.value;
+  sel.innerHTML='<option value="">전체 담당자</option>';
+  persons.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;if(p===cur)o.selected=true;sel.appendChild(o);});
+}
+
+function applyFilter(){
+  var room=document.getElementById('filter-room').value;
+  var person=document.getElementById('filter-person').value;
+  var month=document.getElementById('filter-month').value;
+  var f=allData.filter(function(r){
+    if(room&&r.room_name!==room)return false;
+    if(person&&r.technician!==person)return false;
+    if(month&&r.record_date&&!r.record_date.startsWith(month))return false;
+    return true;
+  });
+  renderTable(f);
+}
+
+function clearFilter(){
+  document.getElementById('filter-room').value='';
+  document.getElementById('filter-person').value='';
+  document.getElementById('filter-month').value='';
+  applyFilter();
+}
+
+function getRoomBadge(room){
+  if(room==='상도룸')return '<span class="badge badge-sangdo">상도룸</span>';
+  if(room==='하도룸 #1')return '<span class="badge badge-ha1">하도룸 #1</span>';
+  if(room==='하도룸 #2')return '<span class="badge badge-ha2">하도룸 #2</span>';
+  return '<span class="badge">'+room+'</span>';
+}
+
+function renderTable(data){
+  document.getElementById('record-count').textContent='총 '+data.length+'건';
+  if(!data.length){document.getElementById('table-body').innerHTML='<div class="empty">기록이 없습니다.</div>';return;}
+  var rows=data.map(function(r){
+    var note=r.notes?'<span class="note-cell" title="'+r.notes+'">'+r.notes+'</span>':'<span style="color:#d1d5db;">-</span>';
+    var dt=r.created_at?new Date(r.created_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    return'<tr><td>'+r.record_date+'</td><td>'+getRoomBadge(r.room_name)+'</td><td>'+r.technician+'</td><td><span class="qty-badge">'+r.quantity+'개</span></td><td>'+note+'</td><td style="font-size:11px;color:#9ca3af;">'+dt+'</td><td><button class="del-btn" onclick="confirmDelete(\'filter_records\',\''+r.id+'\',loadFilterData)">✕</button></td></tr>';
+  }).join('');
+  document.getElementById('table-body').innerHTML='<table><thead><tr><th>교체일</th><th>시설</th><th>담당자</th><th>수량</th><th>특이사항</th><th>제출시각</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+function exportExcel(){
+  if(!allData.length){alert('내보낼 데이터가 없습니다.');return;}
+  var room=document.getElementById('filter-room').value;
+  var person=document.getElementById('filter-person').value;
+  var month=document.getElementById('filter-month').value;
+  var f=allData.filter(function(r){
+    if(room&&r.room_name!==room)return false;
+    if(person&&r.technician!==person)return false;
+    if(month&&r.record_date&&!r.record_date.startsWith(month))return false;
+    return true;
+  });
+  var ws=XLSX.utils.aoa_to_sheet([['교체일','시설','담당자','수량','특이사항','제출시각']].concat(f.map(function(r){return[r.record_date,r.room_name,r.technician,r.quantity,r.notes||'',r.created_at?new Date(r.created_at).toLocaleString('ko-KR'):''];})));
+  ws['!cols']=[{wch:12},{wch:12},{wch:10},{wch:6},{wch:24},{wch:18}];
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'필터교체이력');
+  var n=new Date();
+  XLSX.writeFile(wb,'TC필터교체이력_'+n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0')+'.xlsx');
+}
+
+// ===== 재고 탭 =====
+async function loadStock(){
+  var data=await sb('filter_stock','?select=*&order=room_name.asc');
+  if(!data||!data.length){document.getElementById('stock-grid').innerHTML='<div class="empty">재고 데이터가 없습니다.</div>';return;}
+  document.getElementById('stock-grid').innerHTML=data.map(function(r){
+    var low=r.stock<=3;
+    return'<div class="stock-card"><div class="stock-room">'+r.room_name+'</div><div class="stock-qty'+(low?' stock-low':'')+'">'+r.stock+'</div><div class="stock-unit">개</div><div class="stock-edit"><input type="number" class="stock-input" id="stock-'+r.id+'" value="'+r.stock+'" min="0"><button class="stock-save" onclick="saveStock(\''+r.id+'\')">저장</button></div></div>';
+  }).join('');
+}
+
+async function saveStock(id){
+  var val=parseInt(document.getElementById('stock-'+id).value)||0;
+  await sb('filter_stock','?id=eq.'+id,{method:'PATCH',body:{stock:val,updated_at:new Date().toISOString()}});
+  loadStock();
+}
+
+// ===== 폐기물 탭 =====
+async function loadWasteStorage(){
+  var data=await sb('waste_storage','?select=*&order=category.asc,waste_type.asc');
+  if(!data||!data.length){document.getElementById('waste-storage-table').innerHTML='<div class="empty">데이터 없음</div>';return;}
+  var rows=data.map(function(r){return'<tr><td>'+r.category+'</td><td>'+r.waste_type+'</td><td><input type="number" id="ws-'+r.id+'" value="'+r.quantity+'" min="0" style="width:80px;border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:13px;text-align:center;outline:none;"></td><td>'+r.unit+'</td></tr>';}).join('');
+  document.getElementById('waste-storage-table').innerHTML='<table><thead><tr><th>구분</th><th>폐기물 종류</th><th>보관량</th><th>단위</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+async function saveWasteStorage(){
+  var data=await sb('waste_storage','?select=id');
+  for(var r of data){
+    var el=document.getElementById('ws-'+r.id);
+    if(el)await sb('waste_storage','?id=eq.'+r.id,{method:'PATCH',body:{quantity:parseFloat(el.value)||0,updated_at:new Date().toISOString()}});
+  }
+  alert('저장 완료');
+}
+
+function toggleCheck(el){el.classList.toggle('done');}
+
+async function saveChecklist(){
+  var items=[];
+  document.querySelectorAll('#checklist .check-item').forEach(function(el){items.push({text:el.querySelector('.check-text').textContent.trim(),done:el.classList.contains('done')});});
+  var checker=currentUser?currentUser.username:'관리자';
+  await sb('waste_checklists','',{method:'POST',headers:{'Prefer':'return=minimal'},body:{check_date:new Date().toISOString().split('T')[0],checker:checker,items:items}});
+  alert('점검 완료 저장됨');
+}
+
+async function loadContractors(){
+  var data=await sb('waste_contractors','?select=*&order=created_at.desc');
+  if(!data||!data.length){document.getElementById('contractor-list').innerHTML='<div style="font-size:13px;color:#9ca3af;">등록된 위탁업체가 없습니다.</div>';return;}
+  var today=new Date().toISOString().split('T')[0];
+  document.getElementById('contractor-list').innerHTML=data.map(function(r){
+    var exp=r.expire_date;
+    var badgeClass='badge-valid',badgeText='허가 유효';
+    if(exp){var diff=(new Date(exp)-new Date(today))/(1000*60*60*24);if(diff<0){badgeClass='badge-expired';badgeText='허가 만료';}else if(diff<90){badgeClass='badge-warn';badgeText='만료 임박';}}
+    return'<div class="contractor-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div class="contractor-name">'+r.name+'</div><span class="badge '+badgeClass+'">'+badgeText+'</span><div class="contractor-info">허가번호: '+(r.license_no||'-')+'<br>만료일: '+(r.expire_date||'-')+'<br>담당자: '+(r.contact_person||'-')+'<br>연락처: '+(r.phone||'-')+'<br>처리 종류: '+(r.waste_type||'-')+'</div></div><button class="del-btn" onclick="confirmDelete(\'waste_contractors\',\''+r.id+'\',loadContractors)">✕</button></div></div>';
+  }).join('');
+}
+
+async function addContractor(){
+  var name=document.getElementById('wc-name').value.trim();
+  if(!name){alert('업체명을 입력해주세요.');return;}
+  await sb('waste_contractors','',{method:'POST',body:{name:name,license_no:document.getElementById('wc-license').value,expire_date:document.getElementById('wc-expire').value||null,contact_person:document.getElementById('wc-contact').value,phone:document.getElementById('wc-phone').value,waste_type:document.getElementById('wc-type').value}});
+  ['wc-name','wc-license','wc-expire','wc-contact','wc-phone','wc-type'].forEach(function(id){document.getElementById(id).value='';});
+  loadContractors();
+}
+
+// ===== 집진설비 탭 =====
+async function loadDustChecks(){
+  var data=await sb('dust_collector_checks','?select=*&order=check_date.desc');
+  if(!data||!data.length){document.getElementById('dust-table').innerHTML='<div class="empty">점검 기록이 없습니다.</div>';return;}
+  var rows=data.map(function(r){return'<tr><td>'+r.check_date+'</td><td>'+r.checker+'</td><td>'+(r.notes||'-')+'</td><td><button class="del-btn" onclick="confirmDelete(\'dust_collector_checks\',\''+r.id+'\',loadDustChecks)">✕</button></td></tr>';}).join('');
+  document.getElementById('dust-table').innerHTML='<table><thead><tr><th>점검일</th><th>점검자</th><th>특이사항</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+async function addDustCheck(){
+  var date=document.getElementById('dust-date').value;
+  var checker=document.getElementById('dust-checker').value.trim();
+  if(!date||!checker){alert('점검일과 점검자를 입력해주세요.');return;}
+  await sb('dust_collector_checks','',{method:'POST',body:{check_date:date,checker:checker,notes:document.getElementById('dust-notes').value||null}});
+  document.getElementById('dust-date').value='';document.getElementById('dust-checker').value='';document.getElementById('dust-notes').value='';
+  loadDustChecks();
+}
+
+// ===== 대기측정 탭 =====
+async function loadAirMeasures(){
+  var data=await sb('air_measurement','?select=*&order=measure_date.desc');
+  if(!data||!data.length){document.getElementById('air-table').innerHTML='<div class="empty">일정이 없습니다.</div>';return;}
+  var rows=data.map(function(r){
+    var sc=r.status==='완료'?'status-done':r.status==='취소'?'status-cancel':'status-planned';
+    return'<tr><td>'+r.measure_date+'</td><td>'+(r.company||'-')+'</td><td><span class="badge '+sc+'">'+r.status+'</span></td><td>'+(r.notes||'-')+'</td><td><button class="del-btn" onclick="confirmDelete(\'air_measurement\',\''+r.id+'\',loadAirMeasures)">✕</button></td></tr>';
+  }).join('');
+  document.getElementById('air-table').innerHTML='<table><thead><tr><th>측정일</th><th>업체</th><th>상태</th><th>비고</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+async function addAirMeasure(){
+  var date=document.getElementById('air-date').value;
+  if(!date){alert('측정일을 입력해주세요.');return;}
+  await sb('air_measurement','',{method:'POST',body:{measure_date:date,company:document.getElementById('air-company').value||null,status:document.getElementById('air-status').value,notes:document.getElementById('air-notes').value||null}});
+  document.getElementById('air-date').value='';document.getElementById('air-company').value='';document.getElementById('air-notes').value='';
+  loadAirMeasures();
+}
+
+// ===== 환경청 탭 =====
+async function loadEnvLogs(){
+  var data=await sb('env_agency_log','?select=*&order=log_date.desc');
+  if(!data||!data.length){document.getElementById('env-table').innerHTML='<div class="empty">이력이 없습니다.</div>';return;}
+  var rows=data.map(function(r){return'<tr><td>'+r.log_date+'</td><td><span class="badge badge-sangdo">'+r.category+'</span></td><td>'+r.title+'</td><td style="max-width:160px;font-size:12px;color:#6b7280;">'+(r.content||'-')+'</td><td style="max-width:140px;font-size:12px;color:#6b7280;">'+(r.result||'-')+'</td><td><button class="del-btn" onclick="confirmDelete(\'env_agency_log\',\''+r.id+'\',loadEnvLogs)">✕</button></td></tr>';}).join('');
+  document.getElementById('env-table').innerHTML='<table><thead><tr><th>일자</th><th>구분</th><th>제목</th><th>내용</th><th>결과</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+async function addEnvLog(){
+  var date=document.getElementById('env-date').value;
+  var title=document.getElementById('env-title').value.trim();
+  if(!date||!title){alert('일자와 제목을 입력해주세요.');return;}
+  await sb('env_agency_log','',{method:'POST',body:{log_date:date,category:document.getElementById('env-category').value,title:title,content:document.getElementById('env-content').value||null,result:document.getElementById('env-result').value||null}});
+  ['env-date','env-title','env-content','env-result'].forEach(function(id){document.getElementById(id).value='';});
+  loadEnvLogs();
+}
+
+// ===== 사용자 관리 탭 =====
+async function loadUsers(){
+  var data=await sb('users','?select=id,username,role,created_at&order=created_at.asc');
+  if(!data||!data.length){document.getElementById('users-table').innerHTML='<div class="empty">사용자가 없습니다.</div>';return;}
+  var rows=data.map(function(r){
+    var rc=r.role==='admin'?'role-admin':'role-viewer';
+    var rt=r.role==='admin'?'관리자':'뷰어';
+    return'<tr><td>'+r.username+'</td><td><span class="role-badge '+rc+'">'+rt+'</span></td><td style="font-size:11px;color:#9ca3af;">'+(r.created_at?new Date(r.created_at).toLocaleDateString('ko-KR'):'')+'</td><td>'+(r.username!=='admin'?'<button class="del-btn" onclick="confirmDelete(\'users\',\''+r.id+'\',loadUsers)">✕</button>':'')+'</td></tr>';
+  }).join('');
+  document.getElementById('users-table').innerHTML='<table><thead><tr><th>아이디</th><th>권한</th><th>등록일</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+async function addUser(){
+  var username=document.getElementById('new-username').value.trim();
+  var password=document.getElementById('new-password').value;
+  var role=document.getElementById('new-role').value;
+  if(!username||!password){alert('아이디와 비밀번호를 입력해주세요.');return;}
+  var res=await sb('users','',{method:'POST',headers:{'Prefer':'return=minimal'},body:{username:username,password_hash:password,role:role}});
+  if(res.ok){document.getElementById('new-username').value='';document.getElementById('new-password').value='';loadUsers();}
+  else{alert('이미 존재하는 아이디입니다.');}
+}
+
+// ===== 삭제 모달 =====
+var pendingDelete={};
+function confirmDelete(table,id,cb){
+  pendingDelete={table:table,id:id,cb:cb};
+  document.getElementById('del-modal').classList.add('show');
+  document.getElementById('modal-confirm-btn').onclick=function(){doDelete();};
+}
+async function doDelete(){
+  await sb(pendingDelete.table,'?id=eq.'+pendingDelete.id,{method:'DELETE'});
+  closeModal();
+  if(pendingDelete.cb)pendingDelete.cb();
+}
+function closeModal(){document.getElementById('del-modal').classList.remove('show');}
+
+// 초기화
+document.getElementById('check-date').textContent=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+if(checkAuth())loadCurrentTab();
+</script>
+</body>
+</html>
