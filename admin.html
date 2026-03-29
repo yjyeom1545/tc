@@ -95,6 +95,7 @@ tr:hover td{background:#fafafa;}
 .badge-expired{background:#fee2e2;color:#991b1b;}
 .role-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;}
 .role-admin{background:#dbeafe;color:#1e40af;}
+.role-manager{background:#d1fae5;color:#065f46;}
 .role-viewer{background:#f3f4f6;color:#6b7280;}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;}
 .modal-bg.show{display:flex;align-items:center;justify-content:center;}
@@ -256,14 +257,29 @@ tr:hover td{background:#fafafa;}
       <div class="form-row">
         <div class="form-group"><label>아이디</label><input type="text" id="new-username" placeholder="아이디"></div>
         <div class="form-group"><label>비밀번호</label><input type="password" id="new-password" placeholder="비밀번호"></div>
+        <div class="form-group"><label>이름</label><input type="text" id="new-displayname" placeholder="실명 (선택)"></div>
         <div class="form-group"><label>권한</label>
           <select id="new-role">
-            <option value="viewer">뷰어 (조회만)</option>
+            <option value="manager">담당자 (조회 + 대기운영 입력)</option>
+            <option value="viewer">읽기전용 (조회만)</option>
             <option value="admin">관리자 (전체)</option>
           </select>
         </div>
       </div>
       <button class="add-btn" onclick="addUser()">사용자 추가</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body" style="padding-bottom:6px;">
+      <div class="card-title">권한 안내</div>
+      <table style="font-size:12px;">
+        <thead><tr><th>권한</th><th>조회</th><th>삭제/수정</th><th>대기운영 입력</th><th>사용자 관리</th></tr></thead>
+        <tbody>
+          <tr><td><span class="role-badge role-admin">관리자</span></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td><span class="role-badge role-manager">담당자</span></td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
+          <tr><td><span class="role-badge role-viewer">읽기전용</span></td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
   <div class="card">
@@ -292,10 +308,18 @@ function checkAuth(){
   var u=sessionStorage.getItem('tc_user');
   if(!u){window.location.href='login.html';return false;}
   currentUser=JSON.parse(u);
-  document.getElementById('user-badge').textContent=currentUser.username+' ('+currentUser.role+')';
-  if(currentUser.role!=='admin'){document.querySelector('[onclick="showTab(\'users\')"]').style.display='none';}
+  var roleText={'admin':'관리자','manager':'담당자','viewer':'읽기전용'}[currentUser.role]||currentUser.role;
+  document.getElementById('user-badge').textContent=currentUser.username+' ('+roleText+')';
+  if(currentUser.role!=='admin'){
+    document.querySelector('[onclick="showTab(\'users\')"]').style.display='none';
+  }
   return true;
 }
+
+function isAdmin(){return currentUser&&currentUser.role==='admin';}
+function isManager(){return currentUser&&(currentUser.role==='admin'||currentUser.role==='manager');}
+function getRoleText(role){return {'admin':'관리자','manager':'담당자','viewer':'읽기전용'}[role]||role;}
+function getRoleClass(role){return {'admin':'role-admin','manager':'role-manager','viewer':'role-viewer'}[role]||'role-viewer';}
 function logout(){sessionStorage.removeItem('tc_user');window.location.href='login.html';}
 
 async function sb(table,query,opts){
@@ -402,7 +426,8 @@ function renderTable(data){
   var rows=data.map(function(r){
     var note=r.notes?'<span class="note-cell" title="'+r.notes+'">'+r.notes+'</span>':'<span style="color:#d1d5db;">-</span>';
     var dt=r.created_at?new Date(r.created_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
-    return'<tr><td>'+r.record_date+'</td><td>'+getRoomBadge(r.room_name)+'</td><td>'+r.technician+'</td><td><span class="qty-badge">'+r.quantity+'개</span></td><td>'+note+'</td><td style="font-size:11px;color:#9ca3af;">'+dt+'</td><td><button class="del-btn" onclick="confirmDelete(\'filter_records\',\''+r.id+'\',loadFilterData)">✕</button></td></tr>';
+    var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'filter_records\',\''+r.id+'\',loadFilterData)">✕</button>':'';
+    return'<tr><td>'+r.record_date+'</td><td>'+getRoomBadge(r.room_name)+'</td><td>'+r.technician+'</td><td><span class="qty-badge">'+r.quantity+'개</span></td><td>'+note+'</td><td style="font-size:11px;color:#9ca3af;">'+dt+'</td><td>'+delBtn+'</td></tr>';
   }).join('');
   document.getElementById('table-body').innerHTML='<table><thead><tr><th>교체일</th><th>시설</th><th>담당자</th><th>수량</th><th>특이사항</th><th>제출시각</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
@@ -440,9 +465,9 @@ async function loadOrderRequests(){
   var rows=data.map(function(r){
     var isDone=r.checked;
     var statusHtml=isDone?'<span class="done-badge">발주 완료</span>':'<span class="new-badge">미확인</span>';
-    var actionBtns=isDone
-      ? ''
-      : '<button onclick="completeOrder(\''+r.id+'\')" class="order-done-btn">발주 완료</button><button onclick="confirmDelete(\'filter_order_requests\',\''+r.id+'\',loadOrderRequests)" class="order-del-btn">삭제</button>';
+    var actionBtns=isAdmin()&&!isDone
+      ? '<button onclick="completeOrder(\''+r.id+'\')" class="order-done-btn">발주 완료</button><button onclick="confirmDelete(\'filter_order_requests\',\''+r.id+'\',loadOrderRequests)" class="order-del-btn">삭제</button>'
+      : '';
     return'<div class="order-item"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div class="order-name">'+r.technician+'</div><div class="order-date">'+r.request_date+'</div></div>'+statusHtml+'</div>'+(actionBtns?'<div class="order-actions">'+actionBtns+'</div>':'')+'</div>';
   }).join('');
   document.getElementById('order-table').innerHTML=rows;
@@ -493,7 +518,8 @@ function renderWasteTable(data){
     var isDesignated=r.waste_category==='지정';
     var badge=isDesignated?'<span class="badge" style="background:#fee2e2;color:#991b1b;">지정</span>':'<span class="badge" style="background:#f3f4f6;color:#6b7280;">일반</span>';
     var note=r.notes?r.notes:'<span style="color:#d1d5db;">-</span>';
-    return'<tr><td>'+r.disposal_date+'</td><td>'+r.waste_type+'</td><td>'+badge+'</td><td style="font-weight:500;">'+(parseFloat(r.quantity)||0).toFixed(2)+'t</td><td style="font-size:12px;color:#6b7280;">'+note+'</td><td><button class="del-btn" onclick="confirmDelete(\'waste_disposal\',\''+r.id+'\',loadWasteData)">✕</button></td></tr>';
+    var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'waste_disposal\',\''+r.id+'\',loadWasteData)">✕</button>':'';
+    return'<tr><td>'+r.disposal_date+'</td><td>'+r.waste_type+'</td><td>'+badge+'</td><td style="font-weight:500;">'+(parseFloat(r.quantity)||0).toFixed(2)+'t</td><td style="font-size:12px;color:#6b7280;">'+note+'</td><td>'+delBtn+'</td></tr>';
   }).join('');
   document.getElementById('waste-table').innerHTML='<table><thead><tr><th>배출일</th><th>종류</th><th>구분</th><th>배출량</th><th>특이사항</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
@@ -554,9 +580,8 @@ async function loadUsers(){
   var data=await sb('users','?select=id,username,role,created_at&order=created_at.asc');
   if(!data||!data.length){document.getElementById('users-table').innerHTML='<div class="empty">사용자가 없습니다.</div>';return;}
   var rows=data.map(function(r){
-    var rc=r.role==='admin'?'role-admin':'role-viewer';
-    var rt=r.role==='admin'?'관리자':'뷰어';
-    return'<tr><td>'+r.username+'</td><td><span class="role-badge '+rc+'">'+rt+'</span></td><td style="font-size:11px;color:#9ca3af;">'+(r.created_at?new Date(r.created_at).toLocaleDateString('ko-KR'):'')+'</td><td>'+(r.username!=='admin'?'<button class="del-btn" onclick="confirmDelete(\'users\',\''+r.id+'\',loadUsers)">✕</button>':'')+'</td></tr>';
+    var delBtn=r.username!=='admin'&&isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'users\',\''+r.id+'\',loadUsers)">✕</button>':'';
+    return'<tr><td>'+r.username+'</td><td><span class="role-badge '+getRoleClass(r.role)+'">'+getRoleText(r.role)+'</span></td><td style="font-size:11px;color:#9ca3af;">'+(r.created_at?new Date(r.created_at).toLocaleDateString('ko-KR'):'')+'</td><td>'+delBtn+'</td></tr>';
   }).join('');
   document.getElementById('users-table').innerHTML='<table><thead><tr><th>아이디</th><th>권한</th><th>등록일</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
@@ -567,8 +592,13 @@ async function addUser(){
   var role=document.getElementById('new-role').value;
   if(!username||!password){alert('아이디와 비밀번호를 입력해주세요.');return;}
   var res=await sb('users','',{method:'POST',body:{username:username,password_hash:password,role:role}});
-  if(res.ok){document.getElementById('new-username').value='';document.getElementById('new-password').value='';loadUsers();}
-  else{alert('이미 존재하는 아이디입니다.');}
+  if(res.ok){
+    document.getElementById('new-username').value='';
+    document.getElementById('new-password').value='';
+    document.getElementById('new-displayname').value='';
+    loadUsers();
+    alert(getRoleText(role)+' 권한으로 사용자 "'+username+'"이 추가되었습니다.');
+  }else{alert('이미 존재하는 아이디입니다.');}
 }
 
 var pendingDelete={};
