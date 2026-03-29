@@ -184,46 +184,41 @@ tr:hover td{background:#fafafa;}
 
 <!-- 폐기물 탭 -->
 <div id="tab-waste" class="content hidden">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">올해 총 배출</div><div class="stat-value" id="w-stat-year">-<span class="stat-unit">t</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 배출</div><div class="stat-value" id="w-stat-month">-<span class="stat-unit">t</span></div></div>
+    <div class="stat-card"><div class="stat-label">지정폐기물 (올해)</div><div class="stat-value" id="w-stat-designated" style="color:#ef4444;">-<span class="stat-unit">t</span></div></div>
+    <div class="stat-card"><div class="stat-label">최근 배출일</div><div class="stat-value" style="font-size:15px;padding-top:4px;" id="w-stat-last">-</div></div>
+  </div>
+
   <div class="card">
     <div class="card-body">
-      <div class="card-title">폐기물 보관 현황</div>
-      <div id="waste-storage-table"><div class="loading">불러오는 중...</div></div>
-      <button class="save-btn" onclick="saveWasteStorage()">보관량 저장</button>
+      <div class="card-title">폐기물 분류 검색 (AI 참고용)</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:10px;">어떤 폐기물인지 모를 때 설명을 입력하면 분류를 안내해드립니다.</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <input type="text" id="ai-search-input" placeholder="예: 페인트가 묻은 분진" style="flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:8px 12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+        <button onclick="searchWasteType()" style="padding:8px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;" id="ai-search-btn">검색</button>
+      </div>
+      <div id="ai-result" class="hidden" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;">
+        <div style="font-size:13px;color:#374151;" id="ai-result-text"></div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:8px;">※ AI 참고용 안내입니다. 정확한 분류는 관할 환경청 또는 128 환경부 콜센터에 확인하세요.</div>
+      </div>
     </div>
   </div>
+
   <div class="card">
     <div class="card-body">
-      <div class="card-title">폐기물 보관소 점검 체크리스트</div>
-      <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">점검일: <span id="check-date"></span></div>
-      <div id="checklist">
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">보관용기 파손·균열·누출 여부 확인 <span class="check-badge badge-legal">법적의무</span></div></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">보관용기 뚜껑 밀폐 상태 확인 <span class="check-badge badge-legal">법적의무</span></div></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">폐기물 종류별 분리 보관 여부 확인 <span class="check-badge badge-legal">법적의무</span></div></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">보관 표지판 부착 상태 확인 <span class="check-badge badge-legal">법적의무</span></div></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">보관소 주변 청결 상태 확인 <span class="check-badge badge-daily">일상점검</span></div></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">소화기 비치 및 작동 상태 확인 <span class="check-badge badge-daily">일상점검</span></div></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">보관 기간 초과 여부 확인 <span class="check-badge badge-legal">법적의무</span></div></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark"></div></div><div class="check-text">우수(빗물) 유입 차단 상태 확인 <span class="check-badge badge-daily">일상점검</span></div></div>
-      </div>
-      <button class="save-btn" onclick="saveChecklist()">점검 완료 저장</button>
+      <div class="card-title">폐기물별 이번 달 / 연간 배출량</div>
+      <div id="waste-summary-table"><div class="loading">불러오는 중...</div></div>
     </div>
   </div>
+
   <div class="card">
-    <div class="card-body">
-      <div class="card-title">위탁업체 관리</div>
-      <div class="form-row">
-        <div class="form-group"><label>업체명</label><input type="text" id="wc-name" placeholder="업체명"></div>
-        <div class="form-group"><label>허가번호</label><input type="text" id="wc-license" placeholder="허가번호"></div>
-        <div class="form-group"><label>허가 만료일</label><input type="date" id="wc-expire"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>담당자</label><input type="text" id="wc-contact" placeholder="담당자명"></div>
-        <div class="form-group"><label>연락처</label><input type="text" id="wc-phone" placeholder="연락처"></div>
-        <div class="form-group"><label>처리 폐기물 종류</label><input type="text" id="wc-type" placeholder="예: 지정폐기물"></div>
-      </div>
-      <button class="add-btn" onclick="addContractor()">업체 추가</button>
-      <div id="contractor-list" style="margin-top:14px;"></div>
+    <div class="table-header">
+      <span class="table-title">배출 이력</span>
+      <span class="record-count" id="w-record-count"></span>
     </div>
+    <div id="waste-table"><div class="loading">불러오는 중...</div></div>
   </div>
 </div>
 
@@ -324,7 +319,7 @@ function showTab(tab){
 
 function loadCurrentTab(){
   if(currentTab==='filter')loadFilterData();
-  else if(currentTab==='waste'){loadWasteStorage();loadContractors();}
+  else if(currentTab==='waste')loadWasteData();
   else if(currentTab==='air')loadAirMeasures();
   else if(currentTab==='users')loadUsers();
 }
@@ -458,47 +453,84 @@ async function completeOrder(id){
   loadOrderRequests();
 }
 
-async function loadWasteStorage(){
-  var data=await sb('waste_storage','?select=*&order=category.asc,waste_type.asc');
-  if(!data||!data.length){document.getElementById('waste-storage-table').innerHTML='<div class="empty">데이터 없음</div>';return;}
-  var rows=data.map(function(r){return'<tr><td>'+r.category+'</td><td>'+r.waste_type+'</td><td><input type="number" id="ws-'+r.id+'" value="'+r.quantity+'" min="0" style="width:80px;border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:13px;text-align:center;outline:none;"></td><td>'+r.unit+'</td></tr>';}).join('');
-  document.getElementById('waste-storage-table').innerHTML='<table><thead><tr><th>구분</th><th>폐기물 종류</th><th>보관량</th><th>단위</th></tr></thead><tbody>'+rows+'</tbody></table>';
+async function loadWasteData(){
+  var data=await sb('waste_disposal','?select=*&order=disposal_date.desc,created_at.desc');
+  if(!data){data=[];}
+  var now=new Date();
+  var year=now.getFullYear();
+  var ym=year+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var yearData=data.filter(function(r){return r.disposal_date&&r.disposal_date.startsWith(String(year));});
+  var monthData=data.filter(function(r){return r.disposal_date&&r.disposal_date.startsWith(ym);});
+  var yearTotal=yearData.reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
+  var monthTotal=monthData.reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
+  var designatedTotal=yearData.filter(function(r){return r.waste_category==='지정';}).reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
+  document.getElementById('w-stat-year').innerHTML=yearTotal.toFixed(2)+'<span class="stat-unit">t</span>';
+  document.getElementById('w-stat-month').innerHTML=monthTotal.toFixed(2)+'<span class="stat-unit">t</span>';
+  document.getElementById('w-stat-designated').innerHTML=designatedTotal.toFixed(2)+'<span class="stat-unit">t</span>';
+  document.getElementById('w-stat-last').textContent=data.length>0?(data[0].disposal_date||'-'):'-';
+  renderWasteSummary(data,ym,String(year));
+  renderWasteTable(data);
 }
 
-async function saveWasteStorage(){
-  var data=await sb('waste_storage','?select=id');
-  for(var r of data){var el=document.getElementById('ws-'+r.id);if(el)await sb('waste_storage','?id=eq.'+r.id,{method:'PATCH',body:{quantity:parseFloat(el.value)||0,updated_at:new Date().toISOString()}});}
-  alert('저장 완료');
+function renderWasteSummary(data,ym,year){
+  var types=['폐합성수지','폐목재','폐유 고상','폐유 액상','폐페인트','분진','고철','폐지','일반쓰레기'];
+  var categories={'폐합성수지':'일반','폐목재':'일반','폐유 고상':'지정','폐유 액상':'지정','폐페인트':'지정','분진':'일반','고철':'일반','폐지':'일반','일반쓰레기':'일반'};
+  var rows=types.map(function(t){
+    var mTotal=data.filter(function(r){return r.waste_type===t&&r.disposal_date&&r.disposal_date.startsWith(ym);}).reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
+    var yTotal=data.filter(function(r){return r.waste_type===t&&r.disposal_date&&r.disposal_date.startsWith(year);}).reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
+    var isDesignated=categories[t]==='지정';
+    var badge=isDesignated?'<span class="badge" style="background:#fee2e2;color:#991b1b;">지정</span>':'<span class="badge" style="background:#f3f4f6;color:#6b7280;">일반</span>';
+    var color=isDesignated?'color:#ef4444;':'';
+    return'<tr><td>'+t+'</td><td>'+badge+'</td><td style="font-weight:500;'+color+'">'+mTotal.toFixed(2)+'t</td><td style="font-weight:500;'+color+'">'+yTotal.toFixed(2)+'t</td></tr>';
+  }).join('');
+  document.getElementById('waste-summary-table').innerHTML='<table><thead><tr><th>폐기물 종류</th><th>구분</th><th>이번 달</th><th>올해 누계</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+function renderWasteTable(data){
+  document.getElementById('w-record-count').textContent='총 '+data.length+'건';
+  if(!data.length){document.getElementById('waste-table').innerHTML='<div class="empty">배출 기록이 없습니다.</div>';return;}
+  var rows=data.map(function(r){
+    var isDesignated=r.waste_category==='지정';
+    var badge=isDesignated?'<span class="badge" style="background:#fee2e2;color:#991b1b;">지정</span>':'<span class="badge" style="background:#f3f4f6;color:#6b7280;">일반</span>';
+    var note=r.notes?r.notes:'<span style="color:#d1d5db;">-</span>';
+    return'<tr><td>'+r.disposal_date+'</td><td>'+r.waste_type+'</td><td>'+badge+'</td><td style="font-weight:500;">'+(parseFloat(r.quantity)||0).toFixed(2)+'t</td><td style="font-size:12px;color:#6b7280;">'+note+'</td><td><button class="del-btn" onclick="confirmDelete(\'waste_disposal\',\''+r.id+'\',loadWasteData)">✕</button></td></tr>';
+  }).join('');
+  document.getElementById('waste-table').innerHTML='<table><thead><tr><th>배출일</th><th>종류</th><th>구분</th><th>배출량</th><th>특이사항</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+async function searchWasteType(){
+  var query=document.getElementById('ai-search-input').value.trim();
+  if(!query){alert('검색어를 입력해주세요.');return;}
+  var btn=document.getElementById('ai-search-btn');
+  btn.disabled=true;btn.textContent='검색 중...';
+  document.getElementById('ai-result').classList.remove('hidden');
+  document.getElementById('ai-result-text').textContent='분석 중...';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:'당신은 제조업 환경관리 전문가입니다. 다음 폐기물 종류 목록 중에서 가장 적합한 분류를 안내해주세요: 폐합성수지(일반), 폐목재(일반), 폐유 고상(지정), 폐유 액상(지정), 폐페인트(지정), 분진(일반), 고철(일반), 폐지(일반), 일반쓰레기(일반). 반드시 참고용임을 명시하고, 정확한 분류는 환경청 확인이 필요하다고 안내하세요. 2-3문장으로 간결하게 답변하세요.',
+        messages:[{role:'user',content:query}]
+      })
+    });
+    var d=await res.json();
+    var text=d.content&&d.content[0]?d.content[0].text:'답변을 가져올 수 없습니다.';
+    document.getElementById('ai-result-text').textContent=text;
+  }catch(e){
+    document.getElementById('ai-result-text').textContent='검색 중 오류가 발생했습니다. 다시 시도해주세요.';
+  }
+  btn.disabled=false;btn.textContent='검색';
 }
 
 function toggleCheck(el){el.classList.toggle('done');}
-
-async function saveChecklist(){
-  var items=[];
-  document.querySelectorAll('#checklist .check-item').forEach(function(el){items.push({text:el.querySelector('.check-text').textContent.trim(),done:el.classList.contains('done')});});
-  await sb('waste_checklists','',{method:'POST',body:{check_date:new Date().toISOString().split('T')[0],checker:currentUser?currentUser.username:'관리자',items:items}});
-  alert('점검 완료 저장됨');
-}
-
-async function loadContractors(){
-  var data=await sb('waste_contractors','?select=*&order=created_at.desc');
-  if(!data||!data.length){document.getElementById('contractor-list').innerHTML='<div style="font-size:13px;color:#9ca3af;">등록된 위탁업체가 없습니다.</div>';return;}
-  var today=new Date().toISOString().split('T')[0];
-  document.getElementById('contractor-list').innerHTML=data.map(function(r){
-    var exp=r.expire_date;
-    var bc='badge-valid',bt='허가 유효';
-    if(exp){var diff=(new Date(exp)-new Date(today))/(1000*60*60*24);if(diff<0){bc='badge-expired';bt='허가 만료';}else if(diff<90){bc='badge-warn';bt='만료 임박';}}
-    return'<div class="contractor-card"><div style="display:flex;justify-content:space-between;"><div><div class="contractor-name">'+r.name+'</div><span class="badge '+bc+'">'+bt+'</span><div class="contractor-info">허가번호: '+(r.license_no||'-')+'<br>만료일: '+(r.expire_date||'-')+'<br>담당자: '+(r.contact_person||'-')+'<br>연락처: '+(r.phone||'-')+'<br>처리 종류: '+(r.waste_type||'-')+'</div></div><button class="del-btn" onclick="confirmDelete(\'waste_contractors\',\''+r.id+'\',loadContractors)">✕</button></div></div>';
-  }).join('');
-}
-
-async function addContractor(){
-  var name=document.getElementById('wc-name').value.trim();
-  if(!name){alert('업체명을 입력해주세요.');return;}
-  await sb('waste_contractors','',{method:'POST',body:{name:name,license_no:document.getElementById('wc-license').value,expire_date:document.getElementById('wc-expire').value||null,contact_person:document.getElementById('wc-contact').value,phone:document.getElementById('wc-phone').value,waste_type:document.getElementById('wc-type').value}});
-  ['wc-name','wc-license','wc-expire','wc-contact','wc-phone','wc-type'].forEach(function(id){document.getElementById(id).value='';});
-  loadContractors();
-}
+async function saveChecklist(){alert('체크리스트 저장 기능은 준비 중입니다.');}
+async function loadWasteStorage(){}
+async function saveWasteStorage(){}
+async function loadContractors(){}
+async function addContractor(){}
 
 async function loadAirMeasures(){
   var data=await sb('air_measurement','?select=*&order=measure_date.desc');
