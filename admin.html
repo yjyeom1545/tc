@@ -126,6 +126,7 @@ tr:hover td{background:#fafafa;}
 <div class="tab-bar">
   <button class="tab-btn active" onclick="showTab('filter')">필터 교체</button>
   <button class="tab-btn" onclick="showTab('waste')">폐기물</button>
+  <button class="tab-btn" onclick="showTab('airlog')">대기운영기록</button>
   <button class="tab-btn" onclick="showTab('air')">대기측정</button>
   <button class="tab-btn" onclick="showTab('users')">사용자 관리</button>
 </div>
@@ -220,6 +221,42 @@ tr:hover td{background:#fafafa;}
       <span class="record-count" id="w-record-count"></span>
     </div>
     <div id="waste-table"><div class="loading">불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- 대기운영기록 탭 -->
+<div id="tab-airlog" class="content hidden">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">이번 달 기록</div><div class="stat-value" id="al-stat-month">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">최근 기록일</div><div class="stat-value" style="font-size:15px;padding-top:4px;" id="al-stat-last">-</div></div>
+    <div class="stat-card"><div class="stat-label">비정상 시설</div><div class="stat-value" id="al-stat-abnormal" style="color:#ef4444;">-<span class="stat-unit">건</span></div></div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">필터</span>
+    <input type="date" id="al-filter-date" onchange="loadAirLog()" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;">
+    <select id="al-filter-type" onchange="loadAirLog()" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;">
+      <option value="">전체</option>
+      <option value="배출구">배출구</option>
+      <option value="방지시설">방지시설</option>
+    </select>
+    <button class="clear-btn" onclick="clearAirLogFilter()">초기화</button>
+  </div>
+
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">배출구 가동시간 기록</span>
+      <span class="record-count" id="al-emission-count"></span>
+    </div>
+    <div id="al-emission-table"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">방지시설 전력사용량 기록</span>
+      <span class="record-count" id="al-prevention-count"></span>
+    </div>
+    <div id="al-prevention-table"><div class="loading">불러오는 중...</div></div>
   </div>
 </div>
 
@@ -334,7 +371,7 @@ function showTab(tab){
   document.querySelectorAll('[id^="tab-"]').forEach(function(el){el.classList.add('hidden');});
   document.getElementById('tab-'+tab).classList.remove('hidden');
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-  var tabs=['filter','waste','air','users'];
+  var tabs=['filter','waste','airlog','air','users'];
   var idx=tabs.indexOf(tab);
   if(idx>=0)document.querySelectorAll('.tab-btn')[idx].classList.add('active');
   currentTab=tab;
@@ -344,6 +381,7 @@ function showTab(tab){
 function loadCurrentTab(){
   if(currentTab==='filter')loadFilterData();
   else if(currentTab==='waste')loadWasteData();
+  else if(currentTab==='airlog')loadAirLog();
   else if(currentTab==='air')loadAirMeasures();
   else if(currentTab==='users')loadUsers();
 }
@@ -557,6 +595,55 @@ async function loadWasteStorage(){}
 async function saveWasteStorage(){}
 async function loadContractors(){}
 async function addContractor(){}
+
+async function loadAirLog(){
+  var date=document.getElementById('al-filter-date').value;
+  var type=document.getElementById('al-filter-type').value;
+  var query='?select=*&order=log_date.desc,facility_no.asc';
+  if(date)query+='&log_date=eq.'+date;
+  if(type)query+='&facility_type=eq.'+encodeURIComponent(type);
+  var data=await sb('air_operation_log',query);
+  if(!data)data=[];
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var monthData=data.filter(function(r){return r.log_date&&r.log_date.startsWith(ym);});
+  var abnormal=data.filter(function(r){return r.status==='비정상';});
+  document.getElementById('al-stat-month').innerHTML=monthData.length+'<span class="stat-unit">건</span>';
+  document.getElementById('al-stat-last').textContent=data.length>0?(data[0].log_date||'-'):'-';
+  document.getElementById('al-stat-abnormal').innerHTML=abnormal.length+'<span class="stat-unit">건</span>';
+  var emission=data.filter(function(r){return r.facility_type==='배출구';});
+  var prevention=data.filter(function(r){return r.facility_type==='방지시설';});
+  document.getElementById('al-emission-count').textContent='총 '+emission.length+'건';
+  document.getElementById('al-prevention-count').textContent='총 '+prevention.length+'건';
+  if(!emission.length){document.getElementById('al-emission-table').innerHTML='<div class="empty">기록이 없습니다.</div>';}
+  else{
+    var rows=emission.map(function(r){
+      var statusBadge=r.status==='비정상'?'<span class="badge" style="background:#fee2e2;color:#991b1b;">비정상</span>':'<span class="badge" style="background:#d1fae5;color:#065f46;">정상</span>';
+      var time=r.start_time&&r.end_time?r.start_time+'~'+r.end_time:'<span style="color:#d1d5db;">-</span>';
+      var hours=r.operation_hours!=null?r.operation_hours+'시간':'<span style="color:#d1d5db;">-</span>';
+      var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'air_operation_log\',\''+r.id+'\',loadAirLog)">✕</button>':'';
+      return'<tr><td>'+r.log_date+'</td><td><span style="font-size:11px;font-weight:700;color:#1a3a5c;">'+r.facility_no+'번</span></td><td style="font-size:12px;">'+r.facility_name+'</td><td>'+time+'</td><td>'+hours+'</td><td>'+statusBadge+'</td><td>'+r.submitted_by+'</td><td>'+delBtn+'</td></tr>';
+    }).join('');
+    document.getElementById('al-emission-table').innerHTML='<table><thead><tr><th>날짜</th><th>배출구</th><th>시설명</th><th>가동시간</th><th>시간수</th><th>상태</th><th>제출자</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }
+  if(!prevention.length){document.getElementById('al-prevention-table').innerHTML='<div class="empty">기록이 없습니다.</div>';}
+  else{
+    var rows2=prevention.map(function(r){
+      var statusBadge=r.status==='비정상'?'<span class="badge" style="background:#fee2e2;color:#991b1b;">비정상</span>':'<span class="badge" style="background:#d1fae5;color:#065f46;">정상</span>';
+      var total=r.power_usage!=null?r.power_usage+' kw/h':'<span style="color:#d1d5db;">-</span>';
+      var daily=r.power_usage_daily!=null?'<b>'+r.power_usage_daily+'</b> kw/h':'<span style="color:#d1d5db;">-</span>';
+      var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'air_operation_log\',\''+r.id+'\',loadAirLog)">✕</button>':'';
+      return'<tr><td>'+r.log_date+'</td><td><span style="font-size:11px;font-weight:700;color:#1a3a5c;">'+r.facility_no+'번</span></td><td style="font-size:12px;">'+r.facility_name+'</td><td>'+total+'</td><td>'+daily+'</td><td>'+statusBadge+'</td><td>'+r.submitted_by+'</td><td>'+delBtn+'</td></tr>';
+    }).join('');
+    document.getElementById('al-prevention-table').innerHTML='<table><thead><tr><th>날짜</th><th>시설</th><th>시설명</th><th>누적전력</th><th>당일사용량</th><th>상태</th><th>제출자</th><th></th></tr></thead><tbody>'+rows2+'</tbody></table>';
+  }
+}
+
+function clearAirLogFilter(){
+  document.getElementById('al-filter-date').value='';
+  document.getElementById('al-filter-type').value='';
+  loadAirLog();
+}
 
 async function loadAirMeasures(){
   var data=await sb('air_measurement','?select=*&order=measure_date.desc');
