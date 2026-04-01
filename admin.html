@@ -330,13 +330,45 @@ tr:hover td{background:#fafafa;}
           </select>
         </div>
       </div>
-      <div class="form-group" style="margin-bottom:10px;"><label>비고</label><textarea id="air-notes" placeholder="측정 항목, 결과 등"></textarea></div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>측정 시설 <span style="font-size:11px;color:#9ca3af;">(복수 선택 가능)</span></label>
+        <div id="air-facility-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구1-탈청시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 1 — 탈청시설</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구2-도장시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 2 — 도장시설</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구3-도장시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 3 — 도장시설</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구4-도장시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 4 — 도장시설</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구5-건조시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 5 — 건조시설</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구6-도장및건조시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 6 — 도장 및 건조</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구7-도장및건조시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 7 — 도장 및 건조</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구9-도장시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 9 — 도장시설</div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;"><label>특이사항</label><textarea id="air-notes" placeholder="측정 항목, 결과 등"></textarea></div>
       <button class="add-btn" onclick="addAirMeasure()">일정 추가</button>
     </div>
   </div>
+
   <div class="card">
-    <div class="table-header"><span class="table-title">대기측정 이력</span></div>
+    <div class="table-header">
+      <span class="table-title">대기측정 일정 / 이력</span>
+      <span class="record-count" id="air-record-count"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;">
+      <span class="filter-label">월별</span>
+      <select id="air-filter-month" onchange="loadAirMeasures()" style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;background:white;">
+        <option value="">전체</option>
+      </select>
+      <select id="air-filter-status" onchange="loadAirMeasures()" style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;background:white;">
+        <option value="">전체 상태</option>
+        <option value="예정">예정</option>
+        <option value="완료">완료</option>
+        <option value="취소">취소</option>
+        <option value="미처리">미처리</option>
+      </select>
+      <button class="clear-btn" onclick="clearAirFilter()">초기화</button>
+    </div>
     <div id="air-table"><div class="loading">불러오는 중...</div></div>
+    <div style="padding:8px 14px;font-size:11px;color:#9ca3af;border-top:1px solid #f3f4f6;">※ 예정일이 지난 항목은 완료 또는 취소로 변경해주세요.</div>
   </div>
 </div>
 
@@ -863,21 +895,118 @@ async function exportAirLogExcel(){
 
 function clearAirLogFilter(){}
 
+var selectedAirFacilities=[];
+
+function toggleAirFacility(el,val){
+  var idx=selectedAirFacilities.indexOf(val);
+  if(idx>=0){
+    selectedAirFacilities.splice(idx,1);
+    el.style.borderColor='#e5e7eb';el.style.background='white';el.style.color='#6b7280';
+  }else{
+    selectedAirFacilities.push(val);
+    el.style.borderColor='#1a3a5c';el.style.background='#eef3f9';el.style.color='#1a3a5c';
+  }
+}
+
+function clearAirFacilityTags(){
+  selectedAirFacilities=[];
+  document.querySelectorAll('.air-ftag').forEach(function(el){
+    el.style.borderColor='#e5e7eb';el.style.background='white';el.style.color='#6b7280';
+  });
+}
+
 async function loadAirMeasures(){
   var data=await sb('air_measurement','?select=*&order=measure_date.desc');
-  if(!data||!data.length){document.getElementById('air-table').innerHTML='<div class="empty">일정이 없습니다.</div>';return;}
-  var rows=data.map(function(r){
-    var sc=r.status==='완료'?'status-done':r.status==='취소'?'status-cancel':'status-planned';
-    return'<tr><td>'+r.measure_date+'</td><td>'+(r.company||'-')+'</td><td><span class="badge '+sc+'">'+r.status+'</span></td><td>'+(r.notes||'-')+'</td><td><button class="del-btn" onclick="confirmDelete(\'air_measurement\',\''+r.id+'\',loadAirMeasures)">✕</button></td></tr>';
+  if(!data)data=[];
+  var today=new Date().toISOString().split('T')[0];
+
+  var months=[...new Set(data.map(function(r){return r.measure_date?r.measure_date.substring(0,7):null;}).filter(Boolean))].sort().reverse();
+  var sel=document.getElementById('air-filter-month');
+  var curMonth=sel.value;
+  sel.innerHTML='<option value="">전체</option>';
+  months.forEach(function(m){
+    var d=new Date(m+'-01');
+    var label=d.getFullYear()+'년 '+(d.getMonth()+1)+'월';
+    var o=document.createElement('option');o.value=m;o.textContent=label;if(m===curMonth)o.selected=true;
+    sel.appendChild(o);
+  });
+
+  var filterMonth=document.getElementById('air-filter-month').value;
+  var filterStatus=document.getElementById('air-filter-status').value;
+  var filtered=data.filter(function(r){
+    if(filterMonth&&!(r.measure_date&&r.measure_date.startsWith(filterMonth)))return false;
+    var effectiveStatus=r.status;
+    if(r.status==='예정'&&r.measure_date&&r.measure_date<today)effectiveStatus='미처리';
+    if(filterStatus&&effectiveStatus!==filterStatus)return false;
+    return true;
+  });
+
+  document.getElementById('air-record-count').textContent='총 '+filtered.length+'건';
+  if(!filtered.length){document.getElementById('air-table').innerHTML='<div class="empty">일정이 없습니다.</div>';return;}
+
+  var rows=filtered.map(function(r){
+    var isOverdue=r.status==='예정'&&r.measure_date&&r.measure_date<today;
+    var rowStyle=isOverdue?'background:#fff5f5;':r.status==='예정'?'background:#fffbeb;':'';
+    var statusBadge=isOverdue
+      ?'<span class="badge" style="background:#fef3c7;color:#92400e;">미처리</span>'
+      :r.status==='완료'?'<span class="badge" style="background:#d1fae5;color:#065f46;">완료</span>'
+      :r.status==='취소'?'<span class="badge" style="background:#fee2e2;color:#991b1b;">취소</span>'
+      :'<span class="badge" style="background:#dbeafe;color:#1e40af;">예정</span>';
+    var facilities=r.facilities?r.facilities.split(',').map(function(f){return'<span style="display:inline-block;padding:2px 7px;border-radius:10px;background:#eef3f9;color:#1a3a5c;font-size:11px;font-weight:500;margin:1px;">'+f.replace('배출구','배').replace('-','<br style="display:none">').trim()+'</span>';}).join(''):'<span style="color:#d1d5db;">-</span>';
+    var actionBtns='';
+    if(isAdmin()){
+      if(r.status!=='완료'&&r.status!=='취소'){
+        actionBtns='<button onclick="updateAirStatus(\''+r.id+'\',\'완료\',\'\')" style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;border:none;background:#d1fae5;color:#065f46;cursor:pointer;margin-right:4px;">완료</button>'+
+          '<button onclick="showCancelInput(\''+r.id+'\')" style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;border:none;background:#fee2e2;color:#991b1b;cursor:pointer;margin-right:4px;">취소</button>';
+      }
+      actionBtns+='<button class="del-btn" onclick="confirmDelete(\'air_measurement\',\''+r.id+'\',loadAirMeasures)">✕</button>';
+    }
+    var cancelRow=r.status==='취소'&&r.cancel_reason?'<tr style="background:#fff5f5;"><td colspan="6" style="padding:4px 14px;font-size:11px;color:#991b1b;">취소 사유: '+r.cancel_reason+'</td></tr>':'';
+    return'<tr style="'+rowStyle+'" id="air-row-'+r.id+'"><td>'+r.measure_date+'</td><td>'+(r.company||'-')+'</td><td style="max-width:200px;">'+facilities+'</td><td>'+statusBadge+'</td><td style="font-size:12px;color:#6b7280;max-width:140px;">'+(r.special_notes||'-')+'</td><td>'+actionBtns+'</td></tr>'+cancelRow;
   }).join('');
-  document.getElementById('air-table').innerHTML='<table><thead><tr><th>측정일</th><th>업체</th><th>상태</th><th>비고</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  document.getElementById('air-table').innerHTML='<div style="overflow-x:auto;"><table style="min-width:650px;"><thead><tr><th>측정일</th><th>측정업체</th><th>측정 시설</th><th>상태</th><th>특이사항</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function showCancelInput(id){
+  var row=document.getElementById('air-row-'+id);
+  if(!row)return;
+  var existing=document.getElementById('cancel-input-row-'+id);
+  if(existing){existing.remove();return;}
+  var tr=document.createElement('tr');
+  tr.id='cancel-input-row-'+id;
+  tr.style.background='#fff5f5';
+  tr.innerHTML='<td colspan="6" style="padding:8px 14px;"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:#6b7280;">취소 사유:</span><input type="text" id="cancel-reason-'+id+'" placeholder="취소 사유 입력" style="border:1px solid #fca5a5;border-radius:6px;padding:6px 10px;font-size:12px;outline:none;flex:1;max-width:300px;"><button onclick="updateAirStatus(\''+id+'\',\'취소\',document.getElementById(\'cancel-reason-'+id+'\').value)" style="padding:6px 14px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;">확인</button><button onclick="document.getElementById(\'cancel-input-row-'+id+'\').remove()" style="padding:6px 10px;background:white;color:#6b7280;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;cursor:pointer;">닫기</button></div></td>';
+  row.insertAdjacentElement('afterend',tr);
+}
+
+async function updateAirStatus(id,status,reason){
+  var body={status:status};
+  if(reason)body.cancel_reason=reason;
+  await sb('air_measurement','?id=eq.'+id,{method:'PATCH',body:body});
+  loadAirMeasures();
 }
 
 async function addAirMeasure(){
   var date=document.getElementById('air-date').value;
   if(!date){alert('측정일을 입력해주세요.');return;}
-  await sb('air_measurement','',{method:'POST',body:{measure_date:date,company:document.getElementById('air-company').value||null,status:document.getElementById('air-status').value,notes:document.getElementById('air-notes').value||null}});
-  document.getElementById('air-date').value='';document.getElementById('air-company').value='';document.getElementById('air-notes').value='';
+  var facilities=selectedAirFacilities.join(',');
+  await sb('air_measurement','',{method:'POST',body:{
+    measure_date:date,
+    company:document.getElementById('air-company').value||null,
+    status:document.getElementById('air-status').value,
+    special_notes:document.getElementById('air-notes').value||null,
+    facilities:facilities||null
+  }});
+  document.getElementById('air-date').value='';
+  document.getElementById('air-company').value='';
+  document.getElementById('air-notes').value='';
+  clearAirFacilityTags();
+  loadAirMeasures();
+}
+
+function clearAirFilter(){
+  document.getElementById('air-filter-month').value='';
+  document.getElementById('air-filter-status').value='';
   loadAirMeasures();
 }
 
