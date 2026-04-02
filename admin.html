@@ -198,15 +198,26 @@ tr:hover td{background:#fafafa;}
 
   <div class="card">
     <div class="card-body">
-      <div class="card-title">폐기물 분류 검색 (AI 참고용)</div>
-      <div style="font-size:12px;color:#6b7280;margin-bottom:10px;">어떤 폐기물인지 모를 때 설명을 입력하면 분류를 안내해드립니다.</div>
-      <div style="display:flex;gap:8px;margin-bottom:10px;">
-        <input type="text" id="ai-search-input" placeholder="예: 페인트가 묻은 분진" style="flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:8px 12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
-        <button onclick="searchWasteType()" style="padding:8px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;" id="ai-search-btn">검색</button>
+      <div class="card-title">폐기물 분류 검색</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">폐기물 상태나 특징을 입력하면 분류를 안내해드립니다. 정확한 분류는 관할 환경청에 확인하세요.</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input type="text" id="waste-search-input" placeholder="예: 페인트가 묻은 분진, 용제가 섞인 찌꺼기" style="flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:8px 12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;" onkeydown="if(event.key==='Enter')searchWasteType()">
+        <button onclick="searchWasteType()" style="padding:8px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">검색</button>
       </div>
-      <div id="ai-result" class="hidden" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;">
-        <div style="font-size:13px;color:#374151;" id="ai-result-text"></div>
-        <div style="font-size:11px;color:#9ca3af;margin-top:8px;">※ AI 참고용 안내입니다. 정확한 분류는 관할 환경청 또는 128 환경부 콜센터에 확인하세요.</div>
+      <div id="waste-search-result" class="hidden">
+      </div>
+      <div style="margin-top:12px;border-top:1px solid #f3f4f6;padding-top:12px;">
+        <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:8px;">우리 사업장 폐기물 분류표</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+          <div style="border:1px solid #fee2e2;border-radius:8px;padding:10px 12px;background:#fff5f5;">
+            <div style="font-size:11px;font-weight:700;color:#991b1b;margin-bottom:6px;">지정폐기물</div>
+            <div style="font-size:12px;color:#374151;line-height:2;">폐유 고상<br>폐유 액상<br>폐페인트</div>
+          </div>
+          <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;background:#f9fafb;">
+            <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:6px;">일반폐기물</div>
+            <div style="font-size:12px;color:#374151;line-height:2;">폐합성수지<br>폐목재<br>분진<br>고철<br>폐지<br>일반쓰레기</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -661,31 +672,64 @@ function renderWasteTable(data){
   document.getElementById('waste-table').innerHTML='<table><thead><tr><th>배출일</th><th>종류</th><th>구분</th><th>배출량</th><th>특이사항</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 
-async function searchWasteType(){
-  var query=document.getElementById('ai-search-input').value.trim();
+function searchWasteType(){
+  var query=document.getElementById('waste-search-input').value.trim();
   if(!query){alert('검색어를 입력해주세요.');return;}
-  var btn=document.getElementById('ai-search-btn');
-  btn.disabled=true;btn.textContent='검색 중...';
-  document.getElementById('ai-result').classList.remove('hidden');
-  document.getElementById('ai-result-text').textContent='분석 중...';
-  try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system:'당신은 제조업 환경관리 전문가입니다. 다음 폐기물 종류 목록 중에서 가장 적합한 분류를 안내해주세요: 폐합성수지(일반), 폐목재(일반), 폐유 고상(지정), 폐유 액상(지정), 폐페인트(지정), 분진(일반), 고철(일반), 폐지(일반), 일반쓰레기(일반). 반드시 참고용임을 명시하고, 정확한 분류는 환경청 확인이 필요하다고 안내하세요. 2-3문장으로 간결하게 답변하세요.',
-        messages:[{role:'user',content:query}]
-      })
-    });
-    var d=await res.json();
-    var text=d.content&&d.content[0]?d.content[0].text:'답변을 가져올 수 없습니다.';
-    document.getElementById('ai-result-text').textContent=text;
-  }catch(e){
-    document.getElementById('ai-result-text').textContent='검색 중 오류가 발생했습니다. 다시 시도해주세요.';
+
+  var DB=[
+    {keywords:['페인트','도료','도장','락카','에나멜'],type:'폐페인트',category:'지정',desc:'페인트·도료 성분이 포함된 폐기물은 폐페인트(지정폐기물)로 분류됩니다.'},
+    {keywords:['기름','오일','윤활','절삭유','유압','그리스','폐유'],type:'폐유',category:'지정',desc:'기름·오일류 폐기물은 성상에 따라 폐유 고상 또는 폐유 액상(지정폐기물)으로 분류됩니다.'},
+    {keywords:['시너','신너','용제','솔벤트','톨루엔','자일렌','아세톤'],type:'폐유 액상',category:'지정',desc:'유기용제류는 폐유 액상(지정폐기물)으로 분류됩니다.'},
+    {keywords:['고상','찌꺼기','슬러지','침전물','케이크'],type:'폐유 고상',category:'지정',desc:'오일·도료 등이 굳어진 고상 폐기물은 폐유 고상(지정폐기물)으로 분류될 수 있습니다.'},
+    {keywords:['플라스틱','비닐','수지','pp','pe','pvc','합성수지','포장재'],type:'폐합성수지',category:'일반',desc:'플라스틱·비닐류 폐기물은 폐합성수지(일반폐기물)로 분류됩니다.'},
+    {keywords:['나무','목재','합판','파렛트','팔레트','목'],type:'폐목재',category:'일반',desc:'나무·목재류 폐기물은 폐목재(일반폐기물)로 분류됩니다.'},
+    {keywords:['분진','먼지','더스트','집진','필터','여과지'],type:'분진',category:'일반',desc:'집진설비에서 포집된 분진·먼지류는 분진(일반폐기물)으로 분류됩니다. 단, 유해물질이 포함된 경우 지정폐기물이 될 수 있으므로 확인이 필요합니다.'},
+    {keywords:['철','쇠','고철','금속','스크랩','파이프'],type:'고철',category:'일반',desc:'철·금속류 폐기물은 고철(일반폐기물)로 분류됩니다.'},
+    {keywords:['종이','박스','박스지','골판지','신문','폐지'],type:'폐지',category:'일반',desc:'종이류 폐기물은 폐지(일반폐기물)로 분류됩니다.'},
+    {keywords:['음식','쓰레기','생활','잡','기타','혼합'],type:'일반쓰레기',category:'일반',desc:'특정 분류에 해당하지 않는 혼합 생활계 폐기물은 일반쓰레기(일반폐기물)로 처리됩니다.'}
+  ];
+
+  var q=query.toLowerCase();
+  var matched=null;
+  for(var i=0;i<DB.length;i++){
+    var item=DB[i];
+    for(var j=0;j<item.keywords.length;j++){
+      if(q.includes(item.keywords[j])){matched=item;break;}
+    }
+    if(matched)break;
   }
-  btn.disabled=false;btn.textContent='검색';
+
+  var resultEl=document.getElementById('waste-search-result');
+  resultEl.classList.remove('hidden');
+
+  if(matched){
+    var catColor=matched.category==='지정'?'#fee2e2':'#f0fdf4';
+    var catTextColor=matched.category==='지정'?'#991b1b':'#166534';
+    var catBorderColor=matched.category==='지정'?'#fca5a5':'#86efac';
+    resultEl.innerHTML=
+      '<div style="border:1px solid '+catBorderColor+';border-radius:8px;padding:14px;background:'+catColor+';margin-bottom:8px;">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'+
+          '<span style="font-size:15px;font-weight:700;color:'+catTextColor+';">'+matched.type+'</span>'+
+          '<span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+catTextColor+';color:white;">'+matched.category+'폐기물</span>'+
+        '</div>'+
+        '<div style="font-size:13px;color:#374151;line-height:1.6;margin-bottom:10px;">'+matched.desc+'</div>'+
+        '<div style="font-size:11px;color:#6b7280;">※ 참고용 안내입니다. 정확한 분류는 관할 환경청 또는 ☎ 128 환경부 콜센터에 확인하세요.</div>'+
+      '</div>'+
+      '<div style="font-size:12px;color:#6b7280;">더 자세한 판단이 필요하시면 Claude AI에게 물어보세요.</div>'+
+      '<button onclick="openClaude(\''+query+'\')" style="margin-top:8px;padding:8px 16px;background:#7c3aed;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">Claude AI에게 자세히 묻기 →</button>';
+  }else{
+    resultEl.innerHTML=
+      '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px;background:#f9fafb;margin-bottom:8px;">'+
+        '<div style="font-size:13px;color:#374151;margin-bottom:8px;">분류표에서 일치하는 항목을 찾지 못했습니다.</div>'+
+        '<div style="font-size:12px;color:#6b7280;">Claude AI에게 직접 물어보시면 더 정확한 안내를 받으실 수 있습니다.</div>'+
+      '</div>'+
+      '<button onclick="openClaude(\''+query+'\')" style="padding:8px 16px;background:#7c3aed;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">Claude AI에게 묻기 →</button>';
+  }
+}
+
+function openClaude(query){
+  var prompt='제조업 도장시설 환경관리 담당자입니다. 다음 폐기물이 어떤 종류인지, 지정폐기물인지 일반폐기물인지 알려주세요. 우리 사업장의 폐기물 종류는 폐합성수지, 폐목재, 폐유 고상, 폐유 액상, 폐페인트, 분진, 고철, 폐지, 일반쓰레기입니다. 질문: '+query;
+  window.open('https://claude.ai/new?q='+encodeURIComponent(prompt),'_blank');
 }
 
 function toggleCheck(el){el.classList.toggle('done');}
