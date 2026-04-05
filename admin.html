@@ -189,13 +189,24 @@ tr:hover td{background:#fafafa;}
 
 <!-- 폐기물 탭 -->
 <div id="tab-waste" class="content hidden">
+
+  <!-- 폐유고상 배출 요청 현황 -->
   <div class="stats-grid">
-    <div class="stat-card"><div class="stat-label">올해 총 배출</div><div class="stat-value" id="w-stat-year">-<span class="stat-unit">t</span></div></div>
-    <div class="stat-card"><div class="stat-label">이번 달 배출</div><div class="stat-value" id="w-stat-month">-<span class="stat-unit">t</span></div></div>
-    <div class="stat-card"><div class="stat-label">지정폐기물 (올해)</div><div class="stat-value" id="w-stat-designated" style="color:#ef4444;">-<span class="stat-unit">t</span></div></div>
-    <div class="stat-card"><div class="stat-label">최근 배출일</div><div class="stat-value" style="font-size:15px;padding-top:4px;" id="w-stat-last">-</div></div>
+    <div class="stat-card"><div class="stat-label">미확인 요청</div><div class="stat-value" id="wo-stat-new" style="color:#d97706;">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 요청</div><div class="stat-value" id="wo-stat-month">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 배출량</div><div class="stat-value" id="wo-stat-qty">-<span class="stat-unit">t</span></div></div>
+    <div class="stat-card"><div class="stat-label">최근 요청일</div><div class="stat-value" style="font-size:15px;padding-top:4px;" id="wo-stat-last">-</div></div>
   </div>
 
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">폐유고상 배출 요청 현황</span>
+      <span id="wo-new-badge"></span>
+    </div>
+    <div id="wo-table"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <!-- 폐기물 분류 검색 -->
   <div class="card">
     <div class="card-body">
       <div class="card-title">폐기물 분류 검색</div>
@@ -204,8 +215,7 @@ tr:hover td{background:#fafafa;}
         <input type="text" id="waste-search-input" placeholder="예: 페인트가 묻은 분진, 용제가 섞인 찌꺼기" style="flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:8px 12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;" onkeydown="if(event.key==='Enter')searchWasteType()">
         <button onclick="searchWasteType()" style="padding:8px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">검색</button>
       </div>
-      <div id="waste-search-result" class="hidden">
-      </div>
+      <div id="waste-search-result" class="hidden"></div>
       <div style="margin-top:12px;border-top:1px solid #f3f4f6;padding-top:12px;">
         <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:8px;">우리 사업장 폐기물 분류표</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
@@ -220,21 +230,6 @@ tr:hover td{background:#fafafa;}
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="card">
-    <div class="card-body">
-      <div class="card-title">폐기물별 이번 달 / 연간 배출량</div>
-      <div id="waste-summary-table"><div class="loading">불러오는 중...</div></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="table-header">
-      <span class="table-title">배출 이력</span>
-      <span class="record-count" id="w-record-count"></span>
-    </div>
-    <div id="waste-table"><div class="loading">불러오는 중...</div></div>
   </div>
 </div>
 
@@ -627,50 +622,44 @@ async function completeOrder(id){
 }
 
 async function loadWasteData(){
-  var data=await sb('waste_disposal','?select=*&order=disposal_date.desc,created_at.desc');
-  if(!data){data=[];}
+  var data=await sb('waste_oil_requests','?select=*&order=created_at.desc');
+  if(!data)data=[];
   var now=new Date();
-  var year=now.getFullYear();
-  var ym=year+'-'+String(now.getMonth()+1).padStart(2,'0');
-  var yearData=data.filter(function(r){return r.disposal_date&&r.disposal_date.startsWith(String(year));});
-  var monthData=data.filter(function(r){return r.disposal_date&&r.disposal_date.startsWith(ym);});
-  var yearTotal=yearData.reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
-  var monthTotal=monthData.reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
-  var designatedTotal=yearData.filter(function(r){return r.waste_category==='지정';}).reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
-  document.getElementById('w-stat-year').innerHTML=yearTotal.toFixed(2)+'<span class="stat-unit">t</span>';
-  document.getElementById('w-stat-month').innerHTML=monthTotal.toFixed(2)+'<span class="stat-unit">t</span>';
-  document.getElementById('w-stat-designated').innerHTML=designatedTotal.toFixed(2)+'<span class="stat-unit">t</span>';
-  document.getElementById('w-stat-last').textContent=data.length>0?(data[0].disposal_date||'-'):'-';
-  renderWasteSummary(data,ym,String(year));
-  renderWasteTable(data);
-}
-
-function renderWasteSummary(data,ym,year){
-  var types=['폐합성수지','폐목재','폐유 고상','폐유 액상','폐페인트','분진','고철','폐지','일반쓰레기'];
-  var categories={'폐합성수지':'일반','폐목재':'일반','폐유 고상':'지정','폐유 액상':'지정','폐페인트':'지정','분진':'일반','고철':'일반','폐지':'일반','일반쓰레기':'일반'};
-  var rows=types.map(function(t){
-    var mTotal=data.filter(function(r){return r.waste_type===t&&r.disposal_date&&r.disposal_date.startsWith(ym);}).reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
-    var yTotal=data.filter(function(r){return r.waste_type===t&&r.disposal_date&&r.disposal_date.startsWith(year);}).reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
-    var isDesignated=categories[t]==='지정';
-    var badge=isDesignated?'<span class="badge" style="background:#fee2e2;color:#991b1b;">지정</span>':'<span class="badge" style="background:#f3f4f6;color:#6b7280;">일반</span>';
-    var color=isDesignated?'color:#ef4444;':'';
-    return'<tr><td>'+t+'</td><td>'+badge+'</td><td style="font-weight:500;'+color+'">'+mTotal.toFixed(2)+'t</td><td style="font-weight:500;'+color+'">'+yTotal.toFixed(2)+'t</td></tr>';
-  }).join('');
-  document.getElementById('waste-summary-table').innerHTML='<table><thead><tr><th>폐기물 종류</th><th>구분</th><th>이번 달</th><th>올해 누계</th></tr></thead><tbody>'+rows+'</tbody></table>';
-}
-
-function renderWasteTable(data){
-  document.getElementById('w-record-count').textContent='총 '+data.length+'건';
-  if(!data.length){document.getElementById('waste-table').innerHTML='<div class="empty">배출 기록이 없습니다.</div>';return;}
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var monthData=data.filter(function(r){return r.request_date&&r.request_date.startsWith(ym);});
+  var newCount=data.filter(function(r){return !r.checked;}).length;
+  var monthQty=monthData.reduce(function(s,r){return s+(parseFloat(r.quantity)||0);},0);
+  document.getElementById('wo-stat-new').innerHTML=newCount+'<span class="stat-unit">건</span>';
+  document.getElementById('wo-stat-month').innerHTML=monthData.length+'<span class="stat-unit">건</span>';
+  document.getElementById('wo-stat-qty').innerHTML=monthQty.toFixed(2)+'<span class="stat-unit">t</span>';
+  document.getElementById('wo-stat-last').textContent=data.length>0?(data[0].request_date||'-'):'-';
+  document.getElementById('wo-new-badge').innerHTML=newCount>0?'<span class="new-badge">미확인 '+newCount+'건</span>':'';
+  if(!data.length){document.getElementById('wo-table').innerHTML='<div class="empty">요청 없음</div>';return;}
+  var lines=['G16동','현대라인','강건재라인','패킹라인'];
+  var lineBadgeColors={'G16동':'background:#dbeafe;color:#1e40af;','현대라인':'background:#d1fae5;color:#065f46;','강건재라인':'background:#fef3c7;color:#92400e;','패킹라인':'background:#f3e8ff;color:#6b21a8;'};
   var rows=data.map(function(r){
-    var isDesignated=r.waste_category==='지정';
-    var badge=isDesignated?'<span class="badge" style="background:#fee2e2;color:#991b1b;">지정</span>':'<span class="badge" style="background:#f3f4f6;color:#6b7280;">일반</span>';
-    var note=r.notes?r.notes:'<span style="color:#d1d5db;">-</span>';
-    var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'waste_disposal\',\''+r.id+'\',loadWasteData)">✕</button>':'';
-    return'<tr><td>'+r.disposal_date+'</td><td>'+r.waste_type+'</td><td>'+badge+'</td><td style="font-weight:500;">'+(parseFloat(r.quantity)||0).toFixed(2)+'t</td><td style="font-size:12px;color:#6b7280;">'+note+'</td><td>'+delBtn+'</td></tr>';
+    var bc=lineBadgeColors[r.line_name]||'background:#f3f4f6;color:#374151;';
+    var lineBadge='<span class="badge" style="'+bc+'">'+r.line_name+'</span>';
+    var statusBadge=r.checked
+      ?'<span class="badge" style="background:#d1fae5;color:#065f46;">확인 완료</span>'
+      :'<span class="new-badge">미확인</span>';
+    var checkedInfo=r.checked&&r.checked_at?'<div style="font-size:11px;color:#9ca3af;margin-top:2px;">'+new Date(r.checked_at).toLocaleDateString('ko-KR')+(r.checked_by?' · '+r.checked_by:'')+'</div>':'';
+    var actionBtn=isAdmin()&&!r.checked
+      ?'<button onclick="confirmWasteOil(\''+r.id+'\')" style="padding:4px 10px;background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">확인 완료</button>':'' ;
+    var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_requests\',\''+r.id+'\',loadWasteData)">✕</button>':'';
+    var note=r.notes?'<span style="color:#6b7280;font-size:12px;">'+r.notes+'</span>':'<span style="color:#d1d5db;">-</span>';
+    return'<tr><td>'+r.request_date+'</td><td>'+lineBadge+'</td><td style="font-weight:500;">'+(r.quantity!=null?r.quantity+'t':'-')+'</td><td>'+note+'</td><td>'+statusBadge+checkedInfo+'</td><td>'+actionBtn+delBtn+'</td></tr>';
   }).join('');
-  document.getElementById('waste-table').innerHTML='<table><thead><tr><th>배출일</th><th>종류</th><th>구분</th><th>배출량</th><th>특이사항</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  document.getElementById('wo-table').innerHTML='<div style="overflow-x:auto;"><table style="min-width:600px;"><thead><tr><th>요청일</th><th>라인</th><th>배출수량</th><th>특이사항</th><th>상태</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
+
+async function confirmWasteOil(id){
+  await sb('waste_oil_requests','?id=eq.'+id,{method:'PATCH',body:{checked:true,checked_at:new Date().toISOString(),checked_by:currentUser?currentUser.username:'관리자'}});
+  loadWasteData();
+}
+
+function renderWasteSummary(){}
+function renderWasteTable(){}
 
 function searchWasteType(){
   var query=document.getElementById('waste-search-input').value.trim();
