@@ -11,10 +11,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f4f6f9;min-height:100vh;p
 .wrap{max-width:480px;margin:0 auto;}
 .header{text-align:center;margin-bottom:1.5rem;}
 .logo{display:inline-block;background:#1a3a5c;color:white;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:1px;margin-bottom:10px;}
-h1{font-size:20px;font-weight:700;color:#1a3a5c;margin-bottom:6px;}
+h1{font-size:20px;font-weight:700;color:#1a3a5c;margin-bottom:4px;}
 .header p{font-size:13px;color:#6b7280;}
-.line-badge{display:inline-block;background:#fef3c7;color:#92400e;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;margin-bottom:6px;border:1.5px solid #fcd34d;}
 .card{background:white;border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.card-title{font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:12px;}
 .field-label{font-size:13px;color:#6b7280;margin-bottom:8px;font-weight:500;}
 .required{color:#ef4444;}
 input[type=date],input[type=number],textarea{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:14px;font-family:'Noto Sans KR',sans-serif;color:#111827;background:white;outline:none;}
@@ -22,13 +22,25 @@ input:focus,textarea:focus{border-color:#d97706;}
 textarea{resize:none;height:80px;}
 .qty-row{display:flex;gap:10px;align-items:center;}
 .qty-unit{font-size:14px;color:#6b7280;white-space:nowrap;font-weight:500;}
-.current-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
-.current-label{font-size:12px;color:#92400e;}
-.current-count{font-size:20px;font-weight:700;color:#d97706;}
+
+/* 라인 선택 */
+.line-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.line-btn{padding:18px 10px;border:1.5px solid #e5e7eb;border-radius:10px;background:white;cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;transition:all 0.15s;}
+.line-btn:hover{border-color:#d97706;background:#fffbeb;}
+.line-btn.selected{border-color:#d97706;background:#fffbeb;}
+.line-btn-name{font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:6px;}
+.line-btn-count{font-size:22px;font-weight:700;color:#d97706;}
+.line-btn-unit{font-size:11px;color:#6b7280;}
+.line-btn.selected .line-btn-name{color:#92400e;}
+
+.line-badge{display:inline-block;background:#fef3c7;color:#92400e;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;border:1.5px solid #fcd34d;}
 .submit-btn{width:100%;padding:14px;background:#d97706;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:4px;}
 .submit-btn:disabled{background:#9ca3af;cursor:not-allowed;}
+.back-btn{width:100%;padding:11px;background:white;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-bottom:8px;}
 .hidden{display:none;}
-.success-wrap{text-align:center;padding:2.5rem 1rem;}
+
+/* 성공 화면 */
+.success-wrap{text-align:center;padding:2rem 1rem;}
 .success-icon{width:56px;height:56px;border-radius:50%;background:#fef3c7;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
 .success-icon svg{width:28px;height:28px;stroke:#d97706;fill:none;stroke-width:2.5;}
 .success-title{font-size:17px;font-weight:700;color:#1a3a5c;margin-bottom:6px;}
@@ -39,9 +51,10 @@ textarea{resize:none;height:80px;}
 .new-total-label{font-size:12px;color:#92400e;margin-bottom:4px;}
 .new-total-count{font-size:24px;font-weight:700;color:#d97706;}
 .reset-btn{width:100%;padding:12px;background:white;color:#d97706;border:1.5px solid #d97706;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:16px;}
-.close-btn{width:100%;padding:12px;background:white;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:8px;}
+
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#374151;color:white;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;}
 .toast.show{opacity:1;}
+.loading-txt{text-align:center;padding:1rem;font-size:13px;color:#6b7280;}
 </style>
 </head>
 <body>
@@ -49,17 +62,24 @@ textarea{resize:none;height:80px;}
   <div class="header">
     <div class="logo">TC 도장시설</div>
     <h1>폐유고상 톤백 기록</h1>
-    <div class="line-badge" id="line-badge">로딩 중...</div>
-    <p>톤백이 가득 차면 수량을 기록해주세요.</p>
+    <p>라인을 선택하고 수량을 기록해주세요.</p>
   </div>
 
-  <div id="form-view">
+  <!-- STEP 1: 라인 선택 -->
+  <div id="step-select">
     <div class="card">
-      <div class="field-label">현재 누적 톤백 수량</div>
-      <div class="current-box">
-        <span class="current-label">현재 보관 중</span>
-        <span><span class="current-count" id="current-count">-</span> <span style="font-size:13px;color:#92400e;">개</span></span>
+      <div class="card-title">라인 선택 <span class="required">*</span></div>
+      <div class="line-grid" id="line-grid">
+        <div class="loading-txt" style="grid-column:1/-1;">불러오는 중...</div>
       </div>
+    </div>
+    <button class="submit-btn" id="next-btn" onclick="goToForm()" disabled>다음</button>
+  </div>
+
+  <!-- STEP 2: 수량 입력 -->
+  <div id="step-form" class="hidden">
+    <div class="card" style="text-align:center;padding:0.9rem;">
+      <span class="line-badge" id="selected-line-badge">-</span>
     </div>
     <div class="card">
       <div class="field-label">기록일 <span class="required">*</span></div>
@@ -76,10 +96,12 @@ textarea{resize:none;height:80px;}
       <div class="field-label">특이사항 <span style="color:#9ca3af;font-size:11px;">(선택)</span></div>
       <textarea id="req-notes" placeholder="특이사항 입력"></textarea>
     </div>
+    <button class="back-btn" onclick="goBack()">← 라인 다시 선택</button>
     <button class="submit-btn" id="submit-btn" onclick="submitForm()">기록하기</button>
   </div>
 
-  <div class="hidden card" id="success-view">
+  <!-- STEP 3: 완료 -->
+  <div class="hidden card" id="step-success">
     <div class="success-wrap">
       <div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
       <div class="success-title">기록 완료</div>
@@ -90,8 +112,7 @@ textarea{resize:none;height:80px;}
         <div class="new-total-count" id="new-total-count">-</div>
         <div style="font-size:12px;color:#92400e;margin-top:2px;">개</div>
       </div>
-      <button class="reset-btn" onclick="resetForm()">새 기록 작성</button>
-      <button class="close-btn" onclick="window.close()">나가기</button>
+      <button class="reset-btn" onclick="resetAll()">새 기록 작성</button>
     </div>
   </div>
 </div>
@@ -100,63 +121,83 @@ textarea{resize:none;height:80px;}
 <script>
 var SB_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
+var selectedLine=null;
+var storageData=[];
 
-var params=new URLSearchParams(window.location.search);
-var lineName=decodeURIComponent(params.get('line')||'');
-if(!lineName){document.getElementById('line-badge').textContent='라인 정보 없음';}
-else{document.getElementById('line-badge').textContent=lineName;}
-
-async function loadCurrentCount(){
-  if(!lineName)return;
+async function loadLines(){
   try{
-    var res=await fetch(SB_URL+'/rest/v1/waste_oil_storage?line_name=eq.'+encodeURIComponent(lineName)+'&select=bag_count',{
+    var res=await fetch(SB_URL+'/rest/v1/waste_oil_storage?select=*&order=line_name.asc',{
       headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
     });
-    var data=await res.json();
-    var count=data&&data.length>0?(data[0].bag_count||0):0;
-    document.getElementById('current-count').textContent=count;
-  }catch(e){document.getElementById('current-count').textContent='0';}
+    storageData=await res.json();
+    renderLineGrid();
+  }catch(e){
+    document.getElementById('line-grid').innerHTML='<div class="loading-txt" style="grid-column:1/-1;color:#ef4444;">불러오기 실패. 새로고침해주세요.</div>';
+  }
+}
+
+function renderLineGrid(){
+  var html=storageData.map(function(r){
+    return'<div class="line-btn" id="lbtn-'+r.line_name+'" onclick="selectLine(\''+r.line_name+'\',\''+r.id+'\')">'+
+      '<div class="line-btn-name">'+r.line_name+'</div>'+
+      '<div class="line-btn-count">'+(r.bag_count||0)+'</div>'+
+      '<div class="line-btn-unit">톤백 보관 중</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('line-grid').innerHTML=html;
+}
+
+function selectLine(name){
+  selectedLine=name;
+  document.querySelectorAll('.line-btn').forEach(function(b){b.classList.remove('selected');});
+  document.getElementById('lbtn-'+name).classList.add('selected');
+  document.getElementById('next-btn').disabled=false;
+}
+
+function goToForm(){
+  if(!selectedLine)return;
+  document.getElementById('step-select').classList.add('hidden');
+  document.getElementById('step-form').classList.remove('hidden');
+  document.getElementById('selected-line-badge').textContent=selectedLine;
+}
+
+function goBack(){
+  document.getElementById('step-form').classList.add('hidden');
+  document.getElementById('step-select').classList.remove('hidden');
 }
 
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
 
 async function submitForm(){
-  if(!lineName){alert('라인 정보가 없습니다. QR코드를 다시 스캔해주세요.');return;}
   var date=document.getElementById('req-date').value;
   var qty=parseInt(document.getElementById('req-qty').value);
   if(!date||!qty||qty<1){alert('기록일과 수량(1개 이상)을 입력해주세요.');return;}
   var btn=document.getElementById('submit-btn');
   btn.disabled=true;btn.textContent='저장 중...';
   try{
-    // 1. 기록 저장
     var res1=await fetch(SB_URL+'/rest/v1/waste_oil_requests',{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
-      body:JSON.stringify({line_name:lineName,request_date:date,bag_count:qty,notes:document.getElementById('req-notes').value||null})
+      body:JSON.stringify({line_name:selectedLine,request_date:date,bag_count:qty,notes:document.getElementById('req-notes').value||null})
     });
     if(!res1.ok)throw new Error('기록 저장 실패');
 
-    // 2. 보관량 업데이트 (현재값 + 추가값)
-    var storRes=await fetch(SB_URL+'/rest/v1/waste_oil_storage?line_name=eq.'+encodeURIComponent(lineName)+'&select=bag_count',{
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
-    });
-    var storData=await storRes.json();
-    var prevCount=storData&&storData.length>0?(storData[0].bag_count||0):0;
+    var stor=storageData.find(function(r){return r.line_name===selectedLine;});
+    var prevCount=stor?(stor.bag_count||0):0;
     var newCount=prevCount+qty;
 
-    var res2=await fetch(SB_URL+'/rest/v1/waste_oil_storage?line_name=eq.'+encodeURIComponent(lineName),{
+    var res2=await fetch(SB_URL+'/rest/v1/waste_oil_storage?line_name=eq.'+encodeURIComponent(selectedLine),{
       method:'PATCH',
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
       body:JSON.stringify({bag_count:newCount,updated_at:new Date().toISOString()})
     });
     if(!res2.ok)throw new Error('보관량 업데이트 실패');
 
-    // 성공
-    document.getElementById('form-view').classList.add('hidden');
-    document.getElementById('success-view').classList.remove('hidden');
+    document.getElementById('step-form').classList.add('hidden');
+    document.getElementById('step-success').classList.remove('hidden');
     var note=document.getElementById('req-notes').value;
     document.getElementById('success-detail').innerHTML=
-      '<div>라인 <b>'+lineName+'</b></div>'+
+      '<div>라인 <b>'+selectedLine+'</b></div>'+
       '<div>기록일 <b>'+date+'</b></div>'+
       '<div>추가 수량 <b>'+qty+'개</b></div>'+
       (note?'<div>특이사항 <b>'+note+'</b></div>':'');
@@ -164,18 +205,19 @@ async function submitForm(){
   }catch(e){showToast('저장 실패: '+e.message);btn.disabled=false;btn.textContent='기록하기';}
 }
 
-function resetForm(){
-  document.getElementById('form-view').classList.remove('hidden');
-  document.getElementById('success-view').classList.add('hidden');
+function resetAll(){
+  selectedLine=null;
+  document.getElementById('step-success').classList.add('hidden');
+  document.getElementById('step-select').classList.remove('hidden');
   document.getElementById('req-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('req-qty').value='';
   document.getElementById('req-notes').value='';
-  var btn=document.getElementById('submit-btn');btn.disabled=false;btn.textContent='기록하기';
-  loadCurrentCount();
+  document.getElementById('next-btn').disabled=true;
+  loadLines();
 }
 
 document.getElementById('req-date').value=new Date().toISOString().split('T')[0];
-loadCurrentCount();
+loadLines();
 </script>
 </body>
 </html>
