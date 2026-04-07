@@ -1,1 +1,1313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TC 환경관리 시스템</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;min-height:100vh;}
+.topbar{background:#1a3a5c;color:white;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar h1{font-size:15px;font-weight:700;}
+.topbar-sub{font-size:11px;opacity:0.6;margin-top:1px;}
+.topbar-right{display:flex;gap:8px;align-items:center;}
+.user-badge{font-size:12px;background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:20px;}
+.top-btn{background:rgba(255,255,255,0.15);border:none;color:white;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
+.top-btn:hover{background:rgba(255,255,255,0.25);}
+.top-btn.excel{background:#217346;}
+.top-btn.logout{background:rgba(239,68,68,0.7);}
+.tab-bar{background:white;border-bottom:1px solid #e5e7eb;display:flex;padding:0 1rem;overflow-x:auto;}
+.tab-btn{padding:13px 16px;font-size:13px;font-weight:500;color:#6b7280;border:none;background:transparent;cursor:pointer;font-family:'Noto Sans KR',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+.tab-btn.active{color:#1a3a5c;border-bottom-color:#1a3a5c;}
+.content{max-width:1100px;margin:0 auto;padding:1.5rem 1rem;}
+.hidden{display:none;}
+.card{background:white;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:12px;overflow:hidden;}
+.card-body{padding:1.1rem 1.25rem;}
+.card-title{font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:1rem;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1rem;}
+.stat-card{background:white;border-radius:10px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.stat-label{font-size:11px;color:#6b7280;margin-bottom:5px;}
+.stat-value{font-size:22px;font-weight:700;color:#1a3a5c;}
+.stat-unit{font-size:12px;font-weight:400;color:#6b7280;margin-left:2px;}
+.chart-wrap{position:relative;height:220px;}
+.filter-bar{background:white;border-radius:10px;padding:1rem 1.1rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.filter-bar select,.filter-bar input[type=month]{border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;}
+.filter-label{font-size:12px;color:#6b7280;font-weight:500;}
+.clear-btn{border:1px solid #e5e7eb;background:white;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;color:#6b7280;font-family:'Noto Sans KR',sans-serif;}
+table{width:100%;border-collapse:collapse;}
+th{padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;font-weight:500;border-bottom:1px solid #f3f4f6;background:#f9fafb;}
+td{padding:10px 12px;font-size:13px;color:#374151;border-bottom:1px solid #f9fafb;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafafa;}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;}
+.badge-sangdo{background:#dbeafe;color:#1e40af;}
+.badge-ha1{background:#d1fae5;color:#065f46;}
+.badge-ha2{background:#fef3c7;color:#92400e;}
+.qty-badge{background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:700;}
+.note-cell{color:#6b7280;font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.empty{text-align:center;padding:3rem;color:#9ca3af;font-size:14px;}
+.loading{text-align:center;padding:3rem;color:#6b7280;font-size:14px;}
+.del-btn{background:none;border:none;color:#d1d5db;font-size:14px;cursor:pointer;padding:2px 6px;border-radius:4px;}
+.del-btn:hover{background:#fee2e2;color:#ef4444;}
+.table-header{padding:1rem 1.1rem;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.table-title{font-size:14px;font-weight:700;color:#1a3a5c;}
+.record-count{font-size:12px;color:#6b7280;}
+.main-grid{display:grid;grid-template-columns:1fr 300px;gap:12px;align-items:start;}
+@media(max-width:768px){.main-grid{grid-template-columns:1fr;}}
+.order-item{padding:10px 14px;border-bottom:1px solid #f9fafb;}
+.order-item:last-child{border-bottom:none;}
+.order-name{font-size:13px;font-weight:500;color:#374151;margin-bottom:2px;}
+.order-date{font-size:11px;color:#9ca3af;}
+.order-actions{display:flex;gap:6px;margin-top:8px;}
+.order-done-btn{font-size:12px;padding:5px 10px;background:#1a3a5c;color:white;border:none;border-radius:6px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
+.order-done-btn:hover{background:#15304d;}
+.order-del-btn{font-size:12px;padding:5px 10px;background:white;color:#6b7280;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.order-del-btn:hover{background:#fee2e2;color:#ef4444;border-color:#fca5a5;}
+.new-badge{background:#fee2e2;color:#991b1b;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.done-badge{background:#d1fae5;color:#065f46;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f9fafb;cursor:pointer;}
+.check-item:last-child{border-bottom:none;}
+.check-box{width:18px;height:18px;border-radius:4px;border:1.5px solid #d1d5db;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:white;}
+.check-item.done .check-box{background:#1a3a5c;border-color:#1a3a5c;}
+.check-mark{display:none;width:10px;height:7px;border-left:2px solid white;border-bottom:2px solid white;transform:rotate(-45deg) translate(1px,-1px);}
+.check-item.done .check-mark{display:block;}
+.check-text{font-size:13px;color:#374151;line-height:1.5;}
+.check-item.done .check-text{color:#9ca3af;text-decoration:line-through;}
+.check-badge{font-size:10px;padding:2px 6px;border-radius:10px;margin-left:6px;font-weight:500;}
+.badge-legal{background:#fef3c7;color:#92400e;}
+.badge-daily{background:#d1fae5;color:#065f46;}
+.form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
+.form-group label{font-size:12px;color:#6b7280;font-weight:500;}
+.form-group input,.form-group select,.form-group textarea{border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#374151;outline:none;background:white;}
+.form-group textarea{resize:none;height:70px;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a3a5c;}
+.add-btn{padding:8px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.save-btn{width:100%;padding:11px;background:#1a3a5c;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:10px;}
+.contractor-card{background:white;border-radius:10px;padding:1.1rem 1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:10px;}
+.contractor-name{font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:4px;}
+.contractor-info{font-size:12px;color:#6b7280;line-height:2;}
+.badge-valid{background:#d1fae5;color:#065f46;}
+.badge-warn{background:#fef3c7;color:#92400e;}
+.badge-expired{background:#fee2e2;color:#991b1b;}
+.role-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.role-admin{background:#dbeafe;color:#1e40af;}
+.role-manager{background:#d1fae5;color:#065f46;}
+.role-viewer{background:#f3f4f6;color:#6b7280;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;}
+.modal-bg.show{display:flex;align-items:center;justify-content:center;}
+.modal{background:white;border-radius:12px;padding:1.5rem;width:90%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.15);}
+.modal-title{font-size:15px;font-weight:700;color:#1a3a5c;margin-bottom:1rem;}
+.modal-btns{display:flex;gap:8px;margin-top:1rem;justify-content:flex-end;}
+.modal-cancel{padding:8px 16px;border:1px solid #e5e7eb;background:white;border-radius:6px;font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.modal-confirm{padding:8px 16px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
+.status-planned{background:#dbeafe;color:#1e40af;}
+.status-done{background:#d1fae5;color:#065f46;}
+.status-cancel{background:#f3f4f6;color:#6b7280;}
+.al-sbtn{padding:3px 10px;border-radius:10px;font-size:11px;font-weight:500;border:1px solid #e5e7eb;cursor:pointer;background:white;color:#9ca3af;font-family:'Noto Sans KR',sans-serif;}
+.al-normal{border-color:#1a3a5c;background:#eef3f9;color:#1a3a5c;}
+.al-abnormal{border-color:#ef4444;background:#fef2f2;color:#ef4444;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <div style="display:flex;align-items:center;gap:8px;"><h1>TC 환경관리 시스템</h1></div>
+    <div class="topbar-sub">도장시설 · 폐기물 · 대기 통합 관리</div>
+  </div>
+  <div class="topbar-right">
+    <span class="user-badge" id="user-badge">-</span>
+    <button class="top-btn" onclick="loadCurrentTab()">새로고침</button>
+    <button class="top-btn logout" onclick="logout()">로그아웃</button>
+  </div>
+</div>
 
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('filter')">필터 교체</button>
+  <button class="tab-btn" onclick="showTab('waste')">폐기물</button>
+  <button class="tab-btn" onclick="showTab('airlog')">대기운영기록</button>
+  <button class="tab-btn" onclick="showTab('air')">대기측정</button>
+  <button class="tab-btn" onclick="showTab('users')">사용자 관리</button>
+</div>
+
+<!-- 필터 교체 탭 -->
+<div id="tab-filter" class="content">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">전체 교체 기록</div><div class="stat-value" id="stat-total">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 교체</div><div class="stat-value" id="stat-month">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 수량</div><div class="stat-value" id="stat-qty">-<span class="stat-unit">개</span></div></div>
+    <div class="stat-card"><div class="stat-label">최근 교체일</div><div class="stat-value" style="font-size:15px;padding-top:4px;" id="stat-last">-</div></div>
+  </div>
+
+  <div class="main-grid">
+    <div>
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title">당해 연도 월별 교체 현황</div>
+          <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-label">필터</span>
+        <select id="filter-room" onchange="applyFilter()">
+          <option value="">전체 시설</option>
+          <option value="상도룸">상도룸</option>
+          <option value="하도룸 #1">하도룸 #1</option>
+          <option value="하도룸 #2">하도룸 #2</option>
+        </select>
+        <select id="filter-person" onchange="applyFilter()"><option value="">전체 담당자</option></select>
+        <input type="month" id="filter-month" onchange="applyFilter()">
+        <button class="clear-btn" onclick="clearFilter()">초기화</button>
+      </div>
+      <div class="card">
+        <div class="table-header">
+          <span class="table-title">교체 기록</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="record-count" id="record-count"></span>
+            <button onclick="exportExcel()" style="padding:5px 12px;background:#217346;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">엑셀</button>
+          </div>
+        </div>
+        <div id="table-body"><div class="loading">불러오는 중...</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="table-header">
+          <span class="table-title">여과지 발주 요청</span>
+          <span id="order-new-badge"></span>
+        </div>
+        <div style="padding:8px 14px;font-size:12px;color:#6b7280;border-bottom:1px solid #f3f4f6;">마지막 요청일: <b id="order-last-date" style="color:#1a3a5c;">-</b></div>
+        <div id="order-table"><div class="loading">불러오는 중...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 폐기물 탭 -->
+<div id="tab-waste" class="content hidden">
+
+  <!-- 폐기물 분류 검색 (맨 위) -->
+  <div class="card">
+    <div class="card-body">
+      <div class="card-title">폐기물 분류 검색</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">폐기물 상태나 특징을 입력하면 분류를 안내해드립니다. 정확한 분류는 관할 환경청에 확인하세요.</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input type="text" id="waste-search-input" placeholder="예: 연마 슬러지, 발청제 폐액, 페인트 찌꺼기" style="flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:8px 12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;" onkeydown="if(event.key==='Enter')searchWasteType()">
+        <button onclick="searchWasteType()" style="padding:8px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">검색</button>
+      </div>
+      <div id="waste-search-result" class="hidden"></div>
+      <div style="margin-top:12px;border-top:1px solid #f3f4f6;padding-top:12px;">
+        <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:8px;">우리 사업장 폐기물 분류표</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+          <div style="border:1px solid #fee2e2;border-radius:8px;padding:10px 12px;background:#fff5f5;">
+            <div style="font-size:11px;font-weight:700;color:#991b1b;margin-bottom:6px;">지정폐기물</div>
+            <div style="font-size:12px;color:#374151;line-height:2;">폐유 고상<br>폐유 액상<br>폐페인트</div>
+          </div>
+          <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;background:#f9fafb;">
+            <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:6px;">일반폐기물</div>
+            <div style="font-size:12px;color:#374151;line-height:2;">폐합성수지<br>폐목재<br>분진<br>고철<br>폐지<br>일반쓰레기</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 통계 카드 -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">미확인 기록</div><div class="stat-value" id="wo-stat-new" style="color:#d97706;">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 기록</div><div class="stat-value" id="wo-stat-month">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 누적</div><div class="stat-value" id="wo-stat-qty">-<span class="stat-unit">개</span></div></div>
+    <div class="stat-card"><div class="stat-label">최근 기록일</div><div class="stat-value" style="font-size:15px;padding-top:4px;" id="wo-stat-last">-</div></div>
+  </div>
+
+  <!-- 라인별 보관량 -->
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">라인별 현재 보관량</span>
+      <span style="font-size:12px;color:#6b7280;">배출완료 버튼 클릭 시 자동 차감</span>
+    </div>
+    <div id="wo-storage-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;padding:14px;"></div>
+  </div>
+
+  <!-- 배출업체 스케줄 -->
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">배출업체 스케줄 등록</span>
+    </div>
+    <div style="padding:12px 14px;border-bottom:1px solid #f3f4f6;">
+      <div class="form-row">
+        <div class="form-group"><label>배출 예정일</label><input type="date" id="ws-date"></div>
+        <div class="form-group"><label>배출업체</label><input type="text" id="ws-company" value="가람환경" readonly style="background:#f9fafb;color:#374151;cursor:default;"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>폐기물 종류 (복수 선택)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;" id="ws-type-tags">
+          <div class="ws-ltag" onclick="toggleSchedLine(this,'폐유고상')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">폐유고상</div>
+          <div class="ws-ltag" onclick="toggleSchedLine(this,'폐유액상')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">폐유액상</div>
+          <div class="ws-ltag" onclick="toggleSchedLine(this,'폐페인트')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">폐페인트</div>
+          <div class="ws-ltag" onclick="toggleSchedLine(this,'분진')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">분진</div>
+          <div class="ws-ltag" onclick="toggleSchedLine(this,'목재')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">목재</div>
+          <div class="ws-ltag" onclick="toggleSchedLine(this,'폐합성수지')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">폐합성수지</div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;"><label>특이사항</label><input type="text" id="ws-notes" placeholder="메모 (선택)" style="border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;width:100%;"></div>
+      <button class="add-btn" onclick="addWasteSchedule()">일정 추가</button>
+    </div>
+    <div id="wo-schedule-table"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <!-- 톤백 기록 이력 -->
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">톤백 기록 이력</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="wo-filter-line" onchange="loadWasteData()" style="border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+          <option value="">전체 라인</option>
+          <option value="G16동">G16동</option>
+          <option value="현대라인">현대라인</option>
+          <option value="강건재라인">강건재라인</option>
+          <option value="패킹라인">패킹라인</option>
+        </select>
+        <select id="wo-filter-month" onchange="loadWasteData()" style="border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+          <option value="">전체 기간</option>
+        </select>
+        <span class="record-count" id="wo-record-count"></span>
+      </div>
+    </div>
+    <div id="wo-table"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <!-- 월별 통계 차트 -->
+  <div class="card">
+    <div class="card-body">
+      <div class="card-title">라인별 월간 누적 톤백 통계</div>
+      <div style="height:220px;position:relative;"><canvas id="wasteMonthlyChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- 대기운영기록 탭 -->
+<div id="tab-airlog" class="content hidden">
+
+  <!-- 입력 카드 -->
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">운영기록 입력</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;">
+      <span class="filter-label">운전일자</span>
+      <input type="date" id="al-input-date" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+    </div>
+
+    <div style="padding:10px 14px 6px;font-size:13px;font-weight:700;color:#1a3a5c;">1. 배출구별 가동시간</div>
+    <div style="overflow-x:auto;">
+      <table style="min-width:700px;">
+        <thead>
+          <tr>
+            <th style="width:50px;text-align:center;">배출구</th>
+            <th style="text-align:left;">시설명</th>
+            <th style="text-align:center;" colspan="2">가동시간</th>
+            <th style="text-align:center;" colspan="2">종료시간</th>
+            <th style="text-align:center;width:80px;">총가동(h)</th>
+            <th style="text-align:center;">정상/비정상</th>
+          </tr>
+        </thead>
+        <tbody id="al-emission-input">
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">1</td><td>탈청시설 (200HP)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em1-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em1-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em1-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="13" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em1-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em1-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em1','정상')" id="em1-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em1','비정상')" id="em1-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">2</td><td>도장시설 (600㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em2-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em2-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em2-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em2-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em2-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em2','정상')" id="em2-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em2','비정상')" id="em2-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">3</td><td>도장시설 (600㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em3-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em3-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em3-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em3-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em3-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em3','정상')" id="em3-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em3','비정상')" id="em3-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">4</td><td>도장시설 (600㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em4-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em4-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em4-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em4-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em4-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em4','정상')" id="em4-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em4','비정상')" id="em4-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">5</td><td>건조시설 (345.6㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em5-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em5-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em5-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em5-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em5-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em5','정상')" id="em5-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em5','비정상')" id="em5-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">6</td><td>도장 및 건조시설 (319㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em6-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em6-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em6-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em6-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em6-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em6','정상')" id="em6-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em6','비정상')" id="em6-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">7</td><td>도장 및 건조시설 (319㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em7-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em7-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em7-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em7-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em7-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em7','정상')" id="em7-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em7','비정상')" id="em7-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr style="background:#f9fafb;"><td style="text-align:center;font-weight:700;color:#d1d5db;">8</td><td style="color:#d1d5db;">연마시설 (238.5㎥)</td><td colspan="5" style="text-align:center;color:#d1d5db;font-size:12px;">미가동</td><td style="text-align:center;color:#d1d5db;">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">9</td><td>도장시설 (656.6㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em9-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em9-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em9-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em9-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em9-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em9','정상')" id="em9-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em9','비정상')" id="em9-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="padding:12px 14px 6px;font-size:13px;font-weight:700;color:#1a3a5c;border-top:1px solid #f3f4f6;margin-top:4px;">2. 방지시설 전력사용량</div>
+    <div style="overflow-x:auto;">
+      <table style="min-width:420px;">
+        <thead>
+          <tr>
+            <th style="width:50px;text-align:center;">순번</th>
+            <th style="text-align:left;">시설명</th>
+            <th style="text-align:center;">전일검침량 (kWh)</th>
+            <th style="text-align:center;">당일검침량 (kWh)</th>
+            <th style="text-align:center;">당일사용량 (kWh)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">1</td><td>여과집진시설</td><td style="text-align:center;color:#9ca3af;font-size:12px;" id="pr1-prev">-</td><td style="text-align:center;"><input type="number" id="pr1-today" placeholder="당일검침" oninput="calcPower(1)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr1-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">2</td><td>흡착에의한시설</td><td style="text-align:center;color:#9ca3af;font-size:12px;" id="pr2-prev">-</td><td style="text-align:center;"><input type="number" id="pr2-today" placeholder="당일검침" oninput="calcPower(2)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr2-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">3</td><td>흡착에의한시설</td><td style="text-align:center;color:#9ca3af;font-size:12px;" id="pr3-prev">-</td><td style="text-align:center;"><input type="number" id="pr3-today" placeholder="당일검침" oninput="calcPower(3)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr3-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">4</td><td>흡착에의한시설</td><td style="text-align:center;color:#9ca3af;font-size:12px;" id="pr4-prev">-</td><td style="text-align:center;"><input type="number" id="pr4-today" placeholder="당일검침" oninput="calcPower(4)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr4-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">5</td><td>흡착에의한시설</td><td style="text-align:center;color:#9ca3af;font-size:12px;" id="pr5-prev">-</td><td style="text-align:center;"><input type="number" id="pr5-today" placeholder="당일검침" oninput="calcPower(5)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr5-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">6</td><td>1차여과, 2차흡착</td><td style="text-align:center;color:#9ca3af;font-size:12px;" id="pr6-prev">-</td><td style="text-align:center;"><input type="number" id="pr6-today" placeholder="당일검침" oninput="calcPower(6)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr6-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">7</td><td>1차여과, 2차흡착</td><td style="text-align:center;color:#9ca3af;font-size:12px;" id="pr7-prev">-</td><td style="text-align:center;"><input type="number" id="pr7-today" placeholder="당일검침" oninput="calcPower(7)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr7-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">8</td><td>흡착에의한시설</td><td style="text-align:center;color:#9ca3af;font-size:12px;" id="pr8-prev">-</td><td style="text-align:center;"><input type="number" id="pr8-today" placeholder="당일검침" oninput="calcPower(8)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr8-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">9</td><td>흡착에의한시설</td><td style="text-align:center;color:#9ca3af;font-size:12px;" id="pr9-prev">-</td><td style="text-align:center;"><input type="number" id="pr9-today" placeholder="당일검침" oninput="calcPower(9)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr9-daily">-</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;padding:12px 14px;border-top:1px solid #f3f4f6;">
+      <button onclick="queryAirLog()" style="padding:8px 18px;background:white;color:#1a3a5c;border:1.5px solid #1a3a5c;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">날짜 조회/수정</button>
+      <button onclick="saveAirLog()" id="al-save-btn" style="padding:8px 18px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">저장</button>
+    </div>
+  </div>
+
+  <!-- 일자별 조회 -->
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">일자별 조회</span>
+      <button onclick="exportAirLogExcel()" style="padding:6px 14px;background:#217346;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">엑셀 내보내기</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f4f6;">
+      <span class="filter-label">날짜 선택</span>
+      <input type="date" id="al-view-date" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+      <button onclick="loadAirLogView()" style="padding:7px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회</button>
+    </div>
+    <div id="al-view-emission" style="overflow-x:auto;"></div>
+    <div id="al-view-prevention" style="overflow-x:auto;"></div>
+  </div>
+</div>
+
+<!-- 대기측정 탭 -->
+<div id="tab-air" class="content hidden">
+  <div class="card">
+    <div class="card-body">
+      <div class="card-title">대기측정 일정 추가</div>
+      <div class="form-row">
+        <div class="form-group"><label>측정일</label><input type="date" id="air-date"></div>
+        <div class="form-group"><label>측정업체</label><input type="text" id="air-company" placeholder="업체명"></div>
+        <div class="form-group"><label>상태</label>
+          <select id="air-status">
+            <option value="예정">예정</option>
+            <option value="완료">완료</option>
+            <option value="취소">취소</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>측정 시설 <span style="font-size:11px;color:#9ca3af;">(복수 선택 가능)</span></label>
+        <div id="air-facility-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구1-탈청시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 1 — 탈청시설</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구2-도장시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 2 — 도장시설</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구3-도장시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 3 — 도장시설</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구4-도장시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 4 — 도장시설</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구5-건조시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 5 — 건조시설</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구6-도장및건조시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 6 — 도장 및 건조</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구7-도장및건조시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 7 — 도장 및 건조</div>
+          <div class="air-ftag" onclick="toggleAirFacility(this,'배출구9-도장시설')" style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">배출구 9 — 도장시설</div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;"><label>특이사항</label><textarea id="air-notes" placeholder="측정 항목, 결과 등"></textarea></div>
+      <button class="add-btn" onclick="addAirMeasure()">일정 추가</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">대기측정 일정 / 이력</span>
+      <span class="record-count" id="air-record-count"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;">
+      <span class="filter-label">월별</span>
+      <select id="air-filter-month" onchange="loadAirMeasures()" style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;background:white;">
+        <option value="">전체</option>
+      </select>
+      <select id="air-filter-status" onchange="loadAirMeasures()" style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;background:white;">
+        <option value="">전체 상태</option>
+        <option value="예정">예정</option>
+        <option value="완료">완료</option>
+        <option value="취소">취소</option>
+        <option value="미처리">미처리</option>
+      </select>
+      <button class="clear-btn" onclick="clearAirFilter()">초기화</button>
+    </div>
+    <div id="air-table"><div class="loading">불러오는 중...</div></div>
+    <div style="padding:8px 14px;font-size:11px;color:#9ca3af;border-top:1px solid #f3f4f6;">※ 예정일이 지난 항목은 완료 또는 취소로 변경해주세요.</div>
+  </div>
+</div>
+
+<!-- 사용자 관리 탭 -->
+<div id="tab-users" class="content hidden">
+  <div class="card">
+    <div class="card-body">
+      <div class="card-title">새 사용자 추가</div>
+      <div class="form-row">
+        <div class="form-group"><label>아이디</label><input type="text" id="new-username" placeholder="아이디"></div>
+        <div class="form-group"><label>비밀번호</label><input type="password" id="new-password" placeholder="비밀번호"></div>
+        <div class="form-group"><label>이름</label><input type="text" id="new-displayname" placeholder="실명 (선택)"></div>
+        <div class="form-group"><label>권한</label>
+          <select id="new-role">
+            <option value="manager1">담당자1 (1~8번 입력)</option>
+            <option value="manager2">담당자2 (9번 입력)</option>
+            <option value="viewer">읽기전용 (조회만)</option>
+            <option value="admin">관리자 (전체)</option>
+          </select>
+        </div>
+      </div>
+      <button class="add-btn" onclick="addUser()">사용자 추가</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body" style="padding-bottom:6px;">
+      <div class="card-title">권한 안내</div>
+      <table style="font-size:12px;">
+        <thead><tr><th>권한</th><th>조회</th><th>삭제/수정</th><th>대기운영 입력</th><th>사용자 관리</th></tr></thead>
+        <tbody>
+          <tr><td><span class="role-badge role-admin">관리자</span></td><td>✅</td><td>✅</td><td>전체</td><td>✅</td></tr>
+          <tr><td><span class="role-badge role-manager">담당자1</span></td><td>✅</td><td>❌</td><td>1~8번</td><td>❌</td></tr>
+          <tr><td><span class="role-badge role-manager">담당자2</span></td><td>✅</td><td>❌</td><td>9번만</td><td>❌</td></tr>
+          <tr><td><span class="role-badge role-viewer">읽기전용</span></td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-header"><span class="table-title">사용자 목록</span></div>
+    <div id="users-table"><div class="loading">불러오는 중...</div></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="del-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">삭제 확인</div>
+    <div style="font-size:13px;color:#374151;">이 기록을 삭제하시겠습니까? 삭제 후 복구가 불가합니다.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">취소</button>
+      <button class="modal-confirm" id="modal-confirm-btn">삭제</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var SB_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
+var currentTab='filter',allData=[],monthlyChart=null,currentUser=null;
+
+function checkAuth(){
+  var u=sessionStorage.getItem('tc_user');
+  if(!u){window.location.href='login.html';return false;}
+  currentUser=JSON.parse(u);
+  var roleText={'admin':'관리자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[currentUser.role]||currentUser.role;
+  document.getElementById('user-badge').textContent=currentUser.username+' ('+roleText+')';
+  var isAdminUser=currentUser.role==='admin';
+  var usersTab=document.querySelector('[onclick="showTab(\'users\')"]');
+  if(usersTab&&!isAdminUser)usersTab.style.display='none';
+  return true;
+}
+
+function isAdmin(){return currentUser&&currentUser.role==='admin';}
+function isManager(){return currentUser&&['admin','manager','manager1','manager2'].indexOf(currentUser.role)>=0;}
+function canEditAirLog(){return currentUser&&['admin','manager','manager1','manager2'].indexOf(currentUser.role)>=0;}
+function getAirLogEmNos(){
+  if(currentUser.role==='manager2')return[9];
+  return[1,2,3,4,5,6,7,9];
+}
+function getAirLogPrNos(){
+  if(currentUser.role==='manager2')return[9];
+  return[1,2,3,4,5,6,7,8,9];
+}
+function getRoleText(role){return {'admin':'관리자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[role]||role;}
+function getRoleClass(role){return {'admin':'role-admin','manager':'role-manager','manager1':'role-manager','manager2':'role-manager','viewer':'role-viewer'}[role]||'role-viewer';}
+function logout(){sessionStorage.removeItem('tc_user');window.location.href='login.html';}
+
+async function sb(table,query,opts){
+  opts=opts||{};
+  var url=SB_URL+'/rest/v1/'+table+(query||'');
+  var res=await fetch(url,{method:opts.method||'GET',headers:Object.assign({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},opts.headers||{}),body:opts.body?JSON.stringify(opts.body):undefined});
+  if(opts.method&&opts.method!=='GET')return res;
+  return res.json();
+}
+
+function showTab(tab){
+  document.querySelectorAll('[id^="tab-"]').forEach(function(el){el.classList.add('hidden');});
+  document.getElementById('tab-'+tab).classList.remove('hidden');
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  var tabs=['filter','waste','airlog','air','users'];
+  var idx=tabs.indexOf(tab);
+  if(idx>=0)document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  currentTab=tab;
+  loadCurrentTab();
+}
+
+function loadCurrentTab(){
+  try{
+    if(currentTab==='filter')loadFilterData();
+    else if(currentTab==='waste')loadWasteData();
+    else if(currentTab==='airlog')loadAirLog();
+    else if(currentTab==='air')loadAirMeasures();
+    else if(currentTab==='users')loadUsers();
+  }catch(e){console.error('탭 로딩 오류:',e);}
+}
+
+async function loadFilterData(){
+  document.getElementById('table-body').innerHTML='<div class="loading">불러오는 중...</div>';
+  allData=await sb('filter_records','?select=*&order=record_date.desc,created_at.desc');
+  updateStats(allData);
+  updatePersonFilter(allData);
+  renderMonthlyChart(allData);
+  applyFilter();
+  loadOrderRequests();
+}
+
+function updateStats(data){
+  document.getElementById('stat-total').innerHTML=data.length+'<span class="stat-unit">건</span>';
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var md=data.filter(function(r){return r.record_date&&r.record_date.startsWith(ym);});
+  document.getElementById('stat-month').innerHTML=md.length+'<span class="stat-unit">건</span>';
+  document.getElementById('stat-qty').innerHTML=md.reduce(function(s,r){return s+(r.quantity||0);},0)+'<span class="stat-unit">개</span>';
+  document.getElementById('stat-last').textContent=data.length>0?(data[0].record_date||'-'):'-';
+}
+
+function renderMonthlyChart(data){
+  var year=new Date().getFullYear();
+  var months=[];
+  for(var i=1;i<=12;i++)months.push(year+'-'+String(i).padStart(2,'0'));
+  var labels=months.map(function(m){return parseInt(m.split('-')[1])+'월';});
+  var rooms=['상도룸','하도룸 #1','하도룸 #2'];
+  var colors=['#3b82f6','#10b981','#f59e0b'];
+  var datasets=rooms.map(function(room,ri){
+    return{label:room,data:months.map(function(m){return data.filter(function(r){return r.record_date&&r.record_date.startsWith(m)&&r.room_name===room;}).reduce(function(s,r){return s+(r.quantity||0);},0);}),backgroundColor:colors[ri],borderRadius:3};
+  });
+  if(monthlyChart)monthlyChart.destroy();
+  monthlyChart=new Chart(document.getElementById('monthlyChart').getContext('2d'),{
+    type:'bar',data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:11},stepSize:1}}}}
+  });
+}
+
+function updatePersonFilter(data){
+  var persons=[...new Set(data.map(function(r){return r.technician;}).filter(Boolean))].sort();
+  var sel=document.getElementById('filter-person');
+  var cur=sel.value;
+  sel.innerHTML='<option value="">전체 담당자</option>';
+  persons.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;if(p===cur)o.selected=true;sel.appendChild(o);});
+}
+
+function applyFilter(){
+  var room=document.getElementById('filter-room').value;
+  var person=document.getElementById('filter-person').value;
+  var month=document.getElementById('filter-month').value;
+  var f=allData.filter(function(r){
+    if(room&&r.room_name!==room)return false;
+    if(person&&r.technician!==person)return false;
+    if(month&&r.record_date&&!r.record_date.startsWith(month))return false;
+    return true;
+  });
+  renderTable(f);
+}
+
+function clearFilter(){
+  document.getElementById('filter-room').value='';
+  document.getElementById('filter-person').value='';
+  document.getElementById('filter-month').value='';
+  applyFilter();
+}
+
+function getRoomBadge(room){
+  if(room==='상도룸')return '<span class="badge badge-sangdo">상도룸</span>';
+  if(room==='하도룸 #1')return '<span class="badge badge-ha1">하도룸 #1</span>';
+  if(room==='하도룸 #2')return '<span class="badge badge-ha2">하도룸 #2</span>';
+  return '<span class="badge">'+room+'</span>';
+}
+
+function renderTable(data){
+  document.getElementById('record-count').textContent='총 '+data.length+'건';
+  if(!data.length){document.getElementById('table-body').innerHTML='<div class="empty">기록이 없습니다.</div>';return;}
+  var rows=data.map(function(r){
+    var note=r.notes?'<span class="note-cell" title="'+r.notes+'">'+r.notes+'</span>':'<span style="color:#d1d5db;">-</span>';
+    var dt=r.created_at?new Date(r.created_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'filter_records\',\''+r.id+'\',loadFilterData)">✕</button>':'';
+    return'<tr><td>'+r.record_date+'</td><td>'+getRoomBadge(r.room_name)+'</td><td>'+r.technician+'</td><td><span class="qty-badge">'+r.quantity+'개</span></td><td>'+note+'</td><td style="font-size:11px;color:#9ca3af;">'+dt+'</td><td>'+delBtn+'</td></tr>';
+  }).join('');
+  document.getElementById('table-body').innerHTML='<table><thead><tr><th>교체일</th><th>시설</th><th>담당자</th><th>수량</th><th>특이사항</th><th>제출시각</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+function exportExcel(){
+  if(!allData.length){alert('내보낼 데이터가 없습니다.');return;}
+  var room=document.getElementById('filter-room').value;
+  var person=document.getElementById('filter-person').value;
+  var month=document.getElementById('filter-month').value;
+  var f=allData.filter(function(r){
+    if(room&&r.room_name!==room)return false;
+    if(person&&r.technician!==person)return false;
+    if(month&&r.record_date&&!r.record_date.startsWith(month))return false;
+    return true;
+  });
+  var ws=XLSX.utils.aoa_to_sheet([['교체일','시설','담당자','수량','특이사항','제출시각']].concat(f.map(function(r){return[r.record_date,r.room_name,r.technician,r.quantity,r.notes||'',r.created_at?new Date(r.created_at).toLocaleString('ko-KR'):''];})));
+  ws['!cols']=[{wch:12},{wch:12},{wch:10},{wch:6},{wch:24},{wch:18}];
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'필터교체이력');
+  var n=new Date();
+  XLSX.writeFile(wb,'TC필터교체이력_'+n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0')+'.xlsx');
+}
+
+async function loadOrderRequests(){
+  var data=await sb('filter_order_requests','?select=*&order=created_at.desc');
+  if(!data||!data.length){
+    document.getElementById('order-table').innerHTML='<div class="empty">발주 요청 없음</div>';
+    document.getElementById('order-new-badge').innerHTML='';
+    document.getElementById('order-last-date').textContent='-';
+    return;
+  }
+  var newCount=data.filter(function(r){return !r.checked;}).length;
+  document.getElementById('order-new-badge').innerHTML=newCount>0?'<span class="new-badge">미확인 '+newCount+'건</span>':'';
+  document.getElementById('order-last-date').textContent=data[0].request_date||'-';
+  var rows=data.map(function(r){
+    var isDone=r.checked;
+    var statusHtml=isDone?'<span class="done-badge">발주 완료</span>':'<span class="new-badge">미확인</span>';
+    var actionBtns=isAdmin()&&!isDone
+      ? '<button onclick="completeOrder(\''+r.id+'\')" class="order-done-btn">발주 완료</button><button onclick="confirmDelete(\'filter_order_requests\',\''+r.id+'\',loadOrderRequests)" class="order-del-btn">삭제</button>'
+      : '';
+    return'<div class="order-item"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div class="order-name">'+r.technician+'</div><div class="order-date">'+r.request_date+'</div></div>'+statusHtml+'</div>'+(actionBtns?'<div class="order-actions">'+actionBtns+'</div>':'')+'</div>';
+  }).join('');
+  document.getElementById('order-table').innerHTML=rows;
+}
+
+async function completeOrder(id){
+  await sb('filter_order_requests','?id=eq.'+id,{method:'PATCH',body:{checked:true}});
+  loadOrderRequests();
+}
+
+var wasteMonthlyChart=null;
+var selectedSchedLines=[];
+
+function toggleSchedLine(el,line){
+  var idx=selectedSchedLines.indexOf(line);
+  if(idx>=0){selectedSchedLines.splice(idx,1);el.style.borderColor='#e5e7eb';el.style.background='white';el.style.color='#6b7280';}
+  else{selectedSchedLines.push(line);el.style.borderColor='#d97706';el.style.background='#fffbeb';el.style.color='#92400e';}
+}
+
+async function loadWasteData(){
+  var filterLine=document.getElementById('wo-filter-line').value;
+  var filterMonth=document.getElementById('wo-filter-month').value;
+  var query='?select=*&order=request_date.desc,created_at.desc';
+  if(filterLine)query+='&line_name=eq.'+encodeURIComponent(filterLine);
+  var allData=await sb('waste_oil_requests','?select=*&order=request_date.desc,created_at.desc');
+  if(!allData)allData=[];
+
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var monthData=allData.filter(function(r){return r.request_date&&r.request_date.startsWith(ym);});
+  var newCount=allData.filter(function(r){return !r.checked;}).length;
+  var monthQty=monthData.reduce(function(s,r){return s+(r.bag_count||0);},0);
+
+  document.getElementById('wo-stat-new').innerHTML=newCount+'<span class="stat-unit">건</span>';
+  document.getElementById('wo-stat-month').innerHTML=monthData.length+'<span class="stat-unit">건</span>';
+  document.getElementById('wo-stat-qty').innerHTML=monthQty+'<span class="stat-unit">개</span>';
+  document.getElementById('wo-stat-last').textContent=allData.length>0?(allData[0].request_date||'-'):'-';
+
+  // 월 필터 옵션
+  var months=[...new Set(allData.map(function(r){return r.request_date?r.request_date.substring(0,7):null;}).filter(Boolean))].sort().reverse();
+  var mSel=document.getElementById('wo-filter-month');
+  var curM=mSel.value;
+  mSel.innerHTML='<option value="">전체 기간</option>';
+  months.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','년 ')+'월';if(m===curM)o.selected=true;mSel.appendChild(o);});
+
+  // 필터 적용
+  var filtered=allData.filter(function(r){
+    if(filterLine&&r.line_name!==filterLine)return false;
+    if(filterMonth&&!(r.request_date&&r.request_date.startsWith(filterMonth)))return false;
+    return true;
+  });
+
+  document.getElementById('wo-record-count').textContent='총 '+filtered.length+'건';
+
+  var lineBadgeColors={'G16동':'background:#dbeafe;color:#1e40af;','현대라인':'background:#d1fae5;color:#065f46;','강건재라인':'background:#fef3c7;color:#92400e;','패킹라인':'background:#f3e8ff;color:#6b21a8;'};
+  if(!filtered.length){document.getElementById('wo-table').innerHTML='<div class="empty">기록이 없습니다.</div>';}
+  else{
+    var rows=filtered.map(function(r){
+      var bc=lineBadgeColors[r.line_name]||'background:#f3f4f6;color:#374151;';
+      var lineBadge='<span class="badge" style="'+bc+'">'+r.line_name+'</span>';
+      var statusBadge=r.checked?'<span class="badge" style="background:#d1fae5;color:#065f46;">확인완료</span>':'<span class="new-badge">미확인</span>';
+      var checkedInfo=r.checked&&r.checked_at?'<div style="font-size:11px;color:#9ca3af;">'+new Date(r.checked_at).toLocaleDateString('ko-KR')+(r.checked_by?' · '+r.checked_by:'')+'</div>':'';
+      var actionBtn=isAdmin()&&!r.checked?'<button onclick="confirmWasteOil(\''+r.id+'\',\''+r.line_name+'\','+( r.bag_count||0)+')" style="padding:4px 10px;background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">배출완료</button>':'';
+      var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_requests\',\''+r.id+'\',loadWasteData)">✕</button>':'';
+      var note=r.notes?r.notes:'<span style="color:#d1d5db;">-</span>';
+      return'<tr><td>'+r.request_date+'</td><td>'+lineBadge+'</td><td style="font-weight:700;color:#d97706;text-align:center;">'+(r.bag_count||0)+'개</td><td style="font-size:12px;color:#6b7280;">'+note+'</td><td>'+statusBadge+checkedInfo+'</td><td>'+actionBtn+delBtn+'</td></tr>';
+    }).join('');
+    document.getElementById('wo-table').innerHTML='<div style="overflow-x:auto;"><table style="min-width:580px;"><thead><tr><th>기록일</th><th>라인</th><th style="text-align:center;">수량</th><th>특이사항</th><th>상태</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
+  loadWasteStorage(allData);
+  loadWasteSchedule();
+  renderWasteMonthlyChart(allData);
+}
+
+async function loadWasteStorage(allData){
+  var data=await sb('waste_oil_storage','?select=*&order=line_name.asc');
+  if(!data)data=[];
+  var lineBadgeColors={'G16동':'#1e40af','현대라인':'#065f46','강건재라인':'#92400e','패킹라인':'#6b21a8'};
+  var lineBgs={'G16동':'#dbeafe','현대라인':'#d1fae5','강건재라인':'#fef3c7','패킹라인':'#f3e8ff'};
+  var cards=data.map(function(r){
+    var c=lineBadgeColors[r.line_name]||'#374151';
+    var bg=lineBgs[r.line_name]||'#f9fafb';
+    var count=r.bag_count||0;
+    var warn=count>=10?'color:#ef4444;':'';
+    return'<div style="background:white;border:1px solid #e5e7eb;border-radius:10px;padding:14px;text-align:center;">'+
+      '<div style="font-size:12px;font-weight:700;color:'+c+';margin-bottom:8px;">'+r.line_name+'</div>'+
+      '<div style="font-size:28px;font-weight:700;'+warn+'">'+count+'</div>'+
+      '<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">개</div>'+
+      (isAdmin()?'<button onclick="adjustStorage(\''+r.id+'\','+count+')" style="padding:4px 12px;background:#f0f2f5;color:#374151;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">수량 조정</button>':'')+
+    '</div>';
+  }).join('');
+  document.getElementById('wo-storage-grid').innerHTML=cards||'<div class="empty">데이터 없음</div>';
+}
+
+function adjustStorage(id,current){
+  var newVal=prompt('현재 수량: '+current+'개\n조정할 수량을 입력하세요 (배출 후 남은 수량):',current);
+  if(newVal===null)return;
+  var n=parseInt(newVal);
+  if(isNaN(n)||n<0){alert('올바른 숫자를 입력해주세요.');return;}
+  sb('waste_oil_storage','?id=eq.'+id,{method:'PATCH',body:{bag_count:n,updated_at:new Date().toISOString()}}).then(loadWasteData);
+}
+
+async function confirmWasteOil(id,lineName,bagCount){
+  if(!confirm(lineName+' '+bagCount+'개 배출 완료 처리하시겠습니까?\n보관량에서 '+bagCount+'개가 차감됩니다.'))return;
+  await sb('waste_oil_requests','?id=eq.'+id,{method:'PATCH',body:{checked:true,checked_at:new Date().toISOString(),checked_by:currentUser?currentUser.username:'관리자'}});
+  var storData=await sb('waste_oil_storage','?line_name=eq.'+encodeURIComponent(lineName)+'&select=bag_count');
+  if(storData&&storData.length>0){
+    var current=storData[0].bag_count||0;
+    var newCount=Math.max(0,current-bagCount);
+    await sb('waste_oil_storage','?line_name=eq.'+encodeURIComponent(lineName),{method:'PATCH',body:{bag_count:newCount,updated_at:new Date().toISOString()}});
+  }
+  loadWasteData();
+}
+
+async function loadWasteSchedule(){
+  var data=await sb('waste_oil_schedule','?select=*&order=scheduled_date.desc');
+  if(!data)data=[];
+  var today=new Date().toISOString().split('T')[0];
+  if(!data.length){document.getElementById('wo-schedule-table').innerHTML='<div class="empty" style="padding:1.5rem;">등록된 스케줄이 없습니다.</div>';return;}
+  var rows=data.map(function(r){
+    var isOverdue=r.status==='예정'&&r.scheduled_date<today;
+    var rowBg=isOverdue?'background:#fff5f5;':r.status==='예정'?'background:#fffbeb;':'';
+    var statusBadge=r.status==='완료'?'<span class="badge" style="background:#d1fae5;color:#065f46;">완료</span>':isOverdue?'<span class="badge" style="background:#fee2e2;color:#991b1b;">미처리</span>':'<span class="badge" style="background:#fef3c7;color:#92400e;">예정</span>';
+    var types=r.line_names?r.line_names.split(',').map(function(l){return'<span class="badge" style="background:#f0f2f5;color:#374151;margin:1px;">'+l.trim()+'</span>';}).join(''):'';
+    var actionBtn=isAdmin()&&r.status!=='완료'?'<button onclick="completeSchedule(\''+r.id+'\')" style="padding:4px 10px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">완료</button>':'';
+    var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_schedule\',\''+r.id+'\',loadWasteData)">✕</button>':'';
+    return'<tr style="'+rowBg+'"><td>'+r.scheduled_date+'</td><td style="font-size:12px;color:#6b7280;">가람환경</td><td>'+types+'</td><td>'+(r.notes&&r.notes.indexOf(' / ')>=0?r.notes.split(' / ').slice(1).join(' / '):(r.notes&&r.notes!=='가람환경'?r.notes:'<span style="color:#d1d5db;">-</span>'))+'</td><td>'+statusBadge+'</td><td>'+actionBtn+delBtn+'</td></tr>';
+  }).join('');
+  document.getElementById('wo-schedule-table').innerHTML='<div style="overflow-x:auto;"><table style="min-width:550px;"><thead><tr><th>예정일</th><th>배출업체</th><th>폐기물 종류</th><th>특이사항</th><th>상태</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+async function addWasteSchedule(){
+  var date=document.getElementById('ws-date').value;
+  if(!date){alert('예정일을 입력해주세요.');return;}
+  if(!selectedSchedLines.length){alert('폐기물 종류를 선택해주세요.');return;}
+  var company=document.getElementById('ws-company').value||'가람환경';
+  var notes=document.getElementById('ws-notes').value||null;
+  await sb('waste_oil_schedule','',{method:'POST',body:{scheduled_date:date,line_names:selectedSchedLines.join(','),notes:notes?company+' / '+notes:company,status:'예정'}});
+  document.getElementById('ws-date').value='';
+  document.getElementById('ws-notes').value='';
+  selectedSchedLines=[];
+  document.querySelectorAll('.ws-ltag').forEach(function(el){el.style.borderColor='#e5e7eb';el.style.background='white';el.style.color='#6b7280';});
+  loadWasteData();
+}
+
+async function completeSchedule(id){
+  await sb('waste_oil_schedule','?id=eq.'+id,{method:'PATCH',body:{status:'완료',completed_at:new Date().toISOString()}});
+  loadWasteData();
+}
+
+function renderWasteMonthlyChart(data){
+  var lines=['G16동','현대라인','강건재라인','패킹라인'];
+  var colors=['#3b82f6','#10b981','#f59e0b','#8b5cf6'];
+  var now=new Date();
+  var months=[];
+  for(var i=5;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
+  var labels=months.map(function(m){var d=new Date(m+'-01');return (d.getMonth()+1)+'월';});
+  var datasets=lines.map(function(line,li){
+    return{label:line,data:months.map(function(m){return data.filter(function(r){return r.line_name===line&&r.request_date&&r.request_date.startsWith(m);}).reduce(function(s,r){return s+(r.bag_count||0);},0);}),backgroundColor:colors[li],borderRadius:3};
+  });
+  if(wasteMonthlyChart)wasteMonthlyChart.destroy();
+  var ctx=document.getElementById('wasteMonthlyChart');
+  if(!ctx)return;
+  wasteMonthlyChart=new Chart(ctx.getContext('2d'),{
+    type:'bar',data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},scales:{x:{stacked:false,grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},stepSize:1}}}}
+  });
+}
+
+function renderWasteSummary(){}
+function renderWasteTable(){}
+
+function searchWasteType(){
+  var query=document.getElementById('waste-search-input').value.trim();
+  if(!query){alert('검색어를 입력해주세요.');return;}
+  var DB=[
+    {keywords:['페인트','도료','도장','락카','에나멜','프라이머','하도','상도','중도','도막','코팅제','페인트 묻은','도료 묻은','페인트 고체','페인트 굳','마스킹','테이프 페인트'],type:'폐페인트',category:'지정',desc:'페인트·도료 성분이 포함된 폐기물은 성상(고체/액체)에 관계없이 모두 폐페인트(지정폐기물)로 분류됩니다.'},
+    {keywords:['연마','연마제','사포','샌드페이퍼','연마지','연마포','그라인더','연마 슬러지','연마 찌꺼기','연마 분말','폴리싱','버프','연마 패드','디스크','연마 잔재','연삭'],type:'폐유 고상',category:'지정',desc:'연마 작업에서 발생하는 고체 폐기물(연마제, 슬러지, 분말 등)은 폐유 고상(지정폐기물)으로 분류됩니다. 단, 정확한 분류는 환경청 확인이 필요합니다.'},
+    {keywords:['연마 폐액','연마 세척수','연마액','연마 용액'],type:'폐유 액상',category:'지정',desc:'연마 작업에서 발생하는 액상 폐수·폐액은 폐유 액상(지정폐기물)으로 분류됩니다.'},
+    {keywords:['발청','발청제','방청','방청제','녹제거','녹 제거','탈청','탈청제','발청 고체','발청 슬러지','방청 찌꺼기'],type:'폐유 고상',category:'지정',desc:'발청제·방청제 사용 후 발생하는 고체 잔재물은 폐유 고상(지정폐기물)으로 분류됩니다. 단, 정확한 분류는 환경청 확인이 필요합니다.'},
+    {keywords:['발청 폐액','방청 폐액','탈청 폐액','발청액','방청액'],type:'폐유 액상',category:'지정',desc:'발청제·방청제 폐액은 폐유 액상(지정폐기물)으로 분류됩니다.'},
+    {keywords:['기름','오일','윤활','절삭유','유압','그리스','폐유','유지','지방','기름 고체','오일 찌꺼기'],type:'폐유 고상',category:'지정',desc:'기름·오일류가 굳어진 고상 폐기물은 폐유 고상(지정폐기물)으로 분류됩니다.'},
+    {keywords:['시너','신너','용제','솔벤트','톨루엔','자일렌','아세톤','MEK','세척액','희석제','유기용제'],type:'폐유 액상',category:'지정',desc:'유기용제·시너류 폐액은 폐유 액상(지정폐기물)으로 분류됩니다.'},
+    {keywords:['폐유 액','기름물','오일 폐액'],type:'폐유 액상',category:'지정',desc:'기름·오일류 폐액은 폐유 액상(지정폐기물)으로 분류됩니다.'},
+    {keywords:['플라스틱','비닐','수지','pp','pe','pvc','합성수지','포장재','봉지','비닐백'],type:'폐합성수지',category:'일반',desc:'플라스틱·비닐류 폐기물은 폐합성수지(일반폐기물)로 분류됩니다.'},
+    {keywords:['나무','목재','합판','파렛트','팔레트','목','각목'],type:'폐목재',category:'일반',desc:'나무·목재류 폐기물은 폐목재(일반폐기물)로 분류됩니다.'},
+    {keywords:['분진','먼지','더스트','집진','필터','여과지','여과포'],type:'분진',category:'일반',desc:'집진설비에서 포집된 분진은 분진(일반폐기물)로 분류됩니다. 단, 유해물질 혼입 시 지정폐기물이 될 수 있으니 확인이 필요합니다.'},
+    {keywords:['철','쇠','고철','금속','스크랩','파이프','철판'],type:'고철',category:'일반',desc:'철·금속류 폐기물은 고철(일반폐기물)로 분류됩니다.'},
+    {keywords:['종이','박스','골판지','신문','폐지','종이박스'],type:'폐지',category:'일반',desc:'종이류 폐기물은 폐지(일반폐기물)로 분류됩니다.'},
+    {keywords:['쓰레기','음식','생활','잡','기타','혼합'],type:'일반쓰레기',category:'일반',desc:'특정 분류에 해당하지 않는 혼합 생활계 폐기물은 일반쓰레기(일반폐기물)로 처리됩니다.'}
+  ];
+  var q=query.toLowerCase();
+  var matched=null;
+  for(var i=0;i<DB.length;i++){
+    for(var j=0;j<DB[i].keywords.length;j++){
+      if(q.includes(DB[i].keywords[j])){matched=DB[i];break;}
+    }
+    if(matched)break;
+  }
+  var resultEl=document.getElementById('waste-search-result');
+  resultEl.classList.remove('hidden');
+  if(matched){
+    var catColor=matched.category==='지정'?'#fee2e2':'#f0fdf4';
+    var catTextColor=matched.category==='지정'?'#991b1b':'#166534';
+    var catBorderColor=matched.category==='지정'?'#fca5a5':'#86efac';
+    resultEl.innerHTML=
+      '<div style="border:1px solid '+catBorderColor+';border-radius:8px;padding:14px;background:'+catColor+';margin-bottom:8px;">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'+
+          '<span style="font-size:15px;font-weight:700;color:'+catTextColor+';">'+matched.type+'</span>'+
+          '<span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+catTextColor+';color:white;">'+matched.category+'폐기물</span>'+
+        '</div>'+
+        '<div style="font-size:13px;color:#374151;line-height:1.6;margin-bottom:10px;">'+matched.desc+'</div>'+
+        '<div style="font-size:11px;color:#6b7280;">※ 참고용 안내입니다. 정확한 분류는 관할 환경청 또는 ☎ 128 환경부 콜센터에 확인하세요.</div>'+
+      '</div>'+
+      '<button onclick="openClaude(\''+query+'\')" style="padding:7px 14px;background:#7c3aed;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">Claude AI에게 자세히 묻기 →</button>';
+  }else{
+    resultEl.innerHTML=
+      '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px;background:#f9fafb;margin-bottom:8px;">'+
+        '<div style="font-size:13px;color:#374151;margin-bottom:8px;">분류표에서 일치하는 항목을 찾지 못했습니다.</div>'+
+        '<div style="font-size:12px;color:#6b7280;">Claude AI에게 직접 물어보시면 더 정확한 안내를 받으실 수 있습니다.</div>'+
+      '</div>'+
+      '<button onclick="openClaude(\''+query+'\')" style="padding:7px 14px;background:#7c3aed;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">Claude AI에게 묻기 →</button>';
+  }
+}
+
+function openClaude(query){
+  var prompt='제조업 도장시설 환경관리 담당자입니다. 다음 폐기물이 어떤 종류인지, 지정폐기물인지 일반폐기물인지 알려주세요. 우리 사업장의 폐기물 종류는 폐합성수지, 폐목재, 폐유 고상, 폐유 액상, 폐페인트, 분진, 고철, 폐지, 일반쓰레기입니다. 질문: '+query;
+  window.open('https://claude.ai/new?q='+encodeURIComponent(prompt),'_blank');
+}
+
+function toggleCheck(el){el.classList.toggle('done');}
+async function saveChecklist(){alert('체크리스트 저장 기능은 준비 중입니다.');}
+async function loadWasteStorage(){}
+async function saveWasteStorage(){}
+async function loadContractors(){}
+async function addContractor(){}
+
+function sanitizeNum(el){el.value=el.value.replace(/[^0-9]/g,'').slice(0,2);}
+
+var alStatusMap={};
+var alPrevPower={};
+
+function autoCalcHours(n){
+  var sh=document.getElementById('em'+n+'-sh').value;
+  var sm=document.getElementById('em'+n+'-sm').value;
+  var eh=document.getElementById('em'+n+'-eh').value;
+  var em=document.getElementById('em'+n+'-em').value;
+  var hrEl=document.getElementById('em'+n+'-hr');
+  if(sh&&eh){
+    var startMins=parseInt(sh)*60+(parseInt(sm)||0);
+    var endMins=parseInt(eh)*60+(parseInt(em)||0);
+    var diff=endMins-startMins;
+    if(diff>0){
+      // 점심시간(12:00~13:00) 포함 여부 확인
+      var lunchStart=12*60, lunchEnd=13*60;
+      if(startMins<lunchEnd&&endMins>lunchStart){
+        diff-=60; // 1시간 차감
+      }
+      hrEl.value=(diff/60).toFixed(1);
+    }else{hrEl.value='';}
+  }else{hrEl.value='';}
+}
+
+function setStatus(id,status){
+  alStatusMap[id]=status;
+  document.getElementById(id+'-normal').className='al-sbtn'+(status==='정상'?' al-normal':'');
+  document.getElementById(id+'-abnormal').className='al-sbtn'+(status==='비정상'?' al-abnormal':'');
+}
+
+function calcPower(no){
+  var prev=alPrevPower[no]!=null?alPrevPower[no]:null;
+  var todayEl=document.getElementById('pr'+no+'-today');
+  var dailyEl=document.getElementById('pr'+no+'-daily');
+  if(prev!=null&&todayEl&&todayEl.value){
+    var daily=parseFloat(todayEl.value)-prev;
+    dailyEl.textContent=daily.toFixed(0);
+    dailyEl.style.color=daily>=0?'#1a3a5c':'#ef4444';
+  }else{
+    dailyEl.textContent='-';
+    dailyEl.style.color='#d1d5db';
+  }
+}
+
+async function loadAirLog(){
+  var today=new Date().toISOString().split('T')[0];
+  document.getElementById('al-input-date').value=today;
+  if(currentUser&&currentUser.role==='manager2'){
+    [1,2,3,4,5,6,7,8].forEach(function(n){
+      var row=document.querySelector('#al-emission-input tr:nth-child('+n+')');
+      if(row&&n!==9){
+        row.style.opacity='0.4';
+        row.querySelectorAll('input,button').forEach(function(el){el.disabled=true;});
+      }
+    });
+    [1,2,3,4,5,6,7,8].forEach(function(n){
+      var inp=document.getElementById('pr'+n+'-today');
+      if(inp){inp.disabled=true;inp.closest('tr').style.opacity='0.4';}
+    });
+  }
+  await loadPrevPower(today);
+}
+
+async function loadPrevPower(date){
+  var prevDate=new Date(date);
+  prevDate.setDate(prevDate.getDate()-1);
+  var prevStr=prevDate.toISOString().split('T')[0];
+  var data=await sb('air_operation_log','?log_date=eq.'+prevStr+'&facility_type=eq.방지시설&select=facility_no,power_today&order=facility_no.asc');
+  alPrevPower={};
+  for(var i=1;i<=9;i++){
+    var el=document.getElementById('pr'+i+'-prev');
+    if(el)el.textContent='-';
+  }
+  if(data&&data.length){
+    data.forEach(function(r){
+      if(r.power_today!=null){
+        alPrevPower[r.facility_no]=r.power_today;
+        var el=document.getElementById('pr'+r.facility_no+'-prev');
+        if(el)el.textContent=r.power_today;
+      }
+    });
+  }
+  for(var i=1;i<=9;i++){calcPower(i);}
+  [1,2,3,4,5,6,7,9].forEach(function(n){setStatus('em'+n,'정상');});
+}
+
+async function queryAirLog(){
+  var date=document.getElementById('al-input-date').value;
+  if(!date){alert('날짜를 선택해주세요.');return;}
+  var data=await sb('air_operation_log','?log_date=eq.'+date+'&select=*&order=facility_type.asc,facility_no.asc');
+  if(!data||!data.length){alert('해당 날짜의 기록이 없습니다.');return;}
+  // 입력칸 채우기
+  data.forEach(function(r){
+    if(r.facility_type==='배출구'&&r.facility_no!==8){
+      var n=r.facility_no;
+      if(r.start_time){var p=r.start_time.split(':');var sh=document.getElementById('em'+n+'-sh');var sm=document.getElementById('em'+n+'-sm');if(sh&&!sh.disabled)sh.value=p[0]||'';if(sm&&!sm.disabled)sm.value=p[1]||'';}
+      if(r.end_time){var p=r.end_time.split(':');var eh=document.getElementById('em'+n+'-eh');var em_=document.getElementById('em'+n+'-em');if(eh&&!eh.disabled)eh.value=p[0]||'';if(em_&&!em_.disabled)em_.value=p[1]||'';}
+      if(r.operation_hours!=null){var hr=document.getElementById('em'+n+'-hr');if(hr&&!hr.disabled)hr.value=r.operation_hours;}
+      setStatus('em'+n,r.status||'정상');
+    }
+    if(r.facility_type==='방지시설'){
+      var n=r.facility_no;
+      if(r.power_prev!=null){
+        alPrevPower[n]=r.power_prev;
+        var prevEl=document.getElementById('pr'+n+'-prev');
+        if(prevEl)prevEl.textContent=r.power_prev;
+      }
+      var inp=document.getElementById('pr'+n+'-today');
+      if(inp&&!inp.disabled&&r.power_today!=null)inp.value=r.power_today;
+      calcPower(n);
+    }
+  });
+  alert('기록을 불러왔습니다. 수정 후 저장해주세요.');
+}
+
+async function loadAirLogView(){
+  var date=document.getElementById('al-view-date').value;
+  if(!date){alert('날짜를 선택해주세요.');return;}
+  var data=await sb('air_operation_log','?log_date=eq.'+date+'&select=*&order=facility_type.asc,facility_no.asc,created_at.asc');
+  if(!data)data=[];
+
+  var emNames={1:'탈청시설 (200HP)',2:'도장시설 (600㎥)',3:'도장시설 (600㎥)',4:'도장시설 (600㎥)',5:'건조시설 (345.6㎥)',6:'도장 및 건조시설 (319㎥)',7:'도장 및 건조시설 (319㎥)',8:'연마시설 (238.5㎥)',9:'도장시설 (656.6㎥)'};
+  var prNames={1:'여과집진시설',2:'흡착에의한시설',3:'흡착에의한시설',4:'흡착에의한시설',5:'흡착에의한시설',6:'1차여과, 2차흡착',7:'1차여과, 2차흡착',8:'흡착에의한시설',9:'흡착에의한시설'};
+
+  // 배출구: facility_no별 머지 - 실제 데이터 있는 레코드 우선
+  var emMap={};
+  data.filter(function(r){return r.facility_type==='배출구';}).forEach(function(r){
+    var n=r.facility_no;
+    if(!emMap[n])emMap[n]={facility_no:n,facility_name:emNames[n],submitted_by:{}};
+    if(r.start_time){emMap[n].start_time=r.start_time;emMap[n].submitted_by.em=r.submitted_by;}
+    if(r.end_time)emMap[n].end_time=r.end_time;
+    if(r.operation_hours!=null)emMap[n].operation_hours=r.operation_hours;
+    if(r.status)emMap[n].status=r.status;
+  });
+
+  // 방지시설: facility_no별 머지
+  var prMap={};
+  data.filter(function(r){return r.facility_type==='방지시설';}).forEach(function(r){
+    var n=r.facility_no;
+    if(!prMap[n])prMap[n]={facility_no:n,facility_name:prNames[n],submitted_by:{}};
+    if(r.power_prev!=null)prMap[n].power_prev=r.power_prev;
+    if(r.power_today!=null){prMap[n].power_today=r.power_today;prMap[n].submitted_by.pr=r.submitted_by;}
+    if(r.power_daily!=null)prMap[n].power_daily=r.power_daily;
+  });
+
+  // 배출구 1~9 전체 행
+  var emRows=[1,2,3,4,5,6,7,8,9].map(function(n){
+    if(n===8)return'<tr style="background:#f9fafb;"><td style="text-align:center;font-weight:700;color:#d1d5db;">8</td><td style="color:#d1d5db;">연마시설 (238.5㎥)</td><td colspan="4" style="text-align:center;color:#d1d5db;">미가동</td></tr>';
+    var r=emMap[n];
+    if(!r)return'<tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">'+n+'</td><td>'+emNames[n]+'</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td></tr>';
+    var sb2=r.status==='비정상'?'<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:10px;font-size:11px;">비정상</span>':'<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:11px;">정상</span>';
+    var submitter=r.submitted_by&&r.submitted_by.em?r.submitted_by.em:'-';
+    return'<tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">'+n+'</td><td>'+r.facility_name+'</td><td style="text-align:center;">'+(r.start_time&&r.end_time?r.start_time+'~'+r.end_time:'-')+'</td><td style="text-align:center;font-weight:700;color:#1a3a5c;">'+(r.operation_hours!=null?r.operation_hours+'h':'-')+'</td><td style="text-align:center;">'+(r.status?sb2:'-')+'</td><td style="text-align:center;color:#9ca3af;font-size:11px;">'+submitter+'</td></tr>';
+  }).join('');
+
+  if(!data.filter(function(r){return r.facility_type==='배출구';}).length){
+    document.getElementById('al-view-emission').innerHTML='<div class="empty" style="padding:1.5rem;text-align:center;color:#9ca3af;font-size:13px;">'+date+' 배출구 기록 없음</div>';
+  }else{
+    document.getElementById('al-view-emission').innerHTML='<div style="padding:8px 14px;font-size:12px;font-weight:700;color:#1a3a5c;border-top:1px solid #f3f4f6;">배출구 가동시간</div><div style="overflow-x:auto;"><table style="min-width:500px;"><thead><tr><th style="text-align:center;">배출구</th><th>시설명</th><th style="text-align:center;">가동~종료</th><th style="text-align:center;">총시간</th><th style="text-align:center;">상태</th><th style="text-align:center;">제출자</th></tr></thead><tbody>'+emRows+'</tbody></table></div>';
+  }
+
+  // 방지시설 1~9 전체 행
+  var prRows=[1,2,3,4,5,6,7,8,9].map(function(n){
+    var r=prMap[n];
+    if(!r)return'<tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">'+n+'</td><td>'+prNames[n]+'</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td></tr>';
+    var prevVal=r.power_prev!=null?r.power_prev:'-';
+    var todayVal=r.power_today!=null?r.power_today:'-';
+    var dailyVal=r.power_today!=null&&r.power_prev!=null?'<b style="color:#1a3a5c;">'+(r.power_today-r.power_prev)+'</b>':'-';
+    var submitter=r.submitted_by&&r.submitted_by.pr?r.submitted_by.pr:'-';
+    return'<tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">'+n+'</td><td>'+r.facility_name+'</td><td style="text-align:center;color:#9ca3af;">'+prevVal+'</td><td style="text-align:center;">'+todayVal+'</td><td style="text-align:center;">'+dailyVal+'</td><td style="text-align:center;color:#9ca3af;font-size:11px;">'+submitter+'</td></tr>';
+  }).join('');
+
+  if(!data.filter(function(r){return r.facility_type==='방지시설';}).length){
+    document.getElementById('al-view-prevention').innerHTML='<div class="empty" style="padding:1.5rem;text-align:center;color:#9ca3af;font-size:13px;">'+date+' 방지시설 기록 없음</div>';
+  }else{
+    document.getElementById('al-view-prevention').innerHTML='<div style="padding:8px 14px;font-size:12px;font-weight:700;color:#1a3a5c;border-top:1px solid #f3f4f6;">방지시설 전력사용량</div><div style="overflow-x:auto;"><table style="min-width:480px;"><thead><tr><th style="text-align:center;">순번</th><th>시설명</th><th style="text-align:center;">전일검침(kWh)</th><th style="text-align:center;">당일검침(kWh)</th><th style="text-align:center;">당일사용량(kWh)</th><th style="text-align:center;">제출자</th></tr></thead><tbody>'+prRows+'</tbody></table></div>';
+  }
+}
+  var date=document.getElementById('al-input-date').value;
+  if(!date){alert('날짜를 입력해주세요.');return;}
+  var btn=document.getElementById('al-save-btn');
+  btn.disabled=true;btn.textContent='저장 중...';
+
+  var emNames={1:'탈청시설 (200HP)',2:'도장시설 (600㎥)',3:'도장시설 (600㎥)',4:'도장시설 (600㎥)',5:'건조시설 (345.6㎥)',6:'도장 및 건조시설 (319㎥)',7:'도장 및 건조시설 (319㎥)',9:'도장시설 (656.6㎥)'};
+  var prNames={1:'여과집진시설',2:'흡착에의한시설',3:'흡착에의한시설',4:'흡착에의한시설',5:'흡착에의한시설',6:'1차여과, 2차흡착',7:'1차여과, 2차흡착',8:'흡착에의한시설',9:'흡착에의한시설'};
+  var emNos=[1,2,3,4,5,6,7,9];
+
+  var records=[];
+  emNos.forEach(function(n){
+    var sh=document.getElementById('em'+n+'-sh').value;
+    var sm=document.getElementById('em'+n+'-sm').value;
+    var eh=document.getElementById('em'+n+'-eh').value;
+    var em_=document.getElementById('em'+n+'-em').value;
+    var hr=document.getElementById('em'+n+'-hr').value;
+    var startTime=(sh||sm)?((sh||'00')+':'+(sm||'00')):null;
+    var endTime=(eh||em_)?((eh||'00')+':'+(em_||'00')):null;
+    records.push({
+      log_date:date,submitted_by:currentUser.username,
+      facility_no:n,facility_name:emNames[n],facility_type:'배출구',
+      start_time:startTime,end_time:endTime,
+      operation_hours:hr?parseFloat(hr):null,
+      status:alStatusMap['em'+n]||'정상',
+      power_prev:null,power_today:null,power_daily:null
+    });
+  });
+  for(var i=1;i<=9;i++){
+    var todayVal=document.getElementById('pr'+i+'-today').value;
+    var prevVal=alPrevPower[i]!=null?alPrevPower[i]:null;
+    var daily=todayVal&&prevVal!=null?parseFloat(todayVal)-prevVal:null;
+    records.push({
+      log_date:date,submitted_by:currentUser.username,
+      facility_no:i,facility_name:prNames[i],facility_type:'방지시설',
+      start_time:null,end_time:null,
+      operation_hours:null,status:null,
+      power_prev:prevVal,power_today:todayVal?parseFloat(todayVal):null,power_daily:daily
+    });
+  }
+
+  try{
+    await fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+date+'&submitted_by=eq.'+encodeURIComponent(currentUser.username),{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    var res=await fetch(SB_URL+'/rest/v1/air_operation_log',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},body:JSON.stringify(records)});
+    if(!res.ok){var errText=await res.text();throw new Error(errText);}
+    alert('저장 완료!');
+  }catch(e){console.error(e);alert('저장 실패: '+e.message);}
+  btn.disabled=false;btn.textContent='저장';
+}
+
+async function exportAirLogExcel(){
+  var date=document.getElementById('al-view-date').value;
+  if(!date){alert('먼저 날짜를 선택하고 조회해주세요.');return;}
+  var data=await sb('air_operation_log','?log_date=eq.'+date+'&select=*&order=facility_type.asc,facility_no.asc');
+  if(!data||!data.length){alert('내보낼 데이터가 없습니다.');return;}
+  var wb=XLSX.utils.book_new();
+  var emRows=[['배출구','시설명','가동시간','종료시간','총가동(h)','상태','제출자']];
+  var prRows=[['순번','시설명','전일검침(kWh)','당일검침(kWh)','당일사용량(kWh)','제출자']];
+  data.forEach(function(r){
+    if(r.facility_type==='배출구')emRows.push([r.facility_no,r.facility_name,r.start_time||'',r.end_time||'',r.operation_hours||'',r.status||'',r.submitted_by||'']);
+    if(r.facility_type==='방지시설')prRows.push([r.facility_no,r.facility_name,r.power_prev||'',r.power_today||'',r.power_daily||'',r.submitted_by||'']);
+  });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(emRows),'배출구가동시간');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(prRows),'방지시설전력');
+  XLSX.writeFile(wb,'대기운영기록_'+date+'.xlsx');
+}
+
+function clearAirLogFilter(){}
+
+var selectedAirFacilities=[];
+
+function toggleAirFacility(el,val){
+  var idx=selectedAirFacilities.indexOf(val);
+  if(idx>=0){
+    selectedAirFacilities.splice(idx,1);
+    el.style.borderColor='#e5e7eb';el.style.background='white';el.style.color='#6b7280';
+  }else{
+    selectedAirFacilities.push(val);
+    el.style.borderColor='#1a3a5c';el.style.background='#eef3f9';el.style.color='#1a3a5c';
+  }
+}
+
+function clearAirFacilityTags(){
+  selectedAirFacilities=[];
+  document.querySelectorAll('.air-ftag').forEach(function(el){
+    el.style.borderColor='#e5e7eb';el.style.background='white';el.style.color='#6b7280';
+  });
+}
+
+async function loadAirMeasures(){
+  var data=await sb('air_measurement','?select=*&order=measure_date.desc');
+  if(!data)data=[];
+  var today=new Date().toISOString().split('T')[0];
+
+  var months=[...new Set(data.map(function(r){return r.measure_date?r.measure_date.substring(0,7):null;}).filter(Boolean))].sort().reverse();
+  var sel=document.getElementById('air-filter-month');
+  var curMonth=sel.value;
+  sel.innerHTML='<option value="">전체</option>';
+  months.forEach(function(m){
+    var d=new Date(m+'-01');
+    var label=d.getFullYear()+'년 '+(d.getMonth()+1)+'월';
+    var o=document.createElement('option');o.value=m;o.textContent=label;if(m===curMonth)o.selected=true;
+    sel.appendChild(o);
+  });
+
+  var filterMonth=document.getElementById('air-filter-month').value;
+  var filterStatus=document.getElementById('air-filter-status').value;
+  var filtered=data.filter(function(r){
+    if(filterMonth&&!(r.measure_date&&r.measure_date.startsWith(filterMonth)))return false;
+    var effectiveStatus=r.status;
+    if(r.status==='예정'&&r.measure_date&&r.measure_date<today)effectiveStatus='미처리';
+    if(filterStatus&&effectiveStatus!==filterStatus)return false;
+    return true;
+  });
+
+  document.getElementById('air-record-count').textContent='총 '+filtered.length+'건';
+  if(!filtered.length){document.getElementById('air-table').innerHTML='<div class="empty">일정이 없습니다.</div>';return;}
+
+  var rows=filtered.map(function(r){
+    var isOverdue=r.status==='예정'&&r.measure_date&&r.measure_date<today;
+    var rowStyle=isOverdue?'background:#fff5f5;':r.status==='예정'?'background:#fffbeb;':'';
+    var statusBadge=isOverdue
+      ?'<span class="badge" style="background:#fef3c7;color:#92400e;">미처리</span>'
+      :r.status==='완료'?'<span class="badge" style="background:#d1fae5;color:#065f46;">완료</span>'
+      :r.status==='취소'?'<span class="badge" style="background:#fee2e2;color:#991b1b;">취소</span>'
+      :'<span class="badge" style="background:#dbeafe;color:#1e40af;">예정</span>';
+    var facilities=r.facilities?r.facilities.split(',').map(function(f){return'<span style="display:inline-block;padding:2px 7px;border-radius:10px;background:#eef3f9;color:#1a3a5c;font-size:11px;font-weight:500;margin:1px;">'+f.replace('배출구','배').replace('-','<br style="display:none">').trim()+'</span>';}).join(''):'<span style="color:#d1d5db;">-</span>';
+    var actionBtns='';
+    if(isAdmin()){
+      if(r.status!=='완료'&&r.status!=='취소'){
+        actionBtns='<button onclick="updateAirStatus(\''+r.id+'\',\'완료\',\'\')" style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;border:none;background:#d1fae5;color:#065f46;cursor:pointer;margin-right:4px;">완료</button>'+
+          '<button onclick="showCancelInput(\''+r.id+'\')" style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;border:none;background:#fee2e2;color:#991b1b;cursor:pointer;margin-right:4px;">취소</button>';
+      }
+      actionBtns+='<button class="del-btn" onclick="confirmDelete(\'air_measurement\',\''+r.id+'\',loadAirMeasures)">✕</button>';
+    }
+    var cancelRow=r.status==='취소'&&r.cancel_reason?'<tr style="background:#fff5f5;"><td colspan="6" style="padding:4px 14px;font-size:11px;color:#991b1b;">취소 사유: '+r.cancel_reason+'</td></tr>':'';
+    return'<tr style="'+rowStyle+'" id="air-row-'+r.id+'"><td>'+r.measure_date+'</td><td>'+(r.company||'-')+'</td><td style="max-width:200px;">'+facilities+'</td><td>'+statusBadge+'</td><td style="font-size:12px;color:#6b7280;max-width:140px;">'+(r.special_notes||'-')+'</td><td>'+actionBtns+'</td></tr>'+cancelRow;
+  }).join('');
+  document.getElementById('air-table').innerHTML='<div style="overflow-x:auto;"><table style="min-width:650px;"><thead><tr><th>측정일</th><th>측정업체</th><th>측정 시설</th><th>상태</th><th>특이사항</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function showCancelInput(id){
+  var row=document.getElementById('air-row-'+id);
+  if(!row)return;
+  var existing=document.getElementById('cancel-input-row-'+id);
+  if(existing){existing.remove();return;}
+  var tr=document.createElement('tr');
+  tr.id='cancel-input-row-'+id;
+  tr.style.background='#fff5f5';
+  tr.innerHTML='<td colspan="6" style="padding:8px 14px;"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:#6b7280;">취소 사유:</span><input type="text" id="cancel-reason-'+id+'" placeholder="취소 사유 입력" style="border:1px solid #fca5a5;border-radius:6px;padding:6px 10px;font-size:12px;outline:none;flex:1;max-width:300px;"><button onclick="updateAirStatus(\''+id+'\',\'취소\',document.getElementById(\'cancel-reason-'+id+'\').value)" style="padding:6px 14px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;">확인</button><button onclick="document.getElementById(\'cancel-input-row-'+id+'\').remove()" style="padding:6px 10px;background:white;color:#6b7280;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;cursor:pointer;">닫기</button></div></td>';
+  row.insertAdjacentElement('afterend',tr);
+}
+
+async function updateAirStatus(id,status,reason){
+  var body={status:status};
+  if(reason)body.cancel_reason=reason;
+  await sb('air_measurement','?id=eq.'+id,{method:'PATCH',body:body});
+  loadAirMeasures();
+}
+
+async function addAirMeasure(){
+  var date=document.getElementById('air-date').value;
+  if(!date){alert('측정일을 입력해주세요.');return;}
+  var facilities=selectedAirFacilities.join(',');
+  await sb('air_measurement','',{method:'POST',body:{
+    measure_date:date,
+    company:document.getElementById('air-company').value||null,
+    status:document.getElementById('air-status').value,
+    special_notes:document.getElementById('air-notes').value||null,
+    facilities:facilities||null
+  }});
+  document.getElementById('air-date').value='';
+  document.getElementById('air-company').value='';
+  document.getElementById('air-notes').value='';
+  clearAirFacilityTags();
+  loadAirMeasures();
+}
+
+function clearAirFilter(){
+  document.getElementById('air-filter-month').value='';
+  document.getElementById('air-filter-status').value='';
+  loadAirMeasures();
+}
+
+async function loadUsers(){
+  var data=await sb('users','?select=id,username,role,created_at&order=created_at.asc');
+  if(!data||!data.length){document.getElementById('users-table').innerHTML='<div class="empty">사용자가 없습니다.</div>';return;}
+  var rows=data.map(function(r){
+    var delBtn=r.username!=='admin'&&isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'users\',\''+r.id+'\',loadUsers)">✕</button>':'';
+    return'<tr><td>'+r.username+'</td><td><span class="role-badge '+getRoleClass(r.role)+'">'+getRoleText(r.role)+'</span></td><td style="font-size:11px;color:#9ca3af;">'+(r.created_at?new Date(r.created_at).toLocaleDateString('ko-KR'):'')+'</td><td>'+delBtn+'</td></tr>';
+  }).join('');
+  document.getElementById('users-table').innerHTML='<table><thead><tr><th>아이디</th><th>권한</th><th>등록일</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+async function addUser(){
+  var username=document.getElementById('new-username').value.trim();
+  var password=document.getElementById('new-password').value;
+  var role=document.getElementById('new-role').value;
+  if(!username||!password){alert('아이디와 비밀번호를 입력해주세요.');return;}
+  var res=await sb('users','',{method:'POST',body:{username:username,password_hash:password,role:role}});
+  if(res.ok){
+    document.getElementById('new-username').value='';
+    document.getElementById('new-password').value='';
+    document.getElementById('new-displayname').value='';
+    loadUsers();
+    alert(getRoleText(role)+' 권한으로 사용자 "'+username+'"이 추가되었습니다.');
+  }else{alert('이미 존재하는 아이디입니다.');}
+}
+
+var pendingDelete={};
+function confirmDelete(table,id,cb){
+  pendingDelete={table:table,id:id,cb:cb};
+  document.getElementById('del-modal').classList.add('show');
+  document.getElementById('modal-confirm-btn').onclick=function(){doDelete();};
+}
+async function doDelete(){
+  await sb(pendingDelete.table,'?id=eq.'+pendingDelete.id,{method:'DELETE'});
+  closeModal();
+  if(pendingDelete.cb)pendingDelete.cb();
+}
+function closeModal(){document.getElementById('del-modal').classList.remove('show');}
+
+if(checkAuth())loadCurrentTab();
+</script>
+</body>
+</html>
