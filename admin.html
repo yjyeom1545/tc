@@ -1086,6 +1086,8 @@ async function loadAirLogView(){
     document.getElementById('al-view-prevention').innerHTML='<div style="padding:8px 14px;font-size:12px;font-weight:700;color:#1a3a5c;border-top:1px solid #f3f4f6;">방지시설 전력사용량</div><div style="overflow-x:auto;"><table style="min-width:480px;"><thead><tr><th style="text-align:center;">순번</th><th>시설명</th><th style="text-align:center;">전일검침(kWh)</th><th style="text-align:center;">당일검침(kWh)</th><th style="text-align:center;">당일사용량(kWh)</th><th style="text-align:center;">제출자</th></tr></thead><tbody>'+prRows+'</tbody></table></div>';
   }
 }
+
+async function saveAirLog(){
   var date=document.getElementById('al-input-date').value;
   if(!date){alert('날짜를 입력해주세요.');return;}
   var btn=document.getElementById('al-save-btn');
