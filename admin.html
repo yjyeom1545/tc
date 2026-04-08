@@ -300,7 +300,7 @@ tr:hover td{background:#fafafa;}
     </div>
     <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;">
       <span class="filter-label">운전일자</span>
-      <input type="date" id="al-input-date" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+      <input type="date" id="al-input-date" onchange="loadPrevPower(this.value)" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
     </div>
 
     <div style="padding:10px 14px 6px;font-size:13px;font-weight:700;color:#1a3a5c;">1. 배출구별 가동시간</div>
@@ -1079,7 +1079,10 @@ async function loadAirLogView(){
     if(!r)return'<tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">'+n+'</td><td>'+prNames[n]+'</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td></tr>';
     var prevVal=r.power_prev!=null?r.power_prev:'-';
     var todayVal=r.power_today!=null?r.power_today:'-';
-    var dailyVal=r.power_today!=null&&r.power_prev!=null?'<b style="color:#1a3a5c;">'+(r.power_today-r.power_prev)+'</b>':'-';
+    var dailyCalc=null;
+    if(r.power_daily!=null)dailyCalc=r.power_daily;
+    else if(r.power_today!=null&&r.power_prev!=null)dailyCalc=r.power_today-r.power_prev;
+    var dailyVal=dailyCalc!=null?'<b style="color:'+(dailyCalc>=0?'#1a3a5c':'#ef4444')+';">'+dailyCalc+'</b>':'-';
     var submitter=r.submitted_by&&r.submitted_by.pr?r.submitted_by.pr:'-';
     return'<tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">'+n+'</td><td>'+r.facility_name+'</td><td style="text-align:center;color:#9ca3af;">'+prevVal+'</td><td style="text-align:center;">'+todayVal+'</td><td style="text-align:center;">'+dailyVal+'</td><td style="text-align:center;color:#9ca3af;font-size:11px;">'+submitter+'</td></tr>';
   }).join('');
@@ -1099,10 +1102,9 @@ async function saveAirLog(){
 
   var emNames={1:'탈청시설 (200HP)',2:'도장시설 (600㎥)',3:'도장시설 (600㎥)',4:'도장시설 (600㎥)',5:'건조시설 (345.6㎥)',6:'도장 및 건조시설 (319㎥)',7:'도장 및 건조시설 (319㎥)',9:'도장시설 (656.6㎥)'};
   var prNames={1:'여과집진시설',2:'흡착에의한시설',3:'흡착에의한시설',4:'흡착에의한시설',5:'흡착에의한시설',6:'1차여과, 2차흡착',7:'1차여과, 2차흡착',8:'흡착에의한시설',9:'흡착에의한시설'};
-  var emNos=[1,2,3,4,5,6,7,9];
-
+  var myEmNos=(currentUser.role==='manager2')?[9]:[1,2,3,4,5,6,7];
   var records=[];
-  emNos.forEach(function(n){
+  myEmNos.forEach(function(n){
     var sh=document.getElementById('em'+n+'-sh').value;
     var sm=document.getElementById('em'+n+'-sm').value;
     var eh=document.getElementById('em'+n+'-eh').value;
@@ -1119,16 +1121,21 @@ async function saveAirLog(){
       power_prev:null,power_today:null,power_daily:null
     });
   });
-  for(var i=1;i<=9;i++){
-    var todayVal=document.getElementById('pr'+i+'-today').value;
-    var prevVal=alPrevPower[i]!=null?alPrevPower[i]:null;
-    var daily=todayVal&&prevVal!=null?parseFloat(todayVal)-prevVal:null;
+  // 방지시설: 담당자별 담당 범위만 저장
+  var myPrNos=(currentUser.role==='manager2')?[9]:[1,2,3,4,5,6,7,8,9];
+  for(var i=0;i<myPrNos.length;i++){
+    var no=myPrNos[i];
+    var todayVal=document.getElementById('pr'+no+'-today').value;
+    var prevVal=alPrevPower[no]!=null?alPrevPower[no]:null;
+    var daily=(todayVal!==''&&prevVal!=null)?parseFloat(todayVal)-prevVal:null;
+    // daily가 음수면 전일검침 없는 것으로 처리
+    if(daily!==null&&daily<0)daily=null;
     records.push({
       log_date:date,submitted_by:currentUser.username,
-      facility_no:i,facility_name:prNames[i],facility_type:'방지시설',
+      facility_no:no,facility_name:prNames[no],facility_type:'방지시설',
       start_time:null,end_time:null,
       operation_hours:null,status:null,
-      power_prev:prevVal,power_today:todayVal?parseFloat(todayVal):null,power_daily:daily
+      power_prev:prevVal,power_today:todayVal!==''?parseFloat(todayVal):null,power_daily:daily
     });
   }
 
