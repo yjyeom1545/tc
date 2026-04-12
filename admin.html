@@ -9,20 +9,52 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;min-height:100vh;}
-.topbar{background:#1a3a5c;color:white;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.topbar h1{font-size:15px;font-weight:700;}
-.topbar-sub{font-size:11px;opacity:0.6;margin-top:1px;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── 사이드바 레이아웃 ── */
+.app-layout{display:flex;flex:1;min-height:0;}
+.sidebar{width:220px;min-width:220px;background:#1a3a5c;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform 0.25s;}
+.sidebar-header{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sidebar-logo{font-size:13px;font-weight:700;color:white;letter-spacing:0.3px;}
+.sidebar-sub{font-size:10px;color:rgba(255,255,255,0.45);margin-top:3px;}
+.sidebar-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:8px;}
+.sidebar-user-icon{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;font-weight:700;flex-shrink:0;}
+.sidebar-user-name{font-size:12px;color:rgba(255,255,255,0.85);font-weight:500;}
+.sidebar-user-role{font-size:10px;color:rgba(255,255,255,0.45);}
+.sidebar-nav{flex:1;overflow-y:auto;padding:10px 0;}
+.nav-section{padding:8px 18px 4px;font-size:10px;color:rgba(255,255,255,0.35);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;color:rgba(255,255,255,0.65);font-size:13px;font-weight:500;transition:all 0.15s;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:white;}
+.nav-item.active{background:rgba(255,255,255,0.12);color:white;border-left-color:#60a5fa;}
+.nav-item .nav-icon{font-size:16px;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;}
+.sidebar-footer{padding:12px 18px;border-top:1px solid rgba(255,255,255,0.08);}
+.sidebar-footer-btn{width:100%;padding:8px;background:rgba(239,68,68,0.25);color:rgba(255,255,255,0.8);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
+.sidebar-footer-btn:hover{background:rgba(239,68,68,0.45);}
+
+/* ── 메인 영역 ── */
+.main-area{margin-left:220px;flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{background:white;border-bottom:1px solid #e5e7eb;padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-title{font-size:15px;font-weight:700;color:#1a3a5c;}
 .topbar-right{display:flex;gap:8px;align-items:center;}
-.user-badge{font-size:12px;background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:20px;}
-.top-btn{background:rgba(255,255,255,0.15);border:none;color:white;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
-.top-btn:hover{background:rgba(255,255,255,0.25);}
-.top-btn.excel{background:#217346;}
-.top-btn.logout{background:rgba(239,68,68,0.7);}
-.tab-bar{background:white;border-bottom:1px solid #e5e7eb;display:flex;padding:0 1rem;overflow-x:auto;}
-.tab-btn{padding:13px 16px;font-size:13px;font-weight:500;color:#6b7280;border:none;background:transparent;cursor:pointer;font-family:'Noto Sans KR',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
-.tab-btn.active{color:#1a3a5c;border-bottom-color:#1a3a5c;}
-.content{max-width:1100px;margin:0 auto;padding:1.5rem 1rem;}
+.top-btn{background:#f0f2f5;border:none;color:#374151;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
+.top-btn:hover{background:#e5e7eb;}
+.top-btn.logout{background:#fee2e2;color:#ef4444;}
+.top-btn.logout:hover{background:#fca5a5;}
+
+/* ── 모바일 토글 ── */
+.menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:4px;color:#374151;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:199;}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main-area{margin-left:0;}
+  .menu-toggle{display:block;}
+  .sidebar-overlay.show{display:block;}
+}
+
+/* ── 콘텐츠 ── */
+.content{max-width:1100px;margin:0 auto;padding:1.5rem 1rem;width:100%;}
 .hidden{display:none;}
 .card{background:white;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:12px;overflow:hidden;}
 .card-body{padding:1.1rem 1.25rem;}
@@ -97,7 +129,7 @@ tr:hover td{background:#fafafa;}
 .role-admin{background:#dbeafe;color:#1e40af;}
 .role-manager{background:#d1fae5;color:#065f46;}
 .role-viewer{background:#f3f4f6;color:#6b7280;}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:none;}
 .modal-bg.show{display:flex;align-items:center;justify-content:center;}
 .modal{background:white;border-radius:12px;padding:1.5rem;width:90%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.15);}
 .modal-title{font-size:15px;font-weight:700;color:#1a3a5c;margin-bottom:1rem;}
@@ -110,28 +142,69 @@ tr:hover td{background:#fafafa;}
 .al-sbtn{padding:3px 10px;border-radius:10px;font-size:11px;font-weight:500;border:1px solid #e5e7eb;cursor:pointer;background:white;color:#9ca3af;font-family:'Noto Sans KR',sans-serif;}
 .al-normal{border-color:#1a3a5c;background:#eef3f9;color:#1a3a5c;}
 .al-abnormal{border-color:#ef4444;background:#fef2f2;color:#ef4444;}
+/* 유효성 검사 에러 표시 */
+.input-error{border-color:#ef4444 !important;background:#fff5f5 !important;}
+.val-msg{font-size:11px;color:#ef4444;margin-top:3px;display:none;}
+.val-msg.show{display:block;}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div>
-    <div style="display:flex;align-items:center;gap:8px;"><h1>TC 환경관리 시스템</h1></div>
-    <div class="topbar-sub">도장시설 · 폐기물 · 대기 통합 관리</div>
-  </div>
-  <div class="topbar-right">
-    <span class="user-badge" id="user-badge">-</span>
-    <button class="top-btn" onclick="location.reload()">새로고침</button>
-    <button class="top-btn logout" onclick="logout()">로그아웃</button>
-  </div>
-</div>
 
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="showTab('filter')">필터 교체</button>
-  <button class="tab-btn" onclick="showTab('waste')">폐기물</button>
-  <button class="tab-btn" onclick="showTab('airlog')">대기운영기록</button>
-  <button class="tab-btn" onclick="showTab('air')">대기측정</button>
-  <button class="tab-btn" onclick="showTab('users')">사용자 관리</button>
-</div>
+<!-- 모바일 오버레이 -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- 사이드바 -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">TC 환경관리 시스템</div>
+    <div class="sidebar-sub">도장시설 · 폐기물 · 대기 통합 관리</div>
+  </div>
+  <div class="sidebar-user">
+    <div class="sidebar-user-icon" id="sb-user-icon">-</div>
+    <div>
+      <div class="sidebar-user-name" id="sb-user-name">-</div>
+      <div class="sidebar-user-role" id="sb-user-role">-</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">집진설비</div>
+    <div class="nav-item active" id="nav-filter" onclick="showTab('filter')">
+      <span class="nav-icon">🔧</span> 필터 교체
+    </div>
+    <div class="nav-section">폐기물</div>
+    <div class="nav-item" id="nav-waste" onclick="showTab('waste')">
+      <span class="nav-icon">🗑️</span> 폐기물 관리
+    </div>
+    <div class="nav-section">대기</div>
+    <div class="nav-item" id="nav-airlog" onclick="showTab('airlog')">
+      <span class="nav-icon">📋</span> 대기운영기록
+    </div>
+    <div class="nav-item" id="nav-air" onclick="showTab('air')">
+      <span class="nav-icon">📡</span> 대기측정 일정
+    </div>
+    <div class="nav-section" id="nav-section-admin">관리</div>
+    <div class="nav-item" id="nav-users" onclick="showTab('users')">
+      <span class="nav-icon">👤</span> 사용자 관리
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="sidebar-footer-btn" onclick="logout()">로그아웃</button>
+  </div>
+</aside>
+
+<!-- 메인 영역 -->
+<div class="main-area">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="menu-toggle" onclick="toggleSidebar()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="topbar-title" id="topbar-title">필터 교체</span>
+    </div>
+    <div class="topbar-right">
+      <button class="top-btn" onclick="location.reload()">새로고침</button>
+    </div>
+  </div>
 
 <!-- 필터 교체 탭 -->
 <div id="tab-filter" class="content">
@@ -486,7 +559,9 @@ tr:hover td{background:#fafafa;}
     </div>
   </div>
 </div>
+</div><!-- /main-area -->
 
+<!-- 삭제 확인 모달 -->
 <script>
 var SB_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
@@ -497,11 +572,32 @@ function checkAuth(){
   if(!u){window.location.href='login.html';return false;}
   currentUser=JSON.parse(u);
   var roleText={'admin':'관리자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[currentUser.role]||currentUser.role;
-  document.getElementById('user-badge').textContent=currentUser.username+' ('+roleText+')';
-  var isAdminUser=currentUser.role==='admin';
-  var usersTab=document.querySelector('[onclick="showTab(\'users\')"]');
-  if(usersTab&&!isAdminUser)usersTab.style.display='none';
+  // 사이드바 사용자 정보
+  var icon=document.getElementById('sb-user-icon');
+  if(icon)icon.textContent=currentUser.username.charAt(0).toUpperCase();
+  var nameEl=document.getElementById('sb-user-name');
+  if(nameEl)nameEl.textContent=currentUser.username;
+  var roleEl=document.getElementById('sb-user-role');
+  if(roleEl)roleEl.textContent=roleText;
+  // 관리자가 아니면 사용자 관리 메뉴 숨김
+  var usersNav=document.getElementById('nav-users');
+  var adminSection=document.getElementById('nav-section-admin');
+  if(!isAdmin()){
+    if(usersNav)usersNav.style.display='none';
+    if(adminSection)adminSection.style.display='none';
+  }
   return true;
+}
+
+function toggleSidebar(){
+  var sb=document.getElementById('sidebar');
+  var ov=document.getElementById('sidebar-overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
 }
 
 function isAdmin(){return currentUser&&currentUser.role==='admin';}
@@ -530,10 +626,16 @@ async function sb(table,query,opts){
 function showTab(tab){
   document.querySelectorAll('[id^="tab-"]').forEach(function(el){el.classList.add('hidden');});
   document.getElementById('tab-'+tab).classList.remove('hidden');
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-  var tabs=['filter','waste','airlog','air','users'];
-  var idx=tabs.indexOf(tab);
-  if(idx>=0)document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  // 사이드바 nav-item 활성화
+  document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active');});
+  var navEl=document.getElementById('nav-'+tab);
+  if(navEl)navEl.classList.add('active');
+  // topbar 타이틀
+  var titles={filter:'필터 교체',waste:'폐기물 관리',airlog:'대기운영기록',air:'대기측정 일정',users:'사용자 관리'};
+  var titleEl=document.getElementById('topbar-title');
+  if(titleEl)titleEl.textContent=titles[tab]||tab;
+  // 모바일: 사이드바 닫기
+  closeSidebar();
   currentTab=tab;
   loadCurrentTab();
 }
@@ -945,19 +1047,36 @@ function calcPower(no){
   var prevVal=prevEl&&prevEl.value!==''?parseFloat(prevEl.value):null;
   var todayVal=todayEl&&todayEl.value!==''?parseFloat(todayEl.value):null;
   alPrevPower[no]=prevVal;
+  // 유효성 검사 초기화
+  if(todayEl){todayEl.style.border='1px solid #e5e7eb';todayEl.style.background='';}
+  if(dailyEl){dailyEl.textContent='-';dailyEl.style.color='#d1d5db';}
   if(prevVal!=null&&todayVal!=null){
     var daily=todayVal-prevVal;
     if(daily<0){
-      dailyEl.textContent='오류';
+      // 오류: 당일검침이 전일검침보다 작음
+      if(todayEl){todayEl.style.border='1px solid #ef4444';todayEl.style.background='#fff5f5';}
+      dailyEl.textContent='오류 — 전일보다 작음';
       dailyEl.style.color='#ef4444';
     }else{
       dailyEl.textContent=daily.toFixed(0);
       dailyEl.style.color='#1a3a5c';
+      dailyEl.style.fontWeight='700';
     }
-  }else{
-    dailyEl.textContent='-';
-    dailyEl.style.color='#d1d5db';
   }
+}
+
+function validatePowerInputs(){
+  var hasError=false;
+  var myPrNos=(currentUser&&currentUser.role==='manager2')?[9]:[1,2,3,4,5,6,7,8,9];
+  myPrNos.forEach(function(no){
+    var prevEl=document.getElementById('pr'+no+'-prev');
+    var todayEl=document.getElementById('pr'+no+'-today');
+    if(!todayEl||todayEl.disabled||todayEl.value==='')return;
+    var prevVal=prevEl&&prevEl.value!==''?parseFloat(prevEl.value):null;
+    var todayVal=parseFloat(todayEl.value);
+    if(prevVal!=null&&todayVal<prevVal){hasError=true;}
+  });
+  return !hasError;
 }
 
 async function loadAirLog(){
@@ -1128,6 +1247,10 @@ async function loadAirLogView(){
 async function saveAirLog(){
   var date=document.getElementById('al-input-date').value;
   if(!date){alert('날짜를 입력해주세요.');return;}
+  if(!validatePowerInputs()){
+    alert('오류가 있습니다.\n당일검침량이 전일검침량보다 작은 항목을 확인해주세요.');
+    return;
+  }
   var btn=document.getElementById('al-save-btn');
   btn.disabled=true;btn.textContent='저장 중...';
 
