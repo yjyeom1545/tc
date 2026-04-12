@@ -167,8 +167,11 @@ tr:hover td{background:#fafafa;}
     </div>
   </div>
   <nav class="sidebar-nav">
+    <div class="nav-item active" id="nav-home" onclick="showTab('home')">
+      <span class="nav-icon">🏠</span> 홈
+    </div>
     <div class="nav-section">집진설비</div>
-    <div class="nav-item active" id="nav-filter" onclick="showTab('filter')">
+    <div class="nav-item" id="nav-filter" onclick="showTab('filter')">
       <span class="nav-icon">🔧</span> 필터 교체
     </div>
     <div class="nav-section">폐기물</div>
@@ -206,8 +209,94 @@ tr:hover td{background:#fafafa;}
     </div>
   </div>
 
+<!-- 홈 대시보드 탭 -->
+<div id="tab-home" class="content">
+
+  <!-- 헤더 -->
+  <div style="margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div>
+      <div style="font-size:18px;font-weight:700;color:#1a3a5c;" id="dash-greeting">안녕하세요!</div>
+      <div style="font-size:12px;color:#9ca3af;margin-top:3px;" id="dash-date">-</div>
+    </div>
+    <button onclick="loadDashboard()" style="padding:7px 16px;background:#f0f2f5;color:#374151;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">↻ 새로고침</button>
+  </div>
+
+  <!-- 위젯 1: 이번 달 필터 교체 현황 -->
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">🔧 이번 달 필터 교체 현황</span>
+      <button onclick="showTab('filter')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;border-top:1px solid #f3f4f6;">
+      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">이번 달 교체</div>
+        <div style="font-size:24px;font-weight:700;color:#3b82f6;" id="dash-f-month">-</div>
+        <div style="font-size:11px;color:#9ca3af;">건</div>
+      </div>
+      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">이번 달 수량</div>
+        <div style="font-size:24px;font-weight:700;color:#1a3a5c;" id="dash-f-qty">-</div>
+        <div style="font-size:11px;color:#9ca3af;">개</div>
+      </div>
+      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">미처리 발주 요청</div>
+        <div style="font-size:24px;font-weight:700;" id="dash-f-order" style="color:#ef4444;">-</div>
+        <div style="font-size:11px;color:#9ca3af;">건</div>
+      </div>
+      <div style="padding:14px 16px;">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">최근 교체일</div>
+        <div style="font-size:15px;font-weight:700;color:#374151;padding-top:4px;" id="dash-f-last">-</div>
+      </div>
+    </div>
+    <div id="dash-filter-recent" style="border-top:1px solid #f3f4f6;"></div>
+  </div>
+
+  <!-- 위젯 2+3: 2단 레이아웃 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="dash-grid">
+
+    <!-- 위젯 2: 라인별 폐유고상 보관량 -->
+    <div class="card">
+      <div class="table-header">
+        <span class="table-title">🗑️ 라인별 폐유고상 보관량</span>
+        <button onclick="showTab('waste')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+      </div>
+      <div id="dash-waste-lines" style="padding:14px 16px;"></div>
+    </div>
+
+    <!-- 위젯 3: 대기운영기록 입력 현황 -->
+    <div class="card">
+      <div class="table-header">
+        <span class="table-title">📋 대기운영기록 입력 현황</span>
+        <button onclick="showTab('airlog')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+      </div>
+      <div id="dash-airlog-status" style="padding:14px 16px;"></div>
+    </div>
+
+    <!-- 위젯 4: 다음 배출업체 스케줄 -->
+    <div class="card">
+      <div class="table-header">
+        <span class="table-title">🚛 배출업체 스케줄</span>
+        <button onclick="showTab('waste')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+      </div>
+      <div id="dash-waste-schedule" style="padding:0;"></div>
+    </div>
+
+    <!-- 위젯 5: 다음 대기측정 일정 -->
+    <div class="card">
+      <div class="table-header">
+        <span class="table-title">📡 대기측정 일정</span>
+        <button onclick="showTab('air')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+      </div>
+      <div id="dash-air-schedule" style="padding:0;"></div>
+    </div>
+
+  </div>
+</div>
+
+<style>@media(max-width:768px){.dash-grid{grid-template-columns:1fr !important;}}</style>
+
 <!-- 필터 교체 탭 -->
-<div id="tab-filter" class="content">
+<div id="tab-filter" class="content hidden">
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">전체 교체 기록</div><div class="stat-value" id="stat-total">-<span class="stat-unit">건</span></div></div>
     <div class="stat-card"><div class="stat-label">이번 달 교체</div><div class="stat-value" id="stat-month">-<span class="stat-unit">건</span></div></div>
@@ -565,7 +654,7 @@ tr:hover td{background:#fafafa;}
 <script>
 var SB_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
-var currentTab='filter',allData=[],monthlyChart=null,currentUser=null;
+var currentTab='home',allData=[],monthlyChart=null,currentUser=null;
 
 function checkAuth(){
   var u=sessionStorage.getItem('tc_user');
@@ -631,7 +720,7 @@ function showTab(tab){
   var navEl=document.getElementById('nav-'+tab);
   if(navEl)navEl.classList.add('active');
   // topbar 타이틀
-  var titles={filter:'필터 교체',waste:'폐기물 관리',airlog:'대기운영기록',air:'대기측정 일정',users:'사용자 관리'};
+  var titles={home:'홈',filter:'필터 교체',waste:'폐기물 관리',airlog:'대기운영기록',air:'대기측정 일정',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
   if(titleEl)titleEl.textContent=titles[tab]||tab;
   // 모바일: 사이드바 닫기
@@ -642,12 +731,183 @@ function showTab(tab){
 
 function loadCurrentTab(){
   try{
-    if(currentTab==='filter')loadFilterData();
+    if(currentTab==='home')loadDashboard();
+    else if(currentTab==='filter')loadFilterData();
     else if(currentTab==='waste')loadWasteData();
     else if(currentTab==='airlog')loadAirLog();
     else if(currentTab==='air')loadAirMeasures();
     else if(currentTab==='users')loadUsers();
   }catch(e){console.error('탭 로딩 오류:',e);}
+}
+
+async function loadDashboard(){
+  // 날짜/인사
+  var now=new Date();
+  var days=['일','월','화','수','목','금','토'];
+  var dateStr=now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 ('+days[now.getDay()]+')';
+  var h=now.getHours();
+  var greeting=h<12?'좋은 아침입니다':h<18?'안녕하세요':h<22?'수고하셨습니다':'안녕하세요';
+  document.getElementById('dash-greeting').textContent=greeting+', '+(currentUser?currentUser.username:'')+'님!';
+  document.getElementById('dash-date').textContent=dateStr;
+
+  var now2=new Date();
+  var ym=now2.getFullYear()+'-'+String(now2.getMonth()+1).padStart(2,'0');
+  var today=now2.toISOString().split('T')[0];
+  // 이번 주 월~일
+  var dow=now2.getDay()||7;
+  var weekStart=new Date(now2); weekStart.setDate(now2.getDate()-dow+1);
+  var weekEnd=new Date(now2); weekEnd.setDate(now2.getDate()+(7-dow));
+  var weekStartStr=weekStart.toISOString().split('T')[0];
+  var weekEndStr=weekEnd.toISOString().split('T')[0];
+
+  // 병렬 로드
+  var results=await Promise.all([
+    sb('filter_records','?select=*&record_date=gte.'+ym+'-01&order=record_date.desc'),
+    sb('filter_order_requests','?checked=eq.false&select=id'),
+    sb('waste_oil_storage','?select=*&order=line_name.asc'),
+    sb('air_operation_log','?log_date=gte.'+ym+'-01&facility_type=eq.배출구&select=log_date,submitted_by&order=log_date.asc'),
+    sb('air_operation_log','?log_date=gte.'+weekStartStr+'&log_date=lte.'+weekEndStr+'&facility_type=eq.배출구&select=log_date,submitted_by'),
+    sb('waste_oil_schedule','?status=eq.예정&select=*&order=scheduled_date.asc&limit=5'),
+    sb('air_measurement','?status=eq.예정&measure_date=gte.'+today+'&select=*&order=measure_date.asc&limit=5')
+  ]);
+  var filterMonth=results[0]||[];
+  var orderPending=results[1]||[];
+  var storageData=results[2]||[];
+  var airlogMonth=results[3]||[];
+  var airlogWeek=results[4]||[];
+  var wasteSchedule=results[5]||[];
+  var airSchedule=results[6]||[];
+
+  // ── 위젯1: 이번 달 필터 교체 현황 ──
+  var fQty=filterMonth.reduce(function(s,r){return s+(r.quantity||0);},0);
+  document.getElementById('dash-f-month').textContent=filterMonth.length;
+  document.getElementById('dash-f-qty').textContent=fQty;
+  var orderEl=document.getElementById('dash-f-order');
+  orderEl.textContent=orderPending.length;
+  orderEl.style.color=orderPending.length>0?'#ef4444':'#10b981';
+  document.getElementById('dash-f-last').textContent=filterMonth.length>0?filterMonth[0].record_date:'-';
+  // 최근 3건 테이블
+  var recentEl=document.getElementById('dash-filter-recent');
+  if(filterMonth.length){
+    recentEl.innerHTML='<div style="overflow-x:auto;"><table style="min-width:400px;"><thead><tr><th>날짜</th><th>시설</th><th style="text-align:center;">수량</th><th>교체자</th></tr></thead><tbody>'+
+      filterMonth.slice(0,3).map(function(r){
+        return'<tr><td>'+r.record_date+'</td><td style="font-size:12px;">'+r.facility_name+'</td><td style="text-align:center;">'+r.quantity+'개</td><td style="font-size:12px;color:#9ca3af;">'+r.technician+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+  }else{
+    recentEl.innerHTML='<div style="padding:1rem 1.1rem;font-size:13px;color:#9ca3af;">이번 달 교체 기록 없음</div>';
+  }
+
+  // ── 위젯2: 라인별 보관량 ──
+  var linesEl=document.getElementById('dash-waste-lines');
+  var lineColors={'G16동':'#3b82f6','현대라인':'#10b981','강건재라인':'#f59e0b','패킹라인':'#8b5cf6'};
+  if(!storageData.length){
+    linesEl.innerHTML='<div class="empty" style="padding:1rem;">데이터 없음</div>';
+  }else{
+    var maxCount=Math.max.apply(null,storageData.map(function(r){return r.bag_count||0;}));
+    maxCount=maxCount||1;
+    linesEl.innerHTML=storageData.map(function(r){
+      var c=lineColors[r.line_name]||'#6b7280';
+      var cnt=r.bag_count||0;
+      var pct=Math.round(cnt/maxCount*100);
+      var warn=cnt>=10?'color:#ef4444;':cnt>=5?'color:#f59e0b;':'color:'+c+';';
+      return'<div style="margin-bottom:14px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'+
+          '<span style="font-size:13px;font-weight:500;color:#374151;">'+r.line_name+'</span>'+
+          '<span style="font-size:16px;font-weight:700;'+warn+'">'+cnt+'<span style="font-size:11px;font-weight:400;color:#9ca3af;margin-left:2px;">개</span></span>'+
+        '</div>'+
+        '<div style="background:#f3f4f6;border-radius:4px;height:7px;">'+
+          '<div style="background:'+c+';width:'+pct+'%;height:7px;border-radius:4px;transition:width 0.5s;"></div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  // ── 위젯3: 대기운영기록 입력 현황 (오늘/이번 주/이번 달) ──
+  var airlogStatusEl=document.getElementById('dash-airlog-status');
+  var todayLogged=airlogMonth.filter(function(r){return r.log_date===today;}).length>0;
+  var weekDays=[...new Set(airlogWeek.map(function(r){return r.log_date;}))];
+  var monthDays=[...new Set(airlogMonth.map(function(r){return r.log_date;}))];
+  // 이번 달 평일 수
+  var workdays=0;
+  for(var d=1;d<=now2.getDate();d++){var dw=new Date(now2.getFullYear(),now2.getMonth(),d).getDay();if(dw!==0&&dw!==6)workdays++;}
+  var pct=workdays>0?Math.round(monthDays.length/workdays*100):0;
+  var pctColor=pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
+  // 오늘 입력 여부
+  var todayBg=todayLogged?'#f0fdf4':'#fff5f5';
+  var todayColor=todayLogged?'#10b981':'#ef4444';
+  var todayText=todayLogged?'✅ 오늘 입력 완료':'⚠️ 오늘 미입력';
+  airlogStatusEl.innerHTML=
+    '<div style="background:'+todayBg+';border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;font-weight:600;color:'+todayColor+';">'+todayText+'</div>'+
+    '<div style="display:flex;gap:8px;margin-bottom:12px;">'+
+      '<div style="flex:1;background:#f9fafb;border-radius:8px;padding:10px;text-align:center;">'+
+        '<div style="font-size:11px;color:#6b7280;margin-bottom:3px;">이번 주</div>'+
+        '<div style="font-size:20px;font-weight:700;color:#1a3a5c;">'+weekDays.length+'</div>'+
+        '<div style="font-size:11px;color:#9ca3af;">일</div>'+
+      '</div>'+
+      '<div style="flex:1;background:#f9fafb;border-radius:8px;padding:10px;text-align:center;">'+
+        '<div style="font-size:11px;color:#6b7280;margin-bottom:3px;">이번 달</div>'+
+        '<div style="font-size:20px;font-weight:700;color:#1a3a5c;">'+monthDays.length+'</div>'+
+        '<div style="font-size:11px;color:#9ca3af;">일</div>'+
+      '</div>'+
+      '<div style="flex:1;background:#f9fafb;border-radius:8px;padding:10px;text-align:center;">'+
+        '<div style="font-size:11px;color:#6b7280;margin-bottom:3px;">달성률</div>'+
+        '<div style="font-size:20px;font-weight:700;color:'+pctColor+';">'+pct+'</div>'+
+        '<div style="font-size:11px;color:#9ca3af;">%</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="background:#f3f4f6;border-radius:4px;height:8px;">'+
+      '<div style="background:'+pctColor+';width:'+Math.min(pct,100)+'%;height:8px;border-radius:4px;transition:width 0.5s;"></div>'+
+    '</div>'+
+    '<div style="font-size:11px;color:#9ca3af;margin-top:6px;">이번 달 평일 '+workdays+'일 기준 '+monthDays.length+'일 입력</div>';
+
+  // ── 위젯4: 배출업체 스케줄 ──
+  var wasteSchedEl=document.getElementById('dash-waste-schedule');
+  if(!wasteSchedule.length){
+    wasteSchedEl.innerHTML='<div class="empty" style="padding:1.2rem;">예정된 배출 일정 없음</div>';
+  }else{
+    wasteSchedEl.innerHTML=wasteSchedule.map(function(r){
+      var dday=Math.ceil((new Date(r.scheduled_date)-new Date(today))/(1000*60*60*24));
+      var ddayStr=dday===0?'오늘':dday>0?'D-'+dday:'D+'+Math.abs(dday);
+      var ddayColor=dday<0?'#ef4444':dday<=3?'#f59e0b':'#6b7280';
+      var types=r.line_names?r.line_names.split(',').map(function(t){
+        return'<span style="background:#f0f2f5;color:#374151;font-size:11px;padding:1px 6px;border-radius:10px;margin:1px;display:inline-block;">'+t.trim()+'</span>';
+      }).join(''):'';
+      return'<div style="padding:10px 14px;border-bottom:1px solid #f9fafb;display:flex;align-items:flex-start;gap:10px;">'+
+        '<span style="font-size:16px;margin-top:1px;">🚛</span>'+
+        '<div style="flex:1;">'+
+          '<div style="font-size:13px;font-weight:500;color:#374151;margin-bottom:3px;">가람환경</div>'+
+          '<div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">'+r.scheduled_date+'</div>'+
+          '<div>'+types+'</div>'+
+        '</div>'+
+        '<span style="font-size:12px;font-weight:700;color:'+ddayColor+';white-space:nowrap;">'+ddayStr+'</span>'+
+      '</div>';
+    }).join('');
+  }
+
+  // ── 위젯5: 대기측정 일정 ──
+  var airSchedEl=document.getElementById('dash-air-schedule');
+  if(!airSchedule.length){
+    airSchedEl.innerHTML='<div class="empty" style="padding:1.2rem;">예정된 측정 일정 없음</div>';
+  }else{
+    airSchedEl.innerHTML=airSchedule.map(function(r){
+      var dday=Math.ceil((new Date(r.measure_date)-new Date(today))/(1000*60*60*24));
+      var ddayStr=dday===0?'오늘':dday>0?'D-'+dday:'D+'+Math.abs(dday);
+      var ddayColor=dday<0?'#ef4444':dday<=7?'#f59e0b':'#6b7280';
+      var facilities=r.facilities?r.facilities.split(',').slice(0,3).map(function(f){
+        return'<span style="background:#eff6ff;color:#1e40af;font-size:11px;padding:1px 6px;border-radius:10px;margin:1px;display:inline-block;">'+f.trim()+'</span>';
+      }).join(''):'';
+      return'<div style="padding:10px 14px;border-bottom:1px solid #f9fafb;display:flex;align-items:flex-start;gap:10px;">'+
+        '<span style="font-size:16px;margin-top:1px;">📡</span>'+
+        '<div style="flex:1;">'+
+          '<div style="font-size:13px;font-weight:500;color:#374151;margin-bottom:3px;">'+r.company+'</div>'+
+          '<div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">'+r.measure_date+'</div>'+
+          '<div>'+facilities+'</div>'+
+          (r.special_notes?'<div style="font-size:11px;color:#9ca3af;margin-top:3px;">'+r.special_notes+'</div>':'')+
+        '</div>'+
+        '<span style="font-size:12px;font-weight:700;color:'+ddayColor+';white-space:nowrap;">'+ddayStr+'</span>'+
+      '</div>';
+    }).join('');
+  }
 }
 
 async function loadFilterData(){
