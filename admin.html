@@ -313,6 +313,76 @@ tr:hover td{background:#fafafa;}
     </div>
 
   </div>
+
+  <!-- 월별 입력 현황 위젯 -->
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">📋 대기운영기록 월별 입력 현황</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:11px;color:#6b7280;" id="dash-airlog-year">-</span>
+        <button onclick="showTab('airlog')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="min-width:700px;width:100%;">
+        <thead id="dash-month-thead">
+          <tr>
+            <th style="text-align:left;padding:8px 16px;font-size:11px;color:#6b7280;font-weight:500;background:#f9fafb;border-bottom:1px solid #f3f4f6;">구분</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">1월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">2월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">3월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">4월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">5월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">6월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">7월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">8월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">9월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">10월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">11월</th>
+            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">12월</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:10px 16px;font-size:12px;font-weight:500;color:#374151;border-bottom:1px solid #f9fafb;">배출구 가동시간</td>
+            <td id="dah-em1"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em2"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em3"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em4"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em5"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em6"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em7"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em8"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em9"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em10" style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em11" style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+            <td id="dah-em12" style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
+          </tr>
+          <tr>
+            <td style="padding:10px 16px;font-size:12px;font-weight:500;color:#374151;">방지시설 전력사용량</td>
+            <td id="dah-pr1"  style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr2"  style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr3"  style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr4"  style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr5"  style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr6"  style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr7"  style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr8"  style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr9"  style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr10" style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr11" style="text-align:center;padding:8px 4px;"></td>
+            <td id="dah-pr12" style="text-align:center;padding:8px 4px;"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:14px;padding:9px 16px;border-top:1px solid #f3f4f6;font-size:11px;color:#6b7280;flex-wrap:wrap;">
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#d1fae5;color:#065f46;font-weight:700;font-size:11px;">✓</span> 입력 완료</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span> 미입력</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="color:#d1d5db;font-size:13px;">-</span> 해당 없음</span>
+    </div>
+  </div>
+
 </div>
 
 <style>@media(max-width:768px){.dash-grid{grid-template-columns:1fr !important;}}</style>
@@ -819,7 +889,8 @@ async function loadDashboard(){
     sb('air_operation_log','?log_date=gte.'+ym+'-01&facility_type=eq.배출구&select=log_date,submitted_by&order=log_date.asc'),
     sb('air_operation_log','?log_date=gte.'+weekStartStr+'&log_date=lte.'+weekEndStr+'&facility_type=eq.배출구&select=log_date,submitted_by'),
     sb('waste_oil_schedule','?status=eq.예정&select=*&order=scheduled_date.asc&limit=5'),
-    sb('air_measurement','?status=eq.예정&measure_date=gte.'+today+'&select=*&order=measure_date.asc&limit=5')
+    sb('air_measurement','?status=eq.예정&measure_date=gte.'+today+'&select=*&order=measure_date.asc&limit=5'),
+    sb('air_operation_log','?log_date=gte.'+now2.getFullYear()+'-01-01&select=log_date,facility_type&order=log_date.asc')
   ]);
   var filterMonth=results[0]||[];
   var orderPending=results[1]||[];
@@ -828,6 +899,7 @@ async function loadDashboard(){
   var airlogWeek=results[4]||[];
   var wasteSchedule=results[5]||[];
   var airSchedule=results[6]||[];
+  var airlogYear=results[7]||[];
 
   // ── 위젯1: 이번 달 필터 교체 현황 ──
   var fQty=filterMonth.reduce(function(s,r){return s+(r.quantity||0);},0);
@@ -958,10 +1030,42 @@ async function loadDashboard(){
         '<span style="font-size:12px;font-weight:700;color:'+ddayColor+';white-space:nowrap;">'+ddayStr+'</span>'+
       '</div>';
     }).join('');
+  // ── 위젯6: 월별 입력 현황 ──
+  var year=now2.getFullYear();
+  var curMonth=now2.getMonth()+1; // 1~12
+  var yearEl=document.getElementById('dash-airlog-year');
+  if(yearEl)yearEl.textContent=year+'년';
+
+  // 월별 입력 여부 계산
+  // 배출구: facility_type=배출구인 레코드가 있으면 해당 월 입력 완료
+  // 방지시설: facility_type=방지시설인 레코드가 있으면 해당 월 입력 완료
+  var emMonths={};  // 배출구 입력된 월 set
+  var prMonths={};  // 방지시설 입력된 월 set
+  airlogYear.forEach(function(r){
+    var m=parseInt(r.log_date.substring(5,7));
+    if(r.facility_type==='배출구')emMonths[m]=true;
+    else if(r.facility_type==='방지시설')prMonths[m]=true;
+  });
+
+  var okBadge='<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#d1fae5;color:#065f46;font-weight:700;font-size:12px;">✓</span>';
+  var missBadge='<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span>';
+  var naBadge='<span style="color:#d1d5db;font-size:13px;">-</span>';
+
+  for(var m=1;m<=12;m++){
+    var emEl=document.getElementById('dah-em'+m);
+    var prEl=document.getElementById('dah-pr'+m);
+    if(!emEl||!prEl)continue;
+    if(m>curMonth){
+      // 미래 월
+      emEl.innerHTML=naBadge;
+      prEl.innerHTML=naBadge;
+    }else{
+      // 과거 + 현재 월
+      emEl.innerHTML=emMonths[m]?okBadge:missBadge;
+      prEl.innerHTML=prMonths[m]?okBadge:missBadge;
+    }
   }
 }
-
-async function loadFilterData(){
   document.getElementById('table-body').innerHTML='<div class="loading">불러오는 중...</div>';
   allData=await sb('filter_records','?select=*&order=record_date.desc,created_at.desc');
   updateStats(allData);
