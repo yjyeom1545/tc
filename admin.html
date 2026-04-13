@@ -235,6 +235,10 @@ tr:hover td{background:#fafbfd;}
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       대기측정 일정
     </div>
+    <div class="nav-item" id="nav-air-guide" onclick="showTab('air-guide')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      관리요령
+    </div>
     <div class="nav-section" id="nav-section-admin">관리</div>
     <div class="nav-item" id="nav-users" onclick="showTab('users')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -865,6 +869,42 @@ tr:hover td{background:#fafbfd;}
   </div>
 </div>
 
+<!-- 관리요령 탭 -->
+<div id="tab-air-guide" class="content hidden">
+  <div style="margin-bottom:14px;">
+    <div style="font-size:11px;color:#9ca3af;margin-top:3px;">대기배출시설 및 방지시설 운영 관리 교육 영상</div>
+  </div>
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">배출시설 및 방지시설 운영 관리요령</span>
+      <span style="font-size:10px;font-weight:600;background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:4px;border:1px solid #bfdbfe;">환경부 공식 콘텐츠</span>
+    </div>
+    <div style="position:relative;width:100%;padding-top:56.25%;background:#000;">
+      <iframe
+        src="https://www.youtube.com/embed/Dm85EilVnVw"
+        title="배출시설 및 방지시설 운영 관리요령"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;">
+      </iframe>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #e8ecf0;">
+      <div style="padding:12px 16px;border-right:1px solid #e8ecf0;">
+        <div style="font-size:10px;color:#9ca3af;font-weight:600;letter-spacing:0.3px;margin-bottom:3px;">출처</div>
+        <div style="font-size:12.5px;font-weight:600;color:#374151;">환경부 / 국립환경인력개발원</div>
+      </div>
+      <div style="padding:12px 16px;border-right:1px solid #e8ecf0;">
+        <div style="font-size:10px;color:#9ca3af;font-weight:600;letter-spacing:0.3px;margin-bottom:3px;">관련 법령</div>
+        <div style="font-size:12.5px;font-weight:600;color:#374151;">대기환경보전법 제31조</div>
+      </div>
+      <div style="padding:12px 16px;">
+        <div style="font-size:10px;color:#9ca3af;font-weight:600;letter-spacing:0.3px;margin-bottom:3px;">비고</div>
+        <div style="font-size:12.5px;font-weight:600;color:#374151;">환경기술인 교육 자료</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 사용자 관리 탭 -->
 <div id="tab-users" class="content hidden">
   <div class="card">
@@ -988,7 +1028,7 @@ function showTab(tab){
   var navEl=document.getElementById('nav-'+tab);
   if(navEl)navEl.classList.add('active');
   // topbar 타이틀
-  var titles={home:'홈',filter:'필터 교체','waste-oil':'폐유고상 톤백','waste-schedule':'배출업체 스케줄','waste-search':'폐기물 분류 검색',airlog:'대기운영기록',air:'대기측정 일정',users:'사용자 관리'};
+  var titles={home:'홈',filter:'필터 교체','waste-oil':'폐유고상 톤백','waste-schedule':'배출업체 스케줄','waste-search':'폐기물 분류 검색',airlog:'대기운영기록',air:'대기측정 일정','air-guide':'관리요령',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
   if(titleEl)titleEl.textContent=titles[tab]||tab;
   // 모바일: 사이드바 닫기
@@ -1006,6 +1046,7 @@ function loadCurrentTab(){
     else if(currentTab==='waste-search'){}
     else if(currentTab==='airlog')loadAirLog();
     else if(currentTab==='air')loadAirMeasures();
+    else if(currentTab==='air-guide'){}
     else if(currentTab==='users')loadUsers();
   }catch(e){console.error('탭 로딩 오류:',e);}
 }
