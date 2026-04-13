@@ -343,6 +343,7 @@ tr:hover td{background:#fafbfd;}
     </div>
     <div style="display:flex;gap:14px;padding:9px 16px;border-top:1px solid #f3f4f6;font-size:11px;color:#6b7280;flex-wrap:wrap;">
       <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#d1fae5;color:#065f46;font-weight:700;font-size:11px;">✓</span> 입력 완료</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#e0e7ff;color:#3730a3;font-weight:700;font-size:11px;">✓</span> 완료 (시스템 이전 전)</span>
       <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span> 미입력</span>
       <span style="display:flex;align-items:center;gap:5px;"><span style="color:#d1d5db;font-size:13px;">-</span> 해당 없음</span>
     </div>
@@ -1213,11 +1214,12 @@ async function loadDashboard(){
   var yearEl=document.getElementById('dash-airlog-year');
   if(yearEl)yearEl.textContent=year+'년';
 
-  // 월별 입력 여부 계산
-  // 배출구: facility_type=배출구인 레코드가 있으면 해당 월 입력 완료
-  // 방지시설: facility_type=방지시설인 레코드가 있으면 해당 월 입력 완료
-  var emMonths={};  // 배출구 입력된 월 set
-  var prMonths={};  // 방지시설 입력된 월 set
+  // 1~3월: 시스템 이전 전 기존 입력 완료 처리 (수동 고정)
+  var LEGACY_MONTHS=3; // 이 달 이하는 무조건 완료
+
+  // 4월~: DB 기록 기준
+  var emMonths={};
+  var prMonths={};
   airlogYear.forEach(function(r){
     var m=parseInt(r.log_date.substring(5,7));
     if(r.facility_type==='배출구')emMonths[m]=true;
@@ -1225,6 +1227,7 @@ async function loadDashboard(){
   });
 
   var okBadge='<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#d1fae5;color:#065f46;font-weight:700;font-size:12px;">✓</span>';
+  var okLegacyBadge='<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e0e7ff;color:#3730a3;font-weight:700;font-size:12px;">✓</span>';
   var missBadge='<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span>';
   var naBadge='<span style="color:#d1d5db;font-size:13px;">-</span>';
 
@@ -1236,8 +1239,12 @@ async function loadDashboard(){
       // 미래 월
       emEl.innerHTML=naBadge;
       prEl.innerHTML=naBadge;
+    }else if(m<=LEGACY_MONTHS){
+      // 1~3월: 시스템 이전 전 완료 (보라색 ✓ 로 구분)
+      emEl.innerHTML=okLegacyBadge;
+      prEl.innerHTML=okLegacyBadge;
     }else{
-      // 과거 + 현재 월
+      // 4월~: DB 기록 기준
       emEl.innerHTML=emMonths[m]?okBadge:missBadge;
       prEl.innerHTML=prMonths[m]?okBadge:missBadge;
     }
