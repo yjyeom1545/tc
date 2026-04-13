@@ -533,7 +533,9 @@ tr:hover td{background:#fafafa;}
           <div class="card-title">🔍 폐기물 분류 검색</div>
           <div style="font-size:12px;color:#6b7280;margin-bottom:14px;">폐기물 상태나 특징을 입력하면 분류를 안내해드립니다. 정확한 분류는 관할 환경청에 확인하세요.</div>
           <div style="display:flex;gap:8px;margin-bottom:12px;">
-            <input type="text" id="waste-search-input" placeholder="예: 연마 슬러지, 발청제 폐액, 페인트 찌꺼기" style="flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:10px 14px;font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;" onkeydown="if(event.key==='Enter')searchWasteType()">
+            <input type="text" id="waste-search-input" placeholder="예: 연마 슬러지, 발청제 폐액, 페인트 찌꺼기" style="flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:10px 14px;font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;"
+              onkeydown="if(event.key==='Enter')searchWasteType()"
+              oninput="if(!this.value){var r=document.getElementById('waste-search-result');r.classList.add('hidden');r.innerHTML='';}">
             <button onclick="searchWasteType()" style="padding:10px 20px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">검색</button>
           </div>
           <div id="waste-search-result" class="hidden"></div>
@@ -548,23 +550,26 @@ tr:hover td{background:#fafafa;}
             <div style="border:1px solid #fee2e2;border-radius:8px;padding:14px;background:#fff5f5;">
               <div style="font-size:12px;font-weight:700;color:#991b1b;margin-bottom:8px;">⚠️ 지정폐기물</div>
               <div style="display:flex;flex-direction:column;gap:6px;">
-                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #fecaca;">폐유 고상</div>
-                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #fecaca;">폐유 액상</div>
-                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #fecaca;">폐페인트</div>
+                <div onclick="quickSearch('폐유 고상')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #fecaca;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='white'">폐유 고상 <span style="font-size:10px;color:#9ca3af;">클릭하여 조회 →</span></div>
+                <div onclick="quickSearch('폐유 액상')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #fecaca;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='white'">폐유 액상 <span style="font-size:10px;color:#9ca3af;">클릭하여 조회 →</span></div>
+                <div onclick="quickSearch('페인트')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #fecaca;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='white'">폐페인트 <span style="font-size:10px;color:#9ca3af;">클릭하여 조회 →</span></div>
               </div>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px;background:#f9fafb;">
               <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">일반폐기물</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;">폐합성수지</div>
-                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;">폐목재</div>
-                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;">분진</div>
-                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;">고철</div>
-                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;">폐지</div>
-                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;">일반쓰레기</div>
+                <div onclick="quickSearch('플라스틱')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;text-align:center;" onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='white'">폐합성수지</div>
+                <div onclick="quickSearch('나무')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;text-align:center;" onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='white'">폐목재</div>
+                <div onclick="quickSearch('분진')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;text-align:center;" onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='white'">분진</div>
+                <div onclick="quickSearch('고철')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;text-align:center;" onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='white'">고철</div>
+                <div onclick="quickSearch('종이')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;text-align:center;" onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='white'">폐지</div>
+                <div onclick="quickSearch('쓰레기')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;text-align:center;" onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='white'">일반쓰레기</div>
               </div>
             </div>
+            <div style="font-size:11px;color:#9ca3af;padding-top:4px;">분류표 항목을 클릭하면 바로 조회됩니다.</div>
           </div>
+                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;">분진</div>
+                <div style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #e5e7eb;">고철</div>
         </div>
       </div>
     </div>
@@ -1346,25 +1351,93 @@ function renderWasteMonthlyChart(data){
 function renderWasteSummary(){}
 function renderWasteTable(){}
 
+function quickSearch(keyword){
+  var input=document.getElementById('waste-search-input');
+  if(input){input.value=keyword;}
+  searchWasteType();
+  // 검색 탭이 활성화된 경우 결과 위치로 스크롤
+  var result=document.getElementById('waste-search-result');
+  if(result){setTimeout(function(){result.scrollIntoView({behavior:'smooth',block:'nearest'});},100);}
+}
+
 function searchWasteType(){
   var query=document.getElementById('waste-search-input').value.trim();
   if(!query){alert('검색어를 입력해주세요.');return;}
   var DB=[
-    {keywords:['페인트','도료','도장','락카','에나멜','프라이머','하도','상도','중도','도막','코팅제','페인트 묻은','도료 묻은','페인트 고체','페인트 굳','마스킹','테이프 페인트'],type:'폐페인트',category:'지정',desc:'페인트·도료 성분이 포함된 폐기물은 성상(고체/액체)에 관계없이 모두 폐페인트(지정폐기물)로 분류됩니다.'},
-    {keywords:['연마','연마제','사포','샌드페이퍼','연마지','연마포','그라인더','연마 슬러지','연마 찌꺼기','연마 분말','폴리싱','버프','연마 패드','디스크','연마 잔재','연삭'],type:'폐유 고상',category:'지정',desc:'연마 작업에서 발생하는 고체 폐기물(연마제, 슬러지, 분말 등)은 폐유 고상(지정폐기물)으로 분류됩니다. 단, 정확한 분류는 환경청 확인이 필요합니다.'},
-    {keywords:['연마 폐액','연마 세척수','연마액','연마 용액'],type:'폐유 액상',category:'지정',desc:'연마 작업에서 발생하는 액상 폐수·폐액은 폐유 액상(지정폐기물)으로 분류됩니다.'},
-    {keywords:['발청','발청제','방청','방청제','녹제거','녹 제거','탈청','탈청제','발청 고체','발청 슬러지','방청 찌꺼기'],type:'폐유 고상',category:'지정',desc:'발청제·방청제 사용 후 발생하는 고체 잔재물은 폐유 고상(지정폐기물)으로 분류됩니다. 단, 정확한 분류는 환경청 확인이 필요합니다.'},
-    {keywords:['발청 폐액','방청 폐액','탈청 폐액','발청액','방청액'],type:'폐유 액상',category:'지정',desc:'발청제·방청제 폐액은 폐유 액상(지정폐기물)으로 분류됩니다.'},
-    {keywords:['기름','오일','윤활','절삭유','유압','그리스','폐유','유지','지방','기름 고체','오일 찌꺼기'],type:'폐유 고상',category:'지정',desc:'기름·오일류가 굳어진 고상 폐기물은 폐유 고상(지정폐기물)으로 분류됩니다.'},
-    {keywords:['시너','신너','용제','솔벤트','톨루엔','자일렌','아세톤','MEK','세척액','희석제','유기용제'],type:'폐유 액상',category:'지정',desc:'유기용제·시너류 폐액은 폐유 액상(지정폐기물)으로 분류됩니다.'},
-    {keywords:['폐유 액','기름물','오일 폐액'],type:'폐유 액상',category:'지정',desc:'기름·오일류 폐액은 폐유 액상(지정폐기물)으로 분류됩니다.'},
-    {keywords:['플라스틱','비닐','수지','pp','pe','pvc','합성수지','포장재','봉지','비닐백'],type:'폐합성수지',category:'일반',desc:'플라스틱·비닐류 폐기물은 폐합성수지(일반폐기물)로 분류됩니다.'},
-    {keywords:['나무','목재','합판','파렛트','팔레트','목','각목'],type:'폐목재',category:'일반',desc:'나무·목재류 폐기물은 폐목재(일반폐기물)로 분류됩니다.'},
-    {keywords:['분진','먼지','더스트','집진','필터','여과지','여과포'],type:'분진',category:'일반',desc:'집진설비에서 포집된 분진은 분진(일반폐기물)로 분류됩니다. 단, 유해물질 혼입 시 지정폐기물이 될 수 있으니 확인이 필요합니다.'},
-    {keywords:['철','쇠','고철','금속','스크랩','파이프','철판'],type:'고철',category:'일반',desc:'철·금속류 폐기물은 고철(일반폐기물)로 분류됩니다.'},
-    {keywords:['종이','박스','골판지','신문','폐지','종이박스'],type:'폐지',category:'일반',desc:'종이류 폐기물은 폐지(일반폐기물)로 분류됩니다.'},
-    {keywords:['쓰레기','음식','생활','잡','기타','혼합'],type:'일반쓰레기',category:'일반',desc:'특정 분류에 해당하지 않는 혼합 생활계 폐기물은 일반쓰레기(일반폐기물)로 처리됩니다.'}
+    {keywords:['페인트','도료','도장','락카','에나멜','프라이머','하도','상도','중도','도막','코팅제','페인트 묻은','도료 묻은','페인트 고체','페인트 굳','마스킹','테이프 페인트'],type:'폐페인트',category:'지정',desc:'페인트·도료 성분이 포함된 폐기물은 성상(고체/액체)에 관계없이 모두 폐페인트(지정폐기물)로 분류됩니다.',lawKey:'폐페인트'},
+    {keywords:['연마','연마제','사포','샌드페이퍼','연마지','연마포','그라인더','연마 슬러지','연마 찌꺼기','연마 분말','폴리싱','버프','연마 패드','디스크','연마 잔재','연삭'],type:'폐유 고상',category:'지정',desc:'연마 작업에서 발생하는 고체 폐기물(연마제, 슬러지, 분말 등)은 폐유 고상(지정폐기물)으로 분류됩니다.',lawKey:'폐유'},
+    {keywords:['연마 폐액','연마 세척수','연마액','연마 용액'],type:'폐유 액상',category:'지정',desc:'연마 작업에서 발생하는 액상 폐수·폐액은 폐유 액상(지정폐기물)으로 분류됩니다.',lawKey:'폐유'},
+    {keywords:['발청','발청제','방청','방청제','녹제거','녹 제거','탈청','탈청제','발청 고체','발청 슬러지','방청 찌꺼기'],type:'폐유 고상',category:'지정',desc:'발청제·방청제 사용 후 발생하는 고체 잔재물은 폐유 고상(지정폐기물)으로 분류됩니다.',lawKey:'폐유'},
+    {keywords:['발청 폐액','방청 폐액','탈청 폐액','발청액','방청액'],type:'폐유 액상',category:'지정',desc:'발청제·방청제 폐액은 폐유 액상(지정폐기물)으로 분류됩니다.',lawKey:'폐유'},
+    {keywords:['기름','오일','윤활','절삭유','유압','그리스','폐유','유지','지방','기름 고체','오일 찌꺼기'],type:'폐유 고상',category:'지정',desc:'기름·오일류가 굳어진 고상 폐기물은 폐유 고상(지정폐기물)으로 분류됩니다.',lawKey:'폐유'},
+    {keywords:['시너','신너','용제','솔벤트','톨루엔','자일렌','아세톤','MEK','세척액','희석제','유기용제'],type:'폐유 액상',category:'지정',desc:'유기용제·시너류 폐액은 폐유 액상(지정폐기물)으로 분류됩니다.',lawKey:'폐유'},
+    {keywords:['폐유 액','기름물','오일 폐액'],type:'폐유 액상',category:'지정',desc:'기름·오일류 폐액은 폐유 액상(지정폐기물)으로 분류됩니다.',lawKey:'폐유'},
+    {keywords:['플라스틱','비닐','수지','pp','pe','pvc','합성수지','포장재','봉지','비닐백'],type:'폐합성수지',category:'일반',desc:'플라스틱·비닐류 폐기물은 폐합성수지(일반폐기물)로 분류됩니다.',lawKey:'폐합성수지'},
+    {keywords:['나무','목재','합판','파렛트','팔레트','목','각목'],type:'폐목재',category:'일반',desc:'나무·목재류 폐기물은 폐목재(일반폐기물)로 분류됩니다.',lawKey:'일반'},
+    {keywords:['분진','먼지','더스트','집진','필터','여과지','여과포'],type:'분진',category:'일반',desc:'집진설비에서 포집된 분진은 분진(일반폐기물)로 분류됩니다. 단, 유해물질 혼입 시 지정폐기물이 될 수 있으니 확인이 필요합니다.',lawKey:'분진'},
+    {keywords:['철','쇠','고철','금속','스크랩','파이프','철판'],type:'고철',category:'일반',desc:'철·금속류 폐기물은 고철(일반폐기물)로 분류됩니다.',lawKey:'고철'},
+    {keywords:['종이','박스','골판지','신문','폐지','종이박스'],type:'폐지',category:'일반',desc:'종이류 폐기물은 폐지(일반폐기물)로 분류됩니다.',lawKey:'일반'},
+    {keywords:['쓰레기','음식','생활','잡','기타','혼합'],type:'일반쓰레기',category:'일반',desc:'특정 분류에 해당하지 않는 혼합 생활계 폐기물은 일반쓰레기(일반폐기물)로 처리됩니다.',lawKey:'일반'}
   ];
+
+  // 폐기물별 법령 정보
+  var LAW={
+    '폐유':{
+      storageDay:45,
+      penalties:[
+        {level:'high',title:'혼합 보관 금지',rule:'폐기물관리법 제65조',punishment:'2년 이하 징역 또는 2,000만 원 이하 벌금',desc:'폐유함에 종이컵·장갑·비닐 등 일반쓰레기 혼입 시'},
+        {level:'critical',title:'유출·토양오염 유발',rule:'폐기물관리법 제63조 / 토양환경보전법',punishment:'토양 오염 유발 시 최대 7년 이하 징역 또는 7,000만 원 이하 벌금',desc:'용기 밀폐 미비로 기름이 바닥에 유출되어 토양오염 발생 시'},
+        {level:'mid',title:'보관 표시 의무',rule:'폐기물관리법 시행규칙 별표5',punishment:'과태료 부과 대상',desc:'보관함에 폐기물 종류·보관 시작일·배출자 정보 미표기 시'},
+        {level:'mid',title:'무허가 업체 위탁 금지',rule:'폐기물관리법 제17조',punishment:'과태료 부과 및 배출자도 처벌 대상',desc:'허가받지 않은 업체에 위탁 처리 시 배출자도 처벌'}
+      ],
+      fieldRules:['전용 드럼/탱크 밀폐 보관 필수','바닥 흡착포 비치 확인','보관함에 종류·시작일·배출자 표기 필수','발생일로부터 45일 이내 허가 업체에 위탁 처리']
+    },
+    '폐페인트':{
+      storageDay:45,
+      penalties:[
+        {level:'high',title:'혼합 배출 금지',rule:'폐기물관리법 제65조',punishment:'2년 이하 징역 또는 2,000만 원 이하 벌금',desc:'폐페인트 용기에 분진·폐합성수지 혼합 배출 시'},
+        {level:'mid',title:'무단 방치 금지',rule:'폐기물관리법 제68조',punishment:'과태료 및 행정 처분',desc:'도장 작업 후 잔량을 현장에 방치 시'},
+        {level:'mid',title:'보관 표시 의무',rule:'폐기물관리법 시행규칙 별표5',punishment:'과태료 부과 대상',desc:'보관함에 폐기물 종류·보관 시작일·배출자 정보 미표기 시'},
+        {level:'mid',title:'무허가 업체 위탁 금지',rule:'폐기물관리법 제17조',punishment:'과태료 부과 및 배출자도 처벌 대상',desc:'허가받지 않은 업체에 위탁 처리 시 배출자도 처벌'}
+      ],
+      fieldRules:['사용 후 즉시 뚜껑 밀봉','지정폐기물 전용 보관창고 관리','보관함에 종류·시작일·배출자 표기 필수','발생일로부터 45일 이내 허가 업체에 위탁 처리']
+    },
+    '분진':{
+      storageDay:90,
+      penalties:[
+        {level:'mid',title:'성상 혼합 금지',rule:'폐기물관리법 제68조',punishment:'과태료 부과 대상',desc:'분진 톤백에 폐페인트 가루 혼입 배출 시 (혼합 정도에 따라 부과 금액 상이)'},
+        {level:'low',title:'비산 방지 위반',rule:'폐기물관리법 제68조',punishment:'300만 원 이하 과태료',desc:'톤백 입구 미결속으로 먼지 비산 시'},
+        {level:'low',title:'무허가 업체 위탁 금지',rule:'폐기물관리법 제17조',punishment:'과태료 부과 및 배출자도 처벌 대상',desc:'허가받지 않은 업체에 위탁 처리 시 배출자도 처벌'}
+      ],
+      fieldRules:['톤백 파손 여부 상시 점검','페인트 가루와 절대 혼합 금지','톤백 입구 결속 철저','발생일로부터 90일 이내 처리']
+    },
+    '고철':{
+      storageDay:90,
+      penalties:[
+        {level:'mid',title:'지정폐기물 혼입 금지',rule:'폐기물관리법 제68조',punishment:'과태료 부과 대상',desc:'고철 더미에 폐유 묻은 장갑·걸레 혼입 시 (혼합 정도에 따라 부과 금액 상이)'},
+        {level:'low',title:'야적 관리 위반',rule:'폐기물관리법 제48조',punishment:'행정 명령 및 과태료',desc:'보관 구역 외 무단 야적 시'},
+        {level:'low',title:'무허가 업체 위탁 금지',rule:'폐기물관리법 제17조',punishment:'과태료 부과 및 배출자도 처벌 대상',desc:'허가받지 않은 업체에 위탁 처리 시 배출자도 처벌'}
+      ],
+      fieldRules:['가공유·절삭유 최대한 제거 후 보관','전용 적치함 사용','지정폐기물 절대 혼입 금지','발생일로부터 90일 이내 처리']
+    },
+    '폐합성수지':{
+      storageDay:90,
+      penalties:[
+        {level:'mid',title:'혼합 배출 금지',rule:'폐기물관리법 제68조',punishment:'500만 원 이하 과태료',desc:'폐유 액상이 묻은 채 배출 또는 음식물 혼합 배출 시'},
+        {level:'low',title:'무허가 업체 위탁 금지',rule:'폐기물관리법 제17조',punishment:'과태료 부과 및 배출자도 처벌 대상',desc:'허가받지 않은 업체에 위탁 처리 시 배출자도 처벌'}
+      ],
+      fieldRules:['최대한 압착하여 부피 최소화','지정폐기물이 섞이지 않도록 전용 수거함 사용','발생일로부터 90일 이내 처리']
+    },
+    '일반':{
+      storageDay:90,
+      penalties:[
+        {level:'low',title:'분리 배출 위반',rule:'폐기물관리법 제68조',punishment:'100만 원 이하 과태료',desc:'재활용 자원과 일반쓰레기 혼합 배출 시'},
+        {level:'high',title:'지정폐기물 투척',rule:'폐기물관리법 제65조',punishment:'행정 특별 점검 및 과태료',desc:'일반 쓰레기통에 폐유 용기 투척 시 — 사업장 전체 특별 점검 대상'}
+      ],
+      fieldRules:['종류별 전용 수거함 사용 철저','지정폐기물 절대 혼입 금지','발생일로부터 90일 이내 처리']
+    }
+  };
+
   var q=query.toLowerCase();
   var matched=null;
   for(var i=0;i<DB.length;i++){
@@ -1373,22 +1446,66 @@ function searchWasteType(){
     }
     if(matched)break;
   }
+
   var resultEl=document.getElementById('waste-search-result');
   resultEl.classList.remove('hidden');
+
   if(matched){
-    var catColor=matched.category==='지정'?'#fee2e2':'#f0fdf4';
-    var catTextColor=matched.category==='지정'?'#991b1b':'#166534';
-    var catBorderColor=matched.category==='지정'?'#fca5a5':'#86efac';
-    resultEl.innerHTML=
-      '<div style="border:1px solid '+catBorderColor+';border-radius:8px;padding:14px;background:'+catColor+';margin-bottom:8px;">'+
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'+
-          '<span style="font-size:15px;font-weight:700;color:'+catTextColor+';">'+matched.type+'</span>'+
-          '<span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+catTextColor+';color:white;">'+matched.category+'폐기물</span>'+
+    var isDesig=matched.category==='지정';
+    var catBg=isDesig?'#fff5f5':'#f0fdf4';
+    var catBorder=isDesig?'#fca5a5':'#86efac';
+    var catColor=isDesig?'#991b1b':'#166534';
+    var catLabel=isDesig?'⚠️ 지정폐기물':'✅ 일반폐기물';
+    var law=LAW[matched.lawKey]||LAW['일반'];
+
+    // 처벌 수준별 색상
+    function punishColor(level){
+      return level==='critical'?{bg:'#fef2f2',border:'#fca5a5',badge:'#dc2626',badgeTxt:'white',icon:'🔴'}:
+             level==='high'    ?{bg:'#fff7ed',border:'#fdba74',badge:'#ea580c',badgeTxt:'white',icon:'🟠'}:
+             level==='mid'     ?{bg:'#fefce8',border:'#fde047',badge:'#ca8a04',badgeTxt:'white',icon:'🟡'}:
+                                {bg:'#f9fafb',border:'#e5e7eb',badge:'#6b7280',badgeTxt:'white',icon:'⚪'};
+    }
+
+    var penaltiesHtml=law.penalties.map(function(p){
+      var c=punishColor(p.level);
+      return'<div style="background:'+c.bg+';border:1px solid '+c.border+';border-radius:8px;padding:12px 14px;margin-bottom:8px;">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'+
+          '<span>'+c.icon+'</span>'+
+          '<span style="font-size:13px;font-weight:700;color:#1a3a5c;">'+p.title+'</span>'+
+          '<span style="margin-left:auto;font-size:10px;color:#6b7280;">'+p.rule+'</span>'+
         '</div>'+
-        '<div style="font-size:13px;color:#374151;line-height:1.6;margin-bottom:10px;">'+matched.desc+'</div>'+
-        '<div style="font-size:11px;color:#6b7280;">※ 참고용 안내입니다. 정확한 분류는 관할 환경청 또는 ☎ 128 환경부 콜센터에 확인하세요.</div>'+
+        '<div style="font-size:12px;color:#374151;margin-bottom:4px;">'+p.desc+'</div>'+
+        '<div style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;background:'+c.badge+';color:'+c.badgeTxt+';">'+p.punishment+'</div>'+
+      '</div>';
+    }).join('');
+
+    var fieldHtml=law.fieldRules.map(function(r){
+      return'<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:12px;color:#374151;border-bottom:1px solid #f9fafb;">'+
+        '<span style="color:#1a3a5c;font-weight:700;flex-shrink:0;">•</span>'+r+'</div>';
+    }).join('');
+
+    resultEl.innerHTML=
+      // 분류 결과
+      '<div style="border:1px solid '+catBorder+';border-radius:10px;padding:14px 16px;background:'+catBg+';margin-bottom:12px;">'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'+
+          '<span style="font-size:16px;font-weight:700;color:'+catColor+';">'+matched.type+'</span>'+
+          '<span style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;background:'+catColor+';color:white;">'+catLabel+'</span>'+
+          '<span style="margin-left:auto;font-size:12px;font-weight:700;color:#1a3a5c;">보관 기한 '+law.storageDay+'일</span>'+
+        '</div>'+
+        '<div style="font-size:13px;color:#374151;line-height:1.6;">'+matched.desc+'</div>'+
       '</div>'+
-      '<button onclick="openClaude(\''+query+'\')" style="padding:7px 14px;background:#7c3aed;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">Claude AI에게 자세히 묻기 →</button>';
+      // 처벌 규정
+      '<div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:8px;padding-left:2px;">⚖️ 핵심 처벌 규정</div>'+
+      penaltiesHtml+
+      // 현장 수칙
+      '<div style="background:#eef3f9;border-radius:8px;padding:12px 14px;margin-top:4px;">'+
+        '<div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:8px;">📋 현장 수칙</div>'+
+        fieldHtml+
+      '</div>'+
+      '<div style="font-size:11px;color:#9ca3af;margin-top:10px;padding-left:2px;">※ 참고용 안내입니다. 법령은 개정될 수 있으므로 정확한 내용은 <a href="https://www.law.go.kr" target="_blank" style="color:#1a3a5c;">법제처(law.go.kr)</a> 또는 ☎ 128 환경부 콜센터에 확인하세요.</div>'+
+      '<div style="margin-top:10px;">'+
+        '<button onclick="openClaude(\''+query+'\')" style="padding:7px 14px;background:#7c3aed;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">Claude AI에게 자세히 묻기 →</button>'+
+      '</div>';
   }else{
     resultEl.innerHTML=
       '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px;background:#f9fafb;margin-bottom:8px;">'+
