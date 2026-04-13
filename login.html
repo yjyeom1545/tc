@@ -5,47 +5,102 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TC 환경관리 시스템 — 로그인</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;align-items:center;justify-content:center;}
-.login-wrap{width:100%;max-width:380px;padding:1rem;}
-.login-card{background:white;border-radius:16px;padding:2.5rem 2rem;box-shadow:0 4px 24px rgba(0,0,0,0.08);}
-.logo-area{text-align:center;margin-bottom:2rem;}
-.logo-badge{display:inline-block;background:#1a3a5c;color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:1px;margin-bottom:12px;}
-.logo-title{font-size:20px;font-weight:700;color:#1a3a5c;margin-bottom:4px;}
-.logo-sub{font-size:12px;color:#6b7280;}
-.field{margin-bottom:14px;}
-.field label{display:block;font-size:12px;color:#6b7280;font-weight:500;margin-bottom:6px;}
-.field input{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:11px 14px;font-size:14px;font-family:'Noto Sans KR',sans-serif;color:#111827;outline:none;}
-.field input:focus{border-color:#1a3a5c;}
-.login-btn{width:100%;padding:13px;background:#1a3a5c;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:6px;}
-.login-btn:hover{background:#15304d;}
-.login-btn:disabled{background:#9ca3af;cursor:not-allowed;}
-.error-msg{color:#ef4444;font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
-.notice{font-size:11px;color:#9ca3af;text-align:center;margin-top:16px;line-height:1.6;}
+html,body{height:100%;}
+body{font-family:'Noto Sans KR','Inter',sans-serif;background:#eef1f5;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem;}
+
+.login-wrap{display:flex;width:100%;max-width:960px;min-height:580px;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.12);}
+
+/* ── 왼쪽 폼 영역 ── */
+.login-left{width:380px;min-width:380px;background:white;display:flex;flex-direction:column;justify-content:center;padding:52px 44px;}
+
+.logo-area{margin-bottom:32px;}
+.logo-img{height:44px;display:block;margin-bottom:14px;}
+.sys-label{font-size:11px;color:#9ca3af;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:4px;}
+.sys-title{font-size:18px;font-weight:700;color:#0f2744;letter-spacing:0.1px;}
+
+.divider{width:100%;height:1px;background:#f1f5f9;margin:28px 0;}
+
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:11px;color:#6b7280;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:7px;}
+.field input{
+  width:100%;border:1px solid #e8ecf0;border-radius:8px;
+  padding:12px 14px;font-size:13.5px;font-family:'Noto Sans KR',sans-serif;
+  color:#1e2633;outline:none;background:#fafbfc;transition:border-color 0.15s,box-shadow 0.15s;
+}
+.field input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.08);background:white;}
+
+.remember-row{display:flex;align-items:center;gap:9px;margin-bottom:24px;cursor:pointer;user-select:none;}
+.remember-row input[type=checkbox]{width:15px;height:15px;accent-color:#2563eb;cursor:pointer;}
+.remember-row span{font-size:13px;color:#6b7280;}
+
+.login-btn{
+  width:100%;padding:13px;background:#2563eb;color:white;
+  border:none;border-radius:8px;font-size:14px;font-weight:600;
+  cursor:pointer;font-family:'Noto Sans KR',sans-serif;
+  letter-spacing:0.3px;transition:background 0.15s;
+}
+.login-btn:hover{background:#1d4ed8;}
+.login-btn:disabled{background:#93c5fd;cursor:not-allowed;}
+
+.error-msg{color:#dc2626;font-size:12px;text-align:center;margin-top:12px;min-height:18px;}
+
+.copyright{font-size:11px;color:#c4c9d4;text-align:center;margin-top:32px;}
+
+/* ── 오른쪽 사진 영역 ── */
+.login-right{flex:1;position:relative;overflow:hidden;min-height:580px;}
+.login-right img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* ── 모바일 대응 ── */
+@media(max-width:700px){
+  .login-wrap{flex-direction:column;max-width:400px;min-height:auto;}
+  .login-left{width:100%;min-width:0;padding:40px 32px;}
+  .login-right{min-height:220px;}
+}
 </style>
 </head>
 <body>
+
 <div class="login-wrap">
-  <div class="login-card">
+
+  <!-- 왼쪽: 로그인 폼 -->
+  <div class="login-left">
     <div class="logo-area">
-      <div class="logo-badge">TC 도장시설</div>
-      <div class="logo-title">환경관리 시스템</div>
-      <div class="logo-sub">관리자 전용 페이지입니다</div>
+      <img src="TC_logo.png" alt="TC TAECHANG" class="logo-img">
+      <div class="sys-label">Environmental Management</div>
+      <div class="sys-title">환경관리 시스템</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="아이디를 입력하세요" onkeydown="if(event.key==='Enter')login()">
     </div>
     <div class="field">
-      <label>아이디</label>
-      <input type="text" id="username" placeholder="아이디 입력" onkeydown="if(event.key==='Enter')login()">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="비밀번호를 입력하세요" onkeydown="if(event.key==='Enter')login()">
     </div>
-    <div class="field">
-      <label>비밀번호</label>
-      <input type="password" id="password" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
-    </div>
-    <button class="login-btn" id="login-btn" onclick="login()">로그인</button>
+
+    <label class="remember-row">
+      <input type="checkbox" id="remember" checked>
+      <span>Remember me</span>
+    </label>
+
+    <button class="login-btn" id="login-btn" onclick="login()">Log In</button>
     <div class="error-msg" id="error-msg"></div>
-    <div class="notice">권한이 없으신 경우 환경관리자에게 문의하세요.</div>
+
+    <div class="copyright">© 2026 TC TAECHANG. All rights reserved.</div>
   </div>
+
+  <!-- 오른쪽: 회사 사진 -->
+  <div class="login-right">
+    <img src="TC.jpg" alt="TC TAECHANG">
+  </div>
+
 </div>
+
 <script>
 var SUPABASE_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
 var SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
@@ -55,25 +110,32 @@ if(sessionStorage.getItem('tc_user'))window.location.href='admin.html';
 async function login(){
   var username=document.getElementById('username').value.trim();
   var password=document.getElementById('password').value;
-  if(!username||!password){document.getElementById('error-msg').textContent='아이디와 비밀번호를 입력해주세요.';return;}
+  if(!username||!password){
+    document.getElementById('error-msg').textContent='아이디와 비밀번호를 입력해주세요.';
+    return;
+  }
   var btn=document.getElementById('login-btn');
-  btn.disabled=true;btn.textContent='확인 중...';
+  btn.disabled=true;
+  btn.textContent='확인 중...';
   document.getElementById('error-msg').textContent='';
   try{
-    var res=await fetch(SUPABASE_URL+'/rest/v1/users?username=eq.'+encodeURIComponent(username)+'&password_hash=eq.'+encodeURIComponent(password)+'&select=id,username,role',{
-      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
-    });
+    var res=await fetch(
+      SUPABASE_URL+'/rest/v1/users?username=eq.'+encodeURIComponent(username)+'&password_hash=eq.'+encodeURIComponent(password)+'&select=id,username,role',
+      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}
+    );
     var data=await res.json();
     if(data&&data.length>0){
       sessionStorage.setItem('tc_user',JSON.stringify({username:data[0].username,role:data[0].role}));
       window.location.href='admin.html';
     }else{
       document.getElementById('error-msg').textContent='아이디 또는 비밀번호가 올바르지 않습니다.';
-      btn.disabled=false;btn.textContent='로그인';
+      btn.disabled=false;
+      btn.textContent='Log In';
     }
   }catch(e){
     document.getElementById('error-msg').textContent='서버 연결 오류. 잠시 후 다시 시도해주세요.';
-    btn.disabled=false;btn.textContent='로그인';
+    btn.disabled=false;
+    btn.textContent='Log In';
   }
 }
 </script>
