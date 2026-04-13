@@ -610,6 +610,121 @@ tr:hover td{background:#fafbfd;}
 
 <!-- 대기운영기록 탭 -->
 <div id="tab-airlog" class="content hidden">
+
+  <!-- 법령 안내 배너 (기본: 접힘) -->
+  <div style="background:white;border:1px solid #e8ecf0;border-radius:8px;margin-bottom:14px;overflow:hidden;border-left:3px solid #dc2626;">
+    <button onclick="toggleAirLawBanner()" id="air-law-toggle"
+      style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:left;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="background:#fef2f2;color:#991b1b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid #fecaca;white-space:nowrap;">법령 안내</span>
+        <span style="font-size:12.5px;font-weight:700;color:#0f2744;">대기환경보전법 — 운영일지 미작성·허위작성 시 처벌 규정</span>
+        <span style="background:#fef9c3;color:#854d0e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid #fde047;white-space:nowrap;">1차 위반 이력 있음 — 현재 2차 위반 주의 구간</span>
+        <span id="air-law-hint" style="font-size:11px;color:#9ca3af;">클릭하여 펼치기</span>
+      </div>
+      <svg id="air-law-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+
+    <div id="air-law-body" style="display:none;border-top:1px solid #f1f5f9;padding:16px 18px;">
+
+      <!-- 1차 위반 이력 알림 -->
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <div style="font-size:12.5px;font-weight:700;color:#92400e;margin-bottom:3px;">1차 위반 이력 보유 — 다음 위반 시 과태료 200만 원</div>
+          <div style="font-size:12px;color:#78350f;line-height:1.6;">현재 2차 위반 주의 구간입니다. 운영일지 미작성 또는 기록 미보존이 적발될 경우 <strong>200만 원</strong>의 과태료가 부과됩니다. 당일 입력을 반드시 준수해 주세요.</div>
+        </div>
+      </div>
+
+      <!-- 섹션 1: 과태료 -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11.5px;font-weight:700;color:#0f2744;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:#0f2744;color:white;font-size:9px;font-weight:700;border-radius:3px;flex-shrink:0;">1</span>
+          행정처분 및 과태료
+          <span style="font-size:10px;color:#9ca3af;font-weight:400;">대기환경보전법 제94조</span>
+        </div>
+        <!-- 1차 -->
+        <div style="display:flex;align-items:center;gap:0;margin-bottom:7px;">
+          <div style="font-size:11.5px;width:90px;flex-shrink:0;display:flex;align-items:center;gap:6px;">
+            <span style="color:#6b7280;">1차 위반</span>
+            <span style="background:#fef9c3;color:#854d0e;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;border:1px solid #fde047;">완료</span>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden;"><div style="width:33%;height:6px;background:#6b7280;border-radius:3px;"></div></div>
+            <span style="font-size:12px;font-weight:700;color:#6b7280;white-space:nowrap;min-width:56px;text-align:right;">100만 원</span>
+          </div>
+        </div>
+        <!-- 2차 -->
+        <div style="display:flex;align-items:center;gap:0;margin-bottom:7px;">
+          <div style="font-size:11.5px;width:90px;flex-shrink:0;display:flex;align-items:center;gap:6px;">
+            <span style="color:#d97706;font-weight:600;">2차 위반</span>
+            <span style="background:#fef3c7;color:#d97706;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;border:1px solid #fcd34d;">주의</span>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden;"><div style="width:66%;height:6px;background:#d97706;border-radius:3px;"></div></div>
+            <span style="font-size:12px;font-weight:700;color:#d97706;white-space:nowrap;min-width:56px;text-align:right;">200만 원</span>
+          </div>
+        </div>
+        <!-- 3차 -->
+        <div style="display:flex;align-items:center;gap:0;margin-bottom:10px;">
+          <div style="font-size:11.5px;color:#6b7280;width:90px;flex-shrink:0;">3차 이상</div>
+          <div style="flex:1;display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden;"><div style="width:100%;height:6px;background:#dc2626;border-radius:3px;"></div></div>
+            <span style="font-size:12px;font-weight:700;color:#dc2626;white-space:nowrap;min-width:56px;text-align:right;">300만 원</span>
+          </div>
+        </div>
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px;">
+          <div style="width:5px;height:5px;border-radius:50%;background:#dc2626;flex-shrink:0;margin-top:5px;"></div>
+          <div style="font-size:12px;color:#374151;line-height:1.6;">일지 미작성 또는 기록 미보존 시 관할 기관으로부터 <strong style="color:#0f2744;">경고 등 행정처분</strong> 부과 가능</div>
+        </div>
+      </div>
+
+      <!-- 섹션 2: 허위 작성 -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11.5px;font-weight:700;color:#0f2744;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:#dc2626;color:white;font-size:9px;font-weight:700;border-radius:3px;flex-shrink:0;">2</span>
+          허위 작성 시 가중 처벌
+        </div>
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px;">
+          <div style="width:5px;height:5px;border-radius:50%;background:#dc2626;flex-shrink:0;margin-top:5px;"></div>
+          <div style="font-size:12px;color:#374151;line-height:1.6;"><strong style="color:#0f2744;">1년 이하 징역 또는 1,000만 원 이하 벌금</strong> — 사실과 다르게 허위로 작성한 경우</div>
+        </div>
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px;">
+          <div style="width:5px;height:5px;border-radius:50%;background:#dc2626;flex-shrink:0;margin-top:5px;"></div>
+          <div style="font-size:12px;color:#374151;line-height:1.6;"><strong style="color:#0f2744;">동일 벌칙 적용</strong> — 자가측정 결과를 거짓으로 기록하거나 기록하지 않은 경우</div>
+        </div>
+      </div>
+
+      <!-- 섹션 3: 실무 주의사항 -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11.5px;font-weight:700;color:#0f2744;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:#0f2744;color:white;font-size:9px;font-weight:700;border-radius:3px;flex-shrink:0;">3</span>
+          실무 주의사항
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f8fafc;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div style="font-size:12px;color:#374151;line-height:1.6;"><strong style="color:#0f2744;">보존 의무 (2종 사업장)</strong> — 전산에 의한 방법으로 기록·보존 의무. 본 시스템 입력 후 SEMS에 반영 시 요건 충족.</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f8fafc;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div style="font-size:12px;color:#374151;line-height:1.6;"><strong style="color:#0f2744;">데이터 일치</strong> — 방지시설 전력 사용량은 자가측정 기록부 데이터와 반드시 일치해야 합니다.</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div style="font-size:12px;color:#374151;line-height:1.6;"><strong style="color:#0f2744;">당일 작성 원칙</strong> — 정기·수시 점검 시 가장 먼저 확인하는 서류입니다. 반드시 당일 입력하세요.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 법령 출처 -->
+      <div style="padding-top:10px;border-top:1px solid #f1f5f9;font-size:11px;color:#9ca3af;line-height:1.8;">
+        근거 법령: 대기환경보전법 제31조, 시행규칙 제36조, 제94조 &nbsp;·&nbsp;
+        사업장 규모 또는 관할 지자체 조례에 따라 세부 기준이 상이할 수 있습니다. &nbsp;·&nbsp;
+        <a href="https://www.law.go.kr" target="_blank" style="color:#2563eb;font-weight:500;text-decoration:none;">국가법령정보센터 →</a>
+      </div>
+    </div>
+  </div>
+
   <div class="layout-2col">
 
     <!-- 왼쪽: 운영기록 입력 -->
@@ -1625,6 +1740,16 @@ function searchWasteType(){
 function openClaude(query){
   var prompt='제조업 도장시설 환경관리 담당자입니다. 다음 폐기물이 어떤 종류인지, 지정폐기물인지 일반폐기물인지 알려주세요. 우리 사업장의 폐기물 종류는 폐합성수지, 폐목재, 폐유 고상, 폐유 액상, 폐페인트, 분진, 고철, 폐지, 일반쓰레기입니다. 질문: '+query;
   window.open('https://claude.ai/new?q='+encodeURIComponent(prompt),'_blank');
+}
+
+function toggleAirLawBanner(){
+  var body=document.getElementById('air-law-body');
+  var chevron=document.getElementById('air-law-chevron');
+  var hint=document.getElementById('air-law-hint');
+  var open=body.style.display==='none'||body.style.display==='';
+  body.style.display=open?'block':'none';
+  chevron.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+  hint.textContent=open?'클릭하여 접기':'클릭하여 펼치기';
 }
 
 function toggleCheck(el){el.classList.toggle('done');}
