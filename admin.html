@@ -1537,13 +1537,20 @@ function searchWasteType(){
     }
   };
 
-  var q=query.toLowerCase();
+  var q=query.toLowerCase().trim();
   var matched=null;
+  var bestScore=0;
+
   for(var i=0;i<DB.length;i++){
     for(var j=0;j<DB[i].keywords.length;j++){
-      if(q.includes(DB[i].keywords[j])){matched=DB[i];break;}
+      var kw=DB[i].keywords[j].toLowerCase();
+      var score=0;
+      if(kw===q){score=100;}                          // 완전 일치
+      else if(kw.startsWith(q)&&q.length>=2){score=80;}  // 앞부분 일치 (앞글자부터)
+      else if(q.includes(kw)){score=70;}              // 입력어가 키워드 포함
+      else if(kw.includes(q)&&q.length>=2){score=50;} // 키워드가 입력어 포함 (부분 입력)
+      if(score>bestScore){bestScore=score;matched=DB[i];}
     }
-    if(matched)break;
   }
 
   var resultEl=document.getElementById('waste-search-result');
