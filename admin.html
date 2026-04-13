@@ -243,78 +243,7 @@ tr:hover td{background:#fafafa;}
     <button onclick="loadDashboard()" style="padding:7px 16px;background:#f0f2f5;color:#374151;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">↻ 새로고침</button>
   </div>
 
-  <!-- 위젯 1: 이번 달 필터 교체 현황 -->
-  <div class="card">
-    <div class="table-header">
-      <span class="table-title">🔧 이번 달 필터 교체 현황</span>
-      <button onclick="showTab('filter')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;border-top:1px solid #f3f4f6;">
-      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">이번 달 교체</div>
-        <div style="font-size:24px;font-weight:700;color:#3b82f6;" id="dash-f-month">-</div>
-        <div style="font-size:11px;color:#9ca3af;">건</div>
-      </div>
-      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">이번 달 수량</div>
-        <div style="font-size:24px;font-weight:700;color:#1a3a5c;" id="dash-f-qty">-</div>
-        <div style="font-size:11px;color:#9ca3af;">개</div>
-      </div>
-      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">미처리 발주 요청</div>
-        <div style="font-size:24px;font-weight:700;" id="dash-f-order" style="color:#ef4444;">-</div>
-        <div style="font-size:11px;color:#9ca3af;">건</div>
-      </div>
-      <div style="padding:14px 16px;">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">최근 교체일</div>
-        <div style="font-size:15px;font-weight:700;color:#374151;padding-top:4px;" id="dash-f-last">-</div>
-      </div>
-    </div>
-    <div id="dash-filter-recent" style="border-top:1px solid #f3f4f6;"></div>
-  </div>
-
-  <!-- 위젯 2+3: 2단 레이아웃 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="dash-grid">
-
-    <!-- 위젯 2: 라인별 폐유고상 보관량 -->
-    <div class="card">
-      <div class="table-header">
-        <span class="table-title">🗑️ 라인별 폐유고상 보관량</span>
-        <button onclick="showTab('waste')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
-      </div>
-      <div id="dash-waste-lines" style="padding:14px 16px;"></div>
-    </div>
-
-    <!-- 위젯 3: 대기운영기록 입력 현황 -->
-    <div class="card">
-      <div class="table-header">
-        <span class="table-title">📋 대기운영기록 입력 현황</span>
-        <button onclick="showTab('airlog')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
-      </div>
-      <div id="dash-airlog-status" style="padding:14px 16px;"></div>
-    </div>
-
-    <!-- 위젯 4: 다음 배출업체 스케줄 -->
-    <div class="card">
-      <div class="table-header">
-        <span class="table-title">🚛 배출업체 스케줄</span>
-        <button onclick="showTab('waste')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
-      </div>
-      <div id="dash-waste-schedule" style="padding:0;"></div>
-    </div>
-
-    <!-- 위젯 5: 다음 대기측정 일정 -->
-    <div class="card">
-      <div class="table-header">
-        <span class="table-title">📡 대기측정 일정</span>
-        <button onclick="showTab('air')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
-      </div>
-      <div id="dash-air-schedule" style="padding:0;"></div>
-    </div>
-
-  </div>
-
-  <!-- 월별 입력 현황 위젯 -->
+  <!-- 위젯 1: 대기운영기록 월별 입력 현황 (맨 위) -->
   <div class="card">
     <div class="table-header">
       <span class="table-title">📋 대기운영기록 월별 입력 현황</span>
@@ -325,7 +254,7 @@ tr:hover td{background:#fafafa;}
     </div>
     <div style="overflow-x:auto;">
       <table style="min-width:700px;width:100%;">
-        <thead id="dash-month-thead">
+        <thead>
           <tr>
             <th style="text-align:left;padding:8px 16px;font-size:11px;color:#6b7280;font-weight:500;background:#f9fafb;border-bottom:1px solid #f3f4f6;">구분</th>
             <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">1월</th>
@@ -381,6 +310,74 @@ tr:hover td{background:#fafafa;}
       <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span> 미입력</span>
       <span style="display:flex;align-items:center;gap:5px;"><span style="color:#d1d5db;font-size:13px;">-</span> 해당 없음</span>
     </div>
+  </div>
+
+  <!-- 위젯 2: 이번 달 필터 교체 현황 -->
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">🔧 이번 달 필터 교체 현황</span>
+      <button onclick="showTab('filter')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;border-top:1px solid #f3f4f6;">
+      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">이번 달 교체</div>
+        <div style="font-size:24px;font-weight:700;color:#3b82f6;" id="dash-f-month">-</div>
+        <div style="font-size:11px;color:#9ca3af;">건</div>
+      </div>
+      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">이번 달 수량</div>
+        <div style="font-size:24px;font-weight:700;color:#1a3a5c;" id="dash-f-qty">-</div>
+        <div style="font-size:11px;color:#9ca3af;">개</div>
+      </div>
+      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">미처리 발주 요청</div>
+        <div style="font-size:24px;font-weight:700;" id="dash-f-order">-</div>
+        <div style="font-size:11px;color:#9ca3af;">건</div>
+      </div>
+      <div style="padding:14px 16px;">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">최근 교체일</div>
+        <div style="font-size:15px;font-weight:700;color:#374151;padding-top:4px;" id="dash-f-last">-</div>
+      </div>
+    </div>
+    <div id="dash-filter-recent" style="border-top:1px solid #f3f4f6;"></div>
+  </div>
+
+  <!-- 위젯 3+4+5: 2단 레이아웃 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="dash-grid">
+
+    <!-- 위젯 3: 라인별 폐유고상 보관량 + 차트 -->
+    <div class="card">
+      <div class="table-header">
+        <span class="table-title">🗑️ 라인별 폐유고상 보관량</span>
+        <button onclick="showTab('waste-oil')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+        <div id="dash-waste-lines" style="padding:14px 16px;border-right:1px solid #f3f4f6;"></div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:11px;color:#6b7280;margin-bottom:10px;font-weight:500;">보관량 현황</div>
+          <div style="position:relative;height:160px;"><canvas id="dashWasteChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 위젯 4: 다음 배출업체 스케줄 -->
+    <div class="card">
+      <div class="table-header">
+        <span class="table-title">🚛 배출업체 스케줄</span>
+        <button onclick="showTab('waste-schedule')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+      </div>
+      <div id="dash-waste-schedule" style="padding:0;"></div>
+    </div>
+
+    <!-- 위젯 5: 다음 대기측정 일정 -->
+    <div class="card">
+      <div class="table-header">
+        <span class="table-title">📡 대기측정 일정</span>
+        <button onclick="showTab('air')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+      </div>
+      <div id="dash-air-schedule" style="padding:0;"></div>
+    </div>
+
   </div>
 
 </div>
@@ -920,7 +917,7 @@ async function loadDashboard(){
     recentEl.innerHTML='<div style="padding:1rem 1.1rem;font-size:13px;color:#9ca3af;">이번 달 교체 기록 없음</div>';
   }
 
-  // ── 위젯2: 라인별 보관량 ──
+  // ── 위젯3: 라인별 보관량 + 차트 ──
   var linesEl=document.getElementById('dash-waste-lines');
   var lineColors={'G16동':'#3b82f6','현대라인':'#10b981','강건재라인':'#f59e0b','패킹라인':'#8b5cf6'};
   if(!storageData.length){
@@ -944,44 +941,31 @@ async function loadDashboard(){
       '</div>';
     }).join('');
   }
-
-  // ── 위젯3: 대기운영기록 입력 현황 (오늘/이번 주/이번 달) ──
-  var airlogStatusEl=document.getElementById('dash-airlog-status');
-  var todayLogged=airlogMonth.filter(function(r){return r.log_date===today;}).length>0;
-  var weekDays=[...new Set(airlogWeek.map(function(r){return r.log_date;}))];
-  var monthDays=[...new Set(airlogMonth.map(function(r){return r.log_date;}))];
-  // 이번 달 평일 수
-  var workdays=0;
-  for(var d=1;d<=now2.getDate();d++){var dw=new Date(now2.getFullYear(),now2.getMonth(),d).getDay();if(dw!==0&&dw!==6)workdays++;}
-  var pct=workdays>0?Math.round(monthDays.length/workdays*100):0;
-  var pctColor=pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
-  // 오늘 입력 여부
-  var todayBg=todayLogged?'#f0fdf4':'#fff5f5';
-  var todayColor=todayLogged?'#10b981':'#ef4444';
-  var todayText=todayLogged?'✅ 오늘 입력 완료':'⚠️ 오늘 미입력';
-  airlogStatusEl.innerHTML=
-    '<div style="background:'+todayBg+';border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;font-weight:600;color:'+todayColor+';">'+todayText+'</div>'+
-    '<div style="display:flex;gap:8px;margin-bottom:12px;">'+
-      '<div style="flex:1;background:#f9fafb;border-radius:8px;padding:10px;text-align:center;">'+
-        '<div style="font-size:11px;color:#6b7280;margin-bottom:3px;">이번 주</div>'+
-        '<div style="font-size:20px;font-weight:700;color:#1a3a5c;">'+weekDays.length+'</div>'+
-        '<div style="font-size:11px;color:#9ca3af;">일</div>'+
-      '</div>'+
-      '<div style="flex:1;background:#f9fafb;border-radius:8px;padding:10px;text-align:center;">'+
-        '<div style="font-size:11px;color:#6b7280;margin-bottom:3px;">이번 달</div>'+
-        '<div style="font-size:20px;font-weight:700;color:#1a3a5c;">'+monthDays.length+'</div>'+
-        '<div style="font-size:11px;color:#9ca3af;">일</div>'+
-      '</div>'+
-      '<div style="flex:1;background:#f9fafb;border-radius:8px;padding:10px;text-align:center;">'+
-        '<div style="font-size:11px;color:#6b7280;margin-bottom:3px;">달성률</div>'+
-        '<div style="font-size:20px;font-weight:700;color:'+pctColor+';">'+pct+'</div>'+
-        '<div style="font-size:11px;color:#9ca3af;">%</div>'+
-      '</div>'+
-    '</div>'+
-    '<div style="background:#f3f4f6;border-radius:4px;height:8px;">'+
-      '<div style="background:'+pctColor+';width:'+Math.min(pct,100)+'%;height:8px;border-radius:4px;transition:width 0.5s;"></div>'+
-    '</div>'+
-    '<div style="font-size:11px;color:#9ca3af;margin-top:6px;">이번 달 평일 '+workdays+'일 기준 '+monthDays.length+'일 입력</div>';
+  // 보관량 차트 (도넛)
+  var dwCtx=document.getElementById('dashWasteChart');
+  if(dwCtx&&storageData.length){
+    if(window._dashWasteChart)window._dashWasteChart.destroy();
+    window._dashWasteChart=new Chart(dwCtx.getContext('2d'),{
+      type:'doughnut',
+      data:{
+        labels:storageData.map(function(r){return r.line_name;}),
+        datasets:[{
+          data:storageData.map(function(r){return r.bag_count||0;}),
+          backgroundColor:storageData.map(function(r){return lineColors[r.line_name]||'#6b7280';}),
+          borderWidth:2,
+          borderColor:'#ffffff'
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        cutout:'60%',
+        plugins:{
+          legend:{position:'bottom',labels:{font:{size:11},boxWidth:10,padding:8}},
+          tooltip:{callbacks:{label:function(ctx){return ctx.label+': '+ctx.raw+'개';}}}
+        }
+      }
+    });
+  }
 
   // ── 위젯4: 배출업체 스케줄 ──
   var wasteSchedEl=document.getElementById('dash-waste-schedule');
