@@ -506,16 +506,18 @@ tr:hover td{background:#fafafa;}
 
 <!-- 대기운영기록 탭 -->
 <div id="tab-airlog" class="content hidden">
+  <div class="layout-2col">
 
-  <!-- 입력 카드 -->
-  <div class="card">
-    <div class="table-header">
-      <span class="table-title">운영기록 입력</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;">
-      <span class="filter-label">운전일자</span>
-      <input type="date" id="al-input-date" onchange="loadPrevPower(this.value)" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
-    </div>
+    <!-- 왼쪽: 운영기록 입력 -->
+    <div>
+      <div class="card">
+        <div class="table-header">
+          <span class="table-title">운영기록 입력</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;">
+          <span class="filter-label">운전일자</span>
+          <input type="date" id="al-input-date" onchange="loadPrevPower(this.value)" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+        </div>
 
     <div style="padding:10px 14px 6px;font-size:13px;font-weight:700;color:#1a3a5c;">1. 배출구별 가동시간</div>
     <div style="overflow-x:auto;">
@@ -570,24 +572,29 @@ tr:hover td{background:#fafafa;}
       </table>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;padding:12px 14px;border-top:1px solid #f3f4f6;">
-      <button onclick="queryAirLog()" style="padding:8px 18px;background:white;color:#1a3a5c;border:1.5px solid #1a3a5c;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">날짜 조회/수정</button>
-      <button onclick="saveAirLog()" id="al-save-btn" style="padding:8px 18px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">저장</button>
+          <button onclick="queryAirLog()" style="padding:8px 18px;background:white;color:#1a3a5c;border:1.5px solid #1a3a5c;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">날짜 조회/수정</button>
+          <button onclick="saveAirLog()" id="al-save-btn" style="padding:8px 18px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">저장</button>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- 일자별 조회 -->
-  <div class="card">
-    <div class="table-header">
-      <span class="table-title">일자별 조회</span>
-      <button onclick="exportAirLogExcel()" style="padding:6px 14px;background:#217346;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">엑셀 내보내기</button>
+    <!-- 오른쪽: 일자별 조회 -->
+    <div>
+      <div class="card">
+        <div class="table-header">
+          <span class="table-title">일자별 조회</span>
+          <button onclick="exportAirLogExcel()" style="padding:6px 14px;background:#217346;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">엑셀 내보내기</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f4f6;">
+          <span class="filter-label">날짜 선택</span>
+          <input type="date" id="al-view-date" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+          <button onclick="loadAirLogView()" style="padding:7px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회</button>
+        </div>
+        <div id="al-view-emission" style="overflow-x:auto;"></div>
+        <div id="al-view-prevention" style="overflow-x:auto;"></div>
+      </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f4f6;">
-      <span class="filter-label">날짜 선택</span>
-      <input type="date" id="al-view-date" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
-      <button onclick="loadAirLogView()" style="padding:7px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회</button>
-    </div>
-    <div id="al-view-emission" style="overflow-x:auto;"></div>
-    <div id="al-view-prevention" style="overflow-x:auto;"></div>
+
   </div>
 </div>
 
