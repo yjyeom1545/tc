@@ -7,44 +7,46 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;flex-direction:column;}
+body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height:100vh;display:flex;flex-direction:column;color:#1e2633;}
 
-/* ── 사이드바 레이아웃 ── */
+/* ── 사이드바 ── */
 .app-layout{display:flex;flex:1;min-height:0;}
-.sidebar{width:220px;min-width:220px;background:#1a3a5c;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform 0.25s;}
-.sidebar-header{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.08);}
-.sidebar-logo{font-size:13px;font-weight:700;color:white;letter-spacing:0.3px;}
-.sidebar-sub{font-size:10px;color:rgba(255,255,255,0.45);margin-top:3px;}
-.sidebar-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:8px;}
-.sidebar-user-icon{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;font-weight:700;flex-shrink:0;}
+.sidebar{width:224px;min-width:224px;background:#0f2744;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform 0.25s;}
+.sidebar-header{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.sidebar-logo{font-size:13px;font-weight:700;color:white;letter-spacing:0.4px;display:flex;align-items:center;gap:8px;}
+.sidebar-logo-mark{width:24px;height:24px;background:#2563eb;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sidebar-sub{font-size:10px;color:rgba(255,255,255,0.38);margin-top:4px;padding-left:32px;}
+.sidebar-user{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:10px;}
+.sidebar-user-icon{width:32px;height:32px;border-radius:6px;background:#1e3a6e;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,0.8);font-weight:700;flex-shrink:0;letter-spacing:0;}
 .sidebar-user-name{font-size:12px;color:rgba(255,255,255,0.85);font-weight:500;}
-.sidebar-user-role{font-size:10px;color:rgba(255,255,255,0.45);}
-.sidebar-nav{flex:1;overflow-y:auto;padding:10px 0;}
-.nav-section{padding:8px 18px 4px;font-size:10px;color:rgba(255,255,255,0.35);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;color:rgba(255,255,255,0.65);font-size:13px;font-weight:500;transition:all 0.15s;border-left:3px solid transparent;}
-.nav-item:hover{background:rgba(255,255,255,0.07);color:white;}
-.nav-item.active{background:rgba(255,255,255,0.12);color:white;border-left-color:#60a5fa;}
-.nav-item .nav-icon{font-size:16px;width:20px;text-align:center;}
-.nav-badge{margin-left:auto;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;}
-.sidebar-footer{padding:12px 18px;border-top:1px solid rgba(255,255,255,0.08);}
-.sidebar-footer-btn{width:100%;padding:8px;background:rgba(239,68,68,0.25);color:rgba(255,255,255,0.8);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
-.sidebar-footer-btn:hover{background:rgba(239,68,68,0.45);}
+.sidebar-user-role{font-size:10px;color:rgba(255,255,255,0.38);margin-top:1px;}
+.sidebar-nav{flex:1;overflow-y:auto;padding:8px 0 12px;}
+.sidebar-nav::-webkit-scrollbar{width:3px;}
+.sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.nav-section{padding:14px 20px 5px;font-size:10px;color:rgba(255,255,255,0.28);font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 20px;cursor:pointer;color:rgba(255,255,255,0.55);font-size:12.5px;font-weight:500;transition:all 0.12s;border-left:2px solid transparent;margin:1px 0;}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.9);}
+.nav-item.active{background:rgba(37,99,235,0.18);color:white;border-left-color:#3b82f6;}
+.nav-item svg{flex-shrink:0;opacity:0.7;}
+.nav-item.active svg{opacity:1;}
+.nav-badge{margin-left:auto;background:#dc2626;color:white;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;}
+.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.07);}
+.sidebar-footer-btn{width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all 0.12s;text-align:left;}
+.sidebar-footer-btn:hover{background:rgba(220,38,38,0.25);color:rgba(255,255,255,0.9);border-color:rgba(220,38,38,0.4);}
 
 /* ── 메인 영역 ── */
-.main-area{margin-left:220px;flex:1;display:flex;flex-direction:column;min-width:0;}
-.topbar{background:white;border-bottom:1px solid #e5e7eb;padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.topbar-title{font-size:15px;font-weight:700;color:#1a3a5c;}
+.main-area{margin-left:224px;flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{background:white;border-bottom:1px solid #e8ecf0;padding:0 1.75rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-title{font-size:14px;font-weight:700;color:#0f2744;letter-spacing:0.1px;}
 .topbar-right{display:flex;gap:8px;align-items:center;}
-.top-btn{background:#f0f2f5;border:none;color:#374151;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
-.top-btn:hover{background:#e5e7eb;}
-.top-btn.logout{background:#fee2e2;color:#ef4444;}
-.top-btn.logout:hover{background:#fca5a5;}
+.top-btn{background:#f4f6f9;border:1px solid #e8ecf0;color:#4b5563;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all 0.12s;}
+.top-btn:hover{background:#e8ecf0;border-color:#d1d5db;}
 
 /* ── 모바일 토글 ── */
-.menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:4px;color:#374151;}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:199;}
+.menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:4px;color:#4b5563;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:199;}
 @media(max-width:768px){
   .sidebar{transform:translateX(-100%);}
   .sidebar.open{transform:translateX(0);}
@@ -54,113 +56,127 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;min-height:100vh;d
 }
 
 /* ── 콘텐츠 ── */
-.content{width:100%;padding:1.5rem 1.5rem;overflow-x:hidden;}
+.content{width:100%;padding:1.5rem 1.75rem;overflow-x:hidden;}
 .content-narrow{max-width:720px;margin:0 auto;}
-/* 메뉴별 레이아웃 */
 .layout-split{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;}
 .layout-split-wide{display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start;}
 .layout-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
 .layout-3col{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start;}
 @media(max-width:1100px){
-  .layout-split{grid-template-columns:1fr;}
-  .layout-split-wide{grid-template-columns:1fr;}
-  .layout-2col{grid-template-columns:1fr;}
+  .layout-split,.layout-split-wide,.layout-2col{grid-template-columns:1fr;}
   .layout-3col{grid-template-columns:1fr 1fr;}
 }
 @media(max-width:768px){
-  .content{padding:1rem 0.75rem;}
+  .content{padding:1rem 1rem;}
   .layout-3col{grid-template-columns:1fr;}
 }
+
+/* ── 카드 ── */
 .hidden{display:none;}
-.card{background:white;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:12px;overflow:hidden;}
+.card{background:white;border-radius:8px;border:1px solid #e8ecf0;box-shadow:0 1px 2px rgba(0,0,0,0.04);margin-bottom:14px;overflow:hidden;}
 .card-body{padding:1.1rem 1.25rem;}
-.card-title{font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:1rem;}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1rem;}
-.stat-card{background:white;border-radius:10px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
-.stat-label{font-size:11px;color:#6b7280;margin-bottom:5px;}
-.stat-value{font-size:22px;font-weight:700;color:#1a3a5c;}
-.stat-unit{font-size:12px;font-weight:400;color:#6b7280;margin-left:2px;}
+.card-title{font-size:13px;font-weight:700;color:#0f2744;margin-bottom:1rem;letter-spacing:0.1px;}
+
+/* ── 통계 카드 ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
+.stat-card{background:white;border-radius:8px;padding:1rem 1.1rem;border:1px solid #e8ecf0;box-shadow:0 1px 2px rgba(0,0,0,0.04);}
+.stat-label{font-size:11px;color:#6b7280;margin-bottom:6px;font-weight:500;letter-spacing:0.2px;}
+.stat-value{font-size:22px;font-weight:700;color:#0f2744;}
+.stat-unit{font-size:12px;font-weight:400;color:#9ca3af;margin-left:3px;}
+
+/* ── 테이블 ── */
 .chart-wrap{position:relative;height:220px;}
-.filter-bar{background:white;border-radius:10px;padding:1rem 1.1rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.filter-bar select,.filter-bar input[type=month]{border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;}
+.filter-bar{background:white;border-radius:8px;padding:0.9rem 1.1rem;margin-bottom:14px;border:1px solid #e8ecf0;box-shadow:0 1px 2px rgba(0,0,0,0.04);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.filter-bar select,.filter-bar input[type=month]{border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;}
+.filter-bar select:focus,.filter-bar input[type=month]:focus{border-color:#2563eb;}
 .filter-label{font-size:12px;color:#6b7280;font-weight:500;}
-.clear-btn{border:1px solid #e5e7eb;background:white;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;color:#6b7280;font-family:'Noto Sans KR',sans-serif;}
+.clear-btn{border:1px solid #e8ecf0;background:white;border-radius:5px;padding:6px 12px;font-size:12px;cursor:pointer;color:#6b7280;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
+.clear-btn:hover{background:#f4f6f9;}
 table{width:100%;border-collapse:collapse;}
-th{padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;font-weight:500;border-bottom:1px solid #f3f4f6;background:#f9fafb;}
-td{padding:10px 12px;font-size:13px;color:#374151;border-bottom:1px solid #f9fafb;}
+th{padding:9px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:600;border-bottom:1px solid #e8ecf0;background:#f8fafc;letter-spacing:0.3px;}
+td{padding:10px 12px;font-size:12.5px;color:#374151;border-bottom:1px solid #f1f5f9;}
 tr:last-child td{border-bottom:none;}
-tr:hover td{background:#fafafa;}
-.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;}
+tr:hover td{background:#fafbfd;}
+
+/* ── 뱃지 ── */
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
 .badge-sangdo{background:#dbeafe;color:#1e40af;}
-.badge-ha1{background:#d1fae5;color:#065f46;}
-.badge-ha2{background:#fef3c7;color:#92400e;}
-.qty-badge{background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:700;}
-.note-cell{color:#6b7280;font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.empty{text-align:center;padding:3rem;color:#9ca3af;font-size:14px;}
-.loading{text-align:center;padding:3rem;color:#6b7280;font-size:14px;}
-.del-btn{background:none;border:none;color:#d1d5db;font-size:14px;cursor:pointer;padding:2px 6px;border-radius:4px;}
-.del-btn:hover{background:#fee2e2;color:#ef4444;}
-.table-header{padding:1rem 1.1rem;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-.table-title{font-size:14px;font-weight:700;color:#1a3a5c;}
-.record-count{font-size:12px;color:#6b7280;}
+.badge-ha1{background:#dcfce7;color:#166534;}
+.badge-ha2{background:#fef9c3;color:#854d0e;}
+.qty-badge{background:#ede9fe;color:#5b21b6;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.note-cell{color:#9ca3af;font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.empty{text-align:center;padding:3rem;color:#9ca3af;font-size:13px;}
+.loading{text-align:center;padding:3rem;color:#6b7280;font-size:13px;}
+
+/* ── 버튼 ── */
+.del-btn{background:none;border:none;color:#d1d5db;font-size:13px;cursor:pointer;padding:3px 7px;border-radius:4px;transition:all 0.12s;}
+.del-btn:hover{background:#fee2e2;color:#dc2626;}
+.add-btn{padding:8px 16px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:background 0.12s;}
+.add-btn:hover{background:#1e3a6e;}
+.save-btn{width:100%;padding:11px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:10px;transition:background 0.12s;}
+.save-btn:hover{background:#1e3a6e;}
+
+/* ── 테이블 헤더 ── */
+.table-header{padding:0.9rem 1.1rem;border-bottom:1px solid #e8ecf0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.table-title{font-size:13px;font-weight:700;color:#0f2744;letter-spacing:0.1px;}
+.record-count{font-size:11px;color:#9ca3af;font-weight:500;}
+
+/* ── 기타 공통 ── */
 .main-grid{display:grid;grid-template-columns:1fr 300px;gap:12px;align-items:start;}
 @media(max-width:768px){.main-grid{grid-template-columns:1fr;}}
-.order-item{padding:10px 14px;border-bottom:1px solid #f9fafb;}
+.order-item{padding:10px 14px;border-bottom:1px solid #f1f5f9;}
 .order-item:last-child{border-bottom:none;}
-.order-name{font-size:13px;font-weight:500;color:#374151;margin-bottom:2px;}
+.order-name{font-size:12.5px;font-weight:500;color:#374151;margin-bottom:2px;}
 .order-date{font-size:11px;color:#9ca3af;}
 .order-actions{display:flex;gap:6px;margin-top:8px;}
-.order-done-btn{font-size:12px;padding:5px 10px;background:#1a3a5c;color:white;border:none;border-radius:6px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
-.order-done-btn:hover{background:#15304d;}
-.order-del-btn{font-size:12px;padding:5px 10px;background:white;color:#6b7280;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
-.order-del-btn:hover{background:#fee2e2;color:#ef4444;border-color:#fca5a5;}
-.new-badge{background:#fee2e2;color:#991b1b;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;}
-.done-badge{background:#d1fae5;color:#065f46;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;}
-.check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f9fafb;cursor:pointer;}
+.order-done-btn{font-size:11px;padding:5px 10px;background:#0f2744;color:white;border:none;border-radius:5px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
+.order-done-btn:hover{background:#1e3a6e;}
+.order-del-btn{font-size:11px;padding:5px 10px;background:white;color:#6b7280;border:1px solid #e8ecf0;border-radius:5px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.order-del-btn:hover{background:#fee2e2;color:#dc2626;border-color:#fca5a5;}
+.new-badge{background:#fef2f2;color:#991b1b;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;border:1px solid #fecaca;}
+.done-badge{background:#f0fdf4;color:#166534;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;border:1px solid #bbf7d0;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;}
 .check-item:last-child{border-bottom:none;}
-.check-box{width:18px;height:18px;border-radius:4px;border:1.5px solid #d1d5db;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:white;}
-.check-item.done .check-box{background:#1a3a5c;border-color:#1a3a5c;}
-.check-mark{display:none;width:10px;height:7px;border-left:2px solid white;border-bottom:2px solid white;transform:rotate(-45deg) translate(1px,-1px);}
+.check-box{width:16px;height:16px;border-radius:3px;border:1.5px solid #d1d5db;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:white;}
+.check-item.done .check-box{background:#0f2744;border-color:#0f2744;}
+.check-mark{display:none;width:9px;height:6px;border-left:2px solid white;border-bottom:2px solid white;transform:rotate(-45deg) translate(1px,-1px);}
 .check-item.done .check-mark{display:block;}
-.check-text{font-size:13px;color:#374151;line-height:1.5;}
+.check-text{font-size:12.5px;color:#374151;line-height:1.5;}
 .check-item.done .check-text{color:#9ca3af;text-decoration:line-through;}
-.check-badge{font-size:10px;padding:2px 6px;border-radius:10px;margin-left:6px;font-weight:500;}
-.badge-legal{background:#fef3c7;color:#92400e;}
-.badge-daily{background:#d1fae5;color:#065f46;}
+.check-badge{font-size:10px;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;}
+.badge-legal{background:#fef9c3;color:#854d0e;}
+.badge-daily{background:#dcfce7;color:#166534;}
 .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
 .form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
-.form-group label{font-size:12px;color:#6b7280;font-weight:500;}
-.form-group input,.form-group select,.form-group textarea{border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#374151;outline:none;background:white;}
+.form-group label{font-size:11px;color:#6b7280;font-weight:600;letter-spacing:0.2px;}
+.form-group input,.form-group select,.form-group textarea{border:1px solid #e8ecf0;border-radius:5px;padding:8px 10px;font-size:12.5px;font-family:'Noto Sans KR',sans-serif;color:#374151;outline:none;background:white;transition:border-color 0.12s;}
 .form-group textarea{resize:none;height:70px;}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a3a5c;}
-.add-btn{padding:8px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
-.save-btn{width:100%;padding:11px;background:#1a3a5c;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:10px;}
-.contractor-card{background:white;border-radius:10px;padding:1.1rem 1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:10px;}
-.contractor-name{font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:4px;}
-.contractor-info{font-size:12px;color:#6b7280;line-height:2;}
-.badge-valid{background:#d1fae5;color:#065f46;}
-.badge-warn{background:#fef3c7;color:#92400e;}
-.badge-expired{background:#fee2e2;color:#991b1b;}
-.role-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,0.08);}
+.contractor-card{background:white;border-radius:8px;padding:1rem 1.1rem;border:1px solid #e8ecf0;margin-bottom:10px;}
+.contractor-name{font-size:13px;font-weight:700;color:#0f2744;margin-bottom:4px;}
+.contractor-info{font-size:11.5px;color:#6b7280;line-height:2.1;}
+.badge-valid{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
+.badge-warn{background:#fef9c3;color:#854d0e;border:1px solid #fde047;}
+.badge-expired{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
+.role-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;}
 .role-admin{background:#dbeafe;color:#1e40af;}
-.role-manager{background:#d1fae5;color:#065f46;}
-.role-viewer{background:#f3f4f6;color:#6b7280;}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:none;}
+.role-manager{background:#dcfce7;color:#166534;}
+.role-viewer{background:#f1f5f9;color:#6b7280;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;display:none;}
 .modal-bg.show{display:flex;align-items:center;justify-content:center;}
-.modal{background:white;border-radius:12px;padding:1.5rem;width:90%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.15);}
-.modal-title{font-size:15px;font-weight:700;color:#1a3a5c;margin-bottom:1rem;}
+.modal{background:white;border-radius:10px;padding:1.5rem;width:90%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,0.16);}
+.modal-title{font-size:14px;font-weight:700;color:#0f2744;margin-bottom:1rem;}
 .modal-btns{display:flex;gap:8px;margin-top:1rem;justify-content:flex-end;}
-.modal-cancel{padding:8px 16px;border:1px solid #e5e7eb;background:white;border-radius:6px;font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
-.modal-confirm{padding:8px 16px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
-.status-planned{background:#dbeafe;color:#1e40af;}
-.status-done{background:#d1fae5;color:#065f46;}
-.status-cancel{background:#f3f4f6;color:#6b7280;}
-.al-sbtn{padding:3px 10px;border-radius:10px;font-size:11px;font-weight:500;border:1px solid #e5e7eb;cursor:pointer;background:white;color:#9ca3af;font-family:'Noto Sans KR',sans-serif;}
-.al-normal{border-color:#1a3a5c;background:#eef3f9;color:#1a3a5c;}
-.al-abnormal{border-color:#ef4444;background:#fef2f2;color:#ef4444;}
-/* 유효성 검사 에러 표시 */
-.input-error{border-color:#ef4444 !important;background:#fff5f5 !important;}
-.val-msg{font-size:11px;color:#ef4444;margin-top:3px;display:none;}
+.modal-cancel{padding:8px 16px;border:1px solid #e8ecf0;background:white;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:#374151;}
+.modal-confirm{padding:8px 16px;background:#dc2626;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:600;}
+.status-planned{background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;}
+.status-done{background:#dcfce7;color:#166534;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;}
+.status-cancel{background:#f1f5f9;color:#6b7280;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;}
+.al-sbtn{padding:3px 10px;border-radius:4px;font-size:11px;font-weight:500;border:1px solid #e8ecf0;cursor:pointer;background:white;color:#9ca3af;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
+.al-normal{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;}
+.al-abnormal{border-color:#dc2626;background:#fef2f2;color:#dc2626;}
+.input-error{border-color:#dc2626 !important;background:#fff5f5 !important;}
+.val-msg{font-size:11px;color:#dc2626;margin-top:3px;display:none;}
 .val-msg.show{display:block;}
 </style>
 </head>
@@ -172,7 +188,12 @@ tr:hover td{background:#fafafa;}
 <!-- 사이드바 -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <div class="sidebar-logo">TC 환경관리 시스템</div>
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      TC 환경관리 시스템
+    </div>
     <div class="sidebar-sub">도장시설 · 폐기물 · 대기 통합 관리</div>
   </div>
   <div class="sidebar-user">
@@ -184,36 +205,47 @@ tr:hover td{background:#fafafa;}
   </div>
   <nav class="sidebar-nav">
     <div class="nav-item active" id="nav-home" onclick="showTab('home')">
-      <span class="nav-icon">🏠</span> 홈
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      대시보드
     </div>
     <div class="nav-section">집진설비</div>
     <div class="nav-item" id="nav-filter" onclick="showTab('filter')">
-      <span class="nav-icon">🔧</span> 필터 교체
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      필터 교체
     </div>
     <div class="nav-section">폐기물</div>
     <div class="nav-item" id="nav-waste-oil" onclick="showTab('waste-oil')">
-      <span class="nav-icon">🛢️</span> 폐유고상 톤백
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
+      폐유고상 톤백
     </div>
     <div class="nav-item" id="nav-waste-schedule" onclick="showTab('waste-schedule')">
-      <span class="nav-icon">🚛</span> 배출업체 스케줄
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      배출업체 스케줄
     </div>
     <div class="nav-item" id="nav-waste-search" onclick="showTab('waste-search')">
-      <span class="nav-icon">🔍</span> 폐기물 분류 검색
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      폐기물 분류 검색
     </div>
     <div class="nav-section">대기</div>
     <div class="nav-item" id="nav-airlog" onclick="showTab('airlog')">
-      <span class="nav-icon">📋</span> 대기운영기록
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      대기운영기록
     </div>
     <div class="nav-item" id="nav-air" onclick="showTab('air')">
-      <span class="nav-icon">📡</span> 대기측정 일정
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      대기측정 일정
     </div>
     <div class="nav-section" id="nav-section-admin">관리</div>
     <div class="nav-item" id="nav-users" onclick="showTab('users')">
-      <span class="nav-icon">👤</span> 사용자 관리
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      사용자 관리
     </div>
   </nav>
   <div class="sidebar-footer">
-    <button class="sidebar-footer-btn" onclick="logout()">로그아웃</button>
+    <button class="sidebar-footer-btn" onclick="logout()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:6px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      로그아웃
+    </button>
   </div>
 </aside>
 
@@ -237,7 +269,7 @@ tr:hover td{background:#fafafa;}
   <!-- 헤더 -->
   <div style="margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
     <div>
-      <div style="font-size:18px;font-weight:700;color:#1a3a5c;" id="dash-greeting">안녕하세요!</div>
+      <div style="font-size:18px;font-weight:700;color:#0f2744;" id="dash-greeting">안녕하세요!</div>
       <div style="font-size:12px;color:#9ca3af;margin-top:3px;" id="dash-date">-</div>
     </div>
     <button onclick="loadDashboard()" style="padding:7px 16px;background:#f0f2f5;color:#374151;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">↻ 새로고침</button>
@@ -246,10 +278,10 @@ tr:hover td{background:#fafafa;}
   <!-- 위젯 1: 대기운영기록 월별 입력 현황 (맨 위) -->
   <div class="card">
     <div class="table-header">
-      <span class="table-title">📋 대기운영기록 월별 입력 현황</span>
+      <span class="table-title">대기운영기록 월별 입력 현황</span>
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:11px;color:#6b7280;" id="dash-airlog-year">-</span>
-        <button onclick="showTab('airlog')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+        <button onclick="showTab('airlog')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
       </div>
     </div>
     <div style="overflow-x:auto;">
@@ -315,8 +347,8 @@ tr:hover td{background:#fafafa;}
   <!-- 위젯 2: 이번 달 필터 교체 현황 -->
   <div class="card">
     <div class="table-header">
-      <span class="table-title">🔧 이번 달 필터 교체 현황</span>
-      <button onclick="showTab('filter')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+      <span class="table-title">이번 달 필터 교체 현황</span>
+      <button onclick="showTab('filter')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;border-top:1px solid #f3f4f6;">
       <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
@@ -326,7 +358,7 @@ tr:hover td{background:#fafafa;}
       </div>
       <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
         <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">이번 달 수량</div>
-        <div style="font-size:24px;font-weight:700;color:#1a3a5c;" id="dash-f-qty">-</div>
+        <div style="font-size:24px;font-weight:700;color:#0f2744;" id="dash-f-qty">-</div>
         <div style="font-size:11px;color:#9ca3af;">개</div>
       </div>
       <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
@@ -348,8 +380,8 @@ tr:hover td{background:#fafafa;}
     <!-- 위젯 3: 라인별 폐유고상 보관량 + 차트 -->
     <div class="card">
       <div class="table-header">
-        <span class="table-title">🗑️ 라인별 폐유고상 보관량</span>
-        <button onclick="showTab('waste-oil')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+        <span class="table-title">라인별 폐유고상 보관량</span>
+        <button onclick="showTab('waste-oil')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
         <div id="dash-waste-lines" style="padding:14px 16px;border-right:1px solid #f3f4f6;"></div>
@@ -363,8 +395,8 @@ tr:hover td{background:#fafafa;}
     <!-- 위젯 4: 다음 배출업체 스케줄 -->
     <div class="card">
       <div class="table-header">
-        <span class="table-title">🚛 배출업체 스케줄</span>
-        <button onclick="showTab('waste-schedule')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+        <span class="table-title">배출업체 스케줄</span>
+        <button onclick="showTab('waste-schedule')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
       </div>
       <div id="dash-waste-schedule" style="padding:0;"></div>
     </div>
@@ -372,8 +404,8 @@ tr:hover td{background:#fafafa;}
     <!-- 위젯 5: 다음 대기측정 일정 -->
     <div class="card">
       <div class="table-header">
-        <span class="table-title">📡 대기측정 일정</span>
-        <button onclick="showTab('air')" style="font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+        <span class="table-title">대기측정 일정</span>
+        <button onclick="showTab('air')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
       </div>
       <div id="dash-air-schedule" style="padding:0;"></div>
     </div>
@@ -431,7 +463,7 @@ tr:hover td{background:#fafafa;}
           <span class="table-title">여과지 발주 요청</span>
           <span id="order-new-badge"></span>
         </div>
-        <div style="padding:8px 14px;font-size:12px;color:#6b7280;border-bottom:1px solid #f3f4f6;">마지막 요청일: <b id="order-last-date" style="color:#1a3a5c;">-</b></div>
+        <div style="padding:8px 14px;font-size:12px;color:#6b7280;border-bottom:1px solid #f3f4f6;">마지막 요청일: <b id="order-last-date" style="color:#0f2744;">-</b></div>
         <div id="order-table"><div class="loading">불러오는 중...</div></div>
       </div>
     </div>
@@ -530,13 +562,13 @@ tr:hover td{background:#fafafa;}
     <div>
       <div class="card">
         <div class="card-body">
-          <div class="card-title">🔍 폐기물 분류 검색</div>
+          <div class="card-title">폐기물 분류 검색</div>
           <div style="font-size:12px;color:#6b7280;margin-bottom:14px;">폐기물 상태나 특징을 입력하면 분류를 안내해드립니다. 정확한 분류는 관할 환경청에 확인하세요.</div>
           <div style="display:flex;gap:8px;margin-bottom:12px;">
             <input type="text" id="waste-search-input" placeholder="예: 연마 슬러지, 발청제 폐액, 페인트 찌꺼기" style="flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:10px 14px;font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;"
               onkeydown="if(event.key==='Enter')searchWasteType()"
               oninput="if(!this.value){var r=document.getElementById('waste-search-result');r.classList.add('hidden');r.innerHTML='';}">
-            <button onclick="searchWasteType()" style="padding:10px 20px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">검색</button>
+            <button onclick="searchWasteType()" style="padding:10px 20px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">검색</button>
           </div>
           <div id="waste-search-result" class="hidden"></div>
         </div>
@@ -548,7 +580,7 @@ tr:hover td{background:#fafafa;}
           <div class="card-title">우리 사업장 폐기물 분류표</div>
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div style="border:1px solid #fee2e2;border-radius:8px;padding:14px;background:#fff5f5;">
-              <div style="font-size:12px;font-weight:700;color:#991b1b;margin-bottom:8px;">⚠️ 지정폐기물</div>
+              <div style="font-size:12px;font-weight:700;color:#991b1b;margin-bottom:8px;">지정폐기물</div>
               <div style="display:flex;flex-direction:column;gap:6px;">
                 <div onclick="quickSearch('폐유 고상')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #fecaca;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='white'">폐유 고상 <span style="font-size:10px;color:#9ca3af;">클릭하여 조회 →</span></div>
                 <div onclick="quickSearch('폐유 액상')" style="font-size:13px;color:#374151;padding:6px 10px;background:white;border-radius:6px;border:1px solid #fecaca;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='white'">폐유 액상 <span style="font-size:10px;color:#9ca3af;">클릭하여 조회 →</span></div>
@@ -591,7 +623,7 @@ tr:hover td{background:#fafafa;}
           <input type="date" id="al-input-date" onchange="loadPrevPower(this.value)" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
         </div>
 
-    <div style="padding:10px 14px 6px;font-size:13px;font-weight:700;color:#1a3a5c;">1. 배출구별 가동시간</div>
+    <div style="padding:10px 14px 6px;font-size:13px;font-weight:700;color:#0f2744;">1. 배출구별 가동시간</div>
     <div style="overflow-x:auto;">
       <table style="min-width:700px;">
         <thead>
@@ -605,20 +637,20 @@ tr:hover td{background:#fafafa;}
           </tr>
         </thead>
         <tbody id="al-emission-input">
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">1</td><td>탈청시설 (200HP)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em1-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em1-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em1-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="13" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em1-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em1-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em1','정상')" id="em1-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em1','비정상')" id="em1-abnormal" class="al-sbtn">비정상</button></div></td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">2</td><td>도장시설 (600㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em2-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em2-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em2-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em2-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em2-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em2','정상')" id="em2-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em2','비정상')" id="em2-abnormal" class="al-sbtn">비정상</button></div></td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">3</td><td>도장시설 (600㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em3-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em3-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em3-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em3-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em3-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em3','정상')" id="em3-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em3','비정상')" id="em3-abnormal" class="al-sbtn">비정상</button></div></td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">4</td><td>도장시설 (600㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em4-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em4-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em4-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em4-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em4-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em4','정상')" id="em4-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em4','비정상')" id="em4-abnormal" class="al-sbtn">비정상</button></div></td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">5</td><td>건조시설 (345.6㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em5-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em5-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em5-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em5-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em5-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em5','정상')" id="em5-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em5','비정상')" id="em5-abnormal" class="al-sbtn">비정상</button></div></td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">6</td><td>도장 및 건조시설 (319㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em6-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em6-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em6-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em6-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em6-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em6','정상')" id="em6-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em6','비정상')" id="em6-abnormal" class="al-sbtn">비정상</button></div></td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">7</td><td>도장 및 건조시설 (319㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em7-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em7-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em7-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em7-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em7-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em7','정상')" id="em7-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em7','비정상')" id="em7-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">1</td><td>탈청시설 (200HP)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em1-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em1-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em1-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="13" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em1-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(1)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em1-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em1','정상')" id="em1-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em1','비정상')" id="em1-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">2</td><td>도장시설 (600㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em2-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em2-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em2-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em2-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(2)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em2-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em2','정상')" id="em2-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em2','비정상')" id="em2-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">3</td><td>도장시설 (600㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em3-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em3-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em3-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em3-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(3)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em3-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em3','정상')" id="em3-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em3','비정상')" id="em3-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">4</td><td>도장시설 (600㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em4-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em4-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em4-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em4-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(4)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em4-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em4','정상')" id="em4-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em4','비정상')" id="em4-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">5</td><td>건조시설 (345.6㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em5-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em5-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em5-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em5-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(5)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em5-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em5','정상')" id="em5-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em5','비정상')" id="em5-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">6</td><td>도장 및 건조시설 (319㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em6-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em6-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em6-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em6-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(6)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em6-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em6','정상')" id="em6-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em6','비정상')" id="em6-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">7</td><td>도장 및 건조시설 (319㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em7-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em7-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em7-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em7-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(7)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em7-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em7','정상')" id="em7-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em7','비정상')" id="em7-abnormal" class="al-sbtn">비정상</button></div></td></tr>
           <tr style="background:#f9fafb;"><td style="text-align:center;font-weight:700;color:#d1d5db;">8</td><td style="color:#d1d5db;">연마시설 (238.5㎥)</td><td colspan="5" style="text-align:center;color:#d1d5db;font-size:12px;">미가동</td><td style="text-align:center;color:#d1d5db;">-</td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">9</td><td>도장시설 (656.6㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em9-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em9-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em9-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em9-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em9-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em9','정상')" id="em9-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em9','비정상')" id="em9-abnormal" class="al-sbtn">비정상</button></div></td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">9</td><td>도장시설 (656.6㎥)</td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em9-sh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="08" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em9-sm" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><div style="display:flex;align-items:center;gap:3px;justify-content:center;"><input type="text" id="em9-eh" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="17" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"><span style="font-size:10px;color:#9ca3af;">:</span><input type="text" id="em9-em" maxlength="2" oninput="sanitizeNum(this);autoCalcHours(9)" placeholder="00" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></div></td><td></td><td style="text-align:center;"><input type="number" id="em9-hr" placeholder="h" style="width:60px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;"><div style="display:flex;gap:4px;justify-content:center;"><button onclick="setStatus('em9','정상')" id="em9-normal" class="al-sbtn al-normal">정상</button><button onclick="setStatus('em9','비정상')" id="em9-abnormal" class="al-sbtn">비정상</button></div></td></tr>
         </tbody>
       </table>
     </div>
 
-    <div style="padding:12px 14px 6px;font-size:13px;font-weight:700;color:#1a3a5c;border-top:1px solid #f3f4f6;margin-top:4px;">2. 방지시설 전력사용량</div>
+    <div style="padding:12px 14px 6px;font-size:13px;font-weight:700;color:#0f2744;border-top:1px solid #f3f4f6;margin-top:4px;">2. 방지시설 전력사용량</div>
     <div style="overflow-x:auto;">
       <table style="min-width:420px;">
         <thead>
@@ -631,21 +663,21 @@ tr:hover td{background:#fafafa;}
           </tr>
         </thead>
         <tbody>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">1</td><td>여과집진시설</td><td style="text-align:center;"><input type="number" id="pr1-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr1-today" placeholder="당일검침" oninput="calcPower(1)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr1-daily">-</td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">2</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr2-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr2-today" placeholder="당일검침" oninput="calcPower(2)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr2-daily">-</td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">3</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr3-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr3-today" placeholder="당일검침" oninput="calcPower(3)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr3-daily">-</td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">4</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr4-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr4-today" placeholder="당일검침" oninput="calcPower(4)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr4-daily">-</td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">5</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr5-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr5-today" placeholder="당일검침" oninput="calcPower(5)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr5-daily">-</td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">6</td><td>1차여과, 2차흡착</td><td style="text-align:center;"><input type="number" id="pr6-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr6-today" placeholder="당일검침" oninput="calcPower(6)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr6-daily">-</td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">7</td><td>1차여과, 2차흡착</td><td style="text-align:center;"><input type="number" id="pr7-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr7-today" placeholder="당일검침" oninput="calcPower(7)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr7-daily">-</td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">8</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr8-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr8-today" placeholder="당일검침" oninput="calcPower(8)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr8-daily">-</td></tr>
-          <tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">9</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr9-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr9-today" placeholder="당일검침" oninput="calcPower(9)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#1a3a5c;" id="pr9-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">1</td><td>여과집진시설</td><td style="text-align:center;"><input type="number" id="pr1-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr1-today" placeholder="당일검침" oninput="calcPower(1)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#0f2744;" id="pr1-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">2</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr2-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr2-today" placeholder="당일검침" oninput="calcPower(2)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#0f2744;" id="pr2-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">3</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr3-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr3-today" placeholder="당일검침" oninput="calcPower(3)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#0f2744;" id="pr3-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">4</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr4-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr4-today" placeholder="당일검침" oninput="calcPower(4)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#0f2744;" id="pr4-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">5</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr5-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr5-today" placeholder="당일검침" oninput="calcPower(5)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#0f2744;" id="pr5-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">6</td><td>1차여과, 2차흡착</td><td style="text-align:center;"><input type="number" id="pr6-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr6-today" placeholder="당일검침" oninput="calcPower(6)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#0f2744;" id="pr6-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">7</td><td>1차여과, 2차흡착</td><td style="text-align:center;"><input type="number" id="pr7-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr7-today" placeholder="당일검침" oninput="calcPower(7)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#0f2744;" id="pr7-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">8</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr8-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr8-today" placeholder="당일검침" oninput="calcPower(8)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#0f2744;" id="pr8-daily">-</td></tr>
+          <tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">9</td><td>흡착에의한시설</td><td style="text-align:center;"><input type="number" id="pr9-prev" placeholder="-" readonly style="width:100px;border:1px solid #f3f4f6;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;background:#f3f4f6;color:#6b7280;cursor:not-allowed;"></td><td style="text-align:center;"><input type="number" id="pr9-today" placeholder="당일검침" oninput="calcPower(9)" style="width:100px;border:1px solid #e5e7eb;border-radius:4px;padding:5px;font-size:12px;text-align:center;outline:none;font-family:'Noto Sans KR',sans-serif;"></td><td style="text-align:center;font-weight:700;color:#0f2744;" id="pr9-daily">-</td></tr>
         </tbody>
       </table>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;padding:12px 14px;border-top:1px solid #f3f4f6;">
-          <button onclick="queryAirLog()" style="padding:8px 18px;background:white;color:#1a3a5c;border:1.5px solid #1a3a5c;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">날짜 조회/수정</button>
-          <button onclick="saveAirLog()" id="al-save-btn" style="padding:8px 18px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">저장</button>
+          <button onclick="queryAirLog()" style="padding:8px 18px;background:white;color:#0f2744;border:1.5px solid #0f2744;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">날짜 조회/수정</button>
+          <button onclick="saveAirLog()" id="al-save-btn" style="padding:8px 18px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">저장</button>
         </div>
       </div>
     </div>
@@ -660,7 +692,7 @@ tr:hover td{background:#fafafa;}
         <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f4f6;">
           <span class="filter-label">날짜 선택</span>
           <input type="date" id="al-view-date" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
-          <button onclick="loadAirLogView()" style="padding:7px 16px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회</button>
+          <button onclick="loadAirLogView()" style="padding:7px 16px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회</button>
         </div>
         <div id="al-view-emission" style="overflow-x:auto;"></div>
         <div id="al-view-prevention" style="overflow-x:auto;"></div>
@@ -745,10 +777,10 @@ tr:hover td{background:#fafafa;}
       <table style="font-size:12px;">
         <thead><tr><th>권한</th><th>조회</th><th>삭제/수정</th><th>대기운영 입력</th><th>사용자 관리</th></tr></thead>
         <tbody>
-          <tr><td><span class="role-badge role-admin">관리자</span></td><td>✅</td><td>✅</td><td>전체</td><td>✅</td></tr>
-          <tr><td><span class="role-badge role-manager">담당자1</span></td><td>✅</td><td>❌</td><td>1~8번</td><td>❌</td></tr>
-          <tr><td><span class="role-badge role-manager">담당자2</span></td><td>✅</td><td>❌</td><td>9번만</td><td>❌</td></tr>
-          <tr><td><span class="role-badge role-viewer">읽기전용</span></td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td><span class="role-badge role-admin">관리자</span></td><td style="text-align:center;color:#166534;font-weight:700;">O</td><td style="text-align:center;color:#166534;font-weight:700;">O</td><td>전체</td><td style="text-align:center;color:#166534;font-weight:700;">O</td></tr>
+          <tr><td><span class="role-badge role-manager">담당자1</span></td><td style="text-align:center;color:#166534;font-weight:700;">O</td><td style="text-align:center;color:#9ca3af;">-</td><td>1~8번</td><td style="text-align:center;color:#9ca3af;">-</td></tr>
+          <tr><td><span class="role-badge role-manager">담당자2</span></td><td style="text-align:center;color:#166534;font-weight:700;">O</td><td style="text-align:center;color:#9ca3af;">-</td><td>9번만</td><td style="text-align:center;color:#9ca3af;">-</td></tr>
+          <tr><td><span class="role-badge role-viewer">읽기전용</span></td><td style="text-align:center;color:#166534;font-weight:700;">O</td><td style="text-align:center;color:#9ca3af;">-</td><td style="text-align:center;color:#9ca3af;">-</td><td style="text-align:center;color:#9ca3af;">-</td></tr>
         </tbody>
       </table>
     </div>
@@ -985,7 +1017,7 @@ async function loadDashboard(){
         return'<span style="background:#f0f2f5;color:#374151;font-size:11px;padding:1px 6px;border-radius:10px;margin:1px;display:inline-block;">'+t.trim()+'</span>';
       }).join(''):'';
       return'<div style="padding:10px 14px;border-bottom:1px solid #f9fafb;display:flex;align-items:flex-start;gap:10px;">'+
-        '<span style="font-size:16px;margin-top:1px;">🚛</span>'+
+        '<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#f1f5f9;border-radius:4px;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>'+
         '<div style="flex:1;">'+
           '<div style="font-size:13px;font-weight:500;color:#374151;margin-bottom:3px;">가람환경</div>'+
           '<div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">'+r.scheduled_date+'</div>'+
@@ -1009,7 +1041,7 @@ async function loadDashboard(){
         return'<span style="background:#eff6ff;color:#1e40af;font-size:11px;padding:1px 6px;border-radius:10px;margin:1px;display:inline-block;">'+f.trim()+'</span>';
       }).join(''):'';
       return'<div style="padding:10px 14px;border-bottom:1px solid #f9fafb;display:flex;align-items:flex-start;gap:10px;">'+
-        '<span style="font-size:16px;margin-top:1px;">📡</span>'+
+        '<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#f1f5f9;border-radius:4px;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>'+
         '<div style="flex:1;">'+
           '<div style="font-size:13px;font-weight:500;color:#374151;margin-bottom:3px;">'+r.company+'</div>'+
           '<div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">'+r.measure_date+'</div>'+
@@ -1303,7 +1335,7 @@ async function loadWasteSchedule(){
     var rowBg=isOverdue?'background:#fff5f5;':r.status==='예정'?'background:#fffbeb;':'';
     var statusBadge=r.status==='완료'?'<span class="badge" style="background:#d1fae5;color:#065f46;">완료</span>':isOverdue?'<span class="badge" style="background:#fee2e2;color:#991b1b;">미처리</span>':'<span class="badge" style="background:#fef3c7;color:#92400e;">예정</span>';
     var types=r.line_names?r.line_names.split(',').map(function(l){return'<span class="badge" style="background:#f0f2f5;color:#374151;margin:1px;">'+l.trim()+'</span>';}).join(''):'';
-    var actionBtn=isAdmin()&&r.status!=='완료'?'<button onclick="completeSchedule(\''+r.id+'\')" style="padding:4px 10px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">완료</button>':'';
+    var actionBtn=isAdmin()&&r.status!=='완료'?'<button onclick="completeSchedule(\''+r.id+'\')" style="padding:4px 10px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">완료</button>':'';
     var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_schedule\',\''+r.id+'\',loadWasteScheduleTab)">✕</button>':'';
     return'<tr style="'+rowBg+'"><td>'+r.scheduled_date+'</td><td style="font-size:12px;color:#6b7280;">가람환경</td><td>'+types+'</td><td>'+(r.notes&&r.notes.indexOf(' / ')>=0?r.notes.split(' / ').slice(1).join(' / '):(r.notes&&r.notes!=='가람환경'?r.notes:'<span style="color:#d1d5db;">-</span>'))+'</td><td>'+statusBadge+'</td><td>'+actionBtn+delBtn+'</td></tr>';
   }).join('');
@@ -1460,10 +1492,10 @@ function searchWasteType(){
 
     // 처벌 수준별 색상
     function punishColor(level){
-      return level==='critical'?{bg:'#fef2f2',border:'#fca5a5',badge:'#dc2626',badgeTxt:'white',icon:'🔴'}:
-             level==='high'    ?{bg:'#fff7ed',border:'#fdba74',badge:'#ea580c',badgeTxt:'white',icon:'🟠'}:
-             level==='mid'     ?{bg:'#fefce8',border:'#fde047',badge:'#ca8a04',badgeTxt:'white',icon:'🟡'}:
-                                {bg:'#f9fafb',border:'#e5e7eb',badge:'#6b7280',badgeTxt:'white',icon:'⚪'};
+      return level==='critical'?{bg:'#fef2f2',border:'#fca5a5',badge:'#dc2626',badgeTxt:'white',icon:'●'}:
+             level==='high'    ?{bg:'#fff7ed',border:'#fdba74',badge:'#ea580c',badgeTxt:'white',icon:'●'}:
+             level==='mid'     ?{bg:'#fefce8',border:'#fde047',badge:'#ca8a04',badgeTxt:'white',icon:'●'}:
+                                {bg:'#f9fafb',border:'#e5e7eb',badge:'#6b7280',badgeTxt:'white',icon:'●'};
     }
 
     var penaltiesHtml=law.penalties.map(function(p){
@@ -1471,7 +1503,7 @@ function searchWasteType(){
       return'<div style="background:'+c.bg+';border:1px solid '+c.border+';border-radius:8px;padding:12px 14px;margin-bottom:8px;">'+
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'+
           '<span>'+c.icon+'</span>'+
-          '<span style="font-size:13px;font-weight:700;color:#1a3a5c;">'+p.title+'</span>'+
+          '<span style="font-size:13px;font-weight:700;color:#0f2744;">'+p.title+'</span>'+
           '<span style="margin-left:auto;font-size:10px;color:#6b7280;">'+p.rule+'</span>'+
         '</div>'+
         '<div style="font-size:12px;color:#374151;margin-bottom:4px;">'+p.desc+'</div>'+
@@ -1481,7 +1513,7 @@ function searchWasteType(){
 
     var fieldHtml=law.fieldRules.map(function(r){
       return'<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:12px;color:#374151;border-bottom:1px solid #f9fafb;">'+
-        '<span style="color:#1a3a5c;font-weight:700;flex-shrink:0;">•</span>'+r+'</div>';
+        '<span style="color:#0f2744;font-weight:700;flex-shrink:0;">•</span>'+r+'</div>';
     }).join('');
 
     resultEl.innerHTML=
@@ -1490,19 +1522,19 @@ function searchWasteType(){
         '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'+
           '<span style="font-size:16px;font-weight:700;color:'+catColor+';">'+matched.type+'</span>'+
           '<span style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;background:'+catColor+';color:white;">'+catLabel+'</span>'+
-          '<span style="margin-left:auto;font-size:12px;font-weight:700;color:#1a3a5c;">보관 기한 '+law.storageDay+'일</span>'+
+          '<span style="margin-left:auto;font-size:12px;font-weight:700;color:#0f2744;">보관 기한 '+law.storageDay+'일</span>'+
         '</div>'+
         '<div style="font-size:13px;color:#374151;line-height:1.6;">'+matched.desc+'</div>'+
       '</div>'+
       // 처벌 규정
-      '<div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:8px;padding-left:2px;">⚖️ 핵심 처벌 규정</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0f2744;margin-bottom:8px;padding-left:2px;">⚖️ 핵심 처벌 규정</div>'+
       penaltiesHtml+
       // 현장 수칙
-      '<div style="background:#eef3f9;border-radius:8px;padding:12px 14px;margin-top:4px;">'+
-        '<div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:8px;">📋 현장 수칙</div>'+
+      '<div style="background:#eff6ff;border-radius:8px;padding:12px 14px;margin-top:4px;">'+
+        '<div style="font-size:12px;font-weight:700;color:#0f2744;margin-bottom:8px;">📋 현장 수칙</div>'+
         fieldHtml+
       '</div>'+
-      '<div style="font-size:11px;color:#9ca3af;margin-top:10px;padding-left:2px;">※ 참고용 안내입니다. 법령은 개정될 수 있으므로 정확한 내용은 <a href="https://www.law.go.kr" target="_blank" style="color:#1a3a5c;">법제처(law.go.kr)</a> 또는 ☎ 128 환경부 콜센터에 확인하세요.</div>'+
+      '<div style="font-size:11px;color:#9ca3af;margin-top:10px;padding-left:2px;">※ 참고용 안내입니다. 법령은 개정될 수 있으므로 정확한 내용은 <a href="https://www.law.go.kr" target="_blank" style="color:#0f2744;">법제처(law.go.kr)</a> 또는 ☎ 128 환경부 콜센터에 확인하세요.</div>'+
       '<div style="margin-top:10px;">'+
         '<button onclick="openClaude(\''+query+'\')" style="padding:7px 14px;background:#7c3aed;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">Claude AI에게 자세히 묻기 →</button>'+
       '</div>';
@@ -1579,7 +1611,7 @@ function calcPower(no){
       dailyEl.style.color='#ef4444';
     }else{
       dailyEl.textContent=daily.toFixed(0);
-      dailyEl.style.color='#1a3a5c';
+      dailyEl.style.color='#0f2744';
       dailyEl.style.fontWeight='700';
     }
   }
@@ -1729,16 +1761,16 @@ async function loadAirLogView(){
   var emRows=[1,2,3,4,5,6,7,8,9].map(function(n){
     if(n===8)return'<tr style="background:#f9fafb;"><td style="text-align:center;font-weight:700;color:#d1d5db;">8</td><td style="color:#d1d5db;">연마시설 (238.5㎥)</td><td colspan="4" style="text-align:center;color:#d1d5db;">미가동</td></tr>';
     var r=emMap[n];
-    if(!r)return'<tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">'+n+'</td><td>'+emNames[n]+'</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td></tr>';
+    if(!r)return'<tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">'+n+'</td><td>'+emNames[n]+'</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td></tr>';
     var sb2=r.status==='비정상'?'<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:10px;font-size:11px;">비정상</span>':'<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:11px;">정상</span>';
     var submitter=r.submitted_by&&r.submitted_by.em?r.submitted_by.em:'-';
-    return'<tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">'+n+'</td><td>'+r.facility_name+'</td><td style="text-align:center;">'+(r.start_time&&r.end_time?r.start_time+'~'+r.end_time:'-')+'</td><td style="text-align:center;font-weight:700;color:#1a3a5c;">'+(r.operation_hours!=null?r.operation_hours+'h':'-')+'</td><td style="text-align:center;">'+(r.status?sb2:'-')+'</td><td style="text-align:center;color:#9ca3af;font-size:11px;">'+submitter+'</td></tr>';
+    return'<tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">'+n+'</td><td>'+r.facility_name+'</td><td style="text-align:center;">'+(r.start_time&&r.end_time?r.start_time+'~'+r.end_time:'-')+'</td><td style="text-align:center;font-weight:700;color:#0f2744;">'+(r.operation_hours!=null?r.operation_hours+'h':'-')+'</td><td style="text-align:center;">'+(r.status?sb2:'-')+'</td><td style="text-align:center;color:#9ca3af;font-size:11px;">'+submitter+'</td></tr>';
   }).join('');
 
   if(!data.filter(function(r){return r.facility_type==='배출구';}).length){
     document.getElementById('al-view-emission').innerHTML='<div class="empty" style="padding:1.5rem;text-align:center;color:#9ca3af;font-size:13px;">'+date+' 배출구 기록 없음</div>';
   }else{
-    document.getElementById('al-view-emission').innerHTML='<div style="padding:8px 14px;font-size:12px;font-weight:700;color:#1a3a5c;border-top:1px solid #f3f4f6;">배출구 가동시간</div><div style="overflow-x:auto;"><table style="min-width:500px;"><thead><tr><th style="text-align:center;">배출구</th><th>시설명</th><th style="text-align:center;">가동~종료</th><th style="text-align:center;">총시간</th><th style="text-align:center;">상태</th><th style="text-align:center;">제출자</th></tr></thead><tbody>'+emRows+'</tbody></table></div>';
+    document.getElementById('al-view-emission').innerHTML='<div style="padding:8px 14px;font-size:12px;font-weight:700;color:#0f2744;border-top:1px solid #f3f4f6;">배출구 가동시간</div><div style="overflow-x:auto;"><table style="min-width:500px;"><thead><tr><th style="text-align:center;">배출구</th><th>시설명</th><th style="text-align:center;">가동~종료</th><th style="text-align:center;">총시간</th><th style="text-align:center;">상태</th><th style="text-align:center;">제출자</th></tr></thead><tbody>'+emRows+'</tbody></table></div>';
   }
 
   // 방지시설 1~9 전체 행
@@ -1751,16 +1783,16 @@ async function loadAirLogView(){
       var d=r.power_today-viewPrevPower[n];
       if(d>=0)dailyCalc=d;
     }
-    var dailyVal=dailyCalc!=null?'<b style="color:#1a3a5c;">'+dailyCalc+'</b>':'-';
+    var dailyVal=dailyCalc!=null?'<b style="color:#0f2744;">'+dailyCalc+'</b>':'-';
     var submitter=(r&&r.submitted_by&&r.submitted_by.pr)?r.submitted_by.pr:'-';
-    if(!r)return'<tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">'+n+'</td><td>'+prNames[n]+'</td><td style="text-align:center;color:#9ca3af;">'+prevVal+'</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td></tr>';
-    return'<tr><td style="text-align:center;font-weight:700;color:#1a3a5c;background:#f9fafb;">'+n+'</td><td>'+r.facility_name+'</td><td style="text-align:center;color:#9ca3af;">'+prevVal+'</td><td style="text-align:center;">'+todayVal+'</td><td style="text-align:center;">'+dailyVal+'</td><td style="text-align:center;color:#9ca3af;font-size:11px;">'+submitter+'</td></tr>';
+    if(!r)return'<tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">'+n+'</td><td>'+prNames[n]+'</td><td style="text-align:center;color:#9ca3af;">'+prevVal+'</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td></tr>';
+    return'<tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">'+n+'</td><td>'+r.facility_name+'</td><td style="text-align:center;color:#9ca3af;">'+prevVal+'</td><td style="text-align:center;">'+todayVal+'</td><td style="text-align:center;">'+dailyVal+'</td><td style="text-align:center;color:#9ca3af;font-size:11px;">'+submitter+'</td></tr>';
   }).join('');
 
   if(!data.filter(function(r){return r.facility_type==='방지시설';}).length){
     document.getElementById('al-view-prevention').innerHTML='<div class="empty" style="padding:1.5rem;text-align:center;color:#9ca3af;font-size:13px;">'+date+' 방지시설 기록 없음</div>';
   }else{
-    document.getElementById('al-view-prevention').innerHTML='<div style="padding:8px 14px;font-size:12px;font-weight:700;color:#1a3a5c;border-top:1px solid #f3f4f6;">방지시설 전력사용량</div><div style="overflow-x:auto;"><table style="min-width:480px;"><thead><tr><th style="text-align:center;">순번</th><th>시설명</th><th style="text-align:center;">전일검침(kWh)</th><th style="text-align:center;">당일검침(kWh)</th><th style="text-align:center;">당일사용량(kWh)</th><th style="text-align:center;">제출자</th></tr></thead><tbody>'+prRows+'</tbody></table></div>';
+    document.getElementById('al-view-prevention').innerHTML='<div style="padding:8px 14px;font-size:12px;font-weight:700;color:#0f2744;border-top:1px solid #f3f4f6;">방지시설 전력사용량</div><div style="overflow-x:auto;"><table style="min-width:480px;"><thead><tr><th style="text-align:center;">순번</th><th>시설명</th><th style="text-align:center;">전일검침(kWh)</th><th style="text-align:center;">당일검침(kWh)</th><th style="text-align:center;">당일사용량(kWh)</th><th style="text-align:center;">제출자</th></tr></thead><tbody>'+prRows+'</tbody></table></div>';
   }
 }
 
@@ -1848,7 +1880,7 @@ function toggleAirFacility(el,val){
     el.style.borderColor='#e5e7eb';el.style.background='white';el.style.color='#6b7280';
   }else{
     selectedAirFacilities.push(val);
-    el.style.borderColor='#1a3a5c';el.style.background='#eef3f9';el.style.color='#1a3a5c';
+    el.style.borderColor='#0f2744';el.style.background='#eff6ff';el.style.color='#0f2744';
   }
 }
 
@@ -1896,7 +1928,7 @@ async function loadAirMeasures(){
       :r.status==='완료'?'<span class="badge" style="background:#d1fae5;color:#065f46;">완료</span>'
       :r.status==='취소'?'<span class="badge" style="background:#fee2e2;color:#991b1b;">취소</span>'
       :'<span class="badge" style="background:#dbeafe;color:#1e40af;">예정</span>';
-    var facilities=r.facilities?r.facilities.split(',').map(function(f){return'<span style="display:inline-block;padding:2px 7px;border-radius:10px;background:#eef3f9;color:#1a3a5c;font-size:11px;font-weight:500;margin:1px;">'+f.replace('배출구','배').replace('-','<br style="display:none">').trim()+'</span>';}).join(''):'<span style="color:#d1d5db;">-</span>';
+    var facilities=r.facilities?r.facilities.split(',').map(function(f){return'<span style="display:inline-block;padding:2px 7px;border-radius:10px;background:#eff6ff;color:#0f2744;font-size:11px;font-weight:500;margin:1px;">'+f.replace('배출구','배').replace('-','<br style="display:none">').trim()+'</span>';}).join(''):'<span style="color:#d1d5db;">-</span>';
     var actionBtns='';
     if(isAdmin()){
       if(r.status!=='완료'&&r.status!=='취소'){
