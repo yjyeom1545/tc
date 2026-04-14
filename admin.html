@@ -343,6 +343,7 @@ tr:hover td{background:#fafbfd;}
     </div>
     <div style="display:flex;gap:14px;padding:9px 16px;border-top:1px solid #f3f4f6;font-size:11px;color:#6b7280;flex-wrap:wrap;">
       <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#d1fae5;color:#065f46;font-weight:700;font-size:11px;">✓</span> 입력 완료</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;background:#fef9c3;color:#854d0e;border:1px solid #fde047;">입력 중</span> 현재 월 진행 중</span>
       <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span> 미입력</span>
       <span style="display:flex;align-items:center;gap:5px;"><span style="color:#d1d5db;font-size:13px;">-</span> 해당 없음</span>
     </div>
@@ -1232,6 +1233,7 @@ async function loadDashboard(){
   var okBadge='<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#d1fae5;color:#065f46;font-weight:700;font-size:12px;">✓</span>';
   var okLegacyBadge=okBadge;
   var missBadge='<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span>';
+  var ongoingBadge='<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:#fef9c3;color:#854d0e;border:1px solid #fde047;">입력 중</span>';
   var naBadge='<span style="color:#d1d5db;font-size:13px;">-</span>';
 
   for(var m=1;m<=12;m++){
@@ -1246,8 +1248,12 @@ async function loadDashboard(){
       // 1~3월 완료 고정
       emEl.innerHTML=okLegacyBadge;
       prEl.innerHTML=okLegacyBadge;
+    }else if(m===curMonth){
+      // 현재 진행 중인 달 → 항상 입력 중
+      emEl.innerHTML=ongoingBadge;
+      prEl.innerHTML=ongoingBadge;
     }else{
-      // 4월~: DB 기록 기준
+      // 지난달 이전 → DB 기록 기준
       emEl.innerHTML=emMonths[m]?okBadge:missBadge;
       prEl.innerHTML=prMonths[m]?okBadge:missBadge;
     }
