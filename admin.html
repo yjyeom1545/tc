@@ -343,7 +343,6 @@ tr:hover td{background:#fafbfd;}
     </div>
     <div style="display:flex;gap:14px;padding:9px 16px;border-top:1px solid #f3f4f6;font-size:11px;color:#6b7280;flex-wrap:wrap;">
       <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#d1fae5;color:#065f46;font-weight:700;font-size:11px;">✓</span> 입력 완료</span>
-      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#e0e7ff;color:#3730a3;font-weight:700;font-size:11px;">✓</span> 완료 (시스템 이전 전)</span>
       <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span> 미입력</span>
       <span style="display:flex;align-items:center;gap:5px;"><span style="color:#d1d5db;font-size:13px;">-</span> 해당 없음</span>
     </div>
@@ -1227,7 +1226,7 @@ async function loadDashboard(){
   });
 
   var okBadge='<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#d1fae5;color:#065f46;font-weight:700;font-size:12px;">✓</span>';
-  var okLegacyBadge='<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e0e7ff;color:#3730a3;font-weight:700;font-size:12px;">✓</span>';
+  var okLegacyBadge=okBadge;
   var missBadge='<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span>';
   var naBadge='<span style="color:#d1d5db;font-size:13px;">-</span>';
 
