@@ -216,7 +216,7 @@ tr:hover td{background:#fafbfd;}
     <div class="nav-section">폐기물</div>
     <div class="nav-item" id="nav-waste-oil" onclick="showTab('waste-oil')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
-      폐유고상 톤백
+      폐유고상
     </div>
     <div class="nav-item" id="nav-waste-schedule" onclick="showTab('waste-schedule')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
@@ -475,15 +475,15 @@ tr:hover td{background:#fafbfd;}
   </div>
 </div>
 
-<!-- 폐유고상 톤백 탭 -->
+<!-- 폐유고상 탭 -->
 <div id="tab-waste-oil" class="content hidden">
 
   <!-- 통계 카드 -->
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">미확인 기록</div><div class="stat-value" id="wo-stat-new" style="color:#d97706;">-<span class="stat-unit">건</span></div></div>
     <div class="stat-card"><div class="stat-label">이번 달 기록</div><div class="stat-value" id="wo-stat-month">-<span class="stat-unit">건</span></div></div>
-    <div class="stat-card"><div class="stat-label">이번 달 누적</div><div class="stat-value" id="wo-stat-qty">-<span class="stat-unit">개</span></div></div>
-    <div class="stat-card"><div class="stat-label">최근 기록일</div><div class="stat-value" style="font-size:15px;padding-top:4px;" id="wo-stat-last">-</div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 톤백</div><div class="stat-value" id="wo-stat-tonbag">-<span class="stat-unit">개</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 링팩</div><div class="stat-value" id="wo-stat-ringpack">-<span class="stat-unit">개</span></div></div>
   </div>
 
   <!-- 라인별 보관량 -->
@@ -492,22 +492,28 @@ tr:hover td{background:#fafbfd;}
       <span class="table-title">라인별 현재 보관량</span>
       <span style="font-size:12px;color:#6b7280;">배출완료 버튼 클릭 시 자동 차감</span>
     </div>
-    <div id="wo-storage-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;padding:14px;"></div>
+    <div id="wo-storage-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;padding:14px;"></div>
   </div>
 
-  <!-- 톤백 기록 이력 -->
+  <!-- 기록 이력 -->
   <div class="card">
     <div class="table-header">
-      <span class="table-title">톤백 기록 이력</span>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <select id="wo-filter-line" onchange="loadWasteData()" style="border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+      <span class="table-title">톤백 및 링팩 기록 이력</span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="wo-filter-line" onchange="loadWasteData()" style="border:1px solid #e8ecf0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;">
           <option value="">전체 라인</option>
           <option value="G16동">G16동</option>
           <option value="현대라인">현대라인</option>
           <option value="강건재라인">강건재라인</option>
           <option value="패킹라인">패킹라인</option>
+          <option value="도장라인">도장라인</option>
         </select>
-        <select id="wo-filter-month" onchange="loadWasteData()" style="border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+        <select id="wo-filter-type" onchange="loadWasteData()" style="border:1px solid #e8ecf0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+          <option value="">전체 유형</option>
+          <option value="톤백">톤백</option>
+          <option value="링팩">링팩</option>
+        </select>
+        <select id="wo-filter-month" onchange="loadWasteData()" style="border:1px solid #e8ecf0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;">
           <option value="">전체 기간</option>
         </select>
         <span class="record-count" id="wo-record-count"></span>
@@ -519,8 +525,8 @@ tr:hover td{background:#fafbfd;}
   <!-- 월별 통계 차트 -->
   <div class="card">
     <div class="card-body">
-      <div class="card-title">라인별 월간 누적 톤백 통계</div>
-      <div style="height:220px;position:relative;"><canvas id="wasteMonthlyChart"></canvas></div>
+      <div class="card-title">라인별 월간 누적 톤백 및 링팩 통계</div>
+      <div style="height:240px;position:relative;"><canvas id="wasteMonthlyChart"></canvas></div>
     </div>
   </div>
 </div>
@@ -1029,7 +1035,7 @@ function showTab(tab){
   var navEl=document.getElementById('nav-'+tab);
   if(navEl)navEl.classList.add('active');
   // topbar 타이틀
-  var titles={home:'홈',filter:'필터 교체','waste-oil':'폐유고상 톤백','waste-schedule':'배출업체 스케줄','waste-search':'폐기물 분류 검색',airlog:'대기운영기록',air:'대기측정 일정','air-guide':'관리요령',users:'사용자 관리'};
+  var titles={home:'홈',filter:'필터 교체','waste-oil':'폐유고상','waste-schedule':'배출업체 스케줄','waste-search':'폐기물 분류 검색',airlog:'대기운영기록',air:'대기측정 일정','air-guide':'관리요령',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
   if(titleEl)titleEl.textContent=titles[tab]||tab;
   // 모바일: 사이드바 닫기
@@ -1113,7 +1119,7 @@ async function loadDashboard(){
 
   // ── 위젯3: 라인별 보관량 + 차트 ──
   var linesEl=document.getElementById('dash-waste-lines');
-  var lineColors={'G16동':'#3b82f6','현대라인':'#10b981','강건재라인':'#f59e0b','패킹라인':'#8b5cf6'};
+  var lineColors={'G16동':'#3b82f6','현대라인':'#10b981','강건재라인':'#f59e0b','패킹라인':'#8b5cf6','도장라인':'#ec4899'};
   if(!storageData.length){
     linesEl.innerHTML='<div class="empty" style="padding:1rem;">데이터 없음</div>';
   }else{
@@ -1402,8 +1408,8 @@ function toggleSchedLine(el,line){
 async function loadWasteData(){
   var filterLine=document.getElementById('wo-filter-line').value;
   var filterMonth=document.getElementById('wo-filter-month').value;
-  var query='?select=*&order=request_date.desc,created_at.desc';
-  if(filterLine)query+='&line_name=eq.'+encodeURIComponent(filterLine);
+  var filterType=document.getElementById('wo-filter-type')?document.getElementById('wo-filter-type').value:'';
+
   var allData=await sb('waste_oil_requests','?select=*&order=request_date.desc,created_at.desc');
   if(!allData)allData=[];
 
@@ -1411,12 +1417,13 @@ async function loadWasteData(){
   var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   var monthData=allData.filter(function(r){return r.request_date&&r.request_date.startsWith(ym);});
   var newCount=allData.filter(function(r){return !r.checked;}).length;
-  var monthQty=monthData.reduce(function(s,r){return s+(r.bag_count||0);},0);
+  var monthTonbag=monthData.filter(function(r){return !r.pack_type||r.pack_type==='톤백';}).reduce(function(s,r){return s+(r.bag_count||0);},0);
+  var monthRingpack=monthData.filter(function(r){return r.pack_type==='링팩';}).reduce(function(s,r){return s+(r.bag_count||0);},0);
 
   document.getElementById('wo-stat-new').innerHTML=newCount+'<span class="stat-unit">건</span>';
   document.getElementById('wo-stat-month').innerHTML=monthData.length+'<span class="stat-unit">건</span>';
-  document.getElementById('wo-stat-qty').innerHTML=monthQty+'<span class="stat-unit">개</span>';
-  document.getElementById('wo-stat-last').textContent=allData.length>0?(allData[0].request_date||'-'):'-';
+  document.getElementById('wo-stat-tonbag').innerHTML=monthTonbag+'<span class="stat-unit">개</span>';
+  document.getElementById('wo-stat-ringpack').innerHTML=monthRingpack+'<span class="stat-unit">개</span>';
 
   // 월 필터 옵션
   var months=[...new Set(allData.map(function(r){return r.request_date?r.request_date.substring(0,7):null;}).filter(Boolean))].sort().reverse();
@@ -1429,25 +1436,55 @@ async function loadWasteData(){
   var filtered=allData.filter(function(r){
     if(filterLine&&r.line_name!==filterLine)return false;
     if(filterMonth&&!(r.request_date&&r.request_date.startsWith(filterMonth)))return false;
+    if(filterType){
+      if(filterType==='톤백'&&r.pack_type&&r.pack_type!=='톤백')return false;
+      if(filterType==='링팩'&&r.pack_type!=='링팩')return false;
+    }
     return true;
   });
 
   document.getElementById('wo-record-count').textContent='총 '+filtered.length+'건';
 
-  var lineBadgeColors={'G16동':'background:#dbeafe;color:#1e40af;','현대라인':'background:#d1fae5;color:#065f46;','강건재라인':'background:#fef3c7;color:#92400e;','패킹라인':'background:#f3e8ff;color:#6b21a8;'};
-  if(!filtered.length){document.getElementById('wo-table').innerHTML='<div class="empty">기록이 없습니다.</div>';}
-  else{
+  var lineBadgeColors={
+    'G16동':'background:#dbeafe;color:#1e40af;',
+    '현대라인':'background:#dcfce7;color:#166534;',
+    '강건재라인':'background:#fef9c3;color:#854d0e;',
+    '패킹라인':'background:#f3e8ff;color:#6b21a8;',
+    '도장라인':'background:#fce7f3;color:#9d174d;'
+  };
+  var typeBadge={
+    '톤백':'background:#fffbeb;color:#92400e;border:1px solid #fcd34d;',
+    '링팩':'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;'
+  };
+
+  if(!filtered.length){
+    document.getElementById('wo-table').innerHTML='<div class="empty">기록이 없습니다.</div>';
+  }else{
     var rows=filtered.map(function(r){
-      var bc=lineBadgeColors[r.line_name]||'background:#f3f4f6;color:#374151;';
+      var bc=lineBadgeColors[r.line_name]||'background:#f1f5f9;color:#374151;';
+      var pt=r.pack_type||'톤백';
+      var tc=typeBadge[pt]||typeBadge['톤백'];
       var lineBadge='<span class="badge" style="'+bc+'">'+r.line_name+'</span>';
-      var statusBadge=r.checked?'<span class="badge" style="background:#d1fae5;color:#065f46;">확인완료</span>':'<span class="new-badge">미확인</span>';
+      var packBadge='<span class="badge" style="'+tc+'">'+pt+'</span>';
+      var statusBadge=r.checked?'<span class="done-badge">확인완료</span>':'<span class="new-badge">미확인</span>';
       var checkedInfo=r.checked&&r.checked_at?'<div style="font-size:11px;color:#9ca3af;">'+new Date(r.checked_at).toLocaleDateString('ko-KR')+(r.checked_by?' · '+r.checked_by:'')+'</div>':'';
-      var actionBtn=isAdmin()&&!r.checked?'<button onclick="confirmWasteOil(\''+r.id+'\',\''+r.line_name+'\','+( r.bag_count||0)+')" style="padding:4px 10px;background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">배출완료</button>':'';
+      var actionBtn=isAdmin()&&!r.checked?'<button onclick="confirmWasteOil(\''+r.id+'\',\''+r.line_name+'\','+( r.bag_count||0)+')" style="padding:4px 10px;background:#d97706;color:white;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">배출완료</button>':'';
       var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_requests\',\''+r.id+'\',loadWasteData)">✕</button>':'';
       var note=r.notes?r.notes:'<span style="color:#d1d5db;">-</span>';
-      return'<tr><td>'+r.request_date+'</td><td>'+lineBadge+'</td><td style="font-weight:700;color:#d97706;text-align:center;">'+(r.bag_count||0)+'개</td><td style="font-size:12px;color:#6b7280;">'+note+'</td><td>'+statusBadge+checkedInfo+'</td><td>'+actionBtn+delBtn+'</td></tr>';
+      return'<tr>'+
+        '<td>'+r.request_date+'</td>'+
+        '<td>'+lineBadge+'</td>'+
+        '<td style="text-align:center;">'+packBadge+'</td>'+
+        '<td style="font-weight:700;color:#d97706;text-align:center;">'+(r.bag_count||0)+'개</td>'+
+        '<td style="font-size:12px;color:#6b7280;">'+note+'</td>'+
+        '<td>'+statusBadge+checkedInfo+'</td>'+
+        '<td>'+actionBtn+delBtn+'</td>'+
+      '</tr>';
     }).join('');
-    document.getElementById('wo-table').innerHTML='<div style="overflow-x:auto;"><table style="min-width:580px;"><thead><tr><th>기록일</th><th>라인</th><th style="text-align:center;">수량</th><th>특이사항</th><th>상태</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    document.getElementById('wo-table').innerHTML=
+      '<div style="overflow-x:auto;"><table style="min-width:640px;">'+
+      '<thead><tr><th>기록일</th><th>라인</th><th style="text-align:center;">유형</th><th style="text-align:center;">수량</th><th>특이사항</th><th>상태</th><th></th></tr></thead>'+
+      '<tbody>'+rows+'</tbody></table></div>';
   }
 
   loadWasteStorage(allData);
@@ -1462,8 +1499,8 @@ async function loadWasteScheduleTab(){
 async function loadWasteStorage(allData){
   var data=await sb('waste_oil_storage','?select=*&order=line_name.asc');
   if(!data)data=[];
-  var lineBadgeColors={'G16동':'#1e40af','현대라인':'#065f46','강건재라인':'#92400e','패킹라인':'#6b21a8'};
-  var lineBgs={'G16동':'#dbeafe','현대라인':'#d1fae5','강건재라인':'#fef3c7','패킹라인':'#f3e8ff'};
+  var lineBadgeColors={'G16동':'#1e40af','현대라인':'#166534','강건재라인':'#854d0e','패킹라인':'#6b21a8','도장라인':'#9d174d'};
+  var lineBgs={'G16동':'#dbeafe','현대라인':'#dcfce7','강건재라인':'#fef9c3','패킹라인':'#f3e8ff','도장라인':'#fce7f3'};
   var cards=data.map(function(r){
     var c=lineBadgeColors[r.line_name]||'#374151';
     var bg=lineBgs[r.line_name]||'#f9fafb';
@@ -1536,21 +1573,74 @@ async function completeSchedule(id){
 }
 
 function renderWasteMonthlyChart(data){
-  var lines=['G16동','현대라인','강건재라인','패킹라인'];
-  var colors=['#3b82f6','#10b981','#f59e0b','#8b5cf6'];
+  var lines=['G16동','현대라인','강건재라인','패킹라인','도장라인'];
+  var lineColors={'G16동':'#3b82f6','현대라인':'#10b981','강건재라인':'#f59e0b','패킹라인':'#8b5cf6','도장라인':'#ec4899'};
   var now=new Date();
   var months=[];
   for(var i=5;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
   var labels=months.map(function(m){var d=new Date(m+'-01');return (d.getMonth()+1)+'월';});
-  var datasets=lines.map(function(line,li){
-    return{label:line,data:months.map(function(m){return data.filter(function(r){return r.line_name===line&&r.request_date&&r.request_date.startsWith(m);}).reduce(function(s,r){return s+(r.bag_count||0);},0);}),backgroundColor:colors[li],borderRadius:3};
+
+  // 라인별 톤백/링팩 각각 dataset 생성
+  var datasets=[];
+  lines.forEach(function(line){
+    var c=lineColors[line]||'#6b7280';
+    // 톤백 (실선)
+    datasets.push({
+      label:line+' 톤백',
+      data:months.map(function(m){
+        return data.filter(function(r){
+          return r.line_name===line&&r.request_date&&r.request_date.startsWith(m)&&(!r.pack_type||r.pack_type==='톤백');
+        }).reduce(function(s,r){return s+(r.bag_count||0);},0);
+      }),
+      backgroundColor:c,
+      borderRadius:2,
+      stack:line
+    });
+    // 링팩 (투명도)
+    datasets.push({
+      label:line+' 링팩',
+      data:months.map(function(m){
+        return data.filter(function(r){
+          return r.line_name===line&&r.request_date&&r.request_date.startsWith(m)&&r.pack_type==='링팩';
+        }).reduce(function(s,r){return s+(r.bag_count||0);},0);
+      }),
+      backgroundColor:c+'80',
+      borderRadius:2,
+      stack:line
+    });
   });
+
   if(wasteMonthlyChart)wasteMonthlyChart.destroy();
   var ctx=document.getElementById('wasteMonthlyChart');
   if(!ctx)return;
   wasteMonthlyChart=new Chart(ctx.getContext('2d'),{
-    type:'bar',data:{labels:labels,datasets:datasets},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},scales:{x:{stacked:false,grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},stepSize:1}}}}
+    type:'bar',
+    data:{labels:labels,datasets:datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{
+          position:'bottom',
+          labels:{
+            font:{size:10},boxWidth:10,padding:6,
+            filter:function(item){return item.text.includes('톤백');}
+          }
+        },
+        tooltip:{
+          callbacks:{
+            title:function(items){return items[0].label;},
+            label:function(item){
+              if(item.raw===0)return null;
+              return item.dataset.label+': '+item.raw+'개';
+            }
+          }
+        }
+      },
+      scales:{
+        x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},
+        y:{stacked:true,grid:{color:'#f1f5f9'},ticks:{font:{size:11},stepSize:1}}
+      }
+    }
   });
 }
 
