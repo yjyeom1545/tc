@@ -1213,8 +1213,8 @@ async function loadDashboard(){
   var yearEl=document.getElementById('dash-airlog-year');
   if(yearEl)yearEl.textContent=year+'년';
 
-  // 1~3월: 시스템 이전 전 기존 입력 완료 처리 (수동 고정)
-  var LEGACY_MONTHS=3; // 이 달 이하는 무조건 완료
+  // 1~3월: 완료 고정 (시스템 도입 전 기존 데이터 입력 완료)
+  var LEGACY_MONTHS=3;
 
   // 4월~: DB 기록 기준
   var emMonths={};
@@ -1239,7 +1239,7 @@ async function loadDashboard(){
       emEl.innerHTML=naBadge;
       prEl.innerHTML=naBadge;
     }else if(m<=LEGACY_MONTHS){
-      // 1~3월: 시스템 이전 전 완료 (보라색 ✓ 로 구분)
+      // 1~3월 완료 고정
       emEl.innerHTML=okLegacyBadge;
       prEl.innerHTML=okLegacyBadge;
     }else{
