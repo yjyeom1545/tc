@@ -1135,10 +1135,11 @@ async function loadDashboard(){
     }).join('');
   }
   // 보관량 차트 (도넛)
-  var dwCtx=document.getElementById('dashWasteChart');
-  if(dwCtx&&storageData.length){
-    if(window._dashWasteChart)window._dashWasteChart.destroy();
-    window._dashWasteChart=new Chart(dwCtx.getContext('2d'),{
+  try{
+    var dwCtx=document.getElementById('dashWasteChart');
+    if(dwCtx&&storageData.length&&typeof Chart!=='undefined'){
+      if(window._dashWasteChart)window._dashWasteChart.destroy();
+      window._dashWasteChart=new Chart(dwCtx.getContext('2d'),{
       type:'doughnut',
       data:{
         labels:storageData.map(function(r){return r.line_name;}),
@@ -1159,6 +1160,7 @@ async function loadDashboard(){
       }
     });
   }
+  }catch(e){console.warn('대시보드 차트 오류:',e);}
 
   // ── 위젯4: 배출업체 스케줄 ──
   var wasteSchedEl=document.getElementById('dash-waste-schedule');
@@ -1207,6 +1209,8 @@ async function loadDashboard(){
         '<span style="font-size:12px;font-weight:700;color:'+ddayColor+';white-space:nowrap;">'+ddayStr+'</span>'+
       '</div>';
     }).join('');
+  }
+
   // ── 위젯6: 월별 입력 현황 ──
   var year=now2.getFullYear();
   var curMonth=now2.getMonth()+1; // 1~12
@@ -1249,6 +1253,8 @@ async function loadDashboard(){
     }
   }
 }
+
+async function loadFilterData(){
   document.getElementById('table-body').innerHTML='<div class="loading">불러오는 중...</div>';
   allData=await sb('filter_records','?select=*&order=record_date.desc,created_at.desc');
   updateStats(allData);
