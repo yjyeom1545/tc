@@ -3,111 +3,91 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>폐유고상 기록</title>
+<title>TC 폐기물 관리</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans KR',sans-serif;background:#f4f6f9;min-height:100vh;padding:2rem 1rem;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f4f6f9;min-height:100vh;padding:1.5rem 1rem 3rem;}
 .wrap{max-width:480px;margin:0 auto;}
-
-/* 헤더 */
 .header{text-align:center;margin-bottom:1.5rem;}
-.logo{display:inline-block;background:#0f2744;color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:4px;letter-spacing:1px;margin-bottom:10px;}
-h1{font-size:20px;font-weight:700;color:#0f2744;margin-bottom:4px;}
-.header p{font-size:13px;color:#6b7280;}
-
-/* 스텝 인디케이터 */
+.logo{display:inline-block;background:#0f2744;color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:4px;letter-spacing:1px;margin-bottom:12px;}
+h1{font-size:22px;font-weight:700;color:#0f2744;margin-bottom:6px;line-height:1.3;}
+.header-desc{font-size:13px;color:#6b7280;line-height:1.7;}
 .steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:1.5rem;}
 .step{display:flex;flex-direction:column;align-items:center;gap:4px;}
-.step-circle{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid #e8ecf0;background:white;color:#9ca3af;transition:all 0.2s;}
+.step-circle{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid #e8ecf0;background:white;color:#9ca3af;transition:all 0.2s;}
 .step-circle.active{background:#0f2744;border-color:#0f2744;color:white;}
-.step-circle.done{background:#d1fae5;border-color:#10b981;color:#065f46;}
-.step-label{font-size:10px;color:#9ca3af;white-space:nowrap;}
-.step-label.active{color:#0f2744;font-weight:600;}
-.step-line{width:48px;height:2px;background:#e8ecf0;margin-bottom:16px;}
-.step-line.done{background:#10b981;}
-
-/* 카드 */
-.card{background:white;border-radius:8px;border:1px solid #e8ecf0;padding:1.1rem 1.25rem;margin-bottom:12px;}
-.card-title{font-size:13px;font-weight:700;color:#0f2744;margin-bottom:12px;}
-
-/* 라인 그리드 */
+.step-circle.done{background:#dcfce7;border-color:#16a34a;color:#166534;}
+.step-label{font-size:11px;color:#9ca3af;white-space:nowrap;font-weight:500;}
+.step-label.active{color:#0f2744;font-weight:700;}
+.step-line{width:44px;height:2px;background:#e8ecf0;margin-bottom:18px;}
+.step-line.done{background:#16a34a;}
+.card{background:white;border-radius:10px;border:1px solid #e8ecf0;padding:1.1rem 1.25rem;margin-bottom:12px;}
+.card-title{font-size:15px;font-weight:700;color:#0f2744;margin-bottom:4px;}
+.card-sub{font-size:12px;color:#9ca3af;margin-bottom:14px;}
 .line-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.line-btn{padding:18px 10px;border:1.5px solid #e8ecf0;border-radius:8px;background:white;cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;transition:all 0.15s;}
-.line-btn:hover{border-color:#d97706;background:#fffbeb;}
+.line-btn{padding:16px 10px;border:1.5px solid #e8ecf0;border-radius:10px;background:white;cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+.line-btn:active{transform:scale(0.97);}
 .line-btn.selected{border-color:#d97706;background:#fffbeb;}
-.line-btn-name{font-size:14px;font-weight:700;color:#0f2744;margin-bottom:6px;}
-.line-btn-count{font-size:22px;font-weight:700;color:#d97706;}
-.line-btn-unit{font-size:11px;color:#9ca3af;margin-top:2px;}
+.line-btn-name{font-size:15px;font-weight:700;color:#0f2744;margin-bottom:6px;}
+.line-btn-count{font-size:24px;font-weight:700;color:#d97706;line-height:1;}
+.line-btn-unit{font-size:11px;color:#9ca3af;margin-top:3px;}
 .line-btn.selected .line-btn-name{color:#92400e;}
-
-/* 선택된 라인 뱃지 */
-.selected-badge{display:inline-flex;align-items:center;gap:8px;background:#fffbeb;color:#92400e;font-size:14px;font-weight:700;padding:7px 18px;border-radius:6px;border:1.5px solid #fcd34d;}
-
-/* 유형 선택 */
+.summary-bar{background:white;border:1px solid #e8ecf0;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.chip-amber{background:#fffbeb;color:#92400e;border:1px solid #fcd34d;border-radius:5px;padding:4px 12px;font-size:13px;font-weight:700;}
+.chip-blue{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:5px;padding:4px 12px;font-size:13px;font-weight:700;}
 .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.type-btn{padding:24px 16px;border:1.5px solid #e8ecf0;border-radius:8px;background:white;cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;transition:all 0.15s;}
-.type-btn:hover{border-color:#0f2744;background:#f0f4fa;}
+.type-btn{padding:20px 12px;border:1.5px solid #e8ecf0;border-radius:10px;background:white;cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+.type-btn:active{transform:scale(0.97);}
 .type-btn.selected{border-color:#0f2744;background:#eff6ff;}
-.type-icon{width:44px;height:44px;border-radius:8px;background:#f4f6f9;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
+.type-icon{width:48px;height:48px;border-radius:10px;background:#f4f6f9;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
 .type-btn.selected .type-icon{background:#dbeafe;}
-.type-name{font-size:15px;font-weight:700;color:#0f2744;margin-bottom:4px;}
-.type-desc{font-size:11px;color:#9ca3af;}
+.type-name{font-size:16px;font-weight:700;color:#0f2744;margin-bottom:4px;}
+.type-desc{font-size:11px;color:#9ca3af;line-height:1.5;}
 .type-btn.selected .type-name{color:#1d4ed8;}
-
-/* 입력 필드 */
-.field{margin-bottom:12px;}
-.field-label{font-size:12px;color:#6b7280;font-weight:600;letter-spacing:0.2px;margin-bottom:6px;}
+.field{margin-bottom:14px;}
+.field-label{font-size:13px;color:#374151;font-weight:700;margin-bottom:8px;}
+.field-hint{font-size:11px;color:#9ca3af;font-weight:400;margin-left:4px;}
 .required{color:#dc2626;}
-input[type=date],input[type=number],textarea{
-  width:100%;border:1px solid #e8ecf0;border-radius:6px;
-  padding:10px 12px;font-size:14px;font-family:'Noto Sans KR',sans-serif;
-  color:#1e2633;background:white;outline:none;transition:border-color 0.15s;
-}
-input:focus,textarea:focus{border-color:#0f2744;box-shadow:0 0 0 2px rgba(15,39,68,0.07);}
+input[type=date],input[type=number],textarea{width:100%;border:1.5px solid #e8ecf0;border-radius:8px;padding:12px 14px;font-size:15px;font-family:'Noto Sans KR',sans-serif;color:#1e2633;background:white;outline:none;transition:border-color 0.15s;}
+input:focus,textarea:focus{border-color:#0f2744;box-shadow:0 0 0 3px rgba(15,39,68,0.07);}
 textarea{resize:none;height:72px;}
 .qty-row{display:flex;gap:10px;align-items:center;}
-.qty-unit{font-size:14px;color:#6b7280;font-weight:500;white-space:nowrap;}
-
-/* 버튼 */
-.btn-primary{width:100%;padding:14px;background:#0f2744;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:background 0.15s;}
+.qty-unit{font-size:16px;color:#374151;font-weight:700;white-space:nowrap;}
+.btn-primary{width:100%;padding:15px;background:#0f2744;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:background 0.15s;-webkit-tap-highlight-color:transparent;}
 .btn-primary:hover{background:#1e3a6e;}
 .btn-primary:disabled{background:#9ca3af;cursor:not-allowed;}
 .btn-primary.amber{background:#d97706;}
 .btn-primary.amber:hover{background:#b45309;}
-.btn-back{width:100%;padding:11px;background:white;color:#6b7280;border:1.5px solid #e8ecf0;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-bottom:8px;transition:all 0.12s;}
+.btn-back{width:100%;padding:12px;background:white;color:#6b7280;border:1.5px solid #e8ecf0;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-bottom:10px;transition:all 0.12s;}
 .btn-back:hover{border-color:#9ca3af;color:#374151;}
-
-/* 성공 */
 .success-wrap{text-align:center;padding:1.5rem 0.5rem;}
-.success-icon{width:56px;height:56px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
-.success-title{font-size:17px;font-weight:700;color:#0f2744;margin-bottom:6px;}
-.success-msg{font-size:13px;color:#6b7280;margin-bottom:16px;}
-.success-detail{text-align:left;border-top:1px solid #e8ecf0;padding-top:14px;font-size:13px;color:#6b7280;display:flex;flex-direction:column;gap:8px;}
-.success-detail .row{display:flex;justify-content:space-between;}
-.success-detail .row b{color:#374151;font-weight:600;}
-.new-total{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 14px;text-align:center;margin-top:14px;}
-.new-total-label{font-size:11px;color:#92400e;margin-bottom:4px;font-weight:500;}
-.new-total-count{font-size:26px;font-weight:700;color:#d97706;}
-.btn-reset{width:100%;padding:12px;background:white;color:#0f2744;border:1.5px solid #0f2744;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:16px;}
-
+.success-icon{width:64px;height:64px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.success-title{font-size:20px;font-weight:700;color:#0f2744;margin-bottom:6px;}
+.success-msg{font-size:13px;color:#6b7280;margin-bottom:20px;line-height:1.6;}
+.success-detail{text-align:left;border-top:1px solid #e8ecf0;padding-top:16px;display:flex;flex-direction:column;gap:10px;}
+.success-row{display:flex;justify-content:space-between;align-items:center;}
+.success-row-label{font-size:13px;color:#9ca3af;}
+.success-row-value{font-size:13px;font-weight:700;color:#374151;}
+.new-total{background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:14px;text-align:center;margin-top:16px;}
+.new-total-label{font-size:12px;color:#92400e;margin-bottom:4px;font-weight:500;}
+.new-total-count{font-size:30px;font-weight:700;color:#d97706;line-height:1;}
+.btn-reset{width:100%;padding:14px;background:white;color:#0f2744;border:1.5px solid #0f2744;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:16px;}
 .hidden{display:none;}
-.loading-txt{text-align:center;padding:1rem;font-size:13px;color:#6b7280;}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#374151;color:white;padding:10px 20px;border-radius:6px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.loading-txt{text-align:center;padding:1.5rem;font-size:13px;color:#6b7280;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e2633;color:white;padding:12px 22px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
 .toast.show{opacity:1;}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- 헤더 -->
   <div class="header">
-    <div class="logo">TC 도장시설</div>
-    <h1>폐유고상 기록</h1>
-    <p>라인 선택 후 유형과 수량을 입력해주세요.</p>
+    <div class="logo">TC 폐기물 관리</div>
+    <h1>폐유고상 배출 기록</h1>
+    <p class="header-desc">라인 선택 후 배출하고자 하는 유형과 수량을 입력해주세요.</p>
   </div>
 
-  <!-- 스텝 인디케이터 -->
   <div class="steps">
     <div class="step">
       <div class="step-circle active" id="sc1">1</div>
@@ -125,88 +105,92 @@ textarea{resize:none;height:72px;}
     </div>
   </div>
 
-  <!-- STEP 1: 라인 선택 -->
+  <!-- STEP 1 -->
   <div id="step1">
     <div class="card">
       <div class="card-title">라인 선택 <span class="required">*</span></div>
+      <div class="card-sub">현재 보관 중인 수량을 확인 후 선택해주세요.</div>
       <div class="line-grid" id="line-grid">
         <div class="loading-txt" style="grid-column:1/-1;">불러오는 중...</div>
       </div>
     </div>
-    <button class="btn-primary amber" id="btn-next1" onclick="goStep2()" disabled>다음</button>
+    <button class="btn-primary amber" id="btn-next1" onclick="goStep2()" disabled>다음 →</button>
   </div>
 
-  <!-- STEP 2: 유형 선택 -->
+  <!-- STEP 2 -->
   <div id="step2" class="hidden">
-    <div class="card" style="text-align:center;padding:0.8rem;">
-      <span class="selected-badge" id="badge-line">-</span>
+    <div class="summary-bar">
+      <span class="chip-amber" id="badge-line">-</span>
     </div>
     <div class="card">
-      <div class="card-title">폐기물 유형 선택 <span class="required">*</span></div>
+      <div class="card-title">배출 유형 선택 <span class="required">*</span></div>
+      <div class="card-sub">배출하고자 하는 유형을 선택해주세요.</div>
       <div class="type-grid">
         <button class="type-btn" id="tbtn-톤백" onclick="selectType('톤백')">
           <div class="type-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 14h12l2-14"/></svg>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 14h12l2-14"/><line x1="12" y1="6" x2="12" y2="20"/></svg>
           </div>
           <div class="type-name">톤백</div>
-          <div class="type-desc">대형 자루 포장</div>
+          <div class="type-desc">대형 마대자루</div>
         </button>
         <button class="type-btn" id="tbtn-링팩" onclick="selectType('링팩')">
           <div class="type-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
           </div>
           <div class="type-name">링팩</div>
-          <div class="type-desc">원형 링 포장</div>
+          <div class="type-desc">링팩 / 볼팩</div>
         </button>
       </div>
     </div>
     <button class="btn-back" onclick="goStep1()">← 라인 다시 선택</button>
-    <button class="btn-primary amber" id="btn-next2" onclick="goStep3()" disabled>다음</button>
+    <button class="btn-primary amber" id="btn-next2" onclick="goStep3()" disabled>다음 →</button>
   </div>
 
-  <!-- STEP 3: 수량 입력 -->
+  <!-- STEP 3 -->
   <div id="step3" class="hidden">
-    <div class="card" style="text-align:center;padding:0.8rem;display:flex;align-items:center;justify-content:center;gap:10px;">
-      <span class="selected-badge" id="badge-line2">-</span>
-      <span style="font-size:12px;color:#9ca3af;">·</span>
-      <span style="background:#eff6ff;color:#1d4ed8;font-size:13px;font-weight:700;padding:5px 14px;border-radius:6px;border:1.5px solid #bfdbfe;" id="badge-type">-</span>
+    <div class="summary-bar">
+      <span class="chip-amber" id="badge-line2">-</span>
+      <span style="color:#d1d5db;">·</span>
+      <span class="chip-blue" id="badge-type">-</span>
     </div>
     <div class="card">
       <div class="field">
-        <div class="field-label">기록일 <span class="required">*</span></div>
+        <div class="field-label">오늘 날짜 <span class="required">*</span></div>
         <input type="date" id="req-date">
       </div>
       <div class="field">
-        <div class="field-label">수량 <span class="required">*</span></div>
+        <div class="field-label">
+          추가 수량 <span class="required">*</span>
+        </div>
         <div class="qty-row">
           <input type="number" id="req-qty" placeholder="0" min="1" step="1">
-          <span class="qty-unit" id="qty-unit-label">개</span>
+          <span class="qty-unit">개</span>
         </div>
       </div>
       <div class="field" style="margin-bottom:0;">
-        <div class="field-label">특이사항 <span style="color:#9ca3af;font-weight:400;">(선택)</span></div>
-        <textarea id="req-notes" placeholder="특이사항 입력"></textarea>
+        <div class="field-label">특이사항 <span class="field-hint">(선택)</span></div>
+        <textarea id="req-notes" placeholder="특이사항 있으면 입력해주세요"></textarea>
       </div>
     </div>
     <button class="btn-back" onclick="goStep2()">← 유형 다시 선택</button>
     <button class="btn-primary amber" id="btn-submit" onclick="submitForm()">기록하기</button>
   </div>
 
-  <!-- STEP 4: 완료 -->
+  <!-- STEP 4 완료 -->
   <div id="step4" class="hidden card">
     <div class="success-wrap">
       <div class="success-icon">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <div class="success-title">기록 완료</div>
-      <div class="success-msg">관리자에게 전달되었습니다.</div>
+      <div class="success-msg">관리자에게 전송되었습니다.<br>협조해 주셔서 감사합니다. 좋은 하루 되세요.</div>
       <div class="success-detail" id="success-detail"></div>
       <div class="new-total">
-        <div class="new-total-label">현재 누적 보관량</div>
+        <div class="new-total-label">현재 우리 라인 보관 중인 봉투</div>
         <div class="new-total-count" id="new-total-count">-</div>
-        <div style="font-size:12px;color:#92400e;margin-top:2px;" id="new-total-unit">개</div>
+        <div style="font-size:13px;color:#92400e;margin-top:4px;" id="new-total-unit">개</div>
       </div>
-      <button class="btn-reset" onclick="resetAll()">새 기록 작성</button>
+      <button class="btn-reset" onclick="resetAll()">다시 기록하기</button>
     </div>
   </div>
 
@@ -216,12 +200,10 @@ textarea{resize:none;height:72px;}
 <script>
 var SB_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
-
 var selectedLine=null;
 var selectedType=null;
 var storageData=[];
 
-// 스텝 인디케이터 업데이트
 function setStep(n){
   for(var i=1;i<=3;i++){
     var c=document.getElementById('sc'+i);
@@ -235,28 +217,24 @@ function setStep(n){
   }
 }
 
-// 라인 로드
 async function loadLines(){
   try{
-    var res=await fetch(SB_URL+'/rest/v1/waste_oil_storage?select=*&order=line_name.asc',{
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
-    });
+    var res=await fetch(SB_URL+'/rest/v1/waste_oil_storage?select=*&order=line_name.asc',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
     storageData=await res.json();
     renderLineGrid();
   }catch(e){
-    document.getElementById('line-grid').innerHTML='<div class="loading-txt" style="grid-column:1/-1;color:#dc2626;">불러오기 실패. 새로고침해주세요.</div>';
+    document.getElementById('line-grid').innerHTML='<div class="loading-txt" style="grid-column:1/-1;color:#dc2626;">불러오기 실패.<br>새로고침 해주세요.</div>';
   }
 }
 
 function renderLineGrid(){
-  var html=storageData.map(function(r){
+  document.getElementById('line-grid').innerHTML=storageData.map(function(r){
     return'<div class="line-btn" id="lbtn-'+r.line_name+'" onclick="selectLine(\''+r.line_name+'\')">'+
       '<div class="line-btn-name">'+r.line_name+'</div>'+
       '<div class="line-btn-count">'+(r.bag_count||0)+'</div>'+
-      '<div class="line-btn-unit">보관 중</div>'+
+      '<div class="line-btn-unit">현재 보관 중</div>'+
     '</div>';
   }).join('');
-  document.getElementById('line-grid').innerHTML=html;
 }
 
 function selectLine(name){
@@ -275,16 +253,11 @@ function selectType(type){
   document.getElementById('btn-next2').disabled=false;
 }
 
-function goStep1(){
-  hide(['step2','step3','step4']);
-  show('step1');
-  setStep(1);
-}
+function goStep1(){hide(['step2','step3','step4']);show('step1');setStep(1);}
 
 function goStep2(){
   if(!selectedLine)return;
-  hide(['step1','step3','step4']);
-  show('step2');
+  hide(['step1','step3','step4']);show('step2');
   document.getElementById('badge-line').textContent=selectedLine;
   selectedType=null;
   document.querySelectorAll('.type-btn').forEach(function(b){b.classList.remove('selected');});
@@ -294,11 +267,9 @@ function goStep2(){
 
 function goStep3(){
   if(!selectedType)return;
-  hide(['step1','step2','step4']);
-  show('step3');
+  hide(['step1','step2','step4']);show('step3');
   document.getElementById('badge-line2').textContent=selectedLine;
   document.getElementById('badge-type').textContent=selectedType;
-  document.getElementById('qty-unit-label').textContent='개';
   setStep(3);
 }
 
@@ -310,69 +281,50 @@ async function submitForm(){
   var date=document.getElementById('req-date').value;
   var qty=parseInt(document.getElementById('req-qty').value);
   var notes=document.getElementById('req-notes').value||null;
-  if(!date||!qty||qty<1){alert('기록일과 수량(1개 이상)을 입력해주세요.');return;}
-
+  if(!date){alert('오늘 날짜를 확인해주세요.');return;}
+  if(!qty||qty<1){alert('담은 봉투 개수를 입력해주세요.');return;}
   var btn=document.getElementById('btn-submit');
-  btn.disabled=true;btn.textContent='저장 중...';
-
+  btn.disabled=true;btn.textContent='전송 중...';
   try{
-    // waste_oil_requests 기록 저장
     var res1=await fetch(SB_URL+'/rest/v1/waste_oil_requests',{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
-      body:JSON.stringify({
-        line_name:selectedLine,
-        pack_type:selectedType,
-        request_date:date,
-        bag_count:qty,
-        notes:notes
-      })
+      body:JSON.stringify({line_name:selectedLine,pack_type:selectedType,request_date:date,bag_count:qty,notes:notes})
     });
-    if(!res1.ok)throw new Error('기록 저장 실패');
-
-    // waste_oil_storage 보관량 업데이트
+    if(!res1.ok)throw new Error();
     var stor=storageData.find(function(r){return r.line_name===selectedLine;});
-    var prevCount=stor?(stor.bag_count||0):0;
-    var newCount=prevCount+qty;
-
+    var newCount=(stor?stor.bag_count||0:0)+qty;
     var res2=await fetch(SB_URL+'/rest/v1/waste_oil_storage?line_name=eq.'+encodeURIComponent(selectedLine),{
       method:'PATCH',
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
       body:JSON.stringify({bag_count:newCount,updated_at:new Date().toISOString()})
     });
-    if(!res2.ok)throw new Error('보관량 업데이트 실패');
-
-    // 성공 화면
-    hide(['step3']);
-    show('step4');
+    if(!res2.ok)throw new Error();
+    hide(['step3']);show('step4');
     document.getElementById('success-detail').innerHTML=
-      '<div class="row"><span>라인</span><b>'+selectedLine+'</b></div>'+
-      '<div class="row"><span>유형</span><b>'+selectedType+'</b></div>'+
-      '<div class="row"><span>기록일</span><b>'+date+'</b></div>'+
-      '<div class="row"><span>수량</span><b>'+qty+'개</b></div>'+
-      (notes?'<div class="row"><span>특이사항</span><b>'+notes+'</b></div>':'');
+      '<div class="success-row"><span class="success-row-label">라인</span><span class="success-row-value">'+selectedLine+'</span></div>'+
+      '<div class="success-row"><span class="success-row-label">봉투 종류</span><span class="success-row-value">'+selectedType+'</span></div>'+
+      '<div class="success-row"><span class="success-row-label">날짜</span><span class="success-row-value">'+date+'</span></div>'+
+      '<div class="success-row"><span class="success-row-label">담은 개수</span><span class="success-row-value">'+qty+'개</span></div>'+
+      (notes?'<div class="success-row"><span class="success-row-label">메모</span><span class="success-row-value">'+notes+'</span></div>':'');
     document.getElementById('new-total-count').textContent=newCount;
     document.getElementById('new-total-unit').textContent='개 ('+selectedType+')';
-
   }catch(e){
-    showToast('저장 실패: '+e.message);
+    showToast('전송 실패 — 다시 시도해주세요.');
     btn.disabled=false;btn.textContent='기록하기';
   }
 }
 
 function resetAll(){
   selectedLine=null;selectedType=null;
-  hide(['step2','step3','step4']);
-  show('step1');
+  hide(['step2','step3','step4']);show('step1');
   document.getElementById('req-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('req-qty').value='';
   document.getElementById('req-notes').value='';
   document.getElementById('btn-next1').disabled=true;
-  setStep(1);
-  loadLines();
+  setStep(1);loadLines();
 }
 
-// 초기화
 document.getElementById('req-date').value=new Date().toISOString().split('T')[0];
 loadLines();
 </script>
