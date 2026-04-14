@@ -382,19 +382,21 @@ tr:hover td{background:#fafbfd;}
   <!-- 위젯 3+4+5: 2단 레이아웃 -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="dash-grid">
 
-    <!-- 위젯 3: 라인별 폐유고상 보관량 + 차트 -->
+    <!-- 위젯 3: 라인별 폐유고상 보관량 -->
     <div class="card">
       <div class="table-header">
         <span class="table-title">라인별 폐유고상 보관량</span>
         <button onclick="showTab('waste-oil')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
-        <div id="dash-waste-lines" style="padding:14px 16px;border-right:1px solid #f3f4f6;"></div>
-        <div style="padding:14px 16px;">
-          <div style="font-size:11px;color:#6b7280;margin-bottom:10px;font-weight:500;">보관량 현황</div>
-          <div style="position:relative;height:160px;"><canvas id="dashWasteChart"></canvas></div>
-        </div>
+      <div style="display:flex;gap:14px;padding:10px 16px 8px;border-bottom:1px solid #f1f5f9;">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;font-weight:500;">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#0f2744;flex-shrink:0;"></span>톤백
+        </span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;font-weight:500;">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#93c5fd;flex-shrink:0;"></span>링팩
+        </span>
       </div>
+      <div id="dash-waste-lines" style="padding:12px 16px;"></div>
     </div>
 
     <!-- 위젯 4: 다음 배출업체 스케줄 -->
@@ -1087,7 +1089,8 @@ async function loadDashboard(){
     sb('air_operation_log','?log_date=gte.'+weekStartStr+'&log_date=lte.'+weekEndStr+'&facility_type=eq.배출구&select=log_date,submitted_by'),
     sb('waste_oil_schedule','?status=eq.예정&select=*&order=scheduled_date.asc&limit=5'),
     sb('air_measurement','?status=eq.예정&measure_date=gte.'+today+'&select=*&order=measure_date.asc&limit=5'),
-    sb('air_operation_log','?log_date=gte.'+now2.getFullYear()+'-01-01&select=log_date,facility_type&order=log_date.asc')
+    sb('air_operation_log','?log_date=gte.'+now2.getFullYear()+'-01-01&select=log_date,facility_type&order=log_date.asc'),
+    sb('waste_oil_requests','?select=line_name,pack_type,bag_count&order=request_date.desc')
   ]);
   var filterMonth=results[0]||[];
   var orderPending=results[1]||[];
@@ -1097,6 +1100,7 @@ async function loadDashboard(){
   var wasteSchedule=results[5]||[];
   var airSchedule=results[6]||[];
   var airlogYear=results[7]||[];
+  var wasteRequests=results[8]||[];
 
   // ── 위젯1: 이번 달 필터 교체 현황 ──
   var fQty=filterMonth.reduce(function(s,r){return s+(r.quantity||0);},0);
@@ -1117,57 +1121,48 @@ async function loadDashboard(){
     recentEl.innerHTML='<div style="padding:1rem 1.1rem;font-size:13px;color:#9ca3af;">이번 달 교체 기록 없음</div>';
   }
 
-  // ── 위젯3: 라인별 보관량 + 차트 ──
+  // ── 위젯3: 라인별 보관량 (톤백/링팩 구분) ──
   var linesEl=document.getElementById('dash-waste-lines');
-  var lineColors={'G16동':'#3b82f6','현대라인':'#10b981','강건재라인':'#f59e0b','패킹라인':'#8b5cf6','도장라인':'#ec4899'};
   if(!storageData.length){
     linesEl.innerHTML='<div class="empty" style="padding:1rem;">데이터 없음</div>';
   }else{
-    var maxCount=Math.max.apply(null,storageData.map(function(r){return r.bag_count||0;}));
-    maxCount=maxCount||1;
+    // 라인별 톤백/링팩 수 계산 (waste_oil_requests 기준 누적)
+    var linePackMap={};
+    wasteRequests.forEach(function(r){
+      if(!linePackMap[r.line_name])linePackMap[r.line_name]={tonbag:0,ringpack:0};
+      if(r.pack_type==='링팩')linePackMap[r.line_name].ringpack+=(r.bag_count||0);
+      else linePackMap[r.line_name].tonbag+=(r.bag_count||0);
+    });
+    var maxTotal=Math.max.apply(null,storageData.map(function(r){return r.bag_count||0;}))||1;
     linesEl.innerHTML=storageData.map(function(r){
-      var c=lineColors[r.line_name]||'#6b7280';
-      var cnt=r.bag_count||0;
-      var pct=Math.round(cnt/maxCount*100);
-      var warn=cnt>=10?'color:#ef4444;':cnt>=5?'color:#f59e0b;':'color:'+c+';';
-      return'<div style="margin-bottom:14px;">'+
+      var total=r.bag_count||0;
+      // 비율 계산: waste_oil_storage의 총합 기준 바 너비
+      var pct=Math.round(total/maxTotal*100);
+      // 톤백/링팩 비율 (requests 기준)
+      var lp=linePackMap[r.line_name]||{tonbag:0,ringpack:0};
+      var reqTotal=lp.tonbag+lp.ringpack||1;
+      var tPct=Math.round(lp.tonbag/reqTotal*pct);
+      var rPct=pct-tPct;
+      var totalColor=total>=6?'color:#dc2626;':'color:#374151;';
+      var tBar=tPct>0?'<div style="height:7px;width:'+tPct+'%;background:#0f2744;border-radius:'+(rPct>0?'4px 0 0 4px':'4px')+';flex-shrink:0;"></div>':'';
+      var rBar=rPct>0?'<div style="height:7px;width:'+rPct+'%;background:#93c5fd;border-radius:'+(tPct>0?'0 4px 4px 0':'4px')+';flex-shrink:0;"></div>':'';
+      return'<div style="margin-bottom:12px;">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'+
-          '<span style="font-size:13px;font-weight:500;color:#374151;">'+r.line_name+'</span>'+
-          '<span style="font-size:16px;font-weight:700;'+warn+'">'+cnt+'<span style="font-size:11px;font-weight:400;color:#9ca3af;margin-left:2px;">개</span></span>'+
+          '<span style="font-size:12.5px;font-weight:600;color:#1e2633;">'+r.line_name+'</span>'+
+          '<div style="display:flex;align-items:center;gap:8px;">'+
+            '<span style="font-size:11px;color:#6b7280;">톤백 <b style="color:#0f2744;">'+lp.tonbag+'</b></span>'+
+            '<span style="font-size:10px;color:#d1d5db;">·</span>'+
+            '<span style="font-size:11px;color:#6b7280;">링팩 <b style="color:#3b82f6;">'+lp.ringpack+'</b></span>'+
+            '<span style="width:1px;height:14px;background:#e8ecf0;display:inline-block;"></span>'+
+            '<span style="font-size:12px;font-weight:700;'+totalColor+'">'+total+'<span style="font-size:10px;font-weight:400;color:#9ca3af;margin-left:1px;">개</span></span>'+
+          '</div>'+
         '</div>'+
-        '<div style="background:#f3f4f6;border-radius:4px;height:7px;">'+
-          '<div style="background:'+c+';width:'+pct+'%;height:7px;border-radius:4px;transition:width 0.5s;"></div>'+
+        '<div style="background:#f1f5f9;border-radius:4px;height:7px;overflow:hidden;display:flex;">'+
+          tBar+rBar+
         '</div>'+
       '</div>';
     }).join('');
   }
-  // 보관량 차트 (도넛)
-  try{
-    var dwCtx=document.getElementById('dashWasteChart');
-    if(dwCtx&&storageData.length&&typeof Chart!=='undefined'){
-      if(window._dashWasteChart)window._dashWasteChart.destroy();
-      window._dashWasteChart=new Chart(dwCtx.getContext('2d'),{
-      type:'doughnut',
-      data:{
-        labels:storageData.map(function(r){return r.line_name;}),
-        datasets:[{
-          data:storageData.map(function(r){return r.bag_count||0;}),
-          backgroundColor:storageData.map(function(r){return lineColors[r.line_name]||'#6b7280';}),
-          borderWidth:2,
-          borderColor:'#ffffff'
-        }]
-      },
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        cutout:'60%',
-        plugins:{
-          legend:{position:'bottom',labels:{font:{size:11},boxWidth:10,padding:8}},
-          tooltip:{callbacks:{label:function(ctx){return ctx.label+': '+ctx.raw+'개';}}}
-        }
-      }
-    });
-  }
-  }catch(e){console.warn('대시보드 차트 오류:',e);}
 
   // ── 위젯4: 배출업체 스케줄 ──
   var wasteSchedEl=document.getElementById('dash-waste-schedule');
