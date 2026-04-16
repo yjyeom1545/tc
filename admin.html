@@ -1278,15 +1278,16 @@ async function loadDashboard(){
   // ── 캘린더: 대기운영일지 입력 현황 ──
   // 당월 전체 로그: submitted_by 기준으로 m1/m2 입력 날짜 집계
   // ── 캘린더: 담당자별 입력 현황 ──
-  // facility_no 1~8 → 신민우(m1), facility_no 9 → 이주표(m2)
+  // 배출구 facility_no 1~7 → 신민우 전용
+  // 배출구 facility_no 9   → 이주표 전용
+  // (방지시설은 신민우가 1~9 전부 저장하므로 제외)
   var calM1Days={};
   var calM2Days={};
   airlogYear.forEach(function(r){
-    if(!r.log_date)return;
-    var d=r.log_date;
+    if(!r.log_date||r.facility_type!=='배출구')return;
     var no=parseInt(r.facility_no);
-    if(no>=1&&no<=8)calM1Days[d]=true;
-    else if(no===9)calM2Days[d]=true;
+    if(no>=1&&no<=7)calM1Days[r.log_date]=true;
+    else if(no===9)calM2Days[r.log_date]=true;
   });
 
   // 완료율: 어제까지 경과 평일 수 기준
