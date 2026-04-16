@@ -376,7 +376,7 @@ tr:hover td{background:#fafbfd;}
         <!-- 완료율 -->
         <div style="display:flex;gap:6px;margin-top:8px;padding-top:7px;border-top:1px solid #f1f5f9;">
           <div style="flex:1;background:#f8fafc;border-radius:5px;padding:5px 7px;">
-            <div style="font-size:9px;color:#6b7280;margin-bottom:3px;font-weight:500;">신민우</div>
+            <div style="font-size:11px;color:#6b7280;margin-bottom:3px;font-weight:600;">신민우</div>
             <div style="display:flex;align-items:center;gap:5px;">
               <div style="flex:1;height:5px;background:#e8ecf0;border-radius:3px;overflow:hidden;">
                 <div id="dash-rate-m1" style="height:5px;background:#3b82f6;border-radius:3px;width:0%;transition:width 0.4s;"></div>
@@ -385,7 +385,7 @@ tr:hover td{background:#fafbfd;}
             </div>
           </div>
           <div style="flex:1;background:#f8fafc;border-radius:5px;padding:5px 7px;">
-            <div style="font-size:9px;color:#6b7280;margin-bottom:3px;font-weight:500;">이주표</div>
+            <div style="font-size:11px;color:#6b7280;margin-bottom:3px;font-weight:600;">이주표</div>
             <div style="display:flex;align-items:center;gap:5px;">
               <div style="flex:1;height:5px;background:#e8ecf0;border-radius:3px;overflow:hidden;">
                 <div id="dash-rate-m2" style="height:5px;background:#10b981;border-radius:3px;width:0%;transition:width 0.4s;"></div>
@@ -395,8 +395,8 @@ tr:hover td{background:#fafbfd;}
           </div>
         </div>
         <div style="display:flex;gap:8px;margin-top:6px;">
-          <div style="display:flex;align-items:center;gap:3px;font-size:9px;color:#6b7280;"><div style="width:8px;height:3px;background:#3b82f6;border-radius:1px;"></div>신민우</div>
-          <div style="display:flex;align-items:center;gap:3px;font-size:9px;color:#6b7280;"><div style="width:8px;height:3px;background:#10b981;border-radius:1px;"></div>이주표</div>
+          <div style="display:flex;align-items:center;gap:3px;font-size:11px;color:#6b7280;"><div style="width:8px;height:3px;background:#3b82f6;border-radius:1px;"></div>신민우</div>
+          <div style="display:flex;align-items:center;gap:3px;font-size:11px;color:#6b7280;"><div style="width:8px;height:3px;background:#10b981;border-radius:1px;"></div>이주표</div>
         </div>
       </div>
     </div>
@@ -1277,21 +1277,16 @@ async function loadDashboard(){
 
   // ── 캘린더: 대기운영일지 입력 현황 ──
   // 당월 전체 로그: submitted_by 기준으로 m1/m2 입력 날짜 집계
-  // airlogYear = 당해연도 전체, submitted_by 포함 필요 → 별도 쿼리 사용
-  // airlogYear에 submitted_by 없으면 airlogMonth 활용
-  var calM1Days={}; // {날짜: true}
+  // ── 캘린더: 담당자별 입력 현황 ──
+  // facility_no 1~8 → 신민우(m1), facility_no 9 → 이주표(m2)
+  var calM1Days={};
   var calM2Days={};
-  // manager1 = 신민우, manager2 = 이주표 (submitted_by로 구분)
   airlogYear.forEach(function(r){
     if(!r.log_date)return;
     var d=r.log_date;
-    if(r.submitted_by==='shinminwoo'||r.submitted_by==='신민우'||r.submitted_by==='manager1')calM1Days[d]=true;
-    else if(r.submitted_by==='leejupyo'||r.submitted_by==='이주표'||r.submitted_by==='manager2')calM2Days[d]=true;
-    // submitted_by가 없는 경우 facility_type 기반 분리 (배출구1~7·방지1~8=m1, 배출구9·방지9=m2)
-    else if(!r.submitted_by&&r.facility_no!=null){
-      if(r.facility_no<=8)calM1Days[d]=true;
-      else calM2Days[d]=true;
-    }
+    var no=parseInt(r.facility_no);
+    if(no>=1&&no<=8)calM1Days[d]=true;
+    else if(no===9)calM2Days[d]=true;
   });
 
   // 완료율: 어제까지 경과 평일 수 기준
@@ -2105,7 +2100,7 @@ function dashCalRender(){
   var html='';
   for(var i=0;i<firstDow;i++){
     var pd=new Date(y,m,-(firstDow-i-1));
-    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;min-height:36px;"><div style="font-size:9px;font-weight:600;color:#d1d5db;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;">'+pd.getDate()+'</div></div>';
+    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;min-height:44px;"><div style="font-size:9px;font-weight:600;color:#d1d5db;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;">'+pd.getDate()+'</div></div>';
   }
   for(var d2=1;d2<=daysInMonth;d2++){
     var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d2).padStart(2,'0');
@@ -2120,7 +2115,7 @@ function dashCalRender(){
       var t2=data.m2[ds]?'background:#10b981;':'background:#f1f5f9;border:1px solid #e8ecf0;';
       tabs='<div style="display:flex;gap:1px;"><div style="width:8px;height:3px;border-radius:1px;'+t1+'"></div><div style="width:8px;height:3px;border-radius:1px;'+t2+'"></div></div>';
     }
-    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;border-radius:4px;min-height:36px;'+(isToday?'background:#f0f4ff;':'')+'">'+
+    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;border-radius:4px;min-height:44px;'+(isToday?'background:#f0f4ff;':'')+'">'+
       '<div style="font-size:9px;font-weight:600;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;'+dnColor+'">'+d2+'</div>'+
       tabs+
     '</div>';
