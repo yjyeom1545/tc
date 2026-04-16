@@ -349,57 +349,59 @@ tr:hover td{background:#fafbfd;}
     </div>
   </div>
 
-  <!-- 위젯 2: 이번 달 필터 교체 현황 -->
-  <div class="card">
-    <div class="table-header">
-      <span class="table-title">이번 달 필터 교체 현황</span>
-      <button onclick="showTab('filter')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;border-top:1px solid #f3f4f6;">
-      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">이번 달 교체</div>
-        <div style="font-size:24px;font-weight:700;color:#3b82f6;" id="dash-f-month">-</div>
-        <div style="font-size:11px;color:#9ca3af;">건</div>
-      </div>
-      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">이번 달 수량</div>
-        <div style="font-size:24px;font-weight:700;color:#0f2744;" id="dash-f-qty">-</div>
-        <div style="font-size:11px;color:#9ca3af;">개</div>
-      </div>
-      <div style="padding:14px 16px;border-right:1px solid #f3f4f6;">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">미처리 발주 요청</div>
-        <div style="font-size:24px;font-weight:700;" id="dash-f-order">-</div>
-        <div style="font-size:11px;color:#9ca3af;">건</div>
-      </div>
-      <div style="padding:14px 16px;">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">최근 교체일</div>
-        <div style="font-size:15px;font-weight:700;color:#374151;padding-top:4px;" id="dash-f-last">-</div>
-      </div>
-    </div>
-    <div id="dash-filter-recent" style="border-top:1px solid #f3f4f6;"></div>
-  </div>
+  <!-- 위젯 2: 3분할 (캘린더 + 배출업체 + 대기측정) -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;" class="dash-grid">
 
-  <!-- 위젯 3+4+5: 2단 레이아웃 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="dash-grid">
-
-    <!-- 위젯 3: 라인별 폐유고상 보관량 -->
+    <!-- 캘린더: 대기운영일지 입력 현황 -->
     <div class="card">
-      <div class="table-header">
-        <span class="table-title">라인별 폐유고상 보관량</span>
-        <button onclick="showTab('waste-oil')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
+      <div class="table-header" style="padding:9px 14px;">
+        <span class="table-title">대기운영일지 입력 현황</span>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <button onclick="dashCalPrev()" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;line-height:1;padding:0 3px;">‹</button>
+          <span id="dash-cal-month" style="font-size:11px;font-weight:600;color:#374151;min-width:36px;text-align:center;"></span>
+          <button onclick="dashCalNext()" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;line-height:1;padding:0 3px;">›</button>
+        </div>
       </div>
-      <div style="display:flex;gap:14px;padding:10px 16px 8px;border-bottom:1px solid #f1f5f9;">
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;font-weight:500;">
-          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#0f2744;flex-shrink:0;"></span>톤백
-        </span>
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;font-weight:500;">
-          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#93c5fd;flex-shrink:0;"></span>링팩
-        </span>
+      <div style="padding:8px 10px 10px;">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:3px;">
+          <div style="text-align:center;font-size:8px;font-weight:600;color:#ef4444;">일</div>
+          <div style="text-align:center;font-size:8px;font-weight:600;color:#9ca3af;">월</div>
+          <div style="text-align:center;font-size:8px;font-weight:600;color:#9ca3af;">화</div>
+          <div style="text-align:center;font-size:8px;font-weight:600;color:#9ca3af;">수</div>
+          <div style="text-align:center;font-size:8px;font-weight:600;color:#9ca3af;">목</div>
+          <div style="text-align:center;font-size:8px;font-weight:600;color:#9ca3af;">금</div>
+          <div style="text-align:center;font-size:8px;font-weight:600;color:#3b82f6;">토</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;" id="dash-cal-grid"></div>
+        <!-- 완료율 -->
+        <div style="display:flex;gap:6px;margin-top:8px;padding-top:7px;border-top:1px solid #f1f5f9;">
+          <div style="flex:1;background:#f8fafc;border-radius:5px;padding:5px 7px;">
+            <div style="font-size:9px;color:#6b7280;margin-bottom:3px;font-weight:500;">신민우</div>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <div style="flex:1;height:5px;background:#e8ecf0;border-radius:3px;overflow:hidden;">
+                <div id="dash-rate-m1" style="height:5px;background:#3b82f6;border-radius:3px;width:0%;transition:width 0.4s;"></div>
+              </div>
+              <span id="dash-rate-m1-txt" style="font-size:10px;font-weight:700;color:#3b82f6;white-space:nowrap;">0%</span>
+            </div>
+          </div>
+          <div style="flex:1;background:#f8fafc;border-radius:5px;padding:5px 7px;">
+            <div style="font-size:9px;color:#6b7280;margin-bottom:3px;font-weight:500;">이주표</div>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <div style="flex:1;height:5px;background:#e8ecf0;border-radius:3px;overflow:hidden;">
+                <div id="dash-rate-m2" style="height:5px;background:#10b981;border-radius:3px;width:0%;transition:width 0.4s;"></div>
+              </div>
+              <span id="dash-rate-m2-txt" style="font-size:10px;font-weight:700;color:#10b981;white-space:nowrap;">0%</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <div style="display:flex;align-items:center;gap:3px;font-size:9px;color:#6b7280;"><div style="width:8px;height:3px;background:#3b82f6;border-radius:1px;"></div>신민우</div>
+          <div style="display:flex;align-items:center;gap:3px;font-size:9px;color:#6b7280;"><div style="width:8px;height:3px;background:#10b981;border-radius:1px;"></div>이주표</div>
+        </div>
       </div>
-      <div id="dash-waste-lines" style="padding:12px 16px;"></div>
     </div>
 
-    <!-- 위젯 4: 다음 배출업체 스케줄 -->
+    <!-- 배출업체 스케줄 -->
     <div class="card">
       <div class="table-header">
         <span class="table-title">배출업체 스케줄</span>
@@ -408,7 +410,7 @@ tr:hover td{background:#fafbfd;}
       <div id="dash-waste-schedule" style="padding:0;"></div>
     </div>
 
-    <!-- 위젯 5: 다음 대기측정 일정 -->
+    <!-- 대기측정 일정 -->
     <div class="card">
       <div class="table-header">
         <span class="table-title">대기측정 일정</span>
@@ -419,9 +421,53 @@ tr:hover td{background:#fafbfd;}
 
   </div>
 
+  <!-- 위젯 3: 2분할 (폐유고상 + 필터교체) -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="table-header">
+      <span style="font-size:12px;font-weight:600;color:#6b7280;">폐유고상 보관량 &nbsp;·&nbsp; 여과지 필터 교체 현황</span>
+      <span style="font-size:11px;color:#9ca3af;">이번 달 기준</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+      <!-- 왼쪽: 폐유고상 -->
+      <div style="padding:12px 16px;border-right:1px solid #f1f5f9;">
+        <div style="display:flex;gap:12px;margin-bottom:10px;">
+          <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#6b7280;font-weight:500;"><span style="display:inline-block;width:10px;height:4px;border-radius:1px;background:#0f2744;"></span>톤백</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#6b7280;font-weight:500;"><span style="display:inline-block;width:10px;height:4px;border-radius:1px;background:#93c5fd;"></span>링팩</span>
+          <button onclick="showTab('waste-oil')" style="margin-left:auto;font-size:10px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button>
+        </div>
+        <div id="dash-waste-lines"></div>
+      </div>
+      <!-- 오른쪽: 필터교체 -->
+      <div style="padding:12px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:10px;font-weight:700;color:#6b7280;letter-spacing:0.3px;text-transform:uppercase;">여과지 필터 교체</span>
+          <button onclick="showTab('filter')" style="font-size:10px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div style="background:#f8fafc;border-radius:6px;padding:8px 10px;">
+            <div style="font-size:20px;font-weight:700;color:#3b82f6;line-height:1;" id="dash-f-month">-</div>
+            <div style="font-size:10px;color:#9ca3af;margin-top:3px;">이번 달 교체</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:6px;padding:8px 10px;">
+            <div style="font-size:20px;font-weight:700;color:#0f2744;line-height:1;" id="dash-f-qty">-</div>
+            <div style="font-size:10px;color:#9ca3af;margin-top:3px;">이번 달 수량</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:6px;padding:8px 10px;">
+            <div style="font-size:20px;font-weight:700;line-height:1;" id="dash-f-order">-</div>
+            <div style="font-size:10px;color:#9ca3af;margin-top:3px;">미처리 발주</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:6px;padding:8px 10px;">
+            <div style="font-size:13px;font-weight:700;color:#374151;line-height:1;padding-top:3px;" id="dash-f-last">-</div>
+            <div style="font-size:10px;color:#9ca3af;margin-top:3px;">최근 교체일</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<style>@media(max-width:768px){.dash-grid{grid-template-columns:1fr !important;}}</style>
+<style>@media(max-width:900px){.dash-grid{grid-template-columns:1fr !important;}}</style>
 
 <!-- 필터 교체 탭 -->
 <div id="tab-filter" class="content hidden">
@@ -1118,7 +1164,7 @@ async function loadDashboard(){
     sb('air_operation_log','?log_date=gte.'+weekStartStr+'&log_date=lte.'+weekEndStr+'&facility_type=eq.배출구&select=log_date,submitted_by'),
     sb('waste_oil_schedule','?status=eq.예정&select=*&order=scheduled_date.asc&limit=5'),
     sb('air_measurement','?status=eq.예정&measure_date=gte.'+today+'&select=*&order=measure_date.asc&limit=5'),
-    sb('air_operation_log','?log_date=gte.'+now2.getFullYear()+'-01-01&select=log_date,facility_type&order=log_date.asc'),
+    sb('air_operation_log','?log_date=gte.'+now2.getFullYear()+'-01-01&select=log_date,facility_type,facility_no,submitted_by&order=log_date.asc'),
     sb('waste_oil_requests','?select=line_name,pack_type,bag_count&order=request_date.desc')
   ]);
   var filterMonth=results[0]||[];
@@ -1131,24 +1177,14 @@ async function loadDashboard(){
   var airlogYear=results[7]||[];
   var wasteRequests=results[8]||[];
 
-  // ── 위젯1: 이번 달 필터 교체 현황 ──
+  // ── 필터 교체 현황 ──
   var fQty=filterMonth.reduce(function(s,r){return s+(r.quantity||0);},0);
   document.getElementById('dash-f-month').textContent=filterMonth.length;
   document.getElementById('dash-f-qty').textContent=fQty;
   var orderEl=document.getElementById('dash-f-order');
   orderEl.textContent=orderPending.length;
-  orderEl.style.color=orderPending.length>0?'#ef4444':'#10b981';
+  orderEl.style.color=orderPending.length>0?'#d97706':'#10b981';
   document.getElementById('dash-f-last').textContent=filterMonth.length>0?filterMonth[0].record_date:'-';
-  // 최근 3건 테이블
-  var recentEl=document.getElementById('dash-filter-recent');
-  if(filterMonth.length){
-    recentEl.innerHTML='<div style="overflow-x:auto;"><table style="min-width:400px;"><thead><tr><th>날짜</th><th>시설</th><th style="text-align:center;">수량</th><th>교체자</th></tr></thead><tbody>'+
-      filterMonth.slice(0,3).map(function(r){
-        return'<tr><td>'+r.record_date+'</td><td style="font-size:12px;">'+r.facility_name+'</td><td style="text-align:center;">'+r.quantity+'개</td><td style="font-size:12px;color:#9ca3af;">'+r.technician+'</td></tr>';
-      }).join('')+'</tbody></table></div>';
-  }else{
-    recentEl.innerHTML='<div style="padding:1rem 1.1rem;font-size:13px;color:#9ca3af;">이번 달 교체 기록 없음</div>';
-  }
 
   // ── 위젯3: 라인별 보관량 (톤백/링팩 구분) ──
   var linesEl=document.getElementById('dash-waste-lines');
@@ -1201,16 +1237,16 @@ async function loadDashboard(){
     wasteSchedEl.innerHTML=wasteSchedule.map(function(r){
       var dday=Math.ceil((new Date(r.scheduled_date)-new Date(today))/(1000*60*60*24));
       var ddayStr=dday===0?'오늘':dday>0?'D-'+dday:'D+'+Math.abs(dday);
-      var ddayColor=dday<0?'#ef4444':dday<=3?'#f59e0b':'#6b7280';
-      var types=r.line_names?r.line_names.split(',').map(function(t){
-        return'<span style="background:#f0f2f5;color:#374151;font-size:11px;padding:1px 6px;border-radius:10px;margin:1px;display:inline-block;">'+t.trim()+'</span>';
-      }).join(''):'';
-      return'<div style="padding:10px 14px;border-bottom:1px solid #f9fafb;display:flex;align-items:flex-start;gap:10px;">'+
-        '<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#f1f5f9;border-radius:4px;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>'+
+      var ddayColor=dday<0?'#dc2626':dday<=3?'#d97706':'#6b7280';
+      // 폐기물 종류 (line_names) 큰 글씨
+      var typeNames=r.line_names?r.line_names.split(',').map(function(t){return t.trim();}).filter(Boolean):[];
+      var typeMain=typeNames.length>0?typeNames.join(', '):'미지정';
+      // 업체명 (notes에서 추출)
+      var company=r.notes?(r.notes.split(' / ')[0]):'가람환경';
+      return'<div style="padding:10px 14px;border-bottom:1px solid #f9fafb;display:flex;align-items:center;gap:10px;">'+
         '<div style="flex:1;">'+
-          '<div style="font-size:13px;font-weight:500;color:#374151;margin-bottom:3px;">가람환경</div>'+
-          '<div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">'+r.scheduled_date+'</div>'+
-          '<div>'+types+'</div>'+
+          '<div style="font-size:13px;font-weight:700;color:#1e2633;margin-bottom:2px;">'+typeMain+'</div>'+
+          '<div style="font-size:11px;color:#9ca3af;">'+company+' · '+r.scheduled_date+'</div>'+
         '</div>'+
         '<span style="font-size:12px;font-weight:700;color:'+ddayColor+';white-space:nowrap;">'+ddayStr+'</span>'+
       '</div>';
@@ -1225,22 +1261,77 @@ async function loadDashboard(){
     airSchedEl.innerHTML=airSchedule.map(function(r){
       var dday=Math.ceil((new Date(r.measure_date)-new Date(today))/(1000*60*60*24));
       var ddayStr=dday===0?'오늘':dday>0?'D-'+dday:'D+'+Math.abs(dday);
-      var ddayColor=dday<0?'#ef4444':dday<=7?'#f59e0b':'#6b7280';
-      var facilities=r.facilities?r.facilities.split(',').slice(0,3).map(function(f){
-        return'<span style="background:#eff6ff;color:#1e40af;font-size:11px;padding:1px 6px;border-radius:10px;margin:1px;display:inline-block;">'+f.trim()+'</span>';
-      }).join(''):'';
-      return'<div style="padding:10px 14px;border-bottom:1px solid #f9fafb;display:flex;align-items:flex-start;gap:10px;">'+
-        '<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#f1f5f9;border-radius:4px;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>'+
+      var ddayColor=dday<0?'#dc2626':dday<=7?'#d97706':'#6b7280';
+      // 측정시설 (facilities) 큰 글씨
+      var facilMain=r.facilities?r.facilities.split(',').slice(0,2).map(function(f){return f.trim();}).join(', '):'전체';
+      return'<div style="padding:10px 14px;border-bottom:1px solid #f9fafb;display:flex;align-items:center;gap:10px;">'+
         '<div style="flex:1;">'+
-          '<div style="font-size:13px;font-weight:500;color:#374151;margin-bottom:3px;">'+r.company+'</div>'+
-          '<div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">'+r.measure_date+'</div>'+
-          '<div>'+facilities+'</div>'+
-          (r.special_notes?'<div style="font-size:11px;color:#9ca3af;margin-top:3px;">'+r.special_notes+'</div>':'')+
+          '<div style="font-size:13px;font-weight:700;color:#1e2633;margin-bottom:2px;">'+facilMain+'</div>'+
+          '<div style="font-size:11px;color:#9ca3af;">'+(r.company||'-')+' · '+r.measure_date+'</div>'+
+          (r.special_notes?'<div style="font-size:10px;color:#9ca3af;margin-top:2px;">'+r.special_notes+'</div>':'')+
         '</div>'+
         '<span style="font-size:12px;font-weight:700;color:'+ddayColor+';white-space:nowrap;">'+ddayStr+'</span>'+
       '</div>';
     }).join('');
   }
+
+  // ── 캘린더: 대기운영일지 입력 현황 ──
+  // 당월 전체 로그: submitted_by 기준으로 m1/m2 입력 날짜 집계
+  // airlogYear = 당해연도 전체, submitted_by 포함 필요 → 별도 쿼리 사용
+  // airlogYear에 submitted_by 없으면 airlogMonth 활용
+  var calM1Days={}; // {날짜: true}
+  var calM2Days={};
+  // manager1 = 신민우, manager2 = 이주표 (submitted_by로 구분)
+  airlogYear.forEach(function(r){
+    if(!r.log_date)return;
+    var d=r.log_date;
+    if(r.submitted_by==='shinminwoo'||r.submitted_by==='신민우'||r.submitted_by==='manager1')calM1Days[d]=true;
+    else if(r.submitted_by==='leejupyo'||r.submitted_by==='이주표'||r.submitted_by==='manager2')calM2Days[d]=true;
+    // submitted_by가 없는 경우 facility_type 기반 분리 (배출구1~7·방지1~8=m1, 배출구9·방지9=m2)
+    else if(!r.submitted_by&&r.facility_no!=null){
+      if(r.facility_no<=8)calM1Days[d]=true;
+      else calM2Days[d]=true;
+    }
+  });
+
+  // 완료율: 어제까지 경과 평일 수 기준
+  var yesterday=new Date(now2); yesterday.setDate(now2.getDate()-1);
+  var calYear=now2.getFullYear();
+  var calCurMonth=now2.getMonth();
+  var monthStart=new Date(calYear,calCurMonth,1);
+
+  function isWeekday(d){var w=d.getDay();return w>=1&&w<=5;}
+  function dateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+  // 이번 달 어제까지 평일 목록
+  var totalWeekdays=0;
+  var m1Done=0,m2Done=0;
+  var d=new Date(monthStart);
+  while(d<=yesterday&&d.getMonth()===calCurMonth){
+    if(isWeekday(d)){
+      totalWeekdays++;
+      var ds=dateStr(d);
+      if(calM1Days[ds])m1Done++;
+      if(calM2Days[ds])m2Done++;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  var r1=totalWeekdays>0?Math.round(m1Done/totalWeekdays*100):0;
+  var r2=totalWeekdays>0?Math.round(m2Done/totalWeekdays*100):0;
+  var rm1=document.getElementById('dash-rate-m1');
+  var rm2=document.getElementById('dash-rate-m2');
+  if(rm1){rm1.style.width=r1+'%';}
+  if(rm2){rm2.style.width=r2+'%';}
+  var rt1=document.getElementById('dash-rate-m1-txt');
+  var rt2=document.getElementById('dash-rate-m2-txt');
+  if(rt1)rt1.textContent=r1+'%';
+  if(rt2)rt2.textContent=r2+'%';
+
+  // 캘린더 렌더링 (전역 상태로 저장 후 dashCalRender 호출)
+  window._dashCalData={m1:calM1Days,m2:calM2Days};
+  window._dashCalYear=calYear;
+  window._dashCalMonth=calCurMonth;
+  dashCalRender();
 
   // ── 위젯6: 월별 입력 현황 ──
   var year=now2.getFullYear();
@@ -1991,6 +2082,55 @@ function searchWasteType(){
 function openClaude(query){
   var prompt='제조업 도장시설 환경관리 담당자입니다. 다음 폐기물이 어떤 종류인지, 지정폐기물인지 일반폐기물인지 알려주세요. 우리 사업장의 폐기물 종류는 폐합성수지, 폐목재, 폐유 고상, 폐유 액상, 폐페인트, 분진, 고철, 폐지, 일반쓰레기입니다. 질문: '+query;
   window.open('https://claude.ai/new?q='+encodeURIComponent(prompt),'_blank');
+}
+
+function dashCalRender(){
+  var y=window._dashCalYear||new Date().getFullYear();
+  var m=window._dashCalMonth||new Date().getMonth();
+  var data=window._dashCalData||{m1:{},m2:{}};
+  var MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  var monthEl=document.getElementById('dash-cal-month');
+  if(monthEl)monthEl.textContent=MONTHS[m];
+  var grid=document.getElementById('dash-cal-grid');
+  if(!grid)return;
+  var today=new Date();
+  var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  var firstDow=new Date(y,m,1).getDay();
+  var daysInMonth=new Date(y,m+1,0).getDate();
+  var html='';
+  for(var i=0;i<firstDow;i++){
+    var pd=new Date(y,m,-(firstDow-i-1));
+    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;"><div style="font-size:9px;font-weight:600;color:#d1d5db;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;">'+pd.getDate()+'</div></div>';
+  }
+  for(var d2=1;d2<=daysInMonth;d2++){
+    var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d2).padStart(2,'0');
+    var dow=new Date(y,m,d2).getDay();
+    var isToday=ds===todayStr;
+    var isWeekend=dow===0||dow===6;
+    var isFuture=new Date(ds)>new Date(todayStr);
+    var dnColor=isToday?'background:#0f2744;color:white;border-radius:50%;':dow===0?'color:#ef4444;':dow===6?'color:#3b82f6;':'color:#374151;';
+    var tabs='';
+    if(!isWeekend&&!isFuture){
+      var t1=data.m1[ds]?'background:#3b82f6;':'background:#f1f5f9;border:1px solid #e8ecf0;';
+      var t2=data.m2[ds]?'background:#10b981;':'background:#f1f5f9;border:1px solid #e8ecf0;';
+      tabs='<div style="display:flex;gap:1px;"><div style="width:8px;height:3px;border-radius:1px;'+t1+'"></div><div style="width:8px;height:3px;border-radius:1px;'+t2+'"></div></div>';
+    }
+    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;border-radius:4px;'+(isToday?'background:#f0f4ff;':'')+'">'+
+      '<div style="font-size:9px;font-weight:600;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;'+dnColor+'">'+d2+'</div>'+
+      tabs+
+    '</div>';
+  }
+  grid.innerHTML=html;
+}
+function dashCalPrev(){
+  window._dashCalMonth=(window._dashCalMonth||0)-1;
+  if(window._dashCalMonth<0){window._dashCalMonth=11;window._dashCalYear=(window._dashCalYear||new Date().getFullYear())-1;}
+  dashCalRender();
+}
+function dashCalNext(){
+  window._dashCalMonth=(window._dashCalMonth||0)+1;
+  if(window._dashCalMonth>11){window._dashCalMonth=0;window._dashCalYear=(window._dashCalYear||new Date().getFullYear())+1;}
+  dashCalRender();
 }
 
 function toggleAirLawBanner(){
