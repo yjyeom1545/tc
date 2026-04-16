@@ -356,11 +356,7 @@ tr:hover td{background:#fafbfd;}
     <div class="card">
       <div class="table-header" style="padding:9px 14px;">
         <span class="table-title">대기운영일지 입력 현황</span>
-        <div style="display:flex;align-items:center;gap:4px;">
-          <button onclick="dashCalPrev()" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;line-height:1;padding:0 3px;">‹</button>
-          <span id="dash-cal-month" style="font-size:11px;font-weight:600;color:#374151;min-width:36px;text-align:center;"></span>
-          <button onclick="dashCalNext()" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;line-height:1;padding:0 3px;">›</button>
-        </div>
+        <span id="dash-cal-month" style="font-size:11px;font-weight:600;color:#9ca3af;"></span>
       </div>
       <div style="padding:8px 10px 10px;">
         <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:3px;">
@@ -2100,7 +2096,7 @@ function dashCalRender(){
   var html='';
   for(var i=0;i<firstDow;i++){
     var pd=new Date(y,m,-(firstDow-i-1));
-    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;"><div style="font-size:9px;font-weight:600;color:#d1d5db;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;">'+pd.getDate()+'</div></div>';
+    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;min-height:28px;"><div style="font-size:9px;font-weight:600;color:#d1d5db;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;">'+pd.getDate()+'</div></div>';
   }
   for(var d2=1;d2<=daysInMonth;d2++){
     var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d2).padStart(2,'0');
@@ -2115,7 +2111,7 @@ function dashCalRender(){
       var t2=data.m2[ds]?'background:#10b981;':'background:#f1f5f9;border:1px solid #e8ecf0;';
       tabs='<div style="display:flex;gap:1px;"><div style="width:8px;height:3px;border-radius:1px;'+t1+'"></div><div style="width:8px;height:3px;border-radius:1px;'+t2+'"></div></div>';
     }
-    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;border-radius:4px;'+(isToday?'background:#f0f4ff;':'')+'">'+
+    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;border-radius:4px;min-height:28px;'+(isToday?'background:#f0f4ff;':'')+'">'+
       '<div style="font-size:9px;font-weight:600;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;'+dnColor+'">'+d2+'</div>'+
       tabs+
     '</div>';
