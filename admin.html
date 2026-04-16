@@ -356,7 +356,11 @@ tr:hover td{background:#fafbfd;}
     <div class="card">
       <div class="table-header" style="padding:9px 14px;">
         <span class="table-title">대기운영일지 입력 현황</span>
-        <span id="dash-cal-month" style="font-size:11px;font-weight:600;color:#9ca3af;"></span>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <button onclick="dashCalPrev()" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;line-height:1;padding:0 3px;">‹</button>
+          <span id="dash-cal-month" style="font-size:11px;font-weight:600;color:#374151;min-width:36px;text-align:center;"></span>
+          <button onclick="dashCalNext()" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;line-height:1;padding:0 3px;">›</button>
+        </div>
       </div>
       <div style="padding:8px 10px 10px;">
         <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:3px;">
@@ -2080,6 +2084,11 @@ function openClaude(query){
   window.open('https://claude.ai/new?q='+encodeURIComponent(prompt),'_blank');
 }
 
+// 캘린더 초기 렌더링 (데이터 없이 날짜 구조만 먼저 표시)
+window._dashCalYear=new Date().getFullYear();
+window._dashCalMonth=new Date().getMonth();
+window._dashCalData={m1:{},m2:{}};
+
 function dashCalRender(){
   var y=window._dashCalYear||new Date().getFullYear();
   var m=window._dashCalMonth||new Date().getMonth();
@@ -2610,7 +2619,7 @@ async function doDelete(){
 }
 function closeModal(){document.getElementById('del-modal').classList.remove('show');}
 
-if(checkAuth())loadCurrentTab();
+if(checkAuth()){dashCalRender();loadCurrentTab();}
 </script>
 </body>
 </html>
