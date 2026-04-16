@@ -1275,59 +1275,8 @@ async function loadDashboard(){
     }).join('');
   }
 
-  // ── 캘린더: 대기운영일지 입력 현황 ──
-  // 당월 전체 로그: submitted_by 기준으로 m1/m2 입력 날짜 집계
-  // ── 캘린더: 담당자별 입력 현황 ──
-  // 배출구 facility_no 1~7 → 신민우 전용
-  // 배출구 facility_no 9   → 이주표 전용
-  // (방지시설은 신민우가 1~9 전부 저장하므로 제외)
-  var calM1Days={};
-  var calM2Days={};
-  airlogYear.forEach(function(r){
-    if(!r.log_date||r.facility_type!=='배출구')return;
-    var no=parseInt(r.facility_no);
-    if(no>=1&&no<=7)calM1Days[r.log_date]=true;
-    else if(no===9)calM2Days[r.log_date]=true;
-  });
-
-  // 완료율: 어제까지 경과 평일 수 기준
-  var yesterday=new Date(now2); yesterday.setDate(now2.getDate()-1);
-  var calYear=now2.getFullYear();
-  var calCurMonth=now2.getMonth();
-  var monthStart=new Date(calYear,calCurMonth,1);
-
-  function isWeekday(d){var w=d.getDay();return w>=1&&w<=5;}
-  function dateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-
-  // 이번 달 어제까지 평일 목록
-  var totalWeekdays=0;
-  var m1Done=0,m2Done=0;
-  var d=new Date(monthStart);
-  while(d<=yesterday&&d.getMonth()===calCurMonth){
-    if(isWeekday(d)){
-      totalWeekdays++;
-      var ds=dateStr(d);
-      if(calM1Days[ds])m1Done++;
-      if(calM2Days[ds])m2Done++;
-    }
-    d.setDate(d.getDate()+1);
-  }
-  var r1=totalWeekdays>0?Math.round(m1Done/totalWeekdays*100):0;
-  var r2=totalWeekdays>0?Math.round(m2Done/totalWeekdays*100):0;
-  var rm1=document.getElementById('dash-rate-m1');
-  var rm2=document.getElementById('dash-rate-m2');
-  if(rm1){rm1.style.width=r1+'%';}
-  if(rm2){rm2.style.width=r2+'%';}
-  var rt1=document.getElementById('dash-rate-m1-txt');
-  var rt2=document.getElementById('dash-rate-m2-txt');
-  if(rt1)rt1.textContent=r1+'%';
-  if(rt2)rt2.textContent=r2+'%';
-
-  // 캘린더 렌더링 (전역 상태로 저장 후 dashCalRender 호출)
-  window._dashCalData={m1:calM1Days,m2:calM2Days};
-  window._dashCalYear=calYear;
-  window._dashCalMonth=calCurMonth;
-  dashCalRender();
+  // 캘린더는 독립 함수로 별도 실행 (다른 위젯 오류의 영향 없음)
+  loadDashCalendar();
 
   // ── 위젯6: 월별 입력 현황 ──
   var year=now2.getFullYear();
@@ -2085,6 +2034,63 @@ window._dashCalYear=new Date().getFullYear();
 window._dashCalMonth=new Date().getMonth();
 window._dashCalData={m1:{},m2:{}};
 
+// ── 캘린더 독립 로딩 함수 ──
+// loadDashboard와 완전히 분리. 직접 DB 조회 → 렌더링
+async function loadDashCalendar(){
+  try{
+    var now=new Date();
+    var year=now.getFullYear();
+    var data=await sb('air_operation_log',
+      '?log_date=gte.'+year+'-01-01&select=log_date,facility_type,facility_no&order=log_date.asc');
+    if(!Array.isArray(data))return;
+
+    // 배출구 facility_no 1~7 → 신민우, 9 → 이주표
+    var m1={}, m2={};
+    data.forEach(function(r){
+      if(!r.log_date||r.facility_type!=='배출구')return;
+      var no=parseInt(r.facility_no);
+      if(no>=1&&no<=7) m1[r.log_date]=true;
+      else if(no===9)  m2[r.log_date]=true;
+    });
+
+    // 완료율: 어제까지 경과 평일 기준
+    var yesterday=new Date(now); yesterday.setDate(now.getDate()-1);
+    var curMonth=now.getMonth();
+    var monthStart=new Date(year,curMonth,1);
+    var total=0, done1=0, done2=0;
+    var cur=new Date(monthStart);
+    while(cur<=yesterday&&cur.getMonth()===curMonth){
+      var w=cur.getDay();
+      if(w>=1&&w<=5){
+        total++;
+        var ds=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');
+        if(m1[ds])done1++;
+        if(m2[ds])done2++;
+      }
+      cur.setDate(cur.getDate()+1);
+    }
+    var r1=total>0?Math.round(done1/total*100):0;
+    var r2=total>0?Math.round(done2/total*100):0;
+
+    // 완료율 바 업데이트
+    var bar1=document.getElementById('dash-rate-m1');
+    var bar2=document.getElementById('dash-rate-m2');
+    var txt1=document.getElementById('dash-rate-m1-txt');
+    var txt2=document.getElementById('dash-rate-m2-txt');
+    if(bar1)bar1.style.width=r1+'%';
+    if(bar2)bar2.style.width=r2+'%';
+    if(txt1)txt1.textContent=r1+'%';
+    if(txt2)txt2.textContent=r2+'%';
+
+    // 전역에 저장 후 렌더링
+    window._dashCalData={m1:m1,m2:m2};
+    window._dashCalYear=year;
+    window._dashCalMonth=curMonth;
+    dashCalRender();
+
+  }catch(e){console.warn('캘린더 로딩 오류:',e);}
+}
+
 function dashCalRender(){
   var y=window._dashCalYear||new Date().getFullYear();
   var m=window._dashCalMonth||new Date().getMonth();
@@ -2615,7 +2621,7 @@ async function doDelete(){
 }
 function closeModal(){document.getElementById('del-modal').classList.remove('show');}
 
-if(checkAuth()){dashCalRender();loadCurrentTab();}
+if(checkAuth()){dashCalRender();loadDashCalendar();loadCurrentTab();}
 </script>
 </body>
 </html>
