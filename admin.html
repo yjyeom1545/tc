@@ -178,6 +178,22 @@ tr:hover td{background:#fafbfd;}
 .input-error{border-color:#dc2626 !important;background:#fff5f5 !important;}
 .val-msg{font-size:11px;color:#dc2626;margin-top:3px;display:none;}
 .val-msg.show{display:block;}
+
+/* ── 점검 관리 ── */
+.insp-fbtn{padding:6px 13px;border-radius:20px;border:1px solid #e8ecf0;background:white;color:#6b7280;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
+.insp-fbtn:hover{background:#f4f6f9;}
+.insp-fbtn.active{background:#0f2744;color:white;border-color:#0f2744;}
+.status-miss{background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.status-hold{background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.status-done{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.ext-badge{background:#ede9fe;color:#5b21b6;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;}
+.insp-photo-box{width:100%;aspect-ratio:4/3;border-radius:7px;overflow:hidden;background:#f4f6f9;border:1px solid #e8ecf0;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;}
+.insp-photo-box img{width:100%;height:100%;object-fit:cover;}
+.insp-photo-empty{color:#d1d5db;font-size:12px;text-align:center;}
+.insp-photo-upload{position:absolute;bottom:0;left:0;right:0;background:rgba(15,39,68,0.7);color:white;font-size:11px;padding:5px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;}
+tr.inspect-row{cursor:pointer;}
+tr.inspect-row:hover td{background:#f0f4ff !important;}
+tr.inspect-row.selected td{background:#eff6ff;}
 </style>
 </head>
 <body>
@@ -238,6 +254,11 @@ tr:hover td{background:#fafbfd;}
     <div class="nav-item" id="nav-air-guide" onclick="showTab('air-guide')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       관리요령
+    </div>
+    <div class="nav-section">점검 관리</div>
+    <div class="nav-item" id="nav-inspect" onclick="showTab('inspect')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      점검 이력
     </div>
     <div class="nav-section" id="nav-section-admin">관리</div>
     <div class="nav-item" id="nav-users" onclick="showTab('users')">
@@ -989,6 +1010,99 @@ tr:hover td{background:#fafbfd;}
   </div>
 </div>
 
+<!-- 점검 이력 탭 -->
+<div id="tab-inspect" class="content hidden">
+
+  <!-- KPI 카드 -->
+  <div class="stats-grid" id="inspect-kpi" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:14px;"></div>
+
+  <!-- 필터 버튼 + 신규 등록 버튼 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;" id="inspect-filter-btns">
+      <button class="insp-fbtn active" data-filter="all"    onclick="setInspFilter('all',this)">전체</button>
+      <button class="insp-fbtn"        data-filter="env"    onclick="setInspFilter('env',this)">환경</button>
+      <button class="insp-fbtn"        data-filter="safety" onclick="setInspFilter('safety',this)">안전</button>
+      <button class="insp-fbtn"        data-filter="ext"    onclick="setInspFilter('ext',this)">외부기관</button>
+      <button class="insp-fbtn"        data-filter="miss"   onclick="setInspFilter('miss',this)">미개선</button>
+      <button class="insp-fbtn"        data-filter="hold"   onclick="setInspFilter('hold',this)">보류</button>
+    </div>
+    <button class="add-btn" id="inspect-add-btn" onclick="openInspectForm()">+ 신규 등록</button>
+  </div>
+
+  <!-- 목록 + 상세 패널 -->
+  <div id="inspect-layout" style="display:grid;grid-template-columns:1fr;gap:14px;">
+    <div class="card" style="margin-bottom:0;">
+      <div class="table-header">
+        <span class="table-title">점검 이력</span>
+        <span class="record-count" id="inspect-count">0건</span>
+      </div>
+      <div id="inspect-table"><div class="loading">로딩 중...</div></div>
+    </div>
+    <!-- 상세 패널 (행 클릭 시 나타남) -->
+    <div class="card" id="inspect-detail-panel" style="margin-bottom:0;display:none;">
+      <div class="card-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span class="card-title" style="margin-bottom:0;">상세 / 수정</span>
+          <button onclick="closeInspectDetail()" style="background:none;border:none;font-size:18px;color:#9ca3af;cursor:pointer;line-height:1;">×</button>
+        </div>
+        <div id="inspect-detail-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 신규 등록 모달 -->
+  <div class="modal-bg" id="inspect-form-modal">
+    <div class="modal" style="max-width:500px;width:94%;">
+      <div class="modal-title">점검 항목 신규 등록</div>
+      <div class="form-row">
+        <div class="form-group"><label>점검일 *</label><input type="date" id="if-date"></div>
+        <div class="form-group"><label>구분 *</label>
+          <select id="if-category"><option value="환경">환경</option><option value="안전">안전</option></select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;"><label>지적 내용 *</label><textarea id="if-issue" style="height:80px;resize:none;"></textarea></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>외부기관 점검</label>
+          <select id="if-external"><option value="false">아니오</option><option value="true">예</option></select>
+        </div>
+        <div class="form-group"><label>비고</label><input type="text" id="if-note" placeholder="선택 입력"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>개선 전 사진 (admin만)</label>
+        <div id="if-before-wrap" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <label style="padding:7px 14px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
+            파일 선택<input type="file" id="if-before-file" accept="image/*" style="display:none;" onchange="handleInspectPhoto(this,'if-before-preview')">
+          </label>
+          <label style="padding:7px 14px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
+            촬영<input type="file" id="if-before-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleInspectPhoto(this,'if-before-preview')">
+          </label>
+          <div id="if-before-preview" style="width:80px;height:60px;border-radius:6px;overflow:hidden;background:#f4f6f9;display:none;"><img style="width:100%;height:100%;object-fit:cover;"></div>
+        </div>
+      </div>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="closeInspectForm()">취소</button>
+        <button class="add-btn" onclick="submitInspect()">등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사진 전체화면 팝업 -->
+  <div id="inspect-photo-lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;align-items:center;justify-content:center;flex-direction:column;">
+    <button onclick="closeInspectLightbox()" style="position:absolute;top:18px;right:22px;background:none;border:none;color:white;font-size:28px;cursor:pointer;z-index:501;">×</button>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:center;max-height:90vh;overflow:auto;padding:20px;">
+      <div style="text-align:center;">
+        <div style="font-size:12px;color:#9ca3af;margin-bottom:8px;">개선 전</div>
+        <img id="lb-before" src="" style="max-width:min(45vw,600px);max-height:80vh;border-radius:8px;object-fit:contain;background:#111;">
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:12px;color:#9ca3af;margin-bottom:8px;">개선 후</div>
+        <img id="lb-after" src="" style="max-width:min(45vw,600px);max-height:80vh;border-radius:8px;object-fit:contain;background:#111;">
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 사용자 관리 탭 -->
 <div id="tab-users" class="content hidden">
   <div class="card">
@@ -1112,7 +1226,7 @@ function showTab(tab){
   var navEl=document.getElementById('nav-'+tab);
   if(navEl)navEl.classList.add('active');
   // topbar 타이틀
-  var titles={home:'홈',filter:'필터 교체','waste-oil':'폐유고상','waste-schedule':'배출업체 스케줄','waste-search':'폐기물 분류 검색',airlog:'대기운영기록',air:'대기측정 일정','air-guide':'관리요령',users:'사용자 관리'};
+  var titles={home:'홈',filter:'필터 교체','waste-oil':'폐유고상','waste-schedule':'배출업체 스케줄','waste-search':'폐기물 분류 검색',airlog:'대기운영기록',air:'대기측정 일정','air-guide':'관리요령',inspect:'점검 이력',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
   if(titleEl)titleEl.textContent=titles[tab]||tab;
   // 모바일: 사이드바 닫기
@@ -1131,6 +1245,7 @@ function loadCurrentTab(){
     else if(currentTab==='airlog')loadAirLog();
     else if(currentTab==='air')loadAirMeasures();
     else if(currentTab==='air-guide'){}
+    else if(currentTab==='inspect')loadInspect();
     else if(currentTab==='users')loadUsers();
   }catch(e){console.error('탭 로딩 오류:',e);}
 }
@@ -2606,6 +2721,263 @@ async function addUser(){
     loadUsers();
     alert(getRoleText(role)+' 권한으로 사용자 "'+username+'"이 추가되었습니다.');
   }else{alert('이미 존재하는 아이디입니다.');}
+}
+
+/* ══════════════════════════════════════
+   점검 이력 탭
+══════════════════════════════════════ */
+var inspectAllData=[];
+var inspectCurrentFilter='all';
+var inspectSelectedId=null;
+var inspectBeforeDataUrl=null;
+var inspectAfterDataUrl=null;
+
+async function loadInspect(){
+  var data=await sb('inspection_records','?select=*&order=inspect_date.desc');
+  if(!data)data=[];
+  inspectAllData=data;
+  renderInspectKPI(data);
+  renderInspectTable(data);
+}
+
+function renderInspectKPI(data){
+  var total=data.length;
+  var miss=data.filter(function(r){return r.status==='miss';}).length;
+  var hold=data.filter(function(r){return r.status==='hold';}).length;
+  var extMiss=data.filter(function(r){return r.is_external&&r.status==='miss';}).length;
+  var done=data.filter(function(r){return r.status==='done';}).length;
+  var rate=total>0?Math.round(done/total*100):0;
+  var el=document.getElementById('inspect-kpi');
+  if(!el)return;
+  el.innerHTML=[
+    {label:'미개선 건수',val:miss,unit:'건',color:'#dc2626'},
+    {label:'보류 건수',val:hold,unit:'건',color:'#d97706'},
+    {label:'외부기관 미개선',val:extMiss,unit:'건',color:'#7c3aed'},
+    {label:'완료 건수',val:done,unit:'건',color:'#16a34a'},
+    {label:'개선율',val:rate,unit:'%',color:'#2563eb'}
+  ].map(function(k){
+    return '<div class="stat-card"><div class="stat-label">'+k.label+'</div><div class="stat-value" style="color:'+k.color+';">'+k.val+'<span class="stat-unit">'+k.unit+'</span></div></div>';
+  }).join('');
+}
+
+function getInspectFiltered(){
+  var f=inspectCurrentFilter;
+  return inspectAllData.filter(function(r){
+    if(f==='all')return true;
+    if(f==='env')return r.category==='환경';
+    if(f==='safety')return r.category==='안전';
+    if(f==='ext')return r.is_external;
+    if(f==='miss')return r.status==='miss';
+    if(f==='hold')return r.status==='hold';
+    return true;
+  });
+}
+
+function setInspFilter(f,btn){
+  inspectCurrentFilter=f;
+  document.querySelectorAll('.insp-fbtn').forEach(function(b){b.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  renderInspectTable(getInspectFiltered());
+}
+
+function renderInspectTable(data){
+  var cnt=document.getElementById('inspect-count');
+  if(cnt)cnt.textContent=data.length+'건';
+  var el=document.getElementById('inspect-table');
+  if(!el)return;
+  if(!data.length){el.innerHTML='<div class="empty">점검 이력이 없습니다.</div>';return;}
+  var rows=data.map(function(r){
+    var statusBadge=r.status==='miss'?'<span class="status-miss">미개선</span>':r.status==='hold'?'<span class="status-hold">보류</span>':'<span class="status-done">완료</span>';
+    var extBadge=r.is_external?'<span class="ext-badge">외부기관</span>':'';
+    var sel=r.id===inspectSelectedId?'selected':'';
+    return '<tr class="inspect-row '+sel+'" onclick="showInspectDetail(\''+r.id+'\')"><td>'+r.inspect_date+'</td><td>'+r.category+'</td><td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escHtml(r.issue)+'</td><td>'+extBadge+'</td><td>'+statusBadge+'</td></tr>';
+  }).join('');
+  el.innerHTML='<div style="overflow-x:auto;"><table style="min-width:520px;"><thead><tr><th>점검일</th><th>구분</th><th>지적 내용</th><th></th><th>상태</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function showInspectDetail(id){
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(!r)return;
+  inspectSelectedId=id;
+  renderInspectTable(getInspectFiltered());
+
+  var panel=document.getElementById('inspect-detail-panel');
+  var content=document.getElementById('inspect-detail-content');
+  if(!panel||!content)return;
+
+  var canEditStatus=isAdmin();
+  var canUploadAfter=currentUser&&['admin','manager1','manager2'].indexOf(currentUser.role)>=0;
+  var canUploadBefore=isAdmin();
+
+  var statusOpts=['miss','hold','done'].map(function(v){
+    var label=v==='miss'?'미개선':v==='hold'?'보류':'완료';
+    return '<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+label+'</option>';
+  }).join('');
+
+  var beforeHtml='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.before_photo?'<img src="'+r.before_photo+'" alt="개선 전">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
+  if(canUploadBefore){
+    beforeHtml+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
+      +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label>'
+      +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label>'
+      +'</div>';
+  }
+
+  var afterHtml='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.after_photo?'<img src="'+r.after_photo+'" alt="개선 후">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
+  if(canUploadAfter){
+    afterHtml+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
+      +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label>'
+      +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label>'
+      +'</div>';
+  }
+
+  content.innerHTML=
+    '<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">'+r.inspect_date+' &nbsp;·&nbsp; '+r.category+(r.is_external?' &nbsp;<span class="ext-badge">외부기관</span>':'')+'</div>'
+    +'<div class="form-group" style="margin-bottom:10px;"><label>지적 내용</label><div style="font-size:13px;color:#374151;line-height:1.6;padding:8px 10px;background:#f8fafc;border-radius:5px;border:1px solid #e8ecf0;">'+escHtml(r.issue)+'</div></div>'
+    +'<div class="form-group" style="margin-bottom:10px;"><label>상태'+(canEditStatus?'':' (읽기 전용)')+'</label>'
+      +'<select id="detail-status" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:5px;padding:7px 10px;font-size:12.5px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;">'+statusOpts+'</select>'
+    +'</div>'
+    +'<div class="form-group" style="margin-bottom:10px;"><label>비고</label>'
+      +'<textarea id="detail-note" style="height:64px;resize:none;border:1px solid #e8ecf0;border-radius:5px;padding:7px 10px;font-size:12.5px;font-family:\'Noto Sans KR\',sans-serif;outline:none;width:100%;">'+escHtml(r.note||'')+'</textarea>'
+    +'</div>'
+    +'<button onclick="saveInspectDetail(\''+id+'\')" class="save-btn" style="margin-bottom:14px;">저장</button>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">'
+      +'<div><div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">개선 전</div>'+beforeHtml+'</div>'
+      +'<div><div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">개선 후</div>'+afterHtml+'</div>'
+    +'</div>';
+
+  panel.style.display='block';
+
+  // 레이아웃: 1200px 이상이면 가로 분할
+  var layout=document.getElementById('inspect-layout');
+  if(layout&&window.innerWidth>=1100){
+    layout.style.gridTemplateColumns='1fr 360px';
+  }
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closeInspectDetail(){
+  inspectSelectedId=null;
+  var panel=document.getElementById('inspect-detail-panel');
+  if(panel)panel.style.display='none';
+  var layout=document.getElementById('inspect-layout');
+  if(layout)layout.style.gridTemplateColumns='1fr';
+  renderInspectTable(getInspectFiltered());
+}
+
+async function saveInspectDetail(id){
+  var status=document.getElementById('detail-status').value;
+  var note=document.getElementById('detail-note').value;
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{status:status,note:note||null}});
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(r){r.status=status;r.note=note;}
+  renderInspectKPI(inspectAllData);
+  renderInspectTable(getInspectFiltered());
+  alert('저장 완료!');
+}
+
+async function compressAndUpload(file){
+  return new Promise(function(resolve){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var maxW=1200,maxH=900;
+        var w=img.width,h=img.height;
+        var ratio=Math.min(maxW/w,maxH/h,1);
+        var cw=Math.round(w*ratio),ch=Math.round(h*ratio);
+        var canvas=document.createElement('canvas');
+        canvas.width=cw;canvas.height=ch;
+        var ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,cw,ch);
+        var quality=0.85;
+        var dataUrl=canvas.toDataURL('image/jpeg',quality);
+        // 500KB 이하로 압축
+        while(dataUrl.length>500*1024*1.37&&quality>0.3){
+          quality-=0.1;
+          dataUrl=canvas.toDataURL('image/jpeg',quality);
+        }
+        resolve(dataUrl);
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadInspectPhoto(input,id,field){
+  if(!input.files||!input.files[0])return;
+  var dataUrl=await compressAndUpload(input.files[0]);
+  var body={};
+  body[field==='before'?'before_photo':'after_photo']=dataUrl;
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body});
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(r){if(field==='before')r.before_photo=dataUrl;else r.after_photo=dataUrl;}
+  showInspectDetail(id);
+}
+
+function handleInspectPhoto(input,previewId){
+  if(!input.files||!input.files[0])return;
+  compressAndUpload(input.files[0]).then(function(dataUrl){
+    if(previewId==='if-before-preview'){inspectBeforeDataUrl=dataUrl;}
+    else{inspectAfterDataUrl=dataUrl;}
+    var wrap=document.getElementById(previewId);
+    if(wrap){wrap.style.display='block';var img=wrap.querySelector('img');if(img)img.src=dataUrl;}
+  });
+}
+
+function showInspectLightbox(id){
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(!r)return;
+  var lb=document.getElementById('inspect-photo-lightbox');
+  var lbBefore=document.getElementById('lb-before');
+  var lbAfter=document.getElementById('lb-after');
+  if(lbBefore)lbBefore.src=r.before_photo||'';
+  if(lbAfter)lbAfter.src=r.after_photo||'';
+  if(lb){lb.style.display='flex';}
+}
+function closeInspectLightbox(){
+  var lb=document.getElementById('inspect-photo-lightbox');
+  if(lb)lb.style.display='none';
+}
+
+function openInspectForm(){
+  inspectBeforeDataUrl=null;inspectAfterDataUrl=null;
+  var beforeWrap=document.getElementById('if-before-wrap');
+  var preview=document.getElementById('if-before-preview');
+  if(preview)preview.style.display='none';
+  if(!isAdmin()){
+    var lbl=beforeWrap?beforeWrap.querySelectorAll('label'):[];
+    lbl.forEach(function(l){l.style.display='none';});
+  }
+  document.getElementById('inspect-form-modal').classList.add('show');
+}
+function closeInspectForm(){
+  document.getElementById('inspect-form-modal').classList.remove('show');
+}
+
+async function submitInspect(){
+  var date=document.getElementById('if-date').value;
+  var issue=document.getElementById('if-issue').value.trim();
+  if(!date||!issue){alert('점검일과 지적 내용은 필수입니다.');return;}
+  var body={
+    inspect_date:date,
+    category:document.getElementById('if-category').value,
+    issue:issue,
+    status:'miss',
+    is_external:document.getElementById('if-external').value==='true',
+    note:document.getElementById('if-note').value||null,
+    before_photo:inspectBeforeDataUrl||null
+  };
+  var res=await fetch(SB_URL+'/rest/v1/inspection_records',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'},body:JSON.stringify(body)});
+  if(!res.ok){alert('등록 실패');return;}
+  closeInspectForm();
+  document.getElementById('if-date').value='';
+  document.getElementById('if-issue').value='';
+  document.getElementById('if-note').value='';
+  inspectBeforeDataUrl=null;
+  loadInspect();
 }
 
 var pendingDelete={};
