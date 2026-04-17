@@ -180,18 +180,19 @@ tr:hover td{background:#fafbfd;}
 .val-msg.show{display:block;}
 
 /* ── 점검 관리 ── */
-.insp-fbtn{padding:6px 13px;border-radius:20px;border:1px solid #e8ecf0;background:white;color:#6b7280;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
+.insp-fbtn{padding:7px 16px;border-radius:20px;border:1px solid #e8ecf0;background:white;color:#6b7280;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
 .insp-fbtn:hover{background:#f4f6f9;}
 .insp-fbtn.active{background:#0f2744;color:white;border-color:#0f2744;}
-.status-miss{background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
-.status-hold{background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
-.status-done{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
-.ext-badge{background:#ede9fe;color:#5b21b6;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;}
+.status-miss{background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:5px;font-size:13px;font-weight:600;white-space:nowrap;}
+.status-hold{background:#fef9c3;color:#854d0e;padding:4px 12px;border-radius:5px;font-size:13px;font-weight:600;white-space:nowrap;}
+.status-done{background:#dcfce7;color:#166534;padding:4px 12px;border-radius:5px;font-size:13px;font-weight:600;white-space:nowrap;}
+.ext-badge{background:#ede9fe;color:#5b21b6;padding:3px 9px;border-radius:4px;font-size:12px;font-weight:600;white-space:nowrap;}
 .insp-photo-box{width:100%;aspect-ratio:4/3;border-radius:7px;overflow:hidden;background:#f4f6f9;border:1px solid #e8ecf0;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;}
 .insp-photo-box img{width:100%;height:100%;object-fit:cover;}
-.insp-photo-empty{color:#d1d5db;font-size:12px;text-align:center;}
+.insp-photo-empty{color:#d1d5db;font-size:13px;text-align:center;}
 .insp-photo-upload{position:absolute;bottom:0;left:0;right:0;background:rgba(15,39,68,0.7);color:white;font-size:11px;padding:5px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;}
-tr.inspect-row{cursor:pointer;}
+tr.inspect-row{cursor:pointer;line-height:1.7;}
+tr.inspect-row td{padding:14px 14px;font-size:14px;}
 tr.inspect-row:hover td{background:#f0f4ff !important;}
 tr.inspect-row.selected td{background:#eff6ff;}
 </style>
@@ -2741,6 +2742,7 @@ async function loadInspect(){
 }
 
 function renderInspectKPI(data){
+  var allTotal=inspectAllData.length;
   var total=data.length;
   var miss=data.filter(function(r){return r.status==='miss';}).length;
   var hold=data.filter(function(r){return r.status==='hold';}).length;
@@ -2750,6 +2752,7 @@ function renderInspectKPI(data){
   var el=document.getElementById('inspect-kpi');
   if(!el)return;
   el.innerHTML=[
+    {label:'총 점검 수',val:allTotal,unit:'건',color:'#0f2744'},
     {label:'미개선 건수',val:miss,unit:'건',color:'#dc2626'},
     {label:'보류 건수',val:hold,unit:'건',color:'#d97706'},
     {label:'외부기관 미개선',val:extMiss,unit:'건',color:'#7c3aed'},
@@ -2792,7 +2795,7 @@ function renderInspectTable(data){
     var sel=r.id===inspectSelectedId?'selected':'';
     return '<tr class="inspect-row '+sel+'" onclick="showInspectDetail(\''+r.id+'\')"><td>'+r.inspect_date+'</td><td>'+r.category+'</td><td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escHtml(r.issue)+'</td><td>'+extBadge+'</td><td>'+statusBadge+'</td></tr>';
   }).join('');
-  el.innerHTML='<div style="overflow-x:auto;"><table style="min-width:520px;"><thead><tr><th>점검일</th><th>구분</th><th>지적 내용</th><th></th><th>상태</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  el.innerHTML='<div style="overflow-x:auto;"><table style="min-width:560px;"><thead><tr><th style="padding:12px 14px;font-size:12px;">점검일</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;"></th><th style="padding:12px 14px;font-size:12px;">상태</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -2833,26 +2836,26 @@ function showInspectDetail(id){
   }
 
   content.innerHTML=
-    '<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">'+r.inspect_date+' &nbsp;·&nbsp; '+r.category+(r.is_external?' &nbsp;<span class="ext-badge">외부기관</span>':'')+'</div>'
-    +'<div class="form-group" style="margin-bottom:10px;"><label>지적 내용</label><div style="font-size:13px;color:#374151;line-height:1.6;padding:8px 10px;background:#f8fafc;border-radius:5px;border:1px solid #e8ecf0;">'+escHtml(r.issue)+'</div></div>'
-    +'<div class="form-group" style="margin-bottom:10px;"><label>상태'+(canEditStatus?'':' (읽기 전용)')+'</label>'
-      +'<select id="detail-status" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:5px;padding:7px 10px;font-size:12.5px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;">'+statusOpts+'</select>'
+    '<div style="font-size:13px;color:#6b7280;margin-bottom:16px;line-height:2;">'+r.inspect_date+' &nbsp;·&nbsp; '+r.category+(r.is_external?' &nbsp;<span class="ext-badge">외부기관</span>':'')+'</div>'
+    +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">지적 내용</label><div style="font-size:14px;color:#374151;line-height:1.8;padding:12px 14px;background:#f8fafc;border-radius:6px;border:1px solid #e8ecf0;">'+escHtml(r.issue)+'</div></div>'
+    +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">상태'+(canEditStatus?'':' (읽기 전용)')+'</label>'
+      +'<select id="detail-status" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;">'+statusOpts+'</select>'
     +'</div>'
-    +'<div class="form-group" style="margin-bottom:10px;"><label>비고</label>'
-      +'<textarea id="detail-note" style="height:64px;resize:none;border:1px solid #e8ecf0;border-radius:5px;padding:7px 10px;font-size:12.5px;font-family:\'Noto Sans KR\',sans-serif;outline:none;width:100%;">'+escHtml(r.note||'')+'</textarea>'
+    +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">비고</label>'
+      +'<textarea id="detail-note" style="height:72px;resize:none;border:1px solid #e8ecf0;border-radius:6px;padding:10px 12px;font-size:14px;line-height:1.7;font-family:\'Noto Sans KR\',sans-serif;outline:none;width:100%;">'+escHtml(r.note||'')+'</textarea>'
     +'</div>'
-    +'<button onclick="saveInspectDetail(\''+id+'\')" class="save-btn" style="margin-bottom:14px;">저장</button>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">'
-      +'<div><div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">개선 전</div>'+beforeHtml+'</div>'
-      +'<div><div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">개선 후</div>'+afterHtml+'</div>'
+    +'<button onclick="saveInspectDetail(\''+id+'\')" class="save-btn" style="margin-bottom:20px;">저장</button>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'
+      +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 전</div>'+beforeHtml+'</div>'
+      +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 후</div>'+afterHtml+'</div>'
     +'</div>';
 
   panel.style.display='block';
 
-  // 레이아웃: 1200px 이상이면 가로 분할
+  // 레이아웃: 1100px 이상이면 가로 2:3 분할
   var layout=document.getElementById('inspect-layout');
   if(layout&&window.innerWidth>=1100){
-    layout.style.gridTemplateColumns='1fr 360px';
+    layout.style.gridTemplateColumns='2fr 3fr';
   }
   panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
