@@ -2748,7 +2748,8 @@ function renderInspectKPI(data){
   var hold=data.filter(function(r){return r.status==='hold';}).length;
   var extMiss=data.filter(function(r){return r.is_external&&r.status==='miss';}).length;
   var done=data.filter(function(r){return r.status==='done';}).length;
-  var rate=total>0?Math.round(done/total*100):0;
+  var denom=total-hold;
+  var rate=denom>0?Math.round(done/denom*100):0;
   var el=document.getElementById('inspect-kpi');
   if(!el)return;
   el.innerHTML=[
