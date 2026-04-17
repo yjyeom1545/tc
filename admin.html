@@ -1031,7 +1031,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
   </div>
 
   <!-- 목록 + 상세 패널 -->
-  <div id="inspect-layout" style="display:grid;grid-template-columns:1fr;gap:14px;">
+  <div id="inspect-layout" style="display:grid;grid-template-columns:1fr;gap:14px;align-items:start;">
     <div class="card" style="margin-bottom:0;">
       <div class="table-header">
         <span class="table-title">점검 이력</span>
@@ -1040,7 +1040,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
       <div id="inspect-table"><div class="loading">로딩 중...</div></div>
     </div>
     <!-- 상세 패널 (행 클릭 시 나타남) -->
-    <div class="card" id="inspect-detail-panel" style="margin-bottom:0;display:none;">
+    <div class="card" id="inspect-detail-panel" style="margin-bottom:0;display:none;position:sticky;top:70px;max-height:calc(100vh - 90px);overflow-y:auto;">
       <div class="card-body">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <span class="card-title" style="margin-bottom:0;">상세 / 수정</span>
@@ -2819,7 +2819,10 @@ function showInspectDetail(id){
     return '<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+label+'</option>';
   }).join('');
 
-  var beforeHtml='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.before_photo?'<img src="'+r.before_photo+'" alt="개선 전">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
+  var beforeHtml='<div style="position:relative;">'
+    +'<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.before_photo?'<img src="'+r.before_photo+'" alt="개선 전">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>'
+    +(r.before_photo&&canUploadBefore?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'before\')" title="사진 삭제" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')
+    +'</div>';
   if(canUploadBefore){
     beforeHtml+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
       +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label>'
@@ -2827,7 +2830,10 @@ function showInspectDetail(id){
       +'</div>';
   }
 
-  var afterHtml='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.after_photo?'<img src="'+r.after_photo+'" alt="개선 후">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
+  var afterHtml='<div style="position:relative;">'
+    +'<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.after_photo?'<img src="'+r.after_photo+'" alt="개선 후">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>'
+    +(r.after_photo&&canUploadAfter?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'after\')" title="사진 삭제" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')
+    +'</div>';
   if(canUploadAfter){
     afterHtml+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
       +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label>'
@@ -2857,7 +2863,6 @@ function showInspectDetail(id){
   if(layout&&window.innerWidth>=1100){
     layout.style.gridTemplateColumns='2fr 3fr';
   }
-  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function closeInspectDetail(){
@@ -2907,6 +2912,16 @@ async function compressAndUpload(file){
     };
     reader.readAsDataURL(file);
   });
+}
+
+async function deleteInspectPhoto(id,field){
+  if(!confirm((field==='before'?'개선 전':'개선 후')+' 사진을 삭제하시겠습니까?'))return;
+  var body={};
+  body[field==='before'?'before_photo':'after_photo']=null;
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body});
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(r){if(field==='before')r.before_photo=null;else r.after_photo=null;}
+  showInspectDetail(id);
 }
 
 async function uploadInspectPhoto(input,id,field){
