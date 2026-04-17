@@ -1032,7 +1032,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
 
   <!-- 목록 + 상세 패널 -->
   <div id="inspect-layout" style="display:grid;grid-template-columns:1fr;gap:14px;align-items:start;">
-    <div class="card" style="margin-bottom:0;">
+    <div class="card" id="inspect-list-card" style="margin-bottom:0;">
       <div class="table-header">
         <span class="table-title">점검 이력</span>
         <span class="record-count" id="inspect-count">0건</span>
@@ -1040,7 +1040,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
       <div id="inspect-table"><div class="loading">로딩 중...</div></div>
     </div>
     <!-- 상세 패널 (행 클릭 시 나타남) -->
-    <div class="card" id="inspect-detail-panel" style="margin-bottom:0;display:none;position:sticky;top:70px;max-height:calc(100vh - 90px);overflow-y:auto;">
+    <div class="card" id="inspect-detail-panel" style="margin-bottom:0;display:none;overflow-y:auto;">
       <div class="card-body">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <span class="card-title" style="margin-bottom:0;">상세 / 수정</span>
@@ -2858,19 +2858,42 @@ function showInspectDetail(id){
 
   panel.style.display='block';
 
-  // 레이아웃: 1100px 이상이면 가로 2:3 분할
   var layout=document.getElementById('inspect-layout');
-  if(layout&&window.innerWidth>=1100){
+  var listCard=document.getElementById('inspect-list-card');
+  var tableDiv=document.getElementById('inspect-table');
+  if(window.innerWidth>=1100){
+    // 가로 2:3 분할 + 컨테이너 고정 높이
     layout.style.gridTemplateColumns='2fr 3fr';
+    layout.style.height='calc(100vh - 250px)';
+    layout.style.overflow='hidden';
+    layout.style.alignItems='stretch';
+    // 목록 카드: 헤더 고정, 테이블만 스크롤
+    if(listCard){
+      listCard.style.display='flex';
+      listCard.style.flexDirection='column';
+      listCard.style.overflow='hidden';
+    }
+    if(tableDiv){
+      tableDiv.style.flex='1';
+      tableDiv.style.overflowY='auto';
+      tableDiv.style.minHeight='0';
+    }
+    // 상세 패널: 전체 높이 + 내부 스크롤
+    panel.style.height='100%';
+    panel.style.overflowY='auto';
   }
 }
 
 function closeInspectDetail(){
   inspectSelectedId=null;
   var panel=document.getElementById('inspect-detail-panel');
-  if(panel)panel.style.display='none';
+  if(panel){panel.style.display='none';panel.style.height='';panel.style.overflowY='';}
   var layout=document.getElementById('inspect-layout');
-  if(layout)layout.style.gridTemplateColumns='1fr';
+  if(layout){layout.style.gridTemplateColumns='1fr';layout.style.height='';layout.style.overflow='';layout.style.alignItems='start';}
+  var listCard=document.getElementById('inspect-list-card');
+  if(listCard){listCard.style.display='';listCard.style.flexDirection='';listCard.style.overflow='';}
+  var tableDiv=document.getElementById('inspect-table');
+  if(tableDiv){tableDiv.style.flex='';tableDiv.style.overflowY='';tableDiv.style.minHeight='';}
   renderInspectTable(getInspectFiltered());
 }
 
