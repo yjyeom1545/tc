@@ -1112,39 +1112,29 @@ tr.inspect-row.selected td{background:#eff6ff;}
 <div id="tab-users" class="content hidden">
   <div class="card">
     <div class="card-body">
-      <div class="card-title">새 사용자 추가</div>
-      <div class="form-row">
-        <div class="form-group"><label>아이디</label><input type="text" id="new-username" placeholder="아이디"></div>
-        <div class="form-group"><label>비밀번호</label><input type="password" id="new-password" placeholder="비밀번호"></div>
-        <div class="form-group"><label>이름</label><input type="text" id="new-displayname" placeholder="실명 (선택)"></div>
-        <div class="form-group"><label>권한</label>
-          <select id="new-role">
-            <option value="manager1">담당자1 (1~8번 입력)</option>
-            <option value="manager2">담당자2 (9번 입력)</option>
-            <option value="viewer">읽기전용 (조회만)</option>
-            <option value="admin">관리자 (전체)</option>
-          </select>
-        </div>
+      <div class="card-title">새 사용자 등록</div>
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px;">
+        <div class="form-group" style="flex:0 0 200px;"><label>아이디</label><input type="text" id="new-username" placeholder="아이디 입력"></div>
+      </div>
+      <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;">초기 권한 설정</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-bottom:14px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-filter_write"> 필터기록</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_complete"> 폐기물완료</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-schedule_write"> 일정작성</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_write"> 점검등록</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_photo_before"> 점검사진(전)</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_photo_after"> 점검사진(후)</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_status"> 점검상태변경</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-airlog_1to8"> 대기운영 1~8번</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-airlog_9"> 대기운영 9번</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-air_schedule_write"> 대기일정작성</label>
       </div>
       <button class="add-btn" onclick="addUser()">사용자 추가</button>
+      <div style="font-size:11px;color:#9ca3af;margin-top:8px;">※ 비밀번호 없이 등록됩니다. 해당 사용자가 최초 로그인 시 비밀번호를 직접 설정합니다.</div>
     </div>
   </div>
   <div class="card">
-    <div class="card-body" style="padding-bottom:6px;">
-      <div class="card-title">권한 안내</div>
-      <table style="font-size:12px;">
-        <thead><tr><th>권한</th><th>조회</th><th>삭제/수정</th><th>대기운영 입력</th><th>사용자 관리</th></tr></thead>
-        <tbody>
-          <tr><td><span class="role-badge role-admin">관리자</span></td><td style="text-align:center;color:#166534;font-weight:700;">O</td><td style="text-align:center;color:#166534;font-weight:700;">O</td><td>전체</td><td style="text-align:center;color:#166534;font-weight:700;">O</td></tr>
-          <tr><td><span class="role-badge role-manager">담당자1</span></td><td style="text-align:center;color:#166534;font-weight:700;">O</td><td style="text-align:center;color:#9ca3af;">-</td><td>1~8번</td><td style="text-align:center;color:#9ca3af;">-</td></tr>
-          <tr><td><span class="role-badge role-manager">담당자2</span></td><td style="text-align:center;color:#166534;font-weight:700;">O</td><td style="text-align:center;color:#9ca3af;">-</td><td>9번만</td><td style="text-align:center;color:#9ca3af;">-</td></tr>
-          <tr><td><span class="role-badge role-viewer">읽기전용</span></td><td style="text-align:center;color:#166534;font-weight:700;">O</td><td style="text-align:center;color:#9ca3af;">-</td><td style="text-align:center;color:#9ca3af;">-</td><td style="text-align:center;color:#9ca3af;">-</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="card">
-    <div class="table-header"><span class="table-title">사용자 목록</span></div>
+    <div class="table-header"><span class="table-title">사용자 목록 및 권한 관리</span></div>
     <div id="users-table"><div class="loading">불러오는 중...</div></div>
   </div>
 </div>
@@ -1202,18 +1192,26 @@ function closeSidebar(){
 
 function isAdmin(){return currentUser&&currentUser.role==='admin';}
 function isManager(){return currentUser&&['admin','manager','manager1','manager2'].indexOf(currentUser.role)>=0;}
-function canEditAirLog(){return currentUser&&['admin','manager','manager1','manager2'].indexOf(currentUser.role)>=0;}
+function hasPerm(key){if(isAdmin())return true;return !!(currentUser&&currentUser.permissions&&currentUser.permissions[key]);}
+function canEditAirLog(){return hasPerm('airlog_1to8')||hasPerm('airlog_9');}
 function getAirLogEmNos(){
-  if(currentUser.role==='manager2')return[9];
-  return[1,2,3,4,5,6,7,9];
+  var nos=[];
+  if(hasPerm('airlog_1to8'))nos=nos.concat([1,2,3,4,5,6,7]);
+  if(hasPerm('airlog_9'))nos.push(9);
+  return nos;
 }
 function getAirLogPrNos(){
-  if(currentUser.role==='manager2')return[9];
-  return[1,2,3,4,5,6,7,8,9];
+  var nos=[];
+  if(hasPerm('airlog_1to8'))nos=nos.concat([1,2,3,4,5,6,7,8]);
+  if(hasPerm('airlog_9'))nos.push(9);
+  return nos;
 }
 function getRoleText(role){return {'admin':'관리자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[role]||role;}
 function getRoleClass(role){return {'admin':'role-admin','manager':'role-manager','manager1':'role-manager','manager2':'role-manager','viewer':'role-viewer'}[role]||'role-viewer';}
 function logout(){sessionStorage.removeItem('tc_user');window.location.href='login.html';}
+
+var PERM_LABELS={filter_write:'필터기록',waste_complete:'폐기물완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정'};
+var PERM_KEYS=['filter_write','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','airlog_1to8','airlog_9','air_schedule_write'];
 
 async function sb(table,query,opts){
   opts=opts||{};
@@ -2336,7 +2334,7 @@ function calcPower(no){
 
 function validatePowerInputs(){
   var hasError=false;
-  var myPrNos=(currentUser&&currentUser.role==='manager2')?[9]:[1,2,3,4,5,6,7,8,9];
+  var myPrNos=getAirLogPrNos();
   myPrNos.forEach(function(no){
     var prevEl=document.getElementById('pr'+no+'-prev');
     var todayEl=document.getElementById('pr'+no+'-today');
@@ -2351,19 +2349,21 @@ function validatePowerInputs(){
 async function loadAirLog(){
   var today=new Date().toISOString().split('T')[0];
   document.getElementById('al-input-date').value=today;
-  if(currentUser&&currentUser.role==='manager2'){
-    [1,2,3,4,5,6,7,8].forEach(function(n){
-      var row=document.querySelector('#al-emission-input tr:nth-child('+n+')');
-      if(row&&n!==9){
-        row.style.opacity='0.4';
-        row.querySelectorAll('input,button').forEach(function(el){el.disabled=true;});
-      }
-    });
-    [1,2,3,4,5,6,7,8].forEach(function(n){
+  // 권한 없는 배출구/방지시설 행 비활성화
+  var allowEm=getAirLogEmNos();
+  [1,2,3,4,5,6,7,9].forEach(function(n){
+    if(allowEm.indexOf(n)<0){
+      var row=document.querySelector('#al-emission-input tr[data-em="'+n+'"]');
+      if(row){row.style.opacity='0.4';row.querySelectorAll('input,button').forEach(function(el){el.disabled=true;});}
+    }
+  });
+  var allowPr=getAirLogPrNos();
+  [1,2,3,4,5,6,7,8,9].forEach(function(n){
+    if(allowPr.indexOf(n)<0){
       var inp=document.getElementById('pr'+n+'-today');
       if(inp){inp.disabled=true;inp.closest('tr').style.opacity='0.4';}
-    });
-  }
+    }
+  });
   await loadPrevPower(today);
 }
 
@@ -2525,7 +2525,7 @@ async function saveAirLog(){
 
   var emNames={1:'탈청시설 (200HP)',2:'도장시설 (600㎥)',3:'도장시설 (600㎥)',4:'도장시설 (600㎥)',5:'건조시설 (345.6㎥)',6:'도장 및 건조시설 (319㎥)',7:'도장 및 건조시설 (319㎥)',9:'도장시설 (656.6㎥)'};
   var prNames={1:'여과집진시설',2:'흡착에의한시설',3:'흡착에의한시설',4:'흡착에의한시설',5:'흡착에의한시설',6:'1차여과, 2차흡착',7:'1차여과, 2차흡착',8:'흡착에의한시설',9:'흡착에의한시설'};
-  var myEmNos=(currentUser.role==='manager2')?[9]:[1,2,3,4,5,6,7];
+  var myEmNos=getAirLogEmNos();
   var records=[];
   myEmNos.forEach(function(n){
     var sh=document.getElementById('em'+n+'-sh').value;
@@ -2545,7 +2545,7 @@ async function saveAirLog(){
     });
   });
   // 방지시설: 담당자별 담당 범위만 저장
-  var myPrNos=(currentUser.role==='manager2')?[9]:[1,2,3,4,5,6,7,8,9];
+  var myPrNos=getAirLogPrNos();
   for(var i=0;i<myPrNos.length;i++){
     var no=myPrNos[i];
     var todayEl=document.getElementById('pr'+no+'-today');
@@ -2704,27 +2704,54 @@ function clearAirFilter(){
 }
 
 async function loadUsers(){
-  var data=await sb('users','?select=id,username,role,created_at&order=created_at.asc');
+  var data=await sb('users','?select=id,username,role,permissions,password_set,last_login,created_at&order=created_at.asc');
   if(!data||!data.length){document.getElementById('users-table').innerHTML='<div class="empty">사용자가 없습니다.</div>';return;}
+  var headerPerms=PERM_KEYS.map(function(k){return '<th style="font-size:10px;text-align:center;min-width:56px;white-space:nowrap;">'+PERM_LABELS[k]+'</th>';}).join('');
   var rows=data.map(function(r){
-    var delBtn=r.username!=='admin'&&isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'users\',\''+r.id+'\',loadUsers)">✕</button>':'';
-    return'<tr><td>'+r.username+'</td><td><span class="role-badge '+getRoleClass(r.role)+'">'+getRoleText(r.role)+'</span></td><td style="font-size:11px;color:#9ca3af;">'+(r.created_at?new Date(r.created_at).toLocaleDateString('ko-KR'):'')+'</td><td>'+delBtn+'</td></tr>';
+    var perms=r.permissions||{};
+    var isFixedAdmin=r.username==='admin'||r.role==='admin';
+    var permCols=PERM_KEYS.map(function(k){
+      return '<td style="text-align:center;padding:6px 4px;"><input type="checkbox" data-uid="'+r.id+'" data-perm="'+k+'"'+(perms[k]?' checked':'')+(isFixedAdmin?' disabled':'')+' onchange="markPermDirty(\''+r.id+'\')"></td>';
+    }).join('');
+    var lastLogin=r.last_login?new Date(r.last_login).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';
+    var pwBadge=r.password_set?'':'<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:1px 5px;border-radius:3px;margin-left:4px;">비번미설정</span>';
+    var saveBtn=!isFixedAdmin?'<button id="save-perm-'+r.id+'" onclick="saveUserPermissions(\''+r.id+'\')" style="display:none;padding:3px 9px;background:#2563eb;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;">저장</button>':'';
+    var delBtn=r.role!=='admin'&&isAdmin()?'<button class="del-btn" style="margin-left:4px;" onclick="confirmDelete(\'users\',\''+r.id+'\',loadUsers)">✕</button>':'';
+    return '<tr><td style="white-space:nowrap;">'+r.username+pwBadge+'</td><td style="font-size:11px;color:#9ca3af;white-space:nowrap;">'+lastLogin+'</td>'+permCols+'<td style="white-space:nowrap;">'+saveBtn+delBtn+'</td></tr>';
   }).join('');
-  document.getElementById('users-table').innerHTML='<table><thead><tr><th>아이디</th><th>권한</th><th>등록일</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  document.getElementById('users-table').innerHTML='<div style="overflow-x:auto;"><table><thead><tr><th>아이디</th><th>마지막접속</th>'+headerPerms+'<th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function markPermDirty(uid){
+  var btn=document.getElementById('save-perm-'+uid);
+  if(btn)btn.style.display='inline-block';
+}
+
+async function saveUserPermissions(uid){
+  var checkboxes=document.querySelectorAll('input[data-uid="'+uid+'"]');
+  var perms={};
+  checkboxes.forEach(function(cb){perms[cb.dataset.perm]=cb.checked;});
+  var res=await sb('users','?id=eq.'+uid,{method:'PATCH',body:{permissions:perms}});
+  if(res.ok){
+    var btn=document.getElementById('save-perm-'+uid);
+    if(btn)btn.style.display='none';
+    // 현재 로그인 사용자라면 세션 업데이트
+    if(currentUser&&currentUser.id===uid){currentUser.permissions=perms;sessionStorage.setItem('tc_user',JSON.stringify(currentUser));}
+    alert('권한이 저장되었습니다.');
+  }else{alert('저장 실패');}
 }
 
 async function addUser(){
   var username=document.getElementById('new-username').value.trim();
-  var password=document.getElementById('new-password').value;
-  var role=document.getElementById('new-role').value;
-  if(!username||!password){alert('아이디와 비밀번호를 입력해주세요.');return;}
-  var res=await sb('users','',{method:'POST',body:{username:username,password_hash:password,role:role}});
+  if(!username){alert('아이디를 입력해주세요.');return;}
+  var perms={};
+  PERM_KEYS.forEach(function(k){var cb=document.getElementById('new-perm-'+k);if(cb)perms[k]=cb.checked;});
+  var res=await sb('users','',{method:'POST',body:{username:username,password_hash:'',role:'viewer',permissions:perms,password_set:false}});
   if(res.ok){
     document.getElementById('new-username').value='';
-    document.getElementById('new-password').value='';
-    document.getElementById('new-displayname').value='';
+    PERM_KEYS.forEach(function(k){var cb=document.getElementById('new-perm-'+k);if(cb)cb.checked=false;});
     loadUsers();
-    alert(getRoleText(role)+' 권한으로 사용자 "'+username+'"이 추가되었습니다.');
+    alert('사용자 "'+username+'" 등록 완료.\n최초 로그인 시 비밀번호를 직접 설정하게 됩니다.');
   }else{alert('이미 존재하는 아이디입니다.');}
 }
 
@@ -2815,9 +2842,9 @@ function showInspectDetail(id){
   var content=document.getElementById('inspect-detail-content');
   if(!panel||!content)return;
 
-  var canEditStatus=isAdmin();
-  var canUploadAfter=currentUser&&['admin','manager1','manager2'].indexOf(currentUser.role)>=0;
-  var canUploadBefore=isAdmin();
+  var canEditStatus=hasPerm('inspect_status');
+  var canUploadAfter=hasPerm('inspect_photo_after');
+  var canUploadBefore=hasPerm('inspect_photo_before');
 
   var statusOpts=['miss','hold','done'].map(function(v){
     var label=v==='miss'?'미개선':v==='hold'?'보류':'완료';
