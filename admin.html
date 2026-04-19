@@ -296,13 +296,17 @@ tr.inspect-row.selected td{background:#eff6ff;}
 <!-- 홈 대시보드 탭 -->
 <div id="tab-home" class="content">
 
-  <!-- 헤더 -->
-  <div style="margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+  <!-- 상단 인사바 -->
+  <div style="margin-bottom:1.1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
     <div>
       <div style="font-size:18px;font-weight:700;color:#0f2744;" id="dash-greeting">안녕하세요!</div>
       <div style="font-size:12px;color:#9ca3af;margin-top:3px;" id="dash-date">-</div>
     </div>
-    <button onclick="loadDashboard()" style="padding:7px 16px;background:#f0f2f5;color:#374151;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">↻ 새로고침</button>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <div id="dash-chip-inspect" style="display:none;padding:5px 13px;background:#fef2f2;border:0.5px solid #fca5a5;border-radius:20px;font-size:12px;font-weight:600;color:#dc2626;cursor:pointer;" onclick="showTab('inspect')">점검 미개선 <span id="dash-chip-inspect-cnt">0</span>건</div>
+      <div id="dash-chip-dday" style="display:none;padding:5px 13px;background:#fffbeb;border:0.5px solid #fde68a;border-radius:20px;font-size:12px;font-weight:600;color:#b45309;cursor:pointer;" onclick="showTab('waste-schedule')">배출일정 <span id="dash-chip-dday-txt">D-?</span></div>
+      <button onclick="loadDashboard()" style="padding:5px 13px;background:#f0f2f5;color:#374151;border:0.5px solid #e5e7eb;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">↻ 새로고침</button>
+    </div>
   </div>
 
   <!-- 위젯 1: 대기운영기록 월별 입력 현황 (맨 위) -->
@@ -375,116 +379,79 @@ tr.inspect-row.selected td{background:#eff6ff;}
     </div>
   </div>
 
-  <!-- 위젯 2: 3분할 (캘린더 + 배출업체 + 대기측정) -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;" class="dash-grid">
+  <!-- 2분할 메인 -->
+  <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:12px;align-items:start;" class="dash-main-grid">
 
-    <!-- 캘린더: 대기운영일지 입력 현황 -->
-    <div class="card">
-      <div class="table-header" style="padding:9px 14px;">
-        <span class="table-title">담당자별 입력 현황</span>
-        <div style="display:flex;align-items:center;gap:4px;">
-          <button onclick="dashCalPrev()" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;line-height:1;padding:0 3px;">‹</button>
-          <span id="dash-cal-month" style="font-size:11px;font-weight:600;color:#374151;min-width:36px;text-align:center;"></span>
-          <button onclick="dashCalNext()" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;line-height:1;padding:0 3px;">›</button>
+    <!-- 왼쪽 컬럼 -->
+    <div>
+      <!-- 배출업체스케줄 + 대기측정일정 나란히 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" class="dash-sched-grid">
+        <div class="card" style="border-radius:10px;border-width:0.5px;">
+          <div class="table-header"><span class="table-title">배출업체 스케줄</span><button onclick="showTab('waste-schedule')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button></div>
+          <div id="dash-waste-schedule"></div>
+        </div>
+        <div class="card" style="border-radius:10px;border-width:0.5px;">
+          <div class="table-header"><span class="table-title">대기측정 일정</span><button onclick="showTab('air')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button></div>
+          <div id="dash-air-schedule"></div>
         </div>
       </div>
-      <div style="padding:8px 10px 10px;">
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:3px;">
-          <div style="text-align:center;font-size:8px;font-weight:600;color:#ef4444;">일</div>
-          <div style="text-align:center;font-size:8px;font-weight:600;color:#9ca3af;">월</div>
-          <div style="text-align:center;font-size:8px;font-weight:600;color:#9ca3af;">화</div>
-          <div style="text-align:center;font-size:8px;font-weight:600;color:#9ca3af;">수</div>
-          <div style="text-align:center;font-size:8px;font-weight:600;color:#9ca3af;">목</div>
-          <div style="text-align:center;font-size:8px;font-weight:600;color:#9ca3af;">금</div>
-          <div style="text-align:center;font-size:8px;font-weight:600;color:#3b82f6;">토</div>
+
+      <!-- 폐유고상 보관량 -->
+      <div class="card" style="border-radius:10px;border-width:0.5px;">
+        <div class="table-header">
+          <span class="table-title">폐유고상 보관량</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#6b7280;"><span style="display:inline-block;width:10px;height:4px;border-radius:1px;background:#0f2744;"></span>톤백</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#6b7280;"><span style="display:inline-block;width:10px;height:4px;border-radius:1px;background:#93c5fd;"></span>링팩</span>
+            <button onclick="showTab('waste-oil')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;" id="dash-cal-grid"></div>
-        <!-- 완료율 -->
-        <div style="display:flex;gap:6px;margin-top:8px;padding-top:7px;border-top:1px solid #f1f5f9;">
-          <div style="flex:1;background:#f8fafc;border-radius:5px;padding:5px 7px;">
-            <div style="font-size:11px;color:#6b7280;margin-bottom:3px;font-weight:600;">신민우</div>
-            <div style="display:flex;align-items:center;gap:5px;">
-              <div style="flex:1;height:5px;background:#e8ecf0;border-radius:3px;overflow:hidden;">
-                <div id="dash-rate-m1" style="height:5px;background:#3b82f6;border-radius:3px;width:0%;transition:width 0.4s;"></div>
-              </div>
-              <span id="dash-rate-m1-txt" style="font-size:10px;font-weight:700;color:#3b82f6;white-space:nowrap;">0%</span>
+        <div style="padding:12px 16px 6px;"><div id="dash-waste-lines"></div></div>
+      </div>
+    </div>
+
+    <!-- 오른쪽 컬럼 -->
+    <div>
+      <!-- 점검이력 요약 -->
+      <div class="card" style="border-radius:10px;border-width:0.5px;margin-bottom:12px;">
+        <div class="table-header"><span class="table-title">점검이력 요약</span><button onclick="showTab('inspect')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button></div>
+        <div style="padding:12px 16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+            <div style="background:#fef2f2;border:0.5px solid #fecaca;border-radius:10px;padding:12px 14px;">
+              <div style="font-size:26px;font-weight:700;color:#dc2626;line-height:1;" id="dash-insp-miss">-</div>
+              <div style="font-size:10px;color:#9ca3af;margin-top:4px;">미개선 건수</div>
+            </div>
+            <div style="background:#f8fafc;border:0.5px solid #e8ecf0;border-radius:10px;padding:12px 14px;">
+              <div style="font-size:26px;font-weight:700;color:#0f2744;line-height:1;" id="dash-insp-rate">-</div>
+              <div style="font-size:10px;color:#9ca3af;margin-top:4px;">개선율</div>
             </div>
           </div>
-          <div style="flex:1;background:#f8fafc;border-radius:5px;padding:5px 7px;">
-            <div style="font-size:11px;color:#6b7280;margin-bottom:3px;font-weight:600;">이주표</div>
-            <div style="display:flex;align-items:center;gap:5px;">
-              <div style="flex:1;height:5px;background:#e8ecf0;border-radius:3px;overflow:hidden;">
-                <div id="dash-rate-m2" style="height:5px;background:#10b981;border-radius:3px;width:0%;transition:width 0.4s;"></div>
-              </div>
-              <span id="dash-rate-m2-txt" style="font-size:10px;font-weight:700;color:#10b981;white-space:nowrap;">0%</span>
+          <div style="font-size:10px;font-weight:600;color:#9ca3af;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;">최신 미개선</div>
+          <div id="dash-insp-list"><div style="font-size:12px;color:#d1d5db;padding:8px 0;">-</div></div>
+        </div>
+      </div>
+
+      <!-- 여과지 필터 교체 -->
+      <div class="card" style="border-radius:10px;border-width:0.5px;">
+        <div class="table-header"><span class="table-title">여과지 필터 교체</span><button onclick="showTab('filter')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button></div>
+        <div style="padding:12px 16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:#f8fafc;border:0.5px solid #e8ecf0;border-radius:8px;padding:10px 12px;">
+              <div style="font-size:22px;font-weight:700;color:#0f2744;line-height:1;" id="dash-f-month">-</div>
+              <div style="font-size:10px;color:#9ca3af;margin-top:3px;">이번 달 교체</div>
             </div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:6px;">
-          <div style="display:flex;align-items:center;gap:3px;font-size:11px;color:#6b7280;"><div style="width:8px;height:3px;background:#3b82f6;border-radius:1px;"></div>신민우</div>
-          <div style="display:flex;align-items:center;gap:3px;font-size:11px;color:#6b7280;"><div style="width:8px;height:3px;background:#10b981;border-radius:1px;"></div>이주표</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 배출업체 스케줄 -->
-    <div class="card">
-      <div class="table-header">
-        <span class="table-title">배출업체 스케줄</span>
-        <button onclick="showTab('waste-schedule')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
-      </div>
-      <div id="dash-waste-schedule" style="padding:0;"></div>
-    </div>
-
-    <!-- 대기측정 일정 -->
-    <div class="card">
-      <div class="table-header">
-        <span class="table-title">대기측정 일정</span>
-        <button onclick="showTab('air')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
-      </div>
-      <div id="dash-air-schedule" style="padding:0;"></div>
-    </div>
-
-  </div>
-
-  <!-- 위젯 3: 2분할 (폐유고상 + 필터교체) -->
-  <div class="card" style="margin-bottom:14px;">
-    <div class="table-header">
-      <span style="font-size:12px;font-weight:600;color:#6b7280;">폐유고상 보관량 &nbsp;·&nbsp; 여과지 필터 교체 현황</span>
-      <span style="font-size:11px;color:#9ca3af;">이번 달 기준</span>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
-      <!-- 왼쪽: 폐유고상 -->
-      <div style="padding:12px 16px;border-right:1px solid #f1f5f9;">
-        <div style="display:flex;gap:12px;margin-bottom:10px;">
-          <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#6b7280;font-weight:500;"><span style="display:inline-block;width:10px;height:4px;border-radius:1px;background:#0f2744;"></span>톤백</span>
-          <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#6b7280;font-weight:500;"><span style="display:inline-block;width:10px;height:4px;border-radius:1px;background:#93c5fd;"></span>링팩</span>
-          <button onclick="showTab('waste-oil')" style="margin-left:auto;font-size:10px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button>
-        </div>
-        <div id="dash-waste-lines"></div>
-      </div>
-      <!-- 오른쪽: 필터교체 -->
-      <div style="padding:12px 16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <span style="font-size:10px;font-weight:700;color:#6b7280;letter-spacing:0.3px;text-transform:uppercase;">여과지 필터 교체</span>
-          <button onclick="showTab('filter')" style="font-size:10px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-          <div style="background:#f8fafc;border-radius:6px;padding:8px 10px;">
-            <div style="font-size:20px;font-weight:700;color:#3b82f6;line-height:1;" id="dash-f-month">-</div>
-            <div style="font-size:10px;color:#9ca3af;margin-top:3px;">이번 달 교체</div>
-          </div>
-          <div style="background:#f8fafc;border-radius:6px;padding:8px 10px;">
-            <div style="font-size:20px;font-weight:700;color:#0f2744;line-height:1;" id="dash-f-qty">-</div>
-            <div style="font-size:10px;color:#9ca3af;margin-top:3px;">이번 달 수량</div>
-          </div>
-          <div style="background:#f8fafc;border-radius:6px;padding:8px 10px;">
-            <div style="font-size:20px;font-weight:700;line-height:1;" id="dash-f-order">-</div>
-            <div style="font-size:10px;color:#9ca3af;margin-top:3px;">미처리 발주</div>
-          </div>
-          <div style="background:#f8fafc;border-radius:6px;padding:8px 10px;">
-            <div style="font-size:13px;font-weight:700;color:#374151;line-height:1;padding-top:3px;" id="dash-f-last">-</div>
-            <div style="font-size:10px;color:#9ca3af;margin-top:3px;">최근 교체일</div>
+            <div style="background:#f8fafc;border:0.5px solid #e8ecf0;border-radius:8px;padding:10px 12px;">
+              <div style="font-size:22px;font-weight:700;color:#0f2744;line-height:1;" id="dash-f-qty">-</div>
+              <div style="font-size:10px;color:#9ca3af;margin-top:3px;">이번 달 수량</div>
+            </div>
+            <div style="background:#f8fafc;border:0.5px solid #e8ecf0;border-radius:8px;padding:10px 12px;">
+              <div style="font-size:22px;font-weight:700;line-height:1;" id="dash-f-order">-</div>
+              <div style="font-size:10px;color:#9ca3af;margin-top:3px;">미처리 발주</div>
+            </div>
+            <div style="background:#f8fafc;border:0.5px solid #e8ecf0;border-radius:8px;padding:10px 12px;">
+              <div style="font-size:13px;font-weight:700;color:#374151;line-height:1;padding-top:2px;" id="dash-f-last">-</div>
+              <div style="font-size:10px;color:#9ca3af;margin-top:3px;">최근 교체일</div>
+            </div>
           </div>
         </div>
       </div>
@@ -493,7 +460,10 @@ tr.inspect-row.selected td{background:#eff6ff;}
 
 </div>
 
-<style>@media(max-width:900px){.dash-grid{grid-template-columns:1fr !important;}}</style>
+<style>
+@media(max-width:1050px){.dash-main-grid{grid-template-columns:1fr !important;}}
+@media(max-width:700px){.dash-sched-grid{grid-template-columns:1fr !important;}}
+</style>
 
 <!-- 필터 교체 탭 -->
 <div id="tab-filter" class="content hidden">
@@ -1281,7 +1251,8 @@ async function loadDashboard(){
     sb('waste_oil_schedule','?status=eq.예정&select=*&order=scheduled_date.asc&limit=5'),
     sb('air_measurement','?status=eq.예정&measure_date=gte.'+today+'&select=*&order=measure_date.asc&limit=5'),
     sb('air_operation_log','?log_date=gte.'+now2.getFullYear()+'-01-01&select=log_date,facility_type,facility_no,submitted_by&order=log_date.asc'),
-    sb('waste_oil_requests','?select=line_name,pack_type,bag_count&order=request_date.desc')
+    sb('waste_oil_requests','?select=line_name,pack_type,bag_count&order=request_date.desc'),
+    sb('inspection_records','?select=id,inspect_date,issue,status&order=inspect_date.desc')
   ]);
   var filterMonth=results[0]||[];
   var orderPending=results[1]||[];
@@ -1292,6 +1263,43 @@ async function loadDashboard(){
   var airSchedule=results[6]||[];
   var airlogYear=results[7]||[];
   var wasteRequests=results[8]||[];
+  var inspectAll=results[9]||[];
+
+  // ── 알림칩 ──
+  var inspectMiss=inspectAll.filter(function(r){return r.status==='miss';});
+  var chipInspect=document.getElementById('dash-chip-inspect');
+  var chipDday=document.getElementById('dash-chip-dday');
+  if(chipInspect){
+    if(inspectMiss.length>0){chipInspect.style.display='';document.getElementById('dash-chip-inspect-cnt').textContent=inspectMiss.length;}
+    else{chipInspect.style.display='none';}
+  }
+  if(chipDday&&wasteSchedule.length>0){
+    var dday0=Math.ceil((new Date(wasteSchedule[0].scheduled_date)-new Date(today))/(1000*60*60*24));
+    var ddayTxt=dday0===0?'오늘':dday0>0?'D-'+dday0:'D+'+Math.abs(dday0);
+    document.getElementById('dash-chip-dday-txt').textContent=ddayTxt;
+    chipDday.style.display='';
+  }else if(chipDday){chipDday.style.display='none';}
+
+  // ── 점검이력 요약 ──
+  var inspHold=inspectAll.filter(function(r){return r.status==='hold';}).length;
+  var inspDone=inspectAll.filter(function(r){return r.status==='done';}).length;
+  var inspDenom=inspectAll.length-inspHold;
+  var inspRate=inspDenom>0?Math.round(inspDone/inspDenom*100):0;
+  var missEl=document.getElementById('dash-insp-miss');
+  var rateEl=document.getElementById('dash-insp-rate');
+  if(missEl)missEl.textContent=inspectMiss.length;
+  if(rateEl)rateEl.textContent=inspRate+'%';
+  var listEl=document.getElementById('dash-insp-list');
+  if(listEl){
+    var top3=inspectMiss.slice(0,3);
+    if(!top3.length){listEl.innerHTML='<div style="font-size:12px;color:#d1d5db;padding:4px 0;">미개선 없음</div>';}
+    else{listEl.innerHTML=top3.map(function(r){
+      return '<div style="padding:7px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:flex-start;gap:8px;">'+
+        '<div style="flex:1;font-size:12px;color:#374151;line-height:1.4;">'+r.issue+'</div>'+
+        '<div style="font-size:10px;color:#9ca3af;white-space:nowrap;flex-shrink:0;">'+r.inspect_date+'</div>'+
+      '</div>';
+    }).join('');}
+  }
 
   // ── 필터 교체 현황 ──
   var fQty=filterMonth.reduce(function(s,r){return s+(r.quantity||0);},0);
@@ -1391,10 +1399,7 @@ async function loadDashboard(){
     }).join('');
   }
 
-  // 캘린더는 독립 함수로 별도 실행 (다른 위젯 오류의 영향 없음)
-  loadDashCalendar();
-
-  // ── 위젯6: 월별 입력 현황 ──
+  // ── 월별 입력 현황 ──
   var year=now2.getFullYear();
   var curMonth=now2.getMonth()+1; // 1~12
   var yearEl=document.getElementById('dash-airlog-year');
@@ -3083,7 +3088,7 @@ async function doDelete(){
 }
 function closeModal(){document.getElementById('del-modal').classList.remove('show');}
 
-if(checkAuth()){dashCalRender();loadDashCalendar();loadCurrentTab();}
+if(checkAuth()){loadCurrentTab();}
 </script>
 </body>
 </html>
