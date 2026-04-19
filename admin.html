@@ -1191,9 +1191,7 @@ function closeSidebar(){
 }
 
 function isAdmin(){return currentUser&&currentUser.role==='admin';}
-function isManager(){return currentUser&&['admin','manager','manager1','manager2'].indexOf(currentUser.role)>=0;}
 function hasPerm(key){if(isAdmin())return true;return !!(currentUser&&currentUser.permissions&&currentUser.permissions[key]);}
-function canEditAirLog(){return hasPerm('airlog_1to8')||hasPerm('airlog_9');}
 function getAirLogEmNos(){
   var nos=[];
   if(hasPerm('airlog_1to8'))nos=nos.concat([1,2,3,4,5,6,7]);
@@ -1522,7 +1520,7 @@ function renderTable(data){
   var rows=data.map(function(r){
     var note=r.notes?'<span class="note-cell" title="'+r.notes+'">'+r.notes+'</span>':'<span style="color:#d1d5db;">-</span>';
     var dt=r.created_at?new Date(r.created_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
-    var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'filter_records\',\''+r.id+'\',loadFilterData)">✕</button>':'';
+    var delBtn=hasPerm('filter_write')?'<button class="del-btn" onclick="confirmDelete(\'filter_records\',\''+r.id+'\',loadFilterData)">✕</button>':'';
     return'<tr><td>'+r.record_date+'</td><td>'+getRoomBadge(r.room_name)+'</td><td>'+r.technician+'</td><td><span class="qty-badge">'+r.quantity+'개</span></td><td>'+note+'</td><td style="font-size:11px;color:#9ca3af;">'+dt+'</td><td>'+delBtn+'</td></tr>';
   }).join('');
   document.getElementById('table-body').innerHTML='<table><thead><tr><th>교체일</th><th>시설</th><th>담당자</th><th>수량</th><th>특이사항</th><th>제출시각</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
@@ -1561,7 +1559,7 @@ async function loadOrderRequests(){
   var rows=data.map(function(r){
     var isDone=r.checked;
     var statusHtml=isDone?'<span class="done-badge">발주 완료</span>':'<span class="new-badge">미확인</span>';
-    var actionBtns=isAdmin()&&!isDone
+    var actionBtns=hasPerm('filter_write')&&!isDone
       ? '<button onclick="completeOrder(\''+r.id+'\')" class="order-done-btn">발주 완료</button><button onclick="confirmDelete(\'filter_order_requests\',\''+r.id+'\',loadOrderRequests)" class="order-del-btn">삭제</button>'
       : '';
     return'<div class="order-item"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div class="order-name">'+r.technician+'</div><div class="order-date">'+r.request_date+'</div></div>'+statusHtml+'</div>'+(actionBtns?'<div class="order-actions">'+actionBtns+'</div>':'')+'</div>';
@@ -1646,8 +1644,8 @@ async function loadWasteData(){
       var packBadge='<span class="badge" style="'+tc+'">'+pt+'</span>';
       var statusBadge=r.checked?'<span class="done-badge">확인완료</span>':'<span class="new-badge">미확인</span>';
       var checkedInfo=r.checked&&r.checked_at?'<div style="font-size:11px;color:#9ca3af;">'+new Date(r.checked_at).toLocaleDateString('ko-KR')+(r.checked_by?' · '+r.checked_by:'')+'</div>':'';
-      var actionBtn=isAdmin()&&!r.checked?'<button onclick="confirmWasteOil(\''+r.id+'\',\''+r.line_name+'\','+( r.bag_count||0)+')" style="padding:4px 10px;background:#d97706;color:white;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">배출완료</button>':'';
-      var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_requests\',\''+r.id+'\',loadWasteData)">✕</button>':'';
+      var actionBtn=hasPerm('waste_complete')&&!r.checked?'<button onclick="confirmWasteOil(\''+r.id+'\',\''+r.line_name+'\','+( r.bag_count||0)+')" style="padding:4px 10px;background:#d97706;color:white;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">배출완료</button>':'';
+      var delBtn=hasPerm('waste_complete')?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_requests\',\''+r.id+'\',loadWasteData)">✕</button>':'';
       var note=r.notes?r.notes:'<span style="color:#d1d5db;">-</span>';
       return'<tr>'+
         '<td>'+r.request_date+'</td>'+
@@ -1688,7 +1686,7 @@ async function loadWasteStorage(allData){
       '<div style="font-size:12px;font-weight:700;color:'+c+';margin-bottom:8px;">'+r.line_name+'</div>'+
       '<div style="font-size:28px;font-weight:700;'+warn+'">'+count+'</div>'+
       '<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">개</div>'+
-      (isAdmin()?'<button onclick="adjustStorage(\''+r.id+'\','+count+')" style="padding:4px 12px;background:#f0f2f5;color:#374151;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">수량 조정</button>':'')+
+      (hasPerm('waste_complete')?'<button onclick="adjustStorage(\''+r.id+'\','+count+')" style="padding:4px 12px;background:#f0f2f5;color:#374151;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">수량 조정</button>':'')+
     '</div>';
   }).join('');
   document.getElementById('wo-storage-grid').innerHTML=cards||'<div class="empty">데이터 없음</div>';
@@ -1724,8 +1722,8 @@ async function loadWasteSchedule(){
     var rowBg=isOverdue?'background:#fff5f5;':r.status==='예정'?'background:#fffbeb;':'';
     var statusBadge=r.status==='완료'?'<span class="badge" style="background:#d1fae5;color:#065f46;">완료</span>':isOverdue?'<span class="badge" style="background:#fee2e2;color:#991b1b;">미처리</span>':'<span class="badge" style="background:#fef3c7;color:#92400e;">예정</span>';
     var types=r.line_names?r.line_names.split(',').map(function(l){return'<span class="badge" style="background:#f0f2f5;color:#374151;margin:1px;">'+l.trim()+'</span>';}).join(''):'';
-    var actionBtn=isAdmin()&&r.status!=='완료'?'<button onclick="completeSchedule(\''+r.id+'\')" style="padding:4px 10px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">완료</button>':'';
-    var delBtn=isAdmin()?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_schedule\',\''+r.id+'\',loadWasteScheduleTab)">✕</button>':'';
+    var actionBtn=hasPerm('schedule_write')&&r.status!=='완료'?'<button onclick="completeSchedule(\''+r.id+'\')" style="padding:4px 10px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">완료</button>':'';
+    var delBtn=hasPerm('schedule_write')?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_schedule\',\''+r.id+'\',loadWasteScheduleTab)">✕</button>':'';
     return'<tr style="'+rowBg+'"><td>'+r.scheduled_date+'</td><td style="font-size:12px;color:#6b7280;">가람환경</td><td>'+types+'</td><td>'+(r.notes&&r.notes.indexOf(' / ')>=0?r.notes.split(' / ').slice(1).join(' / '):(r.notes&&r.notes!=='가람환경'?r.notes:'<span style="color:#d1d5db;">-</span>'))+'</td><td>'+statusBadge+'</td><td>'+actionBtn+delBtn+'</td></tr>';
   }).join('');
   document.getElementById('wo-schedule-table').innerHTML='<div style="overflow-x:auto;"><table style="min-width:550px;"><thead><tr><th>예정일</th><th>배출업체</th><th>폐기물 종류</th><th>특이사항</th><th>상태</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
@@ -2647,7 +2645,7 @@ async function loadAirMeasures(){
       :'<span class="badge" style="background:#dbeafe;color:#1e40af;">예정</span>';
     var facilities=r.facilities?r.facilities.split(',').map(function(f){return'<span style="display:inline-block;padding:2px 7px;border-radius:10px;background:#eff6ff;color:#0f2744;font-size:11px;font-weight:500;margin:1px;">'+f.replace('배출구','배').replace('-','<br style="display:none">').trim()+'</span>';}).join(''):'<span style="color:#d1d5db;">-</span>';
     var actionBtns='';
-    if(isAdmin()){
+    if(hasPerm('air_schedule_write')){
       if(r.status!=='완료'&&r.status!=='취소'){
         actionBtns='<button onclick="updateAirStatus(\''+r.id+'\',\'완료\',\'\')" style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;border:none;background:#d1fae5;color:#065f46;cursor:pointer;margin-right:4px;">완료</button>'+
           '<button onclick="showCancelInput(\''+r.id+'\')" style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;border:none;background:#fee2e2;color:#991b1b;cursor:pointer;margin-right:4px;">취소</button>';
@@ -3039,7 +3037,7 @@ function openInspectForm(){
   var beforeWrap=document.getElementById('if-before-wrap');
   var preview=document.getElementById('if-before-preview');
   if(preview)preview.style.display='none';
-  if(!isAdmin()){
+  if(!hasPerm('inspect_photo_before')){
     var lbl=beforeWrap?beforeWrap.querySelectorAll('label'):[];
     lbl.forEach(function(l){l.style.display='none';});
   }
