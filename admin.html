@@ -1161,7 +1161,7 @@ function checkAuth(){
   var u=sessionStorage.getItem('tc_user');
   if(!u){window.location.href='login.html';return false;}
   currentUser=JSON.parse(u);
-  var roleText={'admin':'관리자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[currentUser.role]||currentUser.role;
+  var roleText={'admin':'관리자','user':'사용자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[currentUser.role]||currentUser.role;
   // 사이드바 사용자 정보
   var icon=document.getElementById('sb-user-icon');
   if(icon)icon.textContent=currentUser.username.charAt(0).toUpperCase();
@@ -1190,7 +1190,7 @@ function closeSidebar(){
   document.getElementById('sidebar-overlay').classList.remove('show');
 }
 
-function isAdmin(){return currentUser&&currentUser.role==='admin';}
+function isAdmin(){return currentUser&&currentUser.username==='yjyeom';}
 function hasPerm(key){if(isAdmin())return true;return !!(currentUser&&currentUser.permissions&&currentUser.permissions[key]);}
 function getAirLogEmNos(){
   var nos=[];
@@ -1204,8 +1204,8 @@ function getAirLogPrNos(){
   if(hasPerm('airlog_9'))nos.push(9);
   return nos;
 }
-function getRoleText(role){return {'admin':'관리자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[role]||role;}
-function getRoleClass(role){return {'admin':'role-admin','manager':'role-manager','manager1':'role-manager','manager2':'role-manager','viewer':'role-viewer'}[role]||'role-viewer';}
+function getRoleText(role){return {'admin':'관리자','user':'사용자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[role]||role;}
+function getRoleClass(role){return {'admin':'role-admin','user':'role-viewer','manager':'role-manager','manager1':'role-manager','manager2':'role-manager','viewer':'role-viewer'}[role]||'role-viewer';}
 function logout(){sessionStorage.removeItem('tc_user');window.location.href='login.html';}
 
 var PERM_LABELS={filter_write:'필터기록',waste_complete:'폐기물완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정'};
@@ -2713,7 +2713,7 @@ async function loadUsers(){
   var headerPerms=PERM_KEYS.map(function(k){return '<th style="font-size:10px;text-align:center;min-width:56px;white-space:nowrap;">'+PERM_LABELS[k]+'</th>';}).join('');
   var rows=data.map(function(r){
     var perms=parsePerms(r.permissions);
-    var isFixedAdmin=r.role==='admin';
+    var isFixedAdmin=r.username==='yjyeom';
     var uid=r.id;
     var permCols=PERM_KEYS.map(function(k){
       var checked=perms[k]===true?' checked':'';
@@ -2723,7 +2723,7 @@ async function loadUsers(){
     var lastLogin=r.last_login?new Date(r.last_login).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';
     var pwBadge=r.password_set?'':'<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:1px 5px;border-radius:3px;margin-left:4px;">비번미설정</span>';
     var saveBtn=!isFixedAdmin?'<button id="save-perm-'+uid+'" onclick="saveUserPermissions(\''+uid+'\')" style="display:none;padding:3px 9px;background:#2563eb;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;">저장</button>':'';
-    var delBtn=r.role!=='admin'&&isAdmin()?'<button class="del-btn" style="margin-left:4px;" onclick="confirmDelete(\'users\',\''+uid+'\',loadUsers)">✕</button>':'';
+    var delBtn=r.username!=='yjyeom'&&isAdmin()?'<button class="del-btn" style="margin-left:4px;" onclick="confirmDelete(\'users\',\''+uid+'\',loadUsers)">✕</button>':'';
     return '<tr><td style="white-space:nowrap;">'+r.username+pwBadge+'</td><td style="font-size:11px;color:#9ca3af;white-space:nowrap;">'+lastLogin+'</td>'+permCols+'<td style="white-space:nowrap;">'+saveBtn+delBtn+'</td></tr>';
   }).join('');
   document.getElementById('users-table').innerHTML='<div style="overflow-x:auto;"><table><thead><tr><th>아이디</th><th>마지막접속</th>'+headerPerms+'<th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
