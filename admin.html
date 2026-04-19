@@ -2703,56 +2703,71 @@ function clearAirFilter(){
   loadAirMeasures();
 }
 
+function parsePerms(raw){
+  if(raw&&typeof raw==='object'&&!Array.isArray(raw))return raw;
+  if(typeof raw==='string'){try{var p=JSON.parse(raw);if(p&&typeof p==='object')return p;}catch(e){}}
+  return {};
+}
+
 async function loadUsers(){
   var data=await sb('users','?select=id,username,role,permissions,password_set,last_login,created_at&order=created_at.asc');
   if(!data||!data.length){document.getElementById('users-table').innerHTML='<div class="empty">사용자가 없습니다.</div>';return;}
   var headerPerms=PERM_KEYS.map(function(k){return '<th style="font-size:10px;text-align:center;min-width:56px;white-space:nowrap;">'+PERM_LABELS[k]+'</th>';}).join('');
   var rows=data.map(function(r){
-    var perms=r.permissions||{};
-    var isFixedAdmin=r.username==='admin'||r.role==='admin';
+    var perms=parsePerms(r.permissions);
+    var isFixedAdmin=r.role==='admin';
+    var uid=r.id;
     var permCols=PERM_KEYS.map(function(k){
-      return '<td style="text-align:center;padding:6px 4px;"><input type="checkbox" data-uid="'+r.id+'" data-perm="'+k+'"'+(perms[k]?' checked':'')+(isFixedAdmin?' disabled':'')+' onchange="markPermDirty(\''+r.id+'\')"></td>';
+      var checked=perms[k]===true?' checked':'';
+      var disabled=isFixedAdmin?' disabled':'';
+      return '<td style="text-align:center;padding:6px 4px;"><input type="checkbox" data-uid="'+uid+'" data-perm="'+k+'"'+checked+disabled+' onchange="markPermDirty(this)"></td>';
     }).join('');
     var lastLogin=r.last_login?new Date(r.last_login).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';
     var pwBadge=r.password_set?'':'<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:1px 5px;border-radius:3px;margin-left:4px;">비번미설정</span>';
-    var saveBtn=!isFixedAdmin?'<button id="save-perm-'+r.id+'" onclick="saveUserPermissions(\''+r.id+'\')" style="display:none;padding:3px 9px;background:#2563eb;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;">저장</button>':'';
-    var delBtn=r.role!=='admin'&&isAdmin()?'<button class="del-btn" style="margin-left:4px;" onclick="confirmDelete(\'users\',\''+r.id+'\',loadUsers)">✕</button>':'';
+    var saveBtn=!isFixedAdmin?'<button id="save-perm-'+uid+'" onclick="saveUserPermissions(\''+uid+'\')" style="display:none;padding:3px 9px;background:#2563eb;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;">저장</button>':'';
+    var delBtn=r.role!=='admin'&&isAdmin()?'<button class="del-btn" style="margin-left:4px;" onclick="confirmDelete(\'users\',\''+uid+'\',loadUsers)">✕</button>':'';
     return '<tr><td style="white-space:nowrap;">'+r.username+pwBadge+'</td><td style="font-size:11px;color:#9ca3af;white-space:nowrap;">'+lastLogin+'</td>'+permCols+'<td style="white-space:nowrap;">'+saveBtn+delBtn+'</td></tr>';
   }).join('');
   document.getElementById('users-table').innerHTML='<div style="overflow-x:auto;"><table><thead><tr><th>아이디</th><th>마지막접속</th>'+headerPerms+'<th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
-function markPermDirty(uid){
+function markPermDirty(cbEl){
+  var uid=cbEl.dataset.uid;
   var btn=document.getElementById('save-perm-'+uid);
   if(btn)btn.style.display='inline-block';
 }
 
 async function saveUserPermissions(uid){
-  var checkboxes=document.querySelectorAll('input[data-uid="'+uid+'"]');
+  var checkboxes=document.querySelectorAll('input[data-uid="'+uid+'"]:not([disabled])');
   var perms={};
-  checkboxes.forEach(function(cb){perms[cb.dataset.perm]=cb.checked;});
+  checkboxes.forEach(function(cb){if(cb.checked)perms[cb.dataset.perm]=true;});
   var res=await sb('users','?id=eq.'+uid,{method:'PATCH',body:{permissions:perms}});
   if(res.ok){
     var btn=document.getElementById('save-perm-'+uid);
     if(btn)btn.style.display='none';
-    // 현재 로그인 사용자라면 세션 업데이트
     if(currentUser&&currentUser.id===uid){currentUser.permissions=perms;sessionStorage.setItem('tc_user',JSON.stringify(currentUser));}
     alert('권한이 저장되었습니다.');
-  }else{alert('저장 실패');}
+  }else{
+    var errText=await res.text().catch(function(){return '';});
+    alert('저장 실패: '+errText);
+  }
 }
 
 async function addUser(){
   var username=document.getElementById('new-username').value.trim();
   if(!username){alert('아이디를 입력해주세요.');return;}
   var perms={};
-  PERM_KEYS.forEach(function(k){var cb=document.getElementById('new-perm-'+k);if(cb)perms[k]=cb.checked;});
+  PERM_KEYS.forEach(function(k){var cb=document.getElementById('new-perm-'+k);if(cb&&cb.checked)perms[k]=true;});
   var res=await sb('users','',{method:'POST',body:{username:username,password_hash:'',role:'viewer',permissions:perms,password_set:false}});
   if(res.ok){
     document.getElementById('new-username').value='';
     PERM_KEYS.forEach(function(k){var cb=document.getElementById('new-perm-'+k);if(cb)cb.checked=false;});
     loadUsers();
     alert('사용자 "'+username+'" 등록 완료.\n최초 로그인 시 비밀번호를 직접 설정하게 됩니다.');
-  }else{alert('이미 존재하는 아이디입니다.');}
+  }else{
+    var errText=await res.text().catch(function(){return '';});
+    alert('등록 실패 (이미 존재하는 아이디이거나 오류): '+errText);
+  }
 }
 
 /* ══════════════════════════════════════
