@@ -46,11 +46,29 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#eef1f5;display:fl
 
 .error-msg{color:#dc2626;font-size:12px;text-align:center;margin-top:12px;min-height:18px;}
 
-.copyright{font-size:11px;color:#c4c9d4;text-align:center;margin-top:32px;}
+.first-login-link{display:block;width:100%;margin-top:10px;background:none;border:none;font-size:11px;color:#9ca3af;cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;padding:4px;transition:color 0.15s;}
+.first-login-link:hover{color:#6b7280;}
+
+.copyright{font-size:11px;color:#c4c9d4;text-align:center;margin-top:28px;}
 
 /* ── 오른쪽 사진 영역 ── */
 .login-right{flex:1;position:relative;overflow:hidden;min-height:580px;}
 .login-right img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* ── First Login 모달 ── */
+.fl-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:999;align-items:center;justify-content:center;}
+.fl-overlay.show{display:flex;}
+.fl-dialog{background:white;border-radius:14px;padding:32px 32px 28px;width:100%;max-width:360px;box-shadow:0 12px 48px rgba(0,0,0,0.18);position:relative;}
+.fl-title{font-size:16px;font-weight:700;color:#0f2744;margin-bottom:4px;}
+.fl-sub{font-size:12px;color:#9ca3af;margin-bottom:22px;}
+.fl-close{position:absolute;top:16px;right:18px;background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1;padding:2px 6px;}
+.fl-close:hover{color:#374151;}
+.fl-btn{width:100%;padding:12px;background:#0f2744;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:4px;transition:background 0.15s;}
+.fl-btn:hover{background:#1e3a6e;}
+.fl-btn:disabled{background:#93c5fd;cursor:not-allowed;}
+.fl-msg{font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+.fl-msg.err{color:#dc2626;}
+.fl-msg.ok{color:#166534;}
 
 /* ── 모바일 대응 ── */
 @media(max-width:700px){
@@ -90,10 +108,11 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#eef1f5;display:fl
 
     <button class="login-btn" id="login-btn" onclick="login()">Log In</button>
     <div class="error-msg" id="error-msg"></div>
+    <button class="first-login-link" onclick="openFirstLogin()">First Login</button>
     <div class="copyright">© 2026 TC TAECHANG. All rights reserved.</div>
   </div>
 
-  <!-- 비밀번호 최초 설정 패널 (기본 숨김) -->
+  <!-- 비밀번호 최초 설정 패널 (일반 로그인 후 password_set=false일 때) -->
   <div id="pw-setup-panel" style="display:none;flex-direction:column;justify-content:center;padding:52px 40px;background:white;width:340px;min-width:340px;">
     <div class="logo-area">
       <img src="TC_logo.png" alt="TC TAECHANG" class="logo-img">
@@ -119,6 +138,29 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#eef1f5;display:fl
 
 </div>
 
+<!-- First Login 모달 -->
+<div class="fl-overlay" id="fl-overlay" onclick="if(event.target===this)closeFirstLogin()">
+  <div class="fl-dialog">
+    <button class="fl-close" onclick="closeFirstLogin()">×</button>
+    <div class="fl-title">First Login</div>
+    <div class="fl-sub">관리자에게 등록된 계정의 비밀번호를 최초 설정합니다.</div>
+    <div class="field">
+      <label>아이디</label>
+      <input type="text" id="fl-username" placeholder="아이디 입력" onkeydown="if(event.key==='Enter')document.getElementById('fl-pw').focus()">
+    </div>
+    <div class="field">
+      <label>새 비밀번호</label>
+      <input type="password" id="fl-pw" placeholder="사용할 비밀번호 입력" onkeydown="if(event.key==='Enter')document.getElementById('fl-pw2').focus()">
+    </div>
+    <div class="field">
+      <label>비밀번호 확인</label>
+      <input type="password" id="fl-pw2" placeholder="비밀번호 재입력" onkeydown="if(event.key==='Enter')firstLoginSubmit()">
+    </div>
+    <button class="fl-btn" id="fl-btn" onclick="firstLoginSubmit()">등록</button>
+    <div class="fl-msg" id="fl-msg"></div>
+  </div>
+</div>
+
 <script>
 var SUPABASE_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
 var SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
@@ -137,6 +179,12 @@ async function sbFetch(path,opts){
   return res;
 }
 
+async function sbGet(path){
+  var res=await fetch(SUPABASE_URL+path,{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+  return res.json();
+}
+
+/* ── 일반 로그인 ── */
 async function login(){
   var username=document.getElementById('username').value.trim();
   var password=document.getElementById('password').value;
@@ -145,14 +193,9 @@ async function login(){
   btn.disabled=true;btn.textContent='확인 중...';
   document.getElementById('error-msg').textContent='';
   try{
-    var res=await fetch(
-      SUPABASE_URL+'/rest/v1/users?username=eq.'+encodeURIComponent(username)+'&password_hash=eq.'+encodeURIComponent(password)+'&select=id,username,role,permissions,password_set',
-      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}
-    );
-    var data=await res.json();
+    var data=await sbGet('/rest/v1/users?username=eq.'+encodeURIComponent(username)+'&password_hash=eq.'+encodeURIComponent(password)+'&select=id,username,role,permissions,password_set');
     if(data&&data.length>0){
       var u=data[0];
-      // last_login 업데이트
       await sbFetch('/rest/v1/users?id=eq.'+u.id,{method:'PATCH',body:{last_login:new Date().toISOString()}});
       if(!u.password_set){
         pendingUser=u;
@@ -172,8 +215,7 @@ async function login(){
 
 function showPasswordSetup(){
   document.querySelector('.login-left').style.display='none';
-  var panel=document.getElementById('pw-setup-panel');
-  panel.style.display='flex';
+  document.getElementById('pw-setup-panel').style.display='flex';
 }
 
 async function setPassword(){
@@ -187,11 +229,67 @@ async function setPassword(){
   btn.disabled=true;btn.textContent='처리 중...';
   try{
     var res=await sbFetch('/rest/v1/users?id=eq.'+pendingUser.id,{method:'PATCH',body:{password_hash:pw,password_set:true}});
-    if(res.ok){
-      completeLogin(pendingUser);
-    }else{errEl.textContent='오류가 발생했습니다. 다시 시도해주세요.';}
+    if(res.ok){completeLogin(pendingUser);}
+    else{errEl.textContent='오류가 발생했습니다. 다시 시도해주세요.';}
   }catch(e){errEl.textContent='서버 오류. 다시 시도해주세요.';}
   btn.disabled=false;btn.textContent='설정 완료';
+}
+
+/* ── First Login 모달 ── */
+function openFirstLogin(){
+  document.getElementById('fl-username').value='';
+  document.getElementById('fl-pw').value='';
+  document.getElementById('fl-pw2').value='';
+  document.getElementById('fl-msg').textContent='';
+  document.getElementById('fl-msg').className='fl-msg';
+  document.getElementById('fl-overlay').classList.add('show');
+  setTimeout(function(){document.getElementById('fl-username').focus();},80);
+}
+
+function closeFirstLogin(){
+  document.getElementById('fl-overlay').classList.remove('show');
+}
+
+async function firstLoginSubmit(){
+  var username=document.getElementById('fl-username').value.trim();
+  var pw=document.getElementById('fl-pw').value;
+  var pw2=document.getElementById('fl-pw2').value;
+  var msgEl=document.getElementById('fl-msg');
+  var btn=document.getElementById('fl-btn');
+
+  msgEl.className='fl-msg';
+  msgEl.textContent='';
+
+  if(!username){msgEl.className='fl-msg err';msgEl.textContent='아이디를 입력해주세요.';return;}
+  if(!pw||pw.length<4){msgEl.className='fl-msg err';msgEl.textContent='비밀번호를 4자 이상 입력해주세요.';return;}
+  if(pw!==pw2){msgEl.className='fl-msg err';msgEl.textContent='비밀번호가 일치하지 않습니다.';return;}
+
+  btn.disabled=true;btn.textContent='확인 중...';
+  try{
+    // 1. 아이디 존재 확인
+    var data=await sbGet('/rest/v1/users?username=eq.'+encodeURIComponent(username)+'&select=id,username,role,permissions,password_set');
+    if(!data||!data.length){
+      msgEl.className='fl-msg err';msgEl.textContent='존재하지 않는 아이디입니다.';
+      btn.disabled=false;btn.textContent='등록';return;
+    }
+    var u=data[0];
+    // 2. 이미 비밀번호 설정된 계정인지 확인
+    if(u.password_set){
+      msgEl.className='fl-msg err';msgEl.textContent='이미 등록된 계정입니다. 일반 로그인을 이용해주세요.';
+      btn.disabled=false;btn.textContent='등록';return;
+    }
+    // 3. 비밀번호 저장 + password_set=true
+    var res=await sbFetch('/rest/v1/users?id=eq.'+u.id,{method:'PATCH',body:{password_hash:pw,password_set:true,last_login:new Date().toISOString()}});
+    if(res.ok){
+      msgEl.className='fl-msg ok';msgEl.textContent='등록 완료! 로그인합니다...';
+      setTimeout(function(){closeFirstLogin();completeLogin(u);},800);
+    }else{
+      msgEl.className='fl-msg err';msgEl.textContent='오류가 발생했습니다. 다시 시도해주세요.';
+    }
+  }catch(e){
+    msgEl.className='fl-msg err';msgEl.textContent='서버 연결 오류. 잠시 후 다시 시도해주세요.';
+  }
+  btn.disabled=false;btn.textContent='등록';
 }
 
 function completeLogin(u){
