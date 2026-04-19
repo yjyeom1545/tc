@@ -297,16 +297,9 @@ tr.inspect-row.selected td{background:#eff6ff;}
 <div id="tab-home" class="content">
 
   <!-- 상단 인사바 -->
-  <div style="margin-bottom:1.1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-    <div>
-      <div style="font-size:18px;font-weight:700;color:#0f2744;" id="dash-greeting">안녕하세요!</div>
-      <div style="font-size:12px;color:#9ca3af;margin-top:3px;" id="dash-date">-</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <div id="dash-chip-inspect" style="display:none;padding:5px 13px;background:#fef2f2;border:0.5px solid #fca5a5;border-radius:20px;font-size:12px;font-weight:600;color:#dc2626;cursor:pointer;" onclick="showTab('inspect')">점검 미개선 <span id="dash-chip-inspect-cnt">0</span>건</div>
-      <div id="dash-chip-dday" style="display:none;padding:5px 13px;background:#fffbeb;border:0.5px solid #fde68a;border-radius:20px;font-size:12px;font-weight:600;color:#b45309;cursor:pointer;" onclick="showTab('waste-schedule')">배출일정 <span id="dash-chip-dday-txt">D-?</span></div>
-      <button onclick="loadDashboard()" style="padding:5px 13px;background:#f0f2f5;color:#374151;border:0.5px solid #e5e7eb;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">↻ 새로고침</button>
-    </div>
+  <div style="margin-bottom:1.1rem;">
+    <div style="font-size:18px;font-weight:700;color:#0f2744;" id="dash-greeting">안녕하세요!</div>
+    <div style="font-size:12px;color:#9ca3af;margin-top:3px;" id="dash-date">-</div>
   </div>
 
   <!-- 위젯 1: 대기운영기록 월별 입력 현황 (맨 위) -->
