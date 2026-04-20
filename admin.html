@@ -452,7 +452,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
       </div>
 
       <!-- 폐유고상 보관량 -->
-      <div class="card" style="border-radius:10px;border-width:0.5px;">
+      <div class="card" style="border-radius:10px;border-width:0.5px;" id="dash-waste-oil-widget">
         <div class="table-header">
           <span class="table-title">폐유고상 보관량</span>
           <div style="display:flex;align-items:center;gap:10px;">
@@ -518,6 +518,16 @@ tr.inspect-row.selected td{background:#eff6ff;}
 <style>
 @media(max-width:1050px){.dash-main-grid{grid-template-columns:1fr !important;}}
 @media(max-width:700px){.dash-sched-grid{grid-template-columns:1fr !important;}}
+@media(max-width:768px){
+  body.is-pwa .dash-main-grid{display:flex !important;flex-direction:column;}
+  body.is-pwa .dash-main-grid>div{display:contents;}
+  body.is-pwa #dash-waste-oil-widget{order:99;}
+}
+@media(max-width:768px){
+  body.is-pwa #tab-airlog .card{overflow:visible;}
+  body.is-pwa #tab-airlog th,body.is-pwa #tab-airlog td{padding:5px 5px !important;font-size:10.5px !important;}
+  body.is-pwa #tab-airlog input[type="text"],body.is-pwa #tab-airlog input[type="number"]{width:36px !important;padding:3px 2px !important;font-size:11px !important;}
+}
 </style>
 
 <!-- 필터 교체 탭 -->
