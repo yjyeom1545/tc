@@ -265,6 +265,37 @@ tr.inspect-row{cursor:pointer;line-height:1.7;}
 tr.inspect-row td{padding:14px 14px;font-size:14px;}
 tr.inspect-row:hover td{background:#f0f4ff !important;}
 tr.inspect-row.selected td{background:#eff6ff;}
+
+/* ── 모바일 전용 최적화 (767px 이하) — 768px+ 웹 완전 보호 ── */
+@media(max-width:767px){
+  /* 1. 가로 스크롤 허용: content/card overflow 해제 */
+  .content{overflow-x:visible;}
+  .card{overflow:visible;}
+  /* iOS 터치 모멘텀 스크롤 */
+  [style*="overflow-x:auto"]{-webkit-overflow-scrolling:touch;}
+
+  /* 2. 테이블 최소 기준 (패딩 8px+, 폰트 13px+) */
+  th{padding:8px 10px;}
+  td{padding:8px 10px;font-size:13px;}
+
+  /* 3. 카드 패딩 최소 12px */
+  .card-body{padding:12px 14px;}
+  .table-header{padding:10px 14px;}
+
+  /* 4. 버튼 터치 영역 최소 44px */
+  .add-btn{min-height:44px;}
+  .save-btn{min-height:44px;}
+  .clear-btn{min-height:40px;padding:8px 12px;}
+
+  /* 5. 필터 바 입력 최소 크기 */
+  .filter-bar select,.filter-bar input[type=month]{font-size:13px;min-height:40px;padding:8px;}
+
+  /* 6. 상단 바 여백 */
+  .topbar{padding:0 14px;}
+
+  /* 7. 통계 카드 패딩 */
+  .stat-card{padding:12px 14px;}
+}
 </style>
 </head>
 <body>
@@ -523,11 +554,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
   body.is-pwa .dash-main-grid>div{display:contents;}
   body.is-pwa #dash-waste-oil-widget{order:99;}
 }
-@media(max-width:768px){
-  body.is-pwa #tab-airlog .card{overflow:visible;}
-  body.is-pwa #tab-airlog th,body.is-pwa #tab-airlog td{padding:5px 5px !important;font-size:10.5px !important;}
-  body.is-pwa #tab-airlog input[type="text"],body.is-pwa #tab-airlog input[type="number"]{width:36px !important;padding:3px 2px !important;font-size:11px !important;}
-}
+/* airlog 카드 overflow: 일반 모바일 규칙(.card{overflow:visible})으로 대체됨 */
 </style>
 
 <!-- 필터 교체 탭 -->
