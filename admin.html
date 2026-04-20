@@ -1030,19 +1030,6 @@ tr.inspect-row.selected td{background:#eff6ff;}
     </div>
   </div>
 
-  <!-- 모바일 바텀시트 -->
-  <div class="insp-sheet-overlay" id="insp-sheet-overlay" onclick="closeInspectDetail()"></div>
-  <div class="insp-sheet" id="insp-sheet">
-    <div class="insp-sheet-handle" onclick="closeInspectDetail()"></div>
-    <div class="insp-sheet-body">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <span class="card-title" style="margin-bottom:0;">상세 / 수정</span>
-        <button onclick="closeInspectDetail()" style="background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1;padding:0 4px;">×</button>
-      </div>
-      <div id="insp-sheet-content"></div>
-    </div>
-  </div>
-
   <!-- 신규 등록 모달 -->
   <div class="modal-bg" id="inspect-form-modal">
     <div class="modal" style="max-width:500px;width:94%;">
@@ -2942,7 +2929,7 @@ function showInspectDetail(id){
     var overlay=document.getElementById('insp-sheet-overlay');
     var sheet=document.getElementById('insp-sheet');
     if(overlay)overlay.classList.add('open');
-    if(sheet)requestAnimationFrame(function(){sheet.classList.add('open');});
+    if(sheet){sheet.style.display='flex';requestAnimationFrame(function(){sheet.classList.add('open');});}
     document.body.style.overflow='hidden';
   } else {
     // 데스크톱: 패널에만 주입
@@ -2970,10 +2957,8 @@ function closeInspectDetail(){
   // 바텀시트 닫기
   var overlay=document.getElementById('insp-sheet-overlay');
   var sheet=document.getElementById('insp-sheet');
-  if(sheet)sheet.classList.remove('open');
-  if(overlay){
-    setTimeout(function(){overlay.classList.remove('open');},300);
-  }
+  if(sheet){sheet.classList.remove('open');setTimeout(function(){sheet.style.display='none';},300);}
+  if(overlay){setTimeout(function(){overlay.classList.remove('open');},300);}
   document.body.style.overflow='';
   // 데스크톱 패널 닫기
   var panel=document.getElementById('inspect-detail-panel');
@@ -3201,6 +3186,19 @@ async function sbQ(table,query){
   }catch(e){return null;}
 }
 </script>
+
+<!-- 모바일 바텀시트 (body 직계 자식 — stacking context 문제 방지) -->
+<div class="insp-sheet-overlay" id="insp-sheet-overlay" onclick="closeInspectDetail()"></div>
+<div class="insp-sheet" id="insp-sheet" style="display:none;">
+  <div class="insp-sheet-handle" onclick="closeInspectDetail()"></div>
+  <div class="insp-sheet-body">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <span class="card-title" style="margin-bottom:0;">상세 / 수정</span>
+      <button onclick="closeInspectDetail()" style="background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1;padding:0 4px;">×</button>
+    </div>
+    <div id="insp-sheet-content"></div>
+  </div>
+</div>
 
 <!-- 하단 탭 바 (모바일) -->
 <nav class="bottom-tabbar" id="bottom-tabbar">
