@@ -141,6 +141,39 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
 .insp-sheet-handle::before{content:'';display:block;width:36px;height:4px;background:#d1d5db;border-radius:2px;}
 .insp-sheet-body{flex:1;overflow-y:auto;padding:4px 18px 32px;-webkit-overflow-scrolling:touch;}
 
+/* ── PWA 모바일 점검 아코디언 뷰 ── */
+#insp-pwa-wrap{display:none;}
+@media(max-width:768px){
+  body.is-pwa #inspect-kpi{display:none !important;}
+  body.is-pwa #inspect-filter-row{display:none !important;}
+  body.is-pwa #inspect-layout{display:none !important;}
+  body.is-pwa #insp-pwa-wrap{display:block !important;}
+}
+.insp-pwa-kpi{display:flex;gap:10px;margin-bottom:14px;}
+.insp-pwa-kpi-card{flex:1;background:white;border-radius:10px;border:0.5px solid #e8ecf0;padding:12px 14px;text-align:center;}
+.insp-pwa-kpi-val{font-size:26px;font-weight:700;line-height:1;}
+.insp-pwa-kpi-lbl{font-size:10px;color:#9ca3af;margin-top:4px;}
+.insp-pwa-filters{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;padding-bottom:4px;margin-bottom:12px;}
+.insp-pwa-filters::-webkit-scrollbar{display:none;}
+.insp-pwa-fbtn{display:inline-block;padding:7px 16px;border-radius:20px;border:1px solid #e8ecf0;background:white;color:#6b7280;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-right:6px;transition:all 0.12s;}
+.insp-pwa-fbtn.active{background:#0f2744;color:white;border-color:#0f2744;}
+.insp-card{background:white;border-radius:10px;border:0.5px solid #e8ecf0;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.insp-card-hdr{padding:14px 44px 14px 16px;cursor:pointer;position:relative;}
+.insp-card-hdr-tags{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
+.insp-card-issue{font-size:14px;font-weight:700;color:#0f2744;line-height:1.5;}
+.insp-card-date{font-size:11px;color:#9ca3af;margin-top:4px;}
+.insp-card-chevron{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#c4c9d4;font-size:14px;transition:transform 0.22s;}
+.insp-card.open .insp-card-chevron{transform:translateY(-50%) rotate(180deg);}
+.insp-card-body{display:none;padding:12px 16px 16px;border-top:1px solid #f3f4f6;}
+.insp-card.open .insp-card-body{display:block;}
+.insp-card-note{font-size:13px;color:#4b5563;line-height:1.7;padding:8px 12px;background:#f8fafc;border-radius:7px;margin-bottom:12px;}
+.insp-card-photos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.insp-card-photo-lbl{font-size:11px;color:#9ca3af;font-weight:600;letter-spacing:0.2px;margin-bottom:5px;}
+.insp-card-status-row{display:flex;gap:8px;align-items:center;}
+.insp-card-status-sel{flex:1;border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;background:white;}
+.insp-card-save{padding:9px 16px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;}
+.insp-pwa-add-btn{display:flex;align-items:center;justify-content:center;width:100%;padding:11px;background:#0f2744;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-bottom:14px;gap:6px;}
+
 /* ── 카드 ── */
 .hidden{display:none;}
 .card{background:white;border-radius:8px;border:1px solid #e8ecf0;box-shadow:0 1px 2px rgba(0,0,0,0.04);margin-bottom:14px;overflow:hidden;}
@@ -1052,7 +1085,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
   <div class="stats-grid" id="inspect-kpi" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:14px;"></div>
 
   <!-- 필터 버튼 + 신규 등록 버튼 -->
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+  <div id="inspect-filter-row" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
     <div style="display:flex;gap:6px;flex-wrap:wrap;" id="inspect-filter-btns">
       <button class="insp-fbtn active" data-filter="all"    onclick="setInspFilter('all',this)">전체</button>
       <button class="insp-fbtn"        data-filter="env"    onclick="setInspFilter('env',this)">환경</button>
@@ -1083,6 +1116,24 @@ tr.inspect-row.selected td{background:#eff6ff;}
         <div id="inspect-detail-content"></div>
       </div>
     </div>
+  </div>
+
+  <!-- PWA 모바일 전용 아코디언 뷰 -->
+  <div id="insp-pwa-wrap">
+    <div class="insp-pwa-kpi" id="insp-pwa-kpi"></div>
+    <div class="insp-pwa-filters" id="insp-pwa-filter-btns">
+      <button class="insp-pwa-fbtn active" onclick="setPwaInspFilter('all',this)">전체</button>
+      <button class="insp-pwa-fbtn" onclick="setPwaInspFilter('miss',this)">미개선</button>
+      <button class="insp-pwa-fbtn" onclick="setPwaInspFilter('env',this)">환경</button>
+      <button class="insp-pwa-fbtn" onclick="setPwaInspFilter('safety',this)">안전</button>
+      <button class="insp-pwa-fbtn" onclick="setPwaInspFilter('done',this)">완료</button>
+      <button class="insp-pwa-fbtn" onclick="setPwaInspFilter('hold',this)">보류</button>
+    </div>
+    <button class="insp-pwa-add-btn" onclick="openInspectForm()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      신규 등록
+    </button>
+    <div id="insp-pwa-cards"></div>
   </div>
 
   <!-- 신규 등록 모달 -->
@@ -2859,6 +2910,84 @@ async function loadInspect(){
   inspectAllData=data;
   renderInspectKPI(data);
   renderInspectTable(data);
+  renderInspectCards(getInspectFiltered());
+}
+
+function renderInspectCards(data){
+  var kpiEl=document.getElementById('insp-pwa-kpi');
+  var cardsEl=document.getElementById('insp-pwa-cards');
+  if(!cardsEl)return;
+  var miss=inspectAllData.filter(function(r){return r.status==='miss';}).length;
+  var hold=inspectAllData.filter(function(r){return r.status==='hold';}).length;
+  var done=inspectAllData.filter(function(r){return r.status==='done';}).length;
+  var denom=inspectAllData.length-hold;
+  var rate=denom>0?Math.round(done/denom*100):0;
+  if(kpiEl){
+    kpiEl.innerHTML='<div class="insp-pwa-kpi-card"><div class="insp-pwa-kpi-val" style="color:#dc2626;">'+miss+'</div><div class="insp-pwa-kpi-lbl">미개선 건수</div></div>'
+      +'<div class="insp-pwa-kpi-card"><div class="insp-pwa-kpi-val" style="color:#2563eb;">'+rate+'%</div><div class="insp-pwa-kpi-lbl">개선율</div></div>';
+  }
+  if(!data.length){cardsEl.innerHTML='<div class="empty">점검 이력이 없습니다.</div>';return;}
+  cardsEl.innerHTML=data.map(function(r){
+    var id=r.id;
+    var statusTag=r.status==='miss'?'<span class="status-miss">미개선</span>':r.status==='hold'?'<span class="status-hold">보류</span>':'<span class="status-done">완료</span>';
+    var catBg=r.category==='환경'?'#dbeafe;color:#1e40af':'#dcfce7;color:#166534';
+    var catTag='<span style="display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;background:'+catBg+';">'+r.category+'</span>';
+    var extTag=r.is_external?'<span class="ext-badge">외부기관</span>':'';
+    var noteHtml=r.note?'<div class="insp-card-note">'+escHtml(r.note)+'</div>':'';
+    var canUpBefore=hasPerm('inspect_photo_before');
+    var canUpAfter=hasPerm('inspect_photo_after');
+    var beforeBox='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.before_photo?'<img src="'+r.before_photo+'" alt="개선 전"><div class="insp-photo-upload"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 크게보기</div>':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
+    var beforeHtml='<div style="position:relative;">'+beforeBox+(r.before_photo&&canUpBefore?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'before\')" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')+'</div>';
+    if(canUpBefore)beforeHtml+='<div style="display:flex;gap:5px;margin-top:6px;"><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label></div>';
+    var afterBox='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.after_photo?'<img src="'+r.after_photo+'" alt="개선 후"><div class="insp-photo-upload"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 크게보기</div>':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
+    var afterHtml='<div style="position:relative;">'+afterBox+(r.after_photo&&canUpAfter?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'after\')" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')+'</div>';
+    if(!r.after_photo&&canUpAfter)afterHtml+='<div style="display:flex;gap:5px;margin-top:6px;"><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label></div>';
+    var statusHtml='';
+    if(hasPerm('inspect_status')){
+      var opts=['miss','hold','done'].map(function(v){var lbl=v==='miss'?'미개선':v==='hold'?'보류':'완료';return'<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+lbl+'</option>';}).join('');
+      statusHtml='<div class="insp-card-status-row"><select id="insp-card-status-'+id+'" class="insp-card-status-sel">'+opts+'</select><button class="insp-card-save" onclick="saveInspCardStatus(\''+id+'\')">저장</button></div>';
+    }
+    return'<div class="insp-card" id="insp-card-'+id+'">'
+      +'<div class="insp-card-hdr" onclick="toggleInspCard(\''+id+'\')">'
+        +'<div class="insp-card-hdr-tags">'+catTag+' '+statusTag+extTag+'</div>'
+        +'<div class="insp-card-issue">'+escHtml(r.issue)+'</div>'
+        +'<div class="insp-card-date">'+r.inspect_date+'</div>'
+        +'<span class="insp-card-chevron">▼</span>'
+      +'</div>'
+      +'<div class="insp-card-body">'
+        +noteHtml
+        +'<div class="insp-card-photos">'
+          +'<div><div class="insp-card-photo-lbl">개선 전</div>'+beforeHtml+'</div>'
+          +'<div><div class="insp-card-photo-lbl">개선 후</div>'+afterHtml+'</div>'
+        +'</div>'
+        +statusHtml
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function toggleInspCard(id){
+  var card=document.getElementById('insp-card-'+id);
+  if(!card)return;
+  card.classList.toggle('open');
+}
+
+function setPwaInspFilter(f,el){
+  inspectCurrentFilter=f;
+  document.querySelectorAll('.insp-pwa-fbtn').forEach(function(b){b.classList.remove('active');});
+  if(el)el.classList.add('active');
+  renderInspectCards(getInspectFiltered());
+}
+
+async function saveInspCardStatus(id){
+  var sel=document.getElementById('insp-card-status-'+id);
+  if(!sel)return;
+  var status=sel.value;
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{status:status}});
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(r)r.status=status;
+  renderInspectKPI(inspectAllData);
+  renderInspectCards(getInspectFiltered());
 }
 
 function renderInspectKPI(data){
