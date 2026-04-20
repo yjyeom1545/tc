@@ -1,0 +1,24 @@
+{
+  "name": "TC 환경관리",
+  "short_name": "TC",
+  "description": "도장시설 · 폐기물 · 대기 통합 환경관리 시스템",
+  "start_url": "login.html",
+  "display": "standalone",
+  "background_color": "#0f2744",
+  "theme_color": "#0f2744",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

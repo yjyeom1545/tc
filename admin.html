@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TC 환경관리 시스템</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f2744">
+<link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -48,12 +51,42 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
 .menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:4px;color:#4b5563;}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:199;}
 @media(max-width:768px){
-  .sidebar{transform:translateX(-100%);}
-  .sidebar.open{transform:translateX(0);}
-  .main-area{margin-left:0;}
-  .menu-toggle{display:block;}
-  .sidebar-overlay.show{display:block;}
+  .sidebar{display:none;}
+  .main-area{margin-left:0;padding-bottom:64px;}
+  .menu-toggle{display:none;}
+  .sidebar-overlay{display:none !important;}
 }
+
+/* ── 하단 탭 바 (모바일 전용) ── */
+.bottom-tabbar{display:none;}
+@media(max-width:768px){
+  .bottom-tabbar{
+    display:flex;position:fixed;bottom:0;left:0;right:0;height:60px;
+    background:#0f2744;border-top:1px solid rgba(255,255,255,0.1);
+    z-index:300;align-items:stretch;
+  }
+  .btab{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;cursor:pointer;color:rgba(255,255,255,0.45);font-size:10px;font-weight:500;
+    border:none;background:none;font-family:'Noto Sans KR',sans-serif;
+    transition:color 0.12s;padding:6px 0;position:relative;
+  }
+  .btab.active{color:#60a5fa;}
+  .btab svg{opacity:0.6;}
+  .btab.active svg{opacity:1;}
+  .btab-badge{position:absolute;top:6px;right:calc(50% - 14px);background:#dc2626;color:white;font-size:8px;font-weight:700;padding:1px 4px;border-radius:6px;min-width:14px;text-align:center;}
+}
+
+/* ── 더보기 드로어 (모바일) ── */
+.more-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:350;}
+.more-drawer-overlay.open{display:block;}
+.more-drawer{position:fixed;bottom:60px;left:0;right:0;background:#0f2744;border-radius:16px 16px 0 0;z-index:351;padding:8px 0 12px;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);}
+.more-drawer.open{transform:translateY(0);}
+.more-drawer-handle{display:flex;justify-content:center;padding:8px 0 4px;cursor:pointer;}
+.more-drawer-handle::before{content:'';display:block;width:32px;height:3px;background:rgba(255,255,255,0.25);border-radius:2px;}
+.more-drawer-item{display:flex;align-items:center;gap:12px;padding:13px 24px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:500;cursor:pointer;}
+.more-drawer-item:hover{background:rgba(255,255,255,0.06);}
+.more-drawer-item svg{opacity:0.6;flex-shrink:0;}
 
 /* ── 콘텐츠 ── */
 .content{width:100%;padding:1.5rem 1.75rem;overflow-x:hidden;}
@@ -1120,6 +1153,8 @@ function checkAuth(){
   if(!isAdmin()){
     if(usersNav)usersNav.style.display='none';
     if(adminSection)adminSection.style.display='none';
+    var moreUsers=document.getElementById('more-item-users');
+    if(moreUsers)moreUsers.style.display='none';
   }
   return true;
 }
@@ -1171,14 +1206,26 @@ function showTab(tab){
   document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active');});
   var navEl=document.getElementById('nav-'+tab);
   if(navEl)navEl.classList.add('active');
+  // 하단 탭 바 활성화
+  document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('active');});
+  var btabMap={'home':'home','inspect':'inspect','airlog':'airlog','air':'airlog','waste-oil':'waste-oil','waste-schedule':'waste-oil','waste-search':'waste-oil','filter':'more','users':'more'};
+  var btabEl=document.getElementById('btab-'+(btabMap[tab]||tab));
+  if(btabEl)btabEl.classList.add('active');
   // topbar 타이틀
   var titles={home:'홈',filter:'필터 교체','waste-oil':'폐유고상','waste-schedule':'배출업체 스케줄','waste-search':'폐기물 분류 검색',airlog:'대기운영기록',air:'대기측정 일정',inspect:'점검 이력',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
   if(titleEl)titleEl.textContent=titles[tab]||tab;
-  // 모바일: 사이드바 닫기
-  closeSidebar();
   currentTab=tab;
   loadCurrentTab();
+}
+
+function openMoreDrawer(){
+  document.getElementById('more-drawer-overlay').classList.add('open');
+  document.getElementById('more-drawer').classList.add('open');
+}
+function closeMoreDrawer(){
+  document.getElementById('more-drawer').classList.remove('open');
+  setTimeout(function(){document.getElementById('more-drawer-overlay').classList.remove('open');},280);
 }
 
 function loadCurrentTab(){
@@ -3073,7 +3120,132 @@ async function doDelete(){
 }
 function closeModal(){document.getElementById('del-modal').classList.remove('show');}
 
-if(checkAuth()){loadCurrentTab();}
+if(checkAuth()){loadCurrentTab();initPushNotifications();}
+
+// ── Service Worker 등록 ──
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('service-worker.js').catch(function(){});
+}
+
+// ── 푸시 알림 ──
+function initPushNotifications(){
+  if(!('Notification' in window))return;
+  if(Notification.permission!=='granted')return;
+  scheduleDailyChecks();
+}
+
+function scheduleDailyChecks(){
+  checkAndNotify();
+  // 오후 6시 알림: 현재 시각 기준 다음 18:00까지 대기
+  var now=new Date();
+  var next6=new Date(now.getFullYear(),now.getMonth(),now.getDate(),18,0,0);
+  if(now>=next6)next6.setDate(next6.getDate()+1);
+  setTimeout(function(){checkAirlogNotify();setInterval(checkAirlogNotify,86400000);},next6-now);
+}
+
+function sendLocalNotif(title,body,url){
+  if(!('serviceWorker' in navigator))return;
+  navigator.serviceWorker.ready.then(function(reg){
+    reg.showNotification(title,{body:body,icon:'icon-192.png',badge:'icon-192.png',data:{url:url||'admin.html'}});
+  });
+}
+
+async function checkAndNotify(){
+  try{
+    var today=new Date();
+    var todayStr=today.toISOString().split('T')[0];
+    // 배출업체 D-3
+    var d3=new Date(today);d3.setDate(d3.getDate()+3);
+    var d3Str=d3.toISOString().split('T')[0];
+    var ws=await sbQ('waste_schedules','?scheduled_date=eq.'+d3Str+'&status=eq.pending&select=company_name');
+    if(ws&&ws.length){
+      sendLocalNotif('배출업체 수거 D-3',ws.map(function(r){return r.company_name;}).join(', ')+' 수거 3일 전입니다.','admin.html#waste-schedule');
+    }
+    // 대기측정 D-7
+    var d7=new Date(today);d7.setDate(d7.getDate()+7);
+    var d7Str=d7.toISOString().split('T')[0];
+    var am=await sbQ('air_measures','?scheduled_date=eq.'+d7Str+'&status=eq.pending&select=facility_name');
+    if(am&&am.length){
+      sendLocalNotif('대기측정 D-7',am.map(function(r){return r.facility_name;}).join(', ')+' 측정 7일 전입니다.','admin.html#air');
+    }
+    // 미개선 기한 초과
+    var insp=await sbQ('inspection_records','?status=eq.miss&due_date=lt.'+todayStr+'&select=issue');
+    if(insp&&insp.length){
+      sendLocalNotif('미개선 점검 기한 초과',insp.length+'건의 점검 항목이 기한을 초과했습니다.','admin.html#inspect');
+    }
+  }catch(e){}
+}
+
+async function checkAirlogNotify(){
+  try{
+    var todayStr=new Date().toISOString().split('T')[0];
+    var logs=await sbQ('air_operation_logs','?log_date=eq.'+todayStr+'&select=id');
+    if(!logs||!logs.length){
+      sendLocalNotif('대기운영기록 미입력','오늘 대기운영기록이 입력되지 않았습니다.','admin.html#airlog');
+    }
+  }catch(e){}
+}
+
+async function sbQ(table,query){
+  try{
+    var res=await fetch(SB_URL+'/rest/v1/'+table+(query||''),{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    return res.json();
+  }catch(e){return null;}
+}
 </script>
+
+<!-- 하단 탭 바 (모바일) -->
+<nav class="bottom-tabbar" id="bottom-tabbar">
+  <button class="btab active" id="btab-home" onclick="showTab('home')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    홈
+  </button>
+  <button class="btab" id="btab-inspect" onclick="showTab('inspect')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    점검
+  </button>
+  <button class="btab" id="btab-airlog" onclick="showTab('airlog')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    대기
+  </button>
+  <button class="btab" id="btab-waste-oil" onclick="showTab('waste-oil')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
+    폐기물
+  </button>
+  <button class="btab" id="btab-more" onclick="openMoreDrawer()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>
+    더보기
+  </button>
+</nav>
+
+<!-- 더보기 드로어 -->
+<div class="more-drawer-overlay" id="more-drawer-overlay" onclick="closeMoreDrawer()"></div>
+<div class="more-drawer" id="more-drawer">
+  <div class="more-drawer-handle" onclick="closeMoreDrawer()"></div>
+  <div class="more-drawer-item" onclick="closeMoreDrawer();showTab('air')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    대기측정 일정
+  </div>
+  <div class="more-drawer-item" onclick="closeMoreDrawer();showTab('waste-schedule')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    배출업체 스케줄
+  </div>
+  <div class="more-drawer-item" onclick="closeMoreDrawer();showTab('filter')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+    필터 교체
+  </div>
+  <div class="more-drawer-item" onclick="closeMoreDrawer();showTab('waste-search')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    폐기물 분류 검색
+  </div>
+  <div class="more-drawer-item" id="more-item-users" onclick="closeMoreDrawer();showTab('users')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    사용자 관리
+  </div>
+  <div class="more-drawer-item" onclick="closeMoreDrawer();logout()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    로그아웃
+  </div>
+</div>
 </body>
 </html>

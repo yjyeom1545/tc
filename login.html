@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TC 환경관리 시스템 — 로그인</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f2744">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -294,7 +297,17 @@ async function firstLoginSubmit(){
 
 function completeLogin(u){
   sessionStorage.setItem('tc_user',JSON.stringify({id:u.id,username:u.username,role:u.role,permissions:u.permissions||{}}));
-  window.location.href='admin.html';
+  requestPushPermission().finally(function(){window.location.href='admin.html';});
+}
+
+async function requestPushPermission(){
+  if(!('Notification' in window)||!('serviceWorker' in navigator))return;
+  if(Notification.permission==='granted'||Notification.permission==='denied')return;
+  await Notification.requestPermission();
+}
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('service-worker.js').catch(function(){});
 }
 </script>
 </body>
