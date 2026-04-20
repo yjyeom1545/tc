@@ -502,8 +502,8 @@ tr.inspect-row.selected td{background:#eff6ff;}
     </div>
   </div>
 
-  <!-- 2줄: 3분할 (점검이력 / 배출업체 스케줄 / 대기측정 일정) -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;" class="dash-3col-grid">
+  <!-- 2줄: 2분할 (점검이력 요약 / 여과지 필터 교체) -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" class="dash-2col-grid">
 
     <!-- 점검이력 요약 -->
     <div class="card" style="border-radius:10px;border-width:0.5px;">
@@ -523,23 +523,6 @@ tr.inspect-row.selected td{background:#eff6ff;}
         <div id="dash-insp-list"><div style="font-size:12px;color:#d1d5db;padding:8px 0;">-</div></div>
       </div>
     </div>
-
-    <!-- 배출업체 스케줄 -->
-    <div class="card" style="border-radius:10px;border-width:0.5px;">
-      <div class="table-header"><span class="table-title">배출업체 스케줄</span><button onclick="showTab('waste-schedule')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button></div>
-      <div id="dash-waste-schedule"></div>
-    </div>
-
-    <!-- 대기측정 일정 -->
-    <div class="card" style="border-radius:10px;border-width:0.5px;">
-      <div class="table-header"><span class="table-title">대기측정 일정</span><button onclick="showTab('air')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button></div>
-      <div id="dash-air-schedule"></div>
-    </div>
-
-  </div>
-
-  <!-- 3줄: 2분할 (여과지 필터 교체 / 메모) -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="dash-2col-grid">
 
     <!-- 여과지 필터 교체 -->
     <div class="card" style="border-radius:10px;border-width:0.5px;">
@@ -566,12 +549,29 @@ tr.inspect-row.selected td{background:#eff6ff;}
       </div>
     </div>
 
+  </div>
+
+  <!-- 3줄: 3분할 (배출업체 스케줄 / 대기측정 일정 / 메모) -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" class="dash-3col-grid">
+
+    <!-- 배출업체 스케줄 -->
+    <div class="card" style="border-radius:10px;border-width:0.5px;">
+      <div class="table-header"><span class="table-title">배출업체 스케줄</span><button onclick="showTab('waste-schedule')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button></div>
+      <div id="dash-waste-schedule"></div>
+    </div>
+
+    <!-- 대기측정 일정 -->
+    <div class="card" style="border-radius:10px;border-width:0.5px;">
+      <div class="table-header"><span class="table-title">대기측정 일정</span><button onclick="showTab('air')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button></div>
+      <div id="dash-air-schedule"></div>
+    </div>
+
     <!-- 메모 -->
     <div class="card" style="border-radius:10px;border-width:0.5px;display:flex;flex-direction:column;">
       <div class="table-header"><span class="table-title">메모</span></div>
       <div style="padding:12px 16px;display:flex;flex-direction:column;flex:1;gap:8px;">
-        <textarea id="dash-memo-text" placeholder="메모를 입력하세요..." style="flex:1;min-height:120px;resize:vertical;border:1px solid #e5e7eb;border-radius:6px;padding:10px 12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#374151;line-height:1.6;outline:none;"></textarea>
-        <div style="display:flex;justify-content:space-between;align-items:center;min-height:28px;">
+        <textarea id="dash-memo-text" placeholder="메모를 입력하세요..." style="flex:1;min-height:100px;resize:vertical;border:1px solid #e5e7eb;border-radius:6px;padding:10px 12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#374151;line-height:1.6;outline:none;"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;min-height:28px;padding-top:2px;border-top:1px solid #f3f4f6;">
           <span id="dash-memo-updated" style="font-size:11px;color:#9ca3af;"></span>
           <button id="dash-memo-save" onclick="saveDashMemo()" style="padding:6px 16px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;display:none;">저장</button>
         </div>
@@ -585,6 +585,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
 <style>
 @media(max-width:1050px){.dash-3col-grid{grid-template-columns:1fr 1fr !important;}}
 @media(max-width:700px){.dash-3col-grid{grid-template-columns:1fr !important;}.dash-2col-grid{grid-template-columns:1fr !important;}}
+@media(max-width:900px){.dash-2col-grid{grid-template-columns:1fr !important;}}
 /* airlog 카드 overflow: 일반 모바일 규칙(.card{overflow:visible})으로 대체됨 */
 
 /* ── 대기운영기록: 앱 전용 (body.is-pwa + 768px 이하) ── */
@@ -1427,7 +1428,7 @@ async function loadDashboard(){
   if(rateEl)rateEl.textContent=inspRate+'%';
   var listEl=document.getElementById('dash-insp-list');
   if(listEl){
-    var top3=inspectMiss.slice(0,3);
+    var top3=inspectMiss.slice(0,4);
     if(!top3.length){listEl.innerHTML='<div style="font-size:12px;color:#d1d5db;padding:4px 0;">미개선 없음</div>';}
     else{listEl.innerHTML=top3.map(function(r){
       return '<div style="padding:7px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:flex-start;gap:8px;">'+
@@ -1584,6 +1585,11 @@ async function loadDashboard(){
   loadDashMemo();
 }
 
+function fmtMemoDate(iso){
+  var d=new Date(iso);
+  return '마지막 수정: '+(d.getMonth()+1)+'월 '+d.getDate()+'일 '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+
 async function loadDashMemo(){
   var ta=document.getElementById('dash-memo-text');
   var upd=document.getElementById('dash-memo-updated');
@@ -1592,7 +1598,7 @@ async function loadDashMemo(){
   var res=await sbQ('dashboard_memo','?order=updated_at.desc&limit=1');
   if(res&&res.length){
     ta.value=res[0].content||'';
-    if(upd&&res[0].updated_at)upd.textContent='최종 수정: '+res[0].updated_at.slice(0,16).replace('T',' ');
+    if(upd&&res[0].updated_at)upd.textContent=fmtMemoDate(res[0].updated_at);
   }
   if(isAdmin()){
     ta.readOnly=false;
@@ -1614,7 +1620,7 @@ async function saveDashMemo(){
   if(btn){btn.disabled=true;btn.textContent='저장 중...';}
   var now=new Date().toISOString();
   await fetch(SB_URL+'/rest/v1/dashboard_memo',{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id:1,content:ta.value,updated_at:now,updated_by:currentUser.username})});
-  if(upd)upd.textContent='최종 수정: '+now.slice(0,16).replace('T',' ');
+  if(upd)upd.textContent=fmtMemoDate(now);
   if(btn){btn.disabled=false;btn.textContent='저장';}
 }
 
