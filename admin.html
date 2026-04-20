@@ -2,11 +2,14 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>TC 환경관리 시스템</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2744">
 <link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -52,7 +55,7 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:199;}
 @media(max-width:768px){
   .sidebar{display:none;}
-  .main-area{margin-left:0;padding-bottom:64px;}
+  .main-area{margin-left:0;padding-bottom:calc(64px + env(safe-area-inset-bottom));}
   .menu-toggle{display:none;}
   .sidebar-overlay{display:none !important;}
 }
@@ -61,7 +64,9 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
 .bottom-tabbar{display:none;}
 @media(max-width:768px){
   .bottom-tabbar{
-    display:flex;position:fixed;bottom:0;left:0;right:0;height:60px;
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    height:calc(60px + env(safe-area-inset-bottom));
+    padding-bottom:env(safe-area-inset-bottom);
     background:#0f2744;border-top:1px solid rgba(255,255,255,0.1);
     z-index:300;align-items:stretch;
   }
@@ -1130,12 +1135,11 @@ tr.inspect-row.selected td{background:#eff6ff;}
 </div><!-- /main-area -->
 
 <!-- 삭제 확인 모달 -->
-<script src="config.js"></script>
 <script>
 var currentTab='home',allData=[],monthlyChart=null,currentUser=null;
 
 function checkAuth(){
-  var u=sessionStorage.getItem('tc_user');
+  var u=localStorage.getItem('tc_user');
   if(!u){window.location.href='login.html';return false;}
   currentUser=JSON.parse(u);
   var roleText={'admin':'관리자','user':'사용자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[currentUser.role]||currentUser.role;
@@ -1185,7 +1189,7 @@ function getAirLogPrNos(){
 }
 function getRoleText(role){return {'admin':'관리자','user':'사용자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[role]||role;}
 function getRoleClass(role){return {'admin':'role-admin','user':'role-viewer','manager':'role-manager','manager1':'role-manager','manager2':'role-manager','viewer':'role-viewer'}[role]||'role-viewer';}
-function logout(){sessionStorage.removeItem('tc_user');window.location.href='login.html';}
+function logout(){localStorage.removeItem('tc_user');window.location.href='login.html';}
 
 var PERM_LABELS={filter_write:'필터기록',waste_complete:'폐기물완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정'};
 var PERM_KEYS=['filter_write','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','airlog_1to8','airlog_9','air_schedule_write'];
@@ -2768,7 +2772,7 @@ async function saveUserPermissions(uid){
   if(res.ok){
     var btn=document.getElementById('save-perm-'+uid);
     if(btn)btn.style.display='none';
-    if(currentUser&&currentUser.id===uid){currentUser.permissions=perms;sessionStorage.setItem('tc_user',JSON.stringify(currentUser));}
+    if(currentUser&&currentUser.id===uid){currentUser.permissions=perms;localStorage.setItem('tc_user',JSON.stringify(currentUser));}
     alert('권한이 저장되었습니다.');
   }else{
     var errText=await res.text().catch(function(){return '';});
@@ -3178,7 +3182,7 @@ async function checkAndNotify(){
 async function checkAirlogNotify(){
   try{
     var todayStr=new Date().toISOString().split('T')[0];
-    var logs=await sbQ('air_operation_logs','?log_date=eq.'+todayStr+'&select=id');
+    var logs=await sbQ('air_operation_log','?log_date=eq.'+todayStr+'&select=id');
     if(!logs||!logs.length){
       sendLocalNotif('대기운영기록 미입력','오늘 대기운영기록이 입력되지 않았습니다.','admin.html#airlog');
     }

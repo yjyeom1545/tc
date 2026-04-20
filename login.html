@@ -2,11 +2,14 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>TC 환경관리 시스템 — 로그인</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2744">
 <link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="config.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -164,9 +167,8 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#eef1f5;display:fl
   </div>
 </div>
 
-<script src="config.js"></script>
 <script>
-if(sessionStorage.getItem('tc_user'))window.location.href='admin.html';
+if(localStorage.getItem('tc_user'))window.location.href='admin.html';
 
 var pendingUser=null;
 
@@ -294,7 +296,7 @@ async function firstLoginSubmit(){
 }
 
 function completeLogin(u){
-  sessionStorage.setItem('tc_user',JSON.stringify({id:u.id,username:u.username,role:u.role,permissions:u.permissions||{}}));
+  localStorage.setItem('tc_user',JSON.stringify({id:u.id,username:u.username,role:u.role,permissions:u.permissions||{}}));
   requestPushPermission().finally(function(){window.location.href='admin.html';});
 }
 
