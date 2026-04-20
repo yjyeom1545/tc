@@ -104,7 +104,7 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
 }
 .more-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:350;}
 .more-drawer-overlay.open{display:block;}
-.more-drawer{position:fixed;bottom:60px;left:0;right:0;background:#0f2744;border-radius:16px 16px 0 0;z-index:351;padding:8px 0 12px;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);}
+.more-drawer{position:fixed;bottom:60px;left:0;right:0;background:#0f2744;border-radius:16px 16px 0 0;z-index:351;padding:8px 0 12px;transform:translateY(calc(100% + 60px));transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);}
 .more-drawer.open{transform:translateY(0);}
 .more-drawer-handle{display:flex;justify-content:center;padding:8px 0 4px;cursor:pointer;}
 .more-drawer-handle::before{content:'';display:block;width:32px;height:3px;background:rgba(255,255,255,0.25);border-radius:2px;}
