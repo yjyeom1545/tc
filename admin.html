@@ -55,39 +55,49 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
 .top-btn{background:#f4f6f9;border:1px solid #e8ecf0;color:#4b5563;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all 0.12s;}
 .top-btn:hover{background:#e8ecf0;border-color:#d1d5db;}
 
-/* ── 모바일 토글 ── */
+/* ── 모바일 토글 (웹 모드) ── */
 .menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:4px;color:#4b5563;}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:199;}
 @media(max-width:768px){
-  .sidebar{display:none;}
-  .main-area{margin-left:0;padding-bottom:calc(64px + env(safe-area-inset-bottom));}
-  .menu-toggle{display:none;}
-  .sidebar-overlay{display:none !important;}
+  /* 웹 모바일: 사이드바 슬라이드 + 햄버거 */
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main-area{margin-left:0;}
+  .menu-toggle{display:block;}
+  .sidebar-overlay.show{display:block;}
 }
 
-/* ── 하단 탭 바 (모바일 전용) ── */
+/* ── PWA 모드 (body.is-pwa + 모바일) ── */
+@media(max-width:768px){
+  body.is-pwa .sidebar{display:none !important;}
+  body.is-pwa .menu-toggle{display:none !important;}
+  body.is-pwa .sidebar-overlay{display:none !important;}
+  body.is-pwa .main-area{margin-left:0;padding-bottom:calc(64px + env(safe-area-inset-bottom));}
+}
+
+/* ── 하단 탭바: PWA + 모바일에서만 표시 ── */
 .bottom-tabbar{display:none;}
 @media(max-width:768px){
-  .bottom-tabbar{
+  body.is-pwa .bottom-tabbar{
     display:flex;position:fixed;bottom:0;left:0;right:0;
     height:calc(60px + env(safe-area-inset-bottom));
     padding-bottom:env(safe-area-inset-bottom);
     background:#0f2744;border-top:1px solid rgba(255,255,255,0.1);
     z-index:300;align-items:stretch;
   }
-  .btab{
+  body.is-pwa .btab{
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:3px;cursor:pointer;color:rgba(255,255,255,0.45);font-size:10px;font-weight:500;
     border:none;background:none;font-family:'Noto Sans KR',sans-serif;
     transition:color 0.12s;padding:6px 0;position:relative;
   }
-  .btab.active{color:#60a5fa;}
-  .btab svg{opacity:0.6;}
-  .btab.active svg{opacity:1;}
-  .btab-badge{position:absolute;top:6px;right:calc(50% - 14px);background:#dc2626;color:white;font-size:8px;font-weight:700;padding:1px 4px;border-radius:6px;min-width:14px;text-align:center;}
+  body.is-pwa .btab.active{color:#60a5fa;}
+  body.is-pwa .btab svg{opacity:0.6;}
+  body.is-pwa .btab.active svg{opacity:1;}
+  body.is-pwa .btab-badge{position:absolute;top:6px;right:calc(50% - 14px);background:#dc2626;color:white;font-size:8px;font-weight:700;padding:1px 4px;border-radius:6px;min-width:14px;text-align:center;}
 }
 
-/* ── 더보기 드로어 (모바일) ── */
+/* ── 더보기 드로어 (PWA 모바일 전용) ── */
 .more-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:350;}
 .more-drawer-overlay.open{display:block;}
 .more-drawer{position:fixed;bottom:60px;left:0;right:0;background:#0f2744;border-radius:16px 16px 0 0;z-index:351;padding:8px 0 12px;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);}
@@ -114,11 +124,15 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
   .layout-3col{grid-template-columns:1fr;}
 }
 
-/* ── 바텀시트 (모바일 점검 상세) ── */
+/* ── 바텀시트 (PWA 모바일 점검 상세) ── */
 .insp-sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1200;touch-action:none;}
 .insp-sheet-overlay.open{display:block;}
-.insp-sheet{position:fixed;bottom:0;left:0;right:0;height:85vh;background:#fff;border-radius:16px 16px 0 0;z-index:1201;display:flex;flex-direction:column;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);}
-.insp-sheet.open{transform:translateY(0);}
+/* 데스크톱/웹에서는 완전 숨김 */
+.insp-sheet{display:none !important;}
+@media(max-width:768px){
+  body.is-pwa .insp-sheet{display:flex !important;position:fixed;bottom:0;left:0;right:0;height:85vh;background:#fff;border-radius:16px 16px 0 0;z-index:1201;flex-direction:column;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);}
+  body.is-pwa .insp-sheet.open{transform:translateY(0);}
+}
 .insp-sheet-handle{display:flex;justify-content:center;align-items:center;padding:12px 0 6px;flex-shrink:0;cursor:pointer;}
 .insp-sheet-handle::before{content:'';display:block;width:36px;height:4px;background:#d1d5db;border-radius:2px;}
 .insp-sheet-body{flex:1;overflow-y:auto;padding:4px 18px 32px;-webkit-overflow-scrolling:touch;}
@@ -2922,14 +2936,15 @@ function showInspectDetail(id){
       +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 후</div>'+afterHtml+'</div>'
     +'</div>';
 
-  if(window.innerWidth<=768){
-    // 모바일: 바텀시트에만 주입
+  var isMobilePWA=document.body.classList.contains('is-pwa')&&window.innerWidth<=768;
+  if(isMobilePWA){
+    // PWA 모바일: 바텀시트
     var sheetContent=document.getElementById('insp-sheet-content');
     if(sheetContent)sheetContent.innerHTML=detailHtml;
     var overlay=document.getElementById('insp-sheet-overlay');
     var sheet=document.getElementById('insp-sheet');
     if(overlay)overlay.classList.add('open');
-    if(sheet){sheet.style.display='flex';requestAnimationFrame(function(){sheet.classList.add('open');});}
+    if(sheet){requestAnimationFrame(function(){sheet.classList.add('open');});}
     document.body.style.overflow='hidden';
   } else {
     // 데스크톱: 패널에만 주입
@@ -2957,7 +2972,7 @@ function closeInspectDetail(){
   // 바텀시트 닫기
   var overlay=document.getElementById('insp-sheet-overlay');
   var sheet=document.getElementById('insp-sheet');
-  if(sheet){sheet.classList.remove('open');setTimeout(function(){sheet.style.display='none';},300);}
+  if(sheet)sheet.classList.remove('open');
   if(overlay){setTimeout(function(){overlay.classList.remove('open');},300);}
   document.body.style.overflow='';
   // 데스크톱 패널 닫기
@@ -3113,7 +3128,17 @@ async function doDelete(){
 }
 function closeModal(){document.getElementById('del-modal').classList.remove('show');}
 
+initPWAMode();
 if(checkAuth()){loadCurrentTab();initPushNotifications();}
+
+function initPWAMode(){
+  var standalone=window.matchMedia('(display-mode: standalone)').matches
+    ||(window.navigator.standalone===true);
+  if(standalone)document.body.classList.add('is-pwa');
+  window.matchMedia('(display-mode: standalone)').addEventListener('change',function(e){
+    document.body.classList.toggle('is-pwa',e.matches);
+  });
+}
 
 // ── Service Worker 등록 ──
 if('serviceWorker' in navigator){
@@ -3189,7 +3214,7 @@ async function sbQ(table,query){
 
 <!-- 모바일 바텀시트 (body 직계 자식 — stacking context 문제 방지) -->
 <div class="insp-sheet-overlay" id="insp-sheet-overlay" onclick="closeInspectDetail()"></div>
-<div class="insp-sheet" id="insp-sheet" style="display:none;">
+<div class="insp-sheet" id="insp-sheet">
   <div class="insp-sheet-handle" onclick="closeInspectDetail()"></div>
   <div class="insp-sheet-body">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
