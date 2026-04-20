@@ -126,7 +126,9 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
 
 /* ── 바텀시트 (PWA 모바일 점검 상세) ── */
 .insp-sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1200;touch-action:none;}
-.insp-sheet-overlay.open{display:block;}
+@media(max-width:768px){
+  body.is-pwa .insp-sheet-overlay.open{display:block;}
+}
 /* 데스크톱/웹에서는 완전 숨김 */
 .insp-sheet{display:none !important;}
 @media(max-width:768px){
@@ -3147,6 +3149,18 @@ function initPWAMode(){
   if(standalone)document.body.classList.add('is-pwa');
   window.matchMedia('(display-mode: standalone)').addEventListener('change',function(e){
     document.body.classList.toggle('is-pwa',e.matches);
+  });
+  // 창 크기가 768px 초과로 커지면 바텀시트 강제 닫기 (overlay 잔류 방지)
+  window.addEventListener('resize',function(){
+    if(window.innerWidth>768){
+      var sheet=document.getElementById('insp-sheet');
+      var overlay=document.getElementById('insp-sheet-overlay');
+      if(sheet&&sheet.classList.contains('open')){
+        sheet.classList.remove('open');
+        if(overlay)overlay.classList.remove('open');
+        document.body.style.overflow='';
+      }
+    }
   });
 }
 
