@@ -1,4 +1,4 @@
-const CACHE = 'tc-v1';
+const CACHE = 'tc-v2';
 const OFFLINE_URLS = [
   'login.html',
   'admin.html',
