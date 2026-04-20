@@ -125,15 +125,13 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
 }
 
 /* ── 바텀시트 (PWA 모바일 점검 상세) ── */
+/* 항상 숨김 — JS가 .active 추가 시에만 display:flex, .open으로 슬라이드인 */
 .insp-sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1200;touch-action:none;}
-@media(max-width:768px){
-  body.is-pwa .insp-sheet-overlay.open{display:block;}
-}
-/* 데스크톱/웹에서는 완전 숨김 */
 .insp-sheet{display:none !important;}
 @media(max-width:768px){
-  body.is-pwa .insp-sheet{display:flex !important;position:fixed;bottom:0;left:0;right:0;height:85vh;background:#fff;border-radius:16px 16px 0 0;z-index:1201;flex-direction:column;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);}
-  body.is-pwa .insp-sheet.open{transform:translateY(0);}
+  body.is-pwa .insp-sheet.active{display:flex !important;position:fixed;bottom:0;left:0;right:0;height:85vh;background:#fff;border-radius:16px 16px 0 0;z-index:1201;flex-direction:column;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);}
+  body.is-pwa .insp-sheet.active.open{transform:translateY(0);}
+  body.is-pwa .insp-sheet-overlay.open{display:block;}
 }
 .insp-sheet-handle{display:flex;justify-content:center;align-items:center;padding:12px 0 6px;flex-shrink:0;cursor:pointer;}
 .insp-sheet-handle::before{content:'';display:block;width:36px;height:4px;background:#d1d5db;border-radius:2px;}
@@ -2955,9 +2953,16 @@ function showInspectDetail(id){
     if(sheetContent)sheetContent.innerHTML=detailHtml;
     var overlay=document.getElementById('insp-sheet-overlay');
     var sheet=document.getElementById('insp-sheet');
-    if(overlay)overlay.classList.add('open');
-    if(sheet){requestAnimationFrame(function(){sheet.classList.add('open');});}
-    document.body.style.overflow='hidden';
+    // .active → display:flex(오프스크린), double rAF 후 .open → 슬라이드인
+    // (rAF 1회만 쓰면 브라우저가 transform transition을 건너뜀)
+    if(sheet){
+      sheet.classList.add('active');
+      requestAnimationFrame(function(){requestAnimationFrame(function(){
+        sheet.classList.add('open');
+        if(overlay)overlay.classList.add('open');
+        document.body.style.overflow='hidden';
+      });});
+    }
   } else {
     // 데스크톱: 패널에만 주입
     content.innerHTML=detailHtml;
@@ -2981,11 +2986,14 @@ function showInspectDetail(id){
 
 function closeInspectDetail(){
   inspectSelectedId=null;
-  // 바텀시트 닫기
+  // 바텀시트 닫기: .open 제거 → transition 완료 후 .active 제거(display:none 복귀)
   var overlay=document.getElementById('insp-sheet-overlay');
   var sheet=document.getElementById('insp-sheet');
-  if(sheet)sheet.classList.remove('open');
-  if(overlay){setTimeout(function(){overlay.classList.remove('open');},300);}
+  if(sheet){
+    sheet.classList.remove('open');
+    setTimeout(function(){sheet.classList.remove('active');},310);
+  }
+  if(overlay)overlay.classList.remove('open');
   document.body.style.overflow='';
   // 데스크톱 패널 닫기
   var panel=document.getElementById('inspect-detail-panel');
@@ -3150,19 +3158,27 @@ function initPWAMode(){
   window.matchMedia('(display-mode: standalone)').addEventListener('change',function(e){
     document.body.classList.toggle('is-pwa',e.matches);
   });
-  // 창 크기가 768px 초과로 커지면 바텀시트 강제 닫기 (overlay 잔류 방지)
+  // 창 크기가 769px 이상으로 커지면 바텀시트 강제 닫기
   window.addEventListener('resize',function(){
-    if(window.innerWidth>768){
+    if(window.innerWidth>=769){
       var sheet=document.getElementById('insp-sheet');
       var overlay=document.getElementById('insp-sheet-overlay');
-      if(sheet&&sheet.classList.contains('open')){
-        sheet.classList.remove('open');
+      if(sheet&&(sheet.classList.contains('open')||sheet.classList.contains('active'))){
+        sheet.classList.remove('open','active');
         if(overlay)overlay.classList.remove('open');
         document.body.style.overflow='';
       }
     }
   });
 }
+
+// 페이지 로드 시 바텀시트 완전 초기화 (PWA 전환 타이밍 무관하게 닫힘 보장)
+document.addEventListener('DOMContentLoaded',function(){
+  var sheet=document.getElementById('insp-sheet');
+  var overlay=document.getElementById('insp-sheet-overlay');
+  if(sheet){sheet.classList.remove('open','active');sheet.style.transform='';}
+  if(overlay)overlay.classList.remove('open');
+});
 
 // ── Service Worker 등록 ──
 if('serviceWorker' in navigator){
