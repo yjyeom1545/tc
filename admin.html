@@ -567,7 +567,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
     </div>
 
     <!-- 공지판 -->
-    <div class="card" style="border-radius:10px;border-width:0.5px;display:flex;flex-direction:column;">
+    <div class="card" style="border-radius:10px;border-width:0.5px;">
       <div class="table-header">
         <span class="table-title">공지판</span>
         <button id="notice-add-btn" onclick="toggleNoticeInput()" style="display:none;padding:5px 12px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">+ 등록</button>
@@ -581,7 +581,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
         </div>
       </div>
       <!-- 공지 목록 -->
-      <div id="notice-list" style="overflow-y:auto;max-height:260px;flex:1;"></div>
+      <div id="notice-list"></div>
     </div>
 
   </div>
@@ -589,6 +589,9 @@ tr.inspect-row.selected td{background:#eff6ff;}
 </div>
 
 <style>
+/* ── 대시보드 그리드: card overflow:hidden 해제, 내용 표시 보장 ── */
+.dash-3col-grid .card,.dash-2col-grid .card{overflow:visible;margin-bottom:0;}
+.dash-3col-grid,.dash-2col-grid{align-items:start;}
 @media(max-width:1100px){.dash-3col-grid{grid-template-columns:1fr 1fr !important;}}
 @media(max-width:700px){.dash-3col-grid{grid-template-columns:1fr !important;}.dash-2col-grid{grid-template-columns:1fr !important;}}
 @media(max-width:900px){.dash-2col-grid{grid-template-columns:1fr !important;}}
