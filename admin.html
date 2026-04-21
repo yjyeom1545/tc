@@ -1344,6 +1344,7 @@ function showTab(tab){
   if(titleEl)titleEl.textContent=titles[tab]||tab;
   currentTab=tab;
   loadCurrentTab();
+  if(tab==='airlog')applyAirlogScrollFix();
 }
 
 function openMoreDrawer(){
@@ -3438,15 +3439,20 @@ document.addEventListener('DOMContentLoaded',function(){
   if(overlay)overlay.classList.remove('open');
 });
 
-// 대기운영기록 가로 스크롤: PWA 앱에서 JS로 overflow 강제 적용 (CSS 백업)
-document.addEventListener('DOMContentLoaded',function(){
+// 대기운영기록 가로 스크롤: PWA 앱(is-pwa + ≤768px)에서 테이블 부모에 overflow-x:auto 강제 적용
+function applyAirlogScrollFix(){
   if(document.body.classList.contains('is-pwa')&&window.innerWidth<=768){
-    document.querySelectorAll('#tab-airlog .al-table-wrap').forEach(function(wrap){
+    document.querySelectorAll('#tab-airlog table').forEach(function(tbl){
+      var wrap=tbl.parentElement;
       wrap.style.overflowX='auto';
       wrap.style.webkitOverflowScrolling='touch';
       wrap.style.width='100%';
+      tbl.style.minWidth='580px';
     });
   }
+}
+document.addEventListener('DOMContentLoaded',function(){
+  applyAirlogScrollFix();
   document.querySelectorAll('.al-table-wrap').forEach(function(wrap){
     var hint=wrap.previousElementSibling;
     if(hint&&hint.classList.contains('al-scroll-hint')){
