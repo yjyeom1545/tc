@@ -1353,7 +1353,7 @@ function closeMoreDrawer(){
 
 function loadCurrentTab(){
   try{
-    if(currentTab==='home')loadDashboard();
+    if(currentTab==='home'){loadDashboard();loadNotices();}
     else if(currentTab==='filter')loadFilterData();
     else if(currentTab==='waste-oil')loadWasteData();
     else if(currentTab==='waste-schedule')loadWasteScheduleTab();
@@ -1589,7 +1589,6 @@ async function loadDashboard(){
       prEl.innerHTML=prMonths[m]?okBadge:missBadge;
     }
   }
-  loadNotices();
 }
 
 async function loadNotices(){
@@ -1597,28 +1596,32 @@ async function loadNotices(){
   var addBtn=document.getElementById('notice-add-btn');
   if(addBtn)addBtn.style.display=isAdmin()?'':'none';
   if(!listEl)return;
-  var res=await sbQ('notices','?order=created_at.desc&limit=30');
-  if(!res||!res.length){
-    listEl.innerHTML='<div style="padding:14px 16px;font-size:12px;color:#9ca3af;">등록된 공지가 없습니다.</div>';
-    return;
-  }
-  listEl.innerHTML=res.map(function(n){
-    var d=new Date(n.created_at);
-    var dateStr=(d.getMonth()+1)+'월 '+d.getDate()+'일';
-    var lines=n.content.split('\n');
-    var preview=escHtml(lines[0]);
-    var hasMore=lines.length>1;
-    return '<div id="ni-'+n.id+'" style="border-bottom:1px solid #f3f4f6;">'
-      +'<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 14px;">'
-        +'<span style="font-size:10px;color:#9ca3af;white-space:nowrap;flex-shrink:0;padding-top:3px;">'+dateStr+'</span>'
-        +'<div style="flex:1;min-width:0;">'
-          +'<div style="font-size:13px;color:#374151;line-height:1.5;cursor:'+(hasMore?'pointer':'default')+';" onclick="'+(hasMore?'toggleNoticeItem('+n.id+')':'')+'">'+preview+(hasMore?'<span id="ni-more-'+n.id+'" style="font-size:11px;color:#9ca3af;margin-left:4px;">▾ 더보기</span>':'')+'</div>'
-          +(hasMore?'<div id="ni-body-'+n.id+'" style="display:none;font-size:12px;color:#374151;line-height:1.7;white-space:pre-wrap;word-break:break-word;padding-top:6px;">'+escHtml(n.content)+'</div>':'')
+  try{
+    var res=await sbQ('notices','?order=created_at.desc&limit=30');
+    if(!res||!Array.isArray(res)||!res.length){
+      listEl.innerHTML='<div style="padding:14px 16px;font-size:12px;color:#9ca3af;">등록된 공지가 없습니다.</div>';
+      return;
+    }
+    listEl.innerHTML=res.map(function(n){
+      var d=new Date(n.created_at);
+      var dateStr=(d.getMonth()+1)+'월 '+d.getDate()+'일';
+      var lines=(n.content||'').split('\n');
+      var preview=escHtml(lines[0]);
+      var hasMore=lines.length>1;
+      return '<div id="ni-'+n.id+'" style="border-bottom:1px solid #f3f4f6;">'
+        +'<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 14px;">'
+          +'<span style="font-size:10px;color:#9ca3af;white-space:nowrap;flex-shrink:0;padding-top:3px;">'+dateStr+'</span>'
+          +'<div style="flex:1;min-width:0;">'
+            +'<div style="font-size:13px;color:#374151;line-height:1.5;cursor:'+(hasMore?'pointer':'default')+';" onclick="'+(hasMore?'toggleNoticeItem('+n.id+')':'')+'">'+preview+(hasMore?'<span id="ni-more-'+n.id+'" style="font-size:11px;color:#9ca3af;margin-left:4px;">▾ 더보기</span>':'')+'</div>'
+            +(hasMore?'<div id="ni-body-'+n.id+'" style="display:none;font-size:12px;color:#374151;line-height:1.7;white-space:pre-wrap;word-break:break-word;padding-top:6px;">'+escHtml(n.content)+'</div>':'')
+          +'</div>'
+          +(isAdmin()?'<button onclick="deleteNotice('+n.id+')" style="flex-shrink:0;padding:2px 8px;background:none;border:1px solid #fecaca;border-radius:4px;font-size:10px;color:#dc2626;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;line-height:1.6;">삭제</button>':'')
         +'</div>'
-        +(isAdmin()?'<button onclick="deleteNotice('+n.id+')" style="flex-shrink:0;padding:2px 8px;background:none;border:1px solid #fecaca;border-radius:4px;font-size:10px;color:#dc2626;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;line-height:1.6;">삭제</button>':'')
-      +'</div>'
-    +'</div>';
-  }).join('');
+      +'</div>';
+    }).join('');
+  }catch(e){
+    listEl.innerHTML='<div style="padding:14px 16px;font-size:12px;color:#9ca3af;">공지를 불러올 수 없습니다.</div>';
+  }
 }
 
 function toggleNoticeItem(id){
