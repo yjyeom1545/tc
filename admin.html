@@ -601,8 +601,8 @@ tr.inspect-row.selected td{background:#eff6ff;}
 /* ── 대기운영기록: 앱 전용 (body.is-pwa + 768px 이하) ── */
 @media(max-width:768px){
   body.is-pwa #tab-airlog{overflow-x:hidden;width:100%;}
-  body.is-pwa #tab-airlog .card,body.is-pwa #tab-airlog .filter-bar{overflow-x:hidden;width:100%;}
-  body.is-pwa #tab-airlog table{min-width:580px;width:auto;}
+  body.is-pwa #tab-airlog .card,body.is-pwa #tab-airlog .filter-bar{overflow-x:auto;width:100%;}
+  body.is-pwa #tab-airlog table{min-width:600px !important;width:auto;}
   body.is-pwa #tab-airlog .table-scroll-wrap{overflow-x:auto !important;-webkit-overflow-scrolling:touch !important;width:100%;display:block;}
   body.is-pwa #tab-airlog .table-scroll-wrap::-webkit-scrollbar{height:3px;}
   body.is-pwa #tab-airlog .table-scroll-wrap::-webkit-scrollbar-track{background:transparent;}
@@ -1372,6 +1372,7 @@ function loadCurrentTab(){
 }
 
 async function loadDashboard(){
+  try{
   // 날짜/인사
   var now=new Date();
   var days=['일','월','화','수','목','금','토'];
@@ -1462,6 +1463,7 @@ async function loadDashboard(){
 
   // ── 위젯3: 라인별 보관량 (톤백/링팩 구분) ──
   var linesEl=document.getElementById('dash-waste-lines');
+  if(linesEl){
   if(!storageData.length){
     linesEl.innerHTML='<div class="empty" style="padding:1rem;">데이터 없음</div>';
   }else{
@@ -1502,6 +1504,7 @@ async function loadDashboard(){
       '</div>';
     }).join('');
   }
+  } // end if(linesEl)
 
   // ── 위젯4: 배출업체 스케줄 ──
   var wasteSchedEl=document.getElementById('dash-waste-schedule');
@@ -1595,6 +1598,7 @@ async function loadDashboard(){
       prEl.innerHTML=prMonths[m]?okBadge:missBadge;
     }
   }
+  }catch(e){console.error('[loadDashboard] 오류:',e);}
 }
 
 async function loadNotices(){
@@ -3449,8 +3453,20 @@ function applyAirlogScrollFix(){
       wrap.style.width='100%';
       wrap.style.display='block';
     });
+    document.querySelectorAll('#tab-airlog .card').forEach(function(card){
+      if(card.querySelector('table')){
+        card.style.overflowX='auto';
+        card.style.webkitOverflowScrolling='touch';
+      }
+    });
+    document.querySelectorAll('#tab-airlog .table-container, #tab-airlog .card-body, #tab-airlog > div').forEach(function(el){
+      if(el.querySelector('table')){
+        el.style.overflowX='auto';
+        el.style.webkitOverflowScrolling='touch';
+      }
+    });
     document.querySelectorAll('#tab-airlog table').forEach(function(tbl){
-      tbl.style.minWidth='580px';
+      tbl.style.minWidth='600px';
     });
   }
 }
