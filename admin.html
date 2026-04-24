@@ -502,8 +502,8 @@ tr.inspect-row.selected td{background:#eff6ff;}
     </div>
   </div>
 
-  <!-- 2줄: 2분할 (점검이력 요약 / 여과지 필터 교체) -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" class="dash-2col-grid">
+  <!-- 2줄: 기본 2분할 / 관리자 3분할 (점검이력 / 여과지 / 폐유고상) -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" class="dash-2col-grid" id="dash-2col-grid">
 
     <!-- 점검이력 요약 -->
     <div class="card" style="border-radius:10px;border-width:0.5px;">
@@ -549,17 +549,15 @@ tr.inspect-row.selected td{background:#eff6ff;}
       </div>
     </div>
 
-  </div>
-
-  <!-- 관리자 전용: 폐유고상 라인별 보관량 위젯 -->
-  <div id="dash-waste-oil-widget" style="display:none;margin-bottom:12px;">
-    <div class="card" style="border-radius:10px;border-width:0.5px;">
+    <!-- 관리자 전용: 폐유고상 보관량 (기본 숨김) -->
+    <div id="dash-waste-oil-widget" class="card" style="border-radius:10px;border-width:0.5px;display:none;">
       <div class="table-header">
-        <span class="table-title">폐유고상 라인별 보관량</span>
+        <span class="table-title">폐유고상 보관량</span>
         <button onclick="showTab('waste-oil')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button>
       </div>
-      <div class="card-body" id="dash-waste-lines"></div>
+      <div style="padding:10px 14px;" id="dash-waste-lines"></div>
     </div>
+
   </div>
 
   <!-- 3줄: 3분할 (배출업체 스케줄 / 대기측정 일정 / 메모) -->
@@ -602,8 +600,8 @@ tr.inspect-row.selected td{background:#eff6ff;}
 .dash-3col-grid .card,.dash-2col-grid .card{overflow:visible;margin-bottom:0;}
 .dash-3col-grid,.dash-2col-grid{align-items:start;}
 @media(max-width:1100px){.dash-3col-grid{grid-template-columns:1fr 1fr !important;}}
-@media(max-width:700px){.dash-3col-grid{grid-template-columns:1fr !important;}.dash-2col-grid{grid-template-columns:1fr !important;}}
-@media(max-width:900px){.dash-2col-grid{grid-template-columns:1fr !important;}}
+@media(max-width:700px){.dash-3col-grid{grid-template-columns:1fr !important;}.dash-2col-grid{grid-template-columns:1fr !important;}#dash-2col-grid{grid-template-columns:1fr !important;}}
+@media(max-width:900px){.dash-2col-grid{grid-template-columns:1fr !important;}#dash-2col-grid{grid-template-columns:1fr 1fr !important;}}
 /* airlog 카드 overflow: 일반 모바일 규칙(.card{overflow:visible})으로 대체됨 */
 
 /* 힌트: 웹 전체(769px+) 완전 숨김 */
@@ -1302,6 +1300,8 @@ function checkAuth(){
     if(woMore)woMore.style.display='';
     var woWidget=document.getElementById('dash-waste-oil-widget');
     if(woWidget)woWidget.style.display='';
+    var grid=document.getElementById('dash-2col-grid');
+    if(grid)grid.style.gridTemplateColumns='1fr 1fr 1fr';
   }
   return true;
 }
@@ -1483,46 +1483,29 @@ async function loadDashboard(){
   // ── 위젯3: 라인별 보관량 (톤백/링팩 구분) ──
   var linesEl=document.getElementById('dash-waste-lines');
   if(linesEl){
-  if(!storageData.length){
-    linesEl.innerHTML='<div class="empty" style="padding:1rem;">데이터 없음</div>';
-  }else{
-    // 라인별 톤백/링팩 수 계산 (waste_oil_requests 기준 누적)
-    var linePackMap={};
-    wasteRequests.forEach(function(r){
-      if(!linePackMap[r.line_name])linePackMap[r.line_name]={tonbag:0,ringpack:0};
-      if(r.pack_type==='링팩')linePackMap[r.line_name].ringpack+=(r.bag_count||0);
-      else linePackMap[r.line_name].tonbag+=(r.bag_count||0);
-    });
-    var maxTotal=Math.max.apply(null,storageData.map(function(r){return r.bag_count||0;}))||1;
-    linesEl.innerHTML=storageData.map(function(r){
-      var total=r.bag_count||0;
-      // 비율 계산: waste_oil_storage의 총합 기준 바 너비
-      var pct=Math.round(total/maxTotal*100);
-      // 톤백/링팩 비율 (requests 기준)
-      var lp=linePackMap[r.line_name]||{tonbag:0,ringpack:0};
-      var reqTotal=lp.tonbag+lp.ringpack||1;
-      var tPct=Math.round(lp.tonbag/reqTotal*pct);
-      var rPct=pct-tPct;
-      var totalColor=total>=6?'color:#dc2626;':'color:#374151;';
-      var tBar=tPct>0?'<div style="height:7px;width:'+tPct+'%;background:#0f2744;border-radius:'+(rPct>0?'4px 0 0 4px':'4px')+';flex-shrink:0;"></div>':'';
-      var rBar=rPct>0?'<div style="height:7px;width:'+rPct+'%;background:#93c5fd;border-radius:'+(tPct>0?'0 4px 4px 0':'4px')+';flex-shrink:0;"></div>':'';
-      return'<div style="margin-bottom:12px;">'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'+
-          '<span style="font-size:12.5px;font-weight:600;color:#1e2633;">'+r.line_name+'</span>'+
-          '<div style="display:flex;align-items:center;gap:8px;">'+
-            '<span style="font-size:11px;color:#6b7280;">톤백 <b style="color:#0f2744;">'+lp.tonbag+'</b></span>'+
-            '<span style="font-size:10px;color:#d1d5db;">·</span>'+
-            '<span style="font-size:11px;color:#6b7280;">링팩 <b style="color:#3b82f6;">'+lp.ringpack+'</b></span>'+
-            '<span style="width:1px;height:14px;background:#e8ecf0;display:inline-block;"></span>'+
-            '<span style="font-size:12px;font-weight:700;'+totalColor+'">'+total+'<span style="font-size:10px;font-weight:400;color:#9ca3af;margin-left:1px;">개</span></span>'+
-          '</div>'+
-        '</div>'+
-        '<div style="background:#f1f5f9;border-radius:4px;height:7px;overflow:hidden;display:flex;">'+
-          tBar+rBar+
-        '</div>'+
-      '</div>';
-    }).join('');
-  }
+    if(!storageData.length){
+      linesEl.innerHTML='<div style="font-size:12px;color:#d1d5db;padding:8px 0;">데이터 없음</div>';
+    }else{
+      var linePackMap={};
+      wasteRequests.forEach(function(r){
+        if(!linePackMap[r.line_name])linePackMap[r.line_name]={tonbag:0,ringpack:0};
+        if(r.pack_type==='링팩')linePackMap[r.line_name].ringpack+=(r.bag_count||0);
+        else linePackMap[r.line_name].tonbag+=(r.bag_count||0);
+      });
+      linesEl.innerHTML=storageData.map(function(r,i){
+        var total=r.bag_count||0;
+        var lp=linePackMap[r.line_name]||{tonbag:0,ringpack:0};
+        var warn=total>=6?'<span style="color:#dc2626;font-size:13px;margin-left:3px;">⚠</span>':'';
+        var totalColor=total>=6?'#dc2626':'#374151';
+        var border=i<storageData.length-1?'border-bottom:1px solid #f3f4f6;':'';
+        return'<div style="display:flex;align-items:center;gap:6px;padding:7px 0;'+border+'">'+
+          '<span style="font-size:12px;font-weight:600;color:#1e2633;min-width:52px;flex-shrink:0;">'+r.line_name+'</span>'+
+          '<span style="font-size:11px;color:#6b7280;flex:1;">톤백 <b style="color:#0f2744;">'+lp.tonbag+'</b> · 링팩 <b style="color:#3b82f6;">'+lp.ringpack+'</b></span>'+
+          '<span style="font-size:12px;font-weight:700;color:'+totalColor+';">'+total+'개</span>'+
+          warn+
+        '</div>';
+      }).join('');
+    }
   } // end if(linesEl)
 
   // ── 위젯4: 배출업체 스케줄 ──
