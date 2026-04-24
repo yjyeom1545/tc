@@ -552,7 +552,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
     <!-- 폐유고상 보관량 -->
     <div id="dash-waste-oil-widget" class="card" style="border-radius:10px;border-width:0.5px;">
       <div class="table-header">
-        <span class="table-title">폐유고상 보관량</span>
+        <span class="table-title">폐유고상 보관량<span id="dash-waste-unconfirmed" style="display:none;margin-left:7px;background:#dc2626;color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;vertical-align:middle;"></span></span>
         <button onclick="showTab('waste-oil')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button>
       </div>
       <div style="padding:10px 14px;" id="dash-waste-lines"></div>
@@ -1233,7 +1233,8 @@ tr.inspect-row.selected td{background:#eff6ff;}
       <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;">초기 권한 설정</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-bottom:14px;">
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-filter_write"> 필터기록</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_complete"> 폐기물완료</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_confirm"> 폐유고상확인</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_complete"> 폐유고상배출완료</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-schedule_write"> 일정작성</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_write"> 점검등록</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_photo_before"> 점검사진(전)</label>
@@ -1322,8 +1323,8 @@ function getRoleText(role){return {'admin':'관리자','user':'사용자','manag
 function getRoleClass(role){return {'admin':'role-admin','user':'role-viewer','manager':'role-manager','manager1':'role-manager','manager2':'role-manager','viewer':'role-viewer'}[role]||'role-viewer';}
 function logout(){localStorage.removeItem('tc_user');window.location.href='login.html';}
 
-var PERM_LABELS={filter_write:'필터기록',waste_complete:'폐기물완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정'};
-var PERM_KEYS=['filter_write','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','airlog_1to8','airlog_9','air_schedule_write'];
+var PERM_LABELS={filter_write:'필터기록',waste_confirm:'폐유고상확인',waste_complete:'폐유고상배출완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정'};
+var PERM_KEYS=['filter_write','waste_confirm','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','airlog_1to8','airlog_9','air_schedule_write'];
 
 async function sb(table,query,opts){
   opts=opts||{};
@@ -1408,7 +1409,7 @@ async function loadDashboard(){
     sb('waste_oil_schedule','?status=eq.예정&select=*&order=scheduled_date.asc&limit=5'),
     sb('air_measurement','?status=eq.예정&measure_date=gte.'+today+'&select=*&order=measure_date.asc&limit=5'),
     sb('air_operation_log','?log_date=gte.'+now2.getFullYear()+'-01-01&select=log_date,facility_type,facility_no,submitted_by&order=log_date.asc'),
-    sb('waste_oil_requests','?select=line_name,pack_type,bag_count&order=request_date.desc'),
+    sb('waste_oil_requests','?select=line_name,pack_type,bag_count,status,checked&order=request_date.desc'),
     sb('inspection_records','?select=id,inspect_date,issue,status&order=inspect_date.desc')
   ]);
   var filterMonth=results[0]||[];
@@ -1468,6 +1469,12 @@ async function loadDashboard(){
   document.getElementById('dash-f-last').textContent=filterMonth.length>0?filterMonth[0].record_date:'-';
 
   // ── 위젯3: 라인별 보관량 (톤백/링팩 구분) ──
+  var dashUnconfirmedEl=document.getElementById('dash-waste-unconfirmed');
+  if(dashUnconfirmedEl){
+    var dashUnconfirmedCnt=wasteRequests.filter(function(r){return r.status==='unconfirmed'||(!r.status&&!r.checked);}).length;
+    if(dashUnconfirmedCnt>0){dashUnconfirmedEl.textContent='미확인 '+dashUnconfirmedCnt;dashUnconfirmedEl.style.display='';}
+    else{dashUnconfirmedEl.style.display='none';}
+  }
   var linesEl=document.getElementById('dash-waste-lines');
   if(linesEl){
     if(!storageData.length){
@@ -1812,7 +1819,7 @@ async function loadWasteData(){
   var now=new Date();
   var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   var monthData=allData.filter(function(r){return r.request_date&&r.request_date.startsWith(ym);});
-  var newCount=allData.filter(function(r){return !r.checked;}).length;
+  var newCount=allData.filter(function(r){return r.status==='unconfirmed'||(!r.status&&!r.checked);}).length;
   var monthTonbag=monthData.filter(function(r){return !r.pack_type||r.pack_type==='톤백';}).reduce(function(s,r){return s+(r.bag_count||0);},0);
   var monthRingpack=monthData.filter(function(r){return r.pack_type==='링팩';}).reduce(function(s,r){return s+(r.bag_count||0);},0);
 
@@ -1862,9 +1869,15 @@ async function loadWasteData(){
       var tc=typeBadge[pt]||typeBadge['톤백'];
       var lineBadge='<span class="badge" style="'+bc+'">'+r.line_name+'</span>';
       var packBadge='<span class="badge" style="'+tc+'">'+pt+'</span>';
-      var statusBadge=r.checked?'<span class="done-badge">확인완료</span>':'<span class="new-badge">미확인</span>';
-      var checkedInfo=r.checked&&r.checked_at?'<div style="font-size:11px;color:#9ca3af;">'+new Date(r.checked_at).toLocaleDateString('ko-KR')+(r.checked_by?' · '+r.checked_by:'')+'</div>':'';
-      var actionBtn=hasPerm('waste_complete')&&!r.checked?'<button onclick="confirmWasteOil(\''+r.id+'\',\''+r.line_name+'\','+( r.bag_count||0)+')" style="padding:4px 10px;background:#d97706;color:white;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">배출완료</button>':'';
+      var isCompleted=r.status==='completed'||r.checked;
+      var isConfirmed=r.status==='confirmed';
+      var statusBadge=isCompleted?'<span class="done-badge">배출완료</span>':isConfirmed?'<span class="badge" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;">확인</span>':'<span class="new-badge">미확인</span>';
+      var checkedInfo=isCompleted&&r.checked_at?'<div style="font-size:11px;color:#9ca3af;">'+new Date(r.checked_at).toLocaleDateString('ko-KR')+(r.checked_by?' · '+r.checked_by:'')+'</div>':'';
+      var actionBtn='';
+      if(!isCompleted){
+        if(isConfirmed&&hasPerm('waste_complete'))actionBtn='<button onclick="completeWasteOil(\''+r.id+'\',\''+r.line_name+'\','+(r.bag_count||0)+')" style="padding:4px 10px;background:#d97706;color:white;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">배출완료</button>';
+        else if(!isConfirmed&&hasPerm('waste_confirm'))actionBtn='<button onclick="markWasteConfirmed(\''+r.id+'\')" style="padding:4px 10px;background:#3b82f6;color:white;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">확인</button>';
+      }
       var delBtn=hasPerm('waste_complete')?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_requests\',\''+r.id+'\',loadWasteData)">✕</button>':'';
       var note=r.notes?r.notes:'<span style="color:#d1d5db;">-</span>';
       return'<tr>'+
@@ -1920,9 +1933,14 @@ function adjustStorage(id,current){
   sb('waste_oil_storage','?id=eq.'+id,{method:'PATCH',body:{bag_count:n,updated_at:new Date().toISOString()}}).then(loadWasteData);
 }
 
-async function confirmWasteOil(id,lineName,bagCount){
+async function markWasteConfirmed(id){
+  await sb('waste_oil_requests','?id=eq.'+id,{method:'PATCH',body:{status:'confirmed',confirmed_at:new Date().toISOString(),confirmed_by:currentUser?currentUser.username:''}});
+  loadWasteData();
+}
+
+async function completeWasteOil(id,lineName,bagCount){
   if(!confirm(lineName+' '+bagCount+'개 배출 완료 처리하시겠습니까?\n보관량에서 '+bagCount+'개가 차감됩니다.'))return;
-  await sb('waste_oil_requests','?id=eq.'+id,{method:'PATCH',body:{checked:true,checked_at:new Date().toISOString(),checked_by:currentUser?currentUser.username:'관리자'}});
+  await sb('waste_oil_requests','?id=eq.'+id,{method:'PATCH',body:{status:'completed',checked:true,checked_at:new Date().toISOString(),checked_by:currentUser?currentUser.username:'관리자'}});
   var storData=await sb('waste_oil_storage','?line_name=eq.'+encodeURIComponent(lineName)+'&select=bag_count');
   if(storData&&storData.length>0){
     var current=storData[0].bag_count||0;
