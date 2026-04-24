@@ -551,6 +551,17 @@ tr.inspect-row.selected td{background:#eff6ff;}
 
   </div>
 
+  <!-- 관리자 전용: 폐유고상 라인별 보관량 위젯 -->
+  <div id="dash-waste-oil-widget" style="display:none;margin-bottom:12px;">
+    <div class="card" style="border-radius:10px;border-width:0.5px;">
+      <div class="table-header">
+        <span class="table-title">폐유고상 라인별 보관량</span>
+        <button onclick="showTab('waste-oil')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button>
+      </div>
+      <div class="card-body" id="dash-waste-lines"></div>
+    </div>
+  </div>
+
   <!-- 3줄: 3분할 (배출업체 스케줄 / 대기측정 일정 / 메모) -->
   <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;" class="dash-3col-grid">
 
@@ -613,8 +624,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
   body.is-pwa #tab-airlog .al-excel-btn{display:none !important;}
 }
 
-/* ── 폐유고상 탭 콘텐츠: showTab()이 관리 ── */
-#tab-waste-oil{display:none;}
+/* ── 폐유고상 탭: showTab()의 hidden 클래스가 관리 ── */
 </style>
 
 <!-- 필터 교체 탭 -->
@@ -1282,12 +1292,16 @@ function checkAuth(){
     var moreUsers=document.getElementById('more-item-users');
     if(moreUsers)moreUsers.style.display='none';
   }
-  // 관리자(yjyeom)만 폐유고상 메뉴 표시
+  // 관리자(yjyeom)만 폐유고상 메뉴·위젯 표시
   if(currentUser&&currentUser.username==='yjyeom'){
     var woNav=document.getElementById('nav-waste-oil');
     if(woNav)woNav.style.display='';
     var woBtab=document.getElementById('btab-waste-oil');
     if(woBtab)woBtab.style.display='';
+    var woMore=document.getElementById('more-item-waste-oil');
+    if(woMore)woMore.style.display='';
+    var woWidget=document.getElementById('dash-waste-oil-widget');
+    if(woWidget)woWidget.style.display='';
   }
   return true;
 }
@@ -3613,6 +3627,10 @@ async function sbQ(table,query){
   <div class="more-drawer-item" onclick="closeMoreDrawer();showTab('waste-search')">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     폐기물 분류 검색
+  </div>
+  <div class="more-drawer-item" id="more-item-waste-oil" onclick="closeMoreDrawer();showTab('waste-oil')" style="display:none">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
+    폐유고상
   </div>
   <div class="more-drawer-item" id="more-item-users" onclick="closeMoreDrawer();showTab('users')">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
