@@ -369,7 +369,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
       필터 교체
     </div>
     <div class="nav-section">폐기물</div>
-    <div class="nav-item" id="nav-waste-oil" onclick="showTab('waste-oil')" style="display:none">
+    <div class="nav-item" id="nav-waste-oil" onclick="showTab('waste-oil')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
       폐유고상
     </div>
@@ -502,8 +502,8 @@ tr.inspect-row.selected td{background:#eff6ff;}
     </div>
   </div>
 
-  <!-- 2줄: 기본 2분할 / 관리자 3분할 (점검이력 / 여과지 / 폐유고상) -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" class="dash-2col-grid" id="dash-2col-grid">
+  <!-- 3분할: 점검이력 / 여과지 / 폐유고상 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;" class="dash-2col-grid" id="dash-2col-grid">
 
     <!-- 점검이력 요약 -->
     <div class="card" style="border-radius:10px;border-width:0.5px;">
@@ -549,8 +549,8 @@ tr.inspect-row.selected td{background:#eff6ff;}
       </div>
     </div>
 
-    <!-- 관리자 전용: 폐유고상 보관량 (기본 숨김) -->
-    <div id="dash-waste-oil-widget" class="card" style="border-radius:10px;border-width:0.5px;display:none;">
+    <!-- 폐유고상 보관량 -->
+    <div id="dash-waste-oil-widget" class="card" style="border-radius:10px;border-width:0.5px;">
       <div class="table-header">
         <span class="table-title">폐유고상 보관량</span>
         <button onclick="showTab('waste-oil')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button>
@@ -1289,19 +1289,6 @@ function checkAuth(){
     if(adminSection)adminSection.style.display='none';
     var moreUsers=document.getElementById('more-item-users');
     if(moreUsers)moreUsers.style.display='none';
-  }
-  // 관리자(yjyeom)만 폐유고상 메뉴·위젯 표시
-  if(currentUser&&currentUser.username==='yjyeom'){
-    var woNav=document.getElementById('nav-waste-oil');
-    if(woNav)woNav.style.display='';
-    var woBtab=document.getElementById('btab-waste-oil');
-    if(woBtab)woBtab.style.display='';
-    var woMore=document.getElementById('more-item-waste-oil');
-    if(woMore)woMore.style.display='';
-    var woWidget=document.getElementById('dash-waste-oil-widget');
-    if(woWidget)woWidget.style.display='';
-    var grid=document.getElementById('dash-2col-grid');
-    if(grid)grid.style.gridTemplateColumns='1fr 1fr 1fr';
   }
   return true;
 }
@@ -3581,7 +3568,7 @@ async function sbQ(table,query){
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     대기
   </button>
-  <button class="btab" id="btab-waste-oil" onclick="showTab('waste-oil')" style="display:none">
+  <button class="btab" id="btab-waste-oil" onclick="showTab('waste-oil')">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
     폐기물
   </button>
@@ -3611,7 +3598,7 @@ async function sbQ(table,query){
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     폐기물 분류 검색
   </div>
-  <div class="more-drawer-item" id="more-item-waste-oil" onclick="closeMoreDrawer();showTab('waste-oil')" style="display:none">
+  <div class="more-drawer-item" id="more-item-waste-oil" onclick="closeMoreDrawer();showTab('waste-oil')">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
     폐유고상
   </div>
