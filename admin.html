@@ -1873,10 +1873,17 @@ async function loadWasteData(){
       var isConfirmed=r.status==='confirmed';
       var statusBadge=isCompleted?'<span class="done-badge">배출완료</span>':isConfirmed?'<span class="badge" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;">확인</span>':'<span class="new-badge">미확인</span>';
       var checkedInfo=isCompleted&&r.checked_at?'<div style="font-size:11px;color:#9ca3af;">'+new Date(r.checked_at).toLocaleDateString('ko-KR')+(r.checked_by?' · '+r.checked_by:'')+'</div>':'';
+      var canConfirm=hasPerm('waste_confirm')||isAdmin();
+      var canComplete=hasPerm('waste_complete')||isAdmin();
       var actionBtn='';
       if(!isCompleted){
-        if(isConfirmed&&hasPerm('waste_complete'))actionBtn='<button onclick="completeWasteOil(\''+r.id+'\',\''+r.line_name+'\','+(r.bag_count||0)+')" style="padding:4px 10px;background:#d97706;color:white;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">배출완료</button>';
-        else if(!isConfirmed&&hasPerm('waste_confirm'))actionBtn='<button onclick="markWasteConfirmed(\''+r.id+'\')" style="padding:4px 10px;background:#3b82f6;color:white;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">확인</button>';
+        var btnConfirm=canConfirm
+          ?'<button onclick="markWasteConfirmed(\''+r.id+'\')" style="padding:4px 10px;background:#3b82f6;color:white;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">확인</button>'
+          :'<button disabled style="padding:4px 10px;background:#e5e7eb;color:#9ca3af;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:not-allowed;margin-right:4px;">확인</button>';
+        var btnComplete=canComplete
+          ?'<button onclick="completeWasteOil(\''+r.id+'\',\''+r.line_name+'\','+(r.bag_count||0)+')" style="padding:4px 10px;background:#d97706;color:white;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">배출완료</button>'
+          :'<button disabled style="padding:4px 10px;background:#e5e7eb;color:#9ca3af;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:not-allowed;margin-right:4px;">배출완료</button>';
+        actionBtn=btnConfirm+btnComplete;
       }
       var delBtn=hasPerm('waste_complete')?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_requests\',\''+r.id+'\',loadWasteData)">✕</button>':'';
       var note=r.notes?r.notes:'<span style="color:#d1d5db;">-</span>';
