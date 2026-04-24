@@ -369,7 +369,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
       필터 교체
     </div>
     <div class="nav-section">폐기물</div>
-    <div class="nav-item" id="nav-waste-oil" onclick="showTab('waste-oil')">
+    <div class="nav-item" id="nav-waste-oil" onclick="showTab('waste-oil')" style="display:none">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
       폐유고상
     </div>
@@ -613,10 +613,8 @@ tr.inspect-row.selected td{background:#eff6ff;}
   body.is-pwa #tab-airlog .al-excel-btn{display:none !important;}
 }
 
-/* ── 폐유고상 전체 숨김 ── */
-#nav-waste-oil,
-#tab-waste-oil,
-#btab-waste-oil{display:none !important;}
+/* ── 폐유고상 탭 콘텐츠: showTab()이 관리 ── */
+#tab-waste-oil{display:none;}
 </style>
 
 <!-- 필터 교체 탭 -->
@@ -1283,6 +1281,13 @@ function checkAuth(){
     if(adminSection)adminSection.style.display='none';
     var moreUsers=document.getElementById('more-item-users');
     if(moreUsers)moreUsers.style.display='none';
+  }
+  // 관리자(yjyeom)만 폐유고상 메뉴 표시
+  if(currentUser&&currentUser.username==='yjyeom'){
+    var woNav=document.getElementById('nav-waste-oil');
+    if(woNav)woNav.style.display='';
+    var woBtab=document.getElementById('btab-waste-oil');
+    if(woBtab)woBtab.style.display='';
   }
   return true;
 }
@@ -3579,7 +3584,7 @@ async function sbQ(table,query){
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     대기
   </button>
-  <button class="btab" id="btab-waste-oil" onclick="showTab('waste-oil')">
+  <button class="btab" id="btab-waste-oil" onclick="showTab('waste-oil')" style="display:none">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
     폐기물
   </button>
