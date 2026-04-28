@@ -1229,6 +1229,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
       <div class="card-title">새 사용자 등록</div>
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px;">
         <div class="form-group" style="flex:0 0 200px;"><label>아이디</label><input type="text" id="new-username" placeholder="아이디 입력"></div>
+        <div class="form-group" style="flex:0 0 200px;"><label>이름</label><input type="text" id="new-name" placeholder="이름 입력"></div>
       </div>
       <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;">초기 권한 설정</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-bottom:14px;">
@@ -1268,7 +1269,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
 
 <!-- 삭제 확인 모달 -->
 <script>
-var currentTab='home',allData=[],monthlyChart=null,currentUser=null;
+var currentTab='home',allData=[],monthlyChart=null,currentUser=null,userNameMap={};
 
 function checkAuth(){
   var u=localStorage.getItem('tc_user');
@@ -1277,9 +1278,10 @@ function checkAuth(){
   var roleText={'admin':'관리자','user':'사용자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[currentUser.role]||currentUser.role;
   // 사이드바 사용자 정보
   var icon=document.getElementById('sb-user-icon');
-  if(icon)icon.textContent=currentUser.username.charAt(0).toUpperCase();
+  var displayUser=currentUser.name||currentUser.username;
+  if(icon)icon.textContent=displayUser.charAt(0).toUpperCase();
   var nameEl=document.getElementById('sb-user-name');
-  if(nameEl)nameEl.textContent=currentUser.username;
+  if(nameEl)nameEl.textContent=displayUser;
   var roleEl=document.getElementById('sb-user-role');
   if(roleEl)roleEl.textContent=roleText;
   // 관리자가 아니면 사용자 관리 메뉴 숨김
@@ -1386,7 +1388,7 @@ async function loadDashboard(){
   var dateStr=now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 ('+days[now.getDay()]+')';
   var h=now.getHours();
   var greeting=h<12?'좋은 아침입니다':h<18?'안녕하세요':h<22?'수고하셨습니다':'안녕하세요';
-  document.getElementById('dash-greeting').textContent=greeting+', '+(currentUser?currentUser.username:'')+'님!';
+  document.getElementById('dash-greeting').textContent=greeting+', '+(currentUser?(currentUser.name||currentUser.username):'')+'님!';
   document.getElementById('dash-date').textContent=dateStr;
 
   var now2=new Date();
@@ -1657,7 +1659,7 @@ async function saveNotice(){
   if(!isAdmin())return;
   var ta=document.getElementById('notice-input');
   if(!ta||!ta.value.trim())return;
-  await fetch(SB_URL+'/rest/v1/notices',{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({content:ta.value.trim(),created_by:currentUser.username})});
+  await fetch(SB_URL+'/rest/v1/notices',{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({content:ta.value.trim(),created_by:currentUser.name||currentUser.username})});
   closeNoticeForm();
   loadNotices();
 }
@@ -1872,7 +1874,7 @@ async function loadWasteData(){
       var isCompleted=r.status==='completed'||r.checked;
       var isConfirmed=r.status==='confirmed';
       var statusBadge=isCompleted?'<span class="done-badge">배출완료</span>':isConfirmed?'<span class="badge" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;">확인</span>':'<span class="new-badge">미확인</span>';
-      var checkedInfo=isCompleted&&r.checked_at?'<div style="font-size:11px;color:#9ca3af;">'+new Date(r.checked_at).toLocaleDateString('ko-KR')+(r.checked_by?' · '+r.checked_by:'')+'</div>':'';
+      var checkedInfo=isCompleted&&r.checked_at?'<div style="font-size:11px;color:#9ca3af;">'+new Date(r.checked_at).toLocaleDateString('ko-KR')+(r.checked_by?' · '+displayName(r.checked_by):'')+'</div>':'';
       var canConfirm=hasPerm('waste_confirm')||isAdmin();
       var canComplete=hasPerm('waste_complete')||isAdmin();
       var actionBtn='';
@@ -1941,13 +1943,13 @@ function adjustStorage(id,current){
 }
 
 async function markWasteConfirmed(id){
-  await sb('waste_oil_requests','?id=eq.'+id,{method:'PATCH',body:{status:'confirmed',confirmed_at:new Date().toISOString(),confirmed_by:currentUser?currentUser.username:''}});
+  await sb('waste_oil_requests','?id=eq.'+id,{method:'PATCH',body:{status:'confirmed',confirmed_at:new Date().toISOString(),confirmed_by:currentUser?(currentUser.name||currentUser.username):''}});
   loadWasteData();
 }
 
 async function completeWasteOil(id,lineName,bagCount){
   if(!confirm(lineName+' '+bagCount+'개 배출 완료 처리하시겠습니까?\n보관량에서 '+bagCount+'개가 차감됩니다.'))return;
-  await sb('waste_oil_requests','?id=eq.'+id,{method:'PATCH',body:{status:'completed',checked:true,checked_at:new Date().toISOString(),checked_by:currentUser?currentUser.username:'관리자'}});
+  await sb('waste_oil_requests','?id=eq.'+id,{method:'PATCH',body:{status:'completed',checked:true,checked_at:new Date().toISOString(),checked_by:currentUser?(currentUser.name||currentUser.username):'관리자'}});
   var storData=await sb('waste_oil_storage','?line_name=eq.'+encodeURIComponent(lineName)+'&select=bag_count');
   if(storData&&storData.length>0){
     var current=storData[0].bag_count||0;
@@ -2723,7 +2725,7 @@ async function loadAirLogView(){
     var r=emMap[n];
     if(!r)return'<tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">'+n+'</td><td>'+emNames[n]+'</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td></tr>';
     var sb2=r.status==='비정상'?'<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:10px;font-size:11px;">비정상</span>':'<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:11px;">정상</span>';
-    var submitter=r.submitted_by&&r.submitted_by.em?r.submitted_by.em:'-';
+    var submitter=r.submitted_by&&r.submitted_by.em?displayName(r.submitted_by.em):'-';
     return'<tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">'+n+'</td><td>'+r.facility_name+'</td><td style="text-align:center;">'+(r.start_time&&r.end_time?r.start_time+'~'+r.end_time:'-')+'</td><td style="text-align:center;font-weight:700;color:#0f2744;">'+(r.operation_hours!=null?r.operation_hours+'h':'-')+'</td><td style="text-align:center;">'+(r.status?sb2:'-')+'</td><td style="text-align:center;color:#9ca3af;font-size:11px;">'+submitter+'</td></tr>';
   }).join('');
 
@@ -2744,7 +2746,7 @@ async function loadAirLogView(){
       if(d>=0)dailyCalc=d;
     }
     var dailyVal=dailyCalc!=null?'<b style="color:#0f2744;">'+dailyCalc+'</b>':'-';
-    var submitter=(r&&r.submitted_by&&r.submitted_by.pr)?r.submitted_by.pr:'-';
+    var submitter=(r&&r.submitted_by&&r.submitted_by.pr)?displayName(r.submitted_by.pr):'-';
     if(!r)return'<tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">'+n+'</td><td>'+prNames[n]+'</td><td style="text-align:center;color:#9ca3af;">'+prevVal+'</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td><td style="text-align:center;color:#d1d5db;">-</td></tr>';
     return'<tr><td style="text-align:center;font-weight:700;color:#0f2744;background:#f9fafb;">'+n+'</td><td>'+r.facility_name+'</td><td style="text-align:center;color:#9ca3af;">'+prevVal+'</td><td style="text-align:center;">'+todayVal+'</td><td style="text-align:center;">'+dailyVal+'</td><td style="text-align:center;color:#9ca3af;font-size:11px;">'+submitter+'</td></tr>';
   }).join('');
@@ -2779,7 +2781,7 @@ async function saveAirLog(){
     var startTime=(sh||sm)?((sh||'00')+':'+(sm||'00')):null;
     var endTime=(eh||em_)?((eh||'00')+':'+(em_||'00')):null;
     records.push({
-      log_date:date,submitted_by:currentUser.username,
+      log_date:date,submitted_by:currentUser.name||currentUser.username,
       facility_no:n,facility_name:emNames[n],facility_type:'배출구',
       start_time:startTime,end_time:endTime,
       operation_hours:hr?parseFloat(hr):null,
@@ -2796,7 +2798,7 @@ async function saveAirLog(){
     var prevVal=alPrevPower[no]!=null?alPrevPower[no]:null;
     var daily=(todayVal!=null&&prevVal!=null&&(todayVal-prevVal)>=0)?(todayVal-prevVal):null;
     records.push({
-      log_date:date,submitted_by:currentUser.username,
+      log_date:date,submitted_by:currentUser.name||currentUser.username,
       facility_no:no,facility_name:prNames[no],facility_type:'방지시설',
       start_time:null,end_time:null,operation_hours:null,status:null,
       power_prev:prevVal,power_today:todayVal,power_daily:daily
@@ -2804,7 +2806,7 @@ async function saveAirLog(){
   }
 
   try{
-    await fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+date+'&submitted_by=eq.'+encodeURIComponent(currentUser.username),{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    await fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+date+'&submitted_by=eq.'+encodeURIComponent(currentUser.name||currentUser.username),{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
     var res=await fetch(SB_URL+'/rest/v1/air_operation_log',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},body:JSON.stringify(records)});
     if(!res.ok){var errText=await res.text();throw new Error(errText);}
     alert('저장 완료!');
@@ -2953,7 +2955,7 @@ function parsePerms(raw){
 }
 
 async function loadUsers(){
-  var data=await sb('users','?select=id,username,role,permissions,password_set,last_login,created_at&order=created_at.asc');
+  var data=await sb('users','?select=id,username,name,role,permissions,password_set,last_login,created_at&order=created_at.asc');
   if(!data||!data.length){document.getElementById('users-table').innerHTML='<div class="empty">사용자가 없습니다.</div>';return;}
   var headerPerms=PERM_KEYS.map(function(k){return '<th style="font-size:10px;text-align:center;min-width:56px;white-space:nowrap;">'+PERM_LABELS[k]+'</th>';}).join('');
   var rows=data.map(function(r){
@@ -2967,11 +2969,15 @@ async function loadUsers(){
     }).join('');
     var lastLogin=r.last_login?new Date(r.last_login).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';
     var pwBadge=r.password_set?'':'<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:1px 5px;border-radius:3px;margin-left:4px;">비번미설정</span>';
+    var safeUsername=r.username.replace(/'/g,"\\'");
+    var safeName=(r.name||'').replace(/"/g,'&quot;');
+    var nameCell='<input id="name-inp-'+uid+'" data-username="'+r.username+'" value="'+safeName+'" placeholder="이름 입력" style="width:80px;border:1px solid #e8ecf0;border-radius:4px;padding:3px 7px;font-size:12px;font-family:\'Noto Sans KR\',sans-serif;" oninput="markNameDirty(\''+uid+'\')">'
+      +'<button id="save-name-'+uid+'" onclick="saveUserName(\''+uid+'\')" style="display:none;margin-left:3px;padding:3px 7px;background:#16a34a;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;">저장</button>';
     var saveBtn=!isFixedAdmin?'<button id="save-perm-'+uid+'" onclick="saveUserPermissions(\''+uid+'\')" style="display:none;padding:3px 9px;background:#2563eb;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;">저장</button>':'';
     var delBtn=r.username!=='yjyeom'&&isAdmin()?'<button class="del-btn" style="margin-left:4px;" onclick="confirmDelete(\'users\',\''+uid+'\',loadUsers)">✕</button>':'';
-    return '<tr><td style="white-space:nowrap;">'+r.username+pwBadge+'</td><td style="font-size:11px;color:#9ca3af;white-space:nowrap;">'+lastLogin+'</td>'+permCols+'<td style="white-space:nowrap;">'+saveBtn+delBtn+'</td></tr>';
+    return '<tr><td style="white-space:nowrap;">'+r.username+pwBadge+'</td><td style="white-space:nowrap;">'+nameCell+'</td><td style="font-size:11px;color:#9ca3af;white-space:nowrap;">'+lastLogin+'</td>'+permCols+'<td style="white-space:nowrap;">'+saveBtn+delBtn+'</td></tr>';
   }).join('');
-  document.getElementById('users-table').innerHTML='<div style="overflow-x:auto;"><table><thead><tr><th>아이디</th><th>마지막접속</th>'+headerPerms+'<th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  document.getElementById('users-table').innerHTML='<div style="overflow-x:auto;"><table><thead><tr><th>아이디</th><th>이름</th><th>마지막접속</th>'+headerPerms+'<th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
 function markPermDirty(cbEl){
@@ -2979,6 +2985,38 @@ function markPermDirty(cbEl){
   var btn=document.getElementById('save-perm-'+uid);
   if(btn)btn.style.display='inline-block';
 }
+
+function markNameDirty(uid){
+  var btn=document.getElementById('save-name-'+uid);
+  if(btn)btn.style.display='inline-block';
+}
+
+async function saveUserName(uid){
+  var inp=document.getElementById('name-inp-'+uid);
+  if(!inp)return;
+  var name=inp.value.trim();
+  var res=await sb('users','?id=eq.'+uid,{method:'PATCH',body:{name:name||null}});
+  if(res.ok){
+    var btn=document.getElementById('save-name-'+uid);
+    if(btn)btn.style.display='none';
+    var uname=inp.dataset.username;
+    if(uname){if(name)userNameMap[uname]=name;else delete userNameMap[uname];}
+    if(currentUser&&currentUser.id===uid){currentUser.name=name;localStorage.setItem('tc_user',JSON.stringify(currentUser));var d=name||currentUser.username;var icon=document.getElementById('sb-user-icon');if(icon)icon.textContent=d.charAt(0).toUpperCase();var nEl=document.getElementById('sb-user-name');if(nEl)nEl.textContent=d;}
+    alert('이름이 저장되었습니다.');
+  }else{
+    var errText=await res.text().catch(function(){return '';});
+    alert('저장 실패: '+errText);
+  }
+}
+
+async function loadUserNameMap(){
+  var data=await sb('users','?select=username,name');
+  if(data&&Array.isArray(data)){
+    data.forEach(function(u){if(u.name)userNameMap[u.username]=u.name;});
+  }
+}
+
+function displayName(u){return u?(userNameMap[u]||u):'-';}
 
 async function saveUserPermissions(uid){
   var checkboxes=document.querySelectorAll('input[data-uid="'+uid+'"]:not([disabled])');
@@ -2998,12 +3036,14 @@ async function saveUserPermissions(uid){
 
 async function addUser(){
   var username=document.getElementById('new-username').value.trim();
+  var name=document.getElementById('new-name').value.trim();
   if(!username){alert('아이디를 입력해주세요.');return;}
   var perms={};
   PERM_KEYS.forEach(function(k){var cb=document.getElementById('new-perm-'+k);if(cb&&cb.checked)perms[k]=true;});
-  var res=await sb('users','',{method:'POST',body:{username:username,password_hash:'',role:'viewer',permissions:perms,password_set:false}});
+  var res=await sb('users','',{method:'POST',body:{username:username,name:name||null,password_hash:'',role:'viewer',permissions:perms,password_set:false}});
   if(res.ok){
     document.getElementById('new-username').value='';
+    document.getElementById('new-name').value='';
     PERM_KEYS.forEach(function(k){var cb=document.getElementById('new-perm-'+k);if(cb)cb.checked=false;});
     loadUsers();
     alert('사용자 "'+username+'" 등록 완료.\n최초 로그인 시 비밀번호를 직접 설정하게 됩니다.');
@@ -3428,7 +3468,7 @@ async function doDelete(){
 function closeModal(){document.getElementById('del-modal').classList.remove('show');}
 
 initPWAMode();
-if(checkAuth()){loadCurrentTab();initPushNotifications();}
+if(checkAuth()){initPushNotifications();loadUserNameMap().then(function(){loadCurrentTab();});}
 
 function initPWAMode(){
   var standalone=window.matchMedia('(display-mode: standalone)').matches

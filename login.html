@@ -201,7 +201,7 @@ async function login(){
   btn.disabled=true;btn.textContent='확인 중...';
   document.getElementById('error-msg').textContent='';
   try{
-    var data=await sbGet('/rest/v1/users?username=eq.'+encodeURIComponent(username)+'&password_hash=eq.'+encodeURIComponent(password)+'&select=id,username,role,permissions,password_set');
+    var data=await sbGet('/rest/v1/users?username=eq.'+encodeURIComponent(username)+'&password_hash=eq.'+encodeURIComponent(password)+'&select=id,username,name,role,permissions,password_set');
     if(data&&data.length>0){
       var u=data[0];
       await sbFetch('/rest/v1/users?id=eq.'+u.id,{method:'PATCH',body:{last_login:new Date().toISOString()}});
@@ -275,7 +275,7 @@ async function firstLoginSubmit(){
   btn.disabled=true;btn.textContent='확인 중...';
   try{
     // 1. 아이디 존재 확인
-    var data=await sbGet('/rest/v1/users?username=eq.'+encodeURIComponent(username)+'&select=id,username,role,permissions,password_set');
+    var data=await sbGet('/rest/v1/users?username=eq.'+encodeURIComponent(username)+'&select=id,username,name,role,permissions,password_set');
     if(!data||!data.length){
       msgEl.className='fl-msg err';msgEl.textContent='존재하지 않는 아이디입니다.';
       btn.disabled=false;btn.textContent='등록';return;
@@ -301,7 +301,7 @@ async function firstLoginSubmit(){
 }
 
 function completeLogin(u){
-  localStorage.setItem('tc_user',JSON.stringify({id:u.id,username:u.username,role:u.role,permissions:u.permissions||{}}));
+  localStorage.setItem('tc_user',JSON.stringify({id:u.id,username:u.username,name:u.name||'',role:u.role,permissions:u.permissions||{}}));
   requestPushPermission().finally(function(){window.location.href='admin.html';});
 }
 
