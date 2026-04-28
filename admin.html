@@ -272,9 +272,6 @@ tr:hover td{background:#fafbfd;}
 .modal-btns{display:flex;gap:8px;margin-top:1rem;justify-content:flex-end;}
 .modal-cancel{padding:8px 16px;border:1px solid #e8ecf0;background:white;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:#374151;}
 .modal-confirm{padding:8px 16px;background:#dc2626;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:600;}
-.status-planned{background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;}
-.status-done{background:#dcfce7;color:#166534;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;}
-.status-cancel{background:#f1f5f9;color:#6b7280;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;}
 .al-sbtn{padding:3px 10px;border-radius:4px;font-size:11px;font-weight:500;border:1px solid #e8ecf0;cursor:pointer;background:white;color:#9ca3af;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
 .al-normal{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;}
 .al-abnormal{border-color:#dc2626;background:#fef2f2;color:#dc2626;}
@@ -1321,8 +1318,6 @@ function getAirLogPrNos(){
   if(hasPerm('airlog_9'))nos.push(9);
   return nos;
 }
-function getRoleText(role){return {'admin':'관리자','user':'사용자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[role]||role;}
-function getRoleClass(role){return {'admin':'role-admin','user':'role-viewer','manager':'role-manager','manager1':'role-manager','manager2':'role-manager','viewer':'role-viewer'}[role]||'role-viewer';}
 function logout(){localStorage.removeItem('tc_user');window.location.href='login.html';}
 
 var PERM_LABELS={filter_write:'필터기록',waste_confirm:'폐유고상확인',waste_complete:'폐유고상배출완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정'};
@@ -2132,9 +2127,6 @@ function closeWoPanel(){
   panel.style.borderTopWidth='0px';
 }
 
-function renderWasteSummary(){}
-function renderWasteTable(){}
-
 function quickSearch(keyword){
   var input=document.getElementById('waste-search-input');
   if(input){input.value=keyword;}
@@ -2392,117 +2384,6 @@ function openClaude(query){
   window.open('https://claude.ai/new?q='+encodeURIComponent(prompt),'_blank');
 }
 
-// 캘린더 초기 렌더링 (데이터 없이 날짜 구조만 먼저 표시)
-window._dashCalYear=new Date().getFullYear();
-window._dashCalMonth=new Date().getMonth();
-window._dashCalData={m1:{},m2:{}};
-
-// ── 캘린더 독립 로딩 함수 ──
-// loadDashboard와 완전히 분리. 직접 DB 조회 → 렌더링
-async function loadDashCalendar(){
-  try{
-    var now=new Date();
-    var year=now.getFullYear();
-    var data=await sb('air_operation_log',
-      '?log_date=gte.'+year+'-01-01&select=log_date,facility_type,facility_no&order=log_date.asc');
-    if(!Array.isArray(data))return;
-
-    // 배출구 facility_no 1~7 → 신민우, 9 → 이주표
-    var m1={}, m2={};
-    data.forEach(function(r){
-      if(!r.log_date||r.facility_type!=='배출구')return;
-      var no=parseInt(r.facility_no);
-      if(no>=1&&no<=7) m1[r.log_date]=true;
-      else if(no===9)  m2[r.log_date]=true;
-    });
-
-    // 완료율: 어제까지 경과 평일 기준
-    var yesterday=new Date(now); yesterday.setDate(now.getDate()-1);
-    var curMonth=now.getMonth();
-    var monthStart=new Date(year,curMonth,1);
-    var total=0, done1=0, done2=0;
-    var cur=new Date(monthStart);
-    while(cur<=yesterday&&cur.getMonth()===curMonth){
-      var w=cur.getDay();
-      if(w>=1&&w<=5){
-        total++;
-        var ds=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');
-        if(m1[ds])done1++;
-        if(m2[ds])done2++;
-      }
-      cur.setDate(cur.getDate()+1);
-    }
-    var r1=total>0?Math.round(done1/total*100):0;
-    var r2=total>0?Math.round(done2/total*100):0;
-
-    // 완료율 바 업데이트
-    var bar1=document.getElementById('dash-rate-m1');
-    var bar2=document.getElementById('dash-rate-m2');
-    var txt1=document.getElementById('dash-rate-m1-txt');
-    var txt2=document.getElementById('dash-rate-m2-txt');
-    if(bar1)bar1.style.width=r1+'%';
-    if(bar2)bar2.style.width=r2+'%';
-    if(txt1)txt1.textContent=r1+'%';
-    if(txt2)txt2.textContent=r2+'%';
-
-    // 전역에 저장 후 렌더링
-    window._dashCalData={m1:m1,m2:m2};
-    window._dashCalYear=year;
-    window._dashCalMonth=curMonth;
-    dashCalRender();
-
-  }catch(e){console.warn('캘린더 로딩 오류:',e);}
-}
-
-function dashCalRender(){
-  var y=window._dashCalYear||new Date().getFullYear();
-  var m=window._dashCalMonth||new Date().getMonth();
-  var data=window._dashCalData||{m1:{},m2:{}};
-  var MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  var monthEl=document.getElementById('dash-cal-month');
-  if(monthEl)monthEl.textContent=MONTHS[m];
-  var grid=document.getElementById('dash-cal-grid');
-  if(!grid)return;
-  var today=new Date();
-  var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-  var firstDow=new Date(y,m,1).getDay();
-  var daysInMonth=new Date(y,m+1,0).getDate();
-  var html='';
-  for(var i=0;i<firstDow;i++){
-    var pd=new Date(y,m,-(firstDow-i-1));
-    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;min-height:44px;"><div style="font-size:9px;font-weight:600;color:#d1d5db;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;">'+pd.getDate()+'</div></div>';
-  }
-  for(var d2=1;d2<=daysInMonth;d2++){
-    var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d2).padStart(2,'0');
-    var dow=new Date(y,m,d2).getDay();
-    var isToday=ds===todayStr;
-    var isWeekend=dow===0||dow===6;
-    var isFuture=new Date(ds)>new Date(todayStr);
-    var dnColor=isToday?'background:#0f2744;color:white;border-radius:50%;':dow===0?'color:#ef4444;':dow===6?'color:#3b82f6;':'color:#374151;';
-    var tabs='';
-    if(!isWeekend&&!isFuture){
-      var t1=data.m1[ds]?'background:#3b82f6;':'background:#f1f5f9;border:1px solid #e8ecf0;';
-      var t2=data.m2[ds]?'background:#10b981;':'background:#f1f5f9;border:1px solid #e8ecf0;';
-      tabs='<div style="display:flex;gap:1px;"><div style="width:8px;height:3px;border-radius:1px;'+t1+'"></div><div style="width:8px;height:3px;border-radius:1px;'+t2+'"></div></div>';
-    }
-    html+='<div style="display:flex;flex-direction:column;align-items:center;padding:2px 0 3px;border-radius:4px;min-height:44px;'+(isToday?'background:#f0f4ff;':'')+'">'+
-      '<div style="font-size:9px;font-weight:600;width:16px;height:16px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;'+dnColor+'">'+d2+'</div>'+
-      tabs+
-    '</div>';
-  }
-  grid.innerHTML=html;
-}
-function dashCalPrev(){
-  window._dashCalMonth=(window._dashCalMonth||0)-1;
-  if(window._dashCalMonth<0){window._dashCalMonth=11;window._dashCalYear=(window._dashCalYear||new Date().getFullYear())-1;}
-  dashCalRender();
-}
-function dashCalNext(){
-  window._dashCalMonth=(window._dashCalMonth||0)+1;
-  if(window._dashCalMonth>11){window._dashCalMonth=0;window._dashCalYear=(window._dashCalYear||new Date().getFullYear())+1;}
-  dashCalRender();
-}
-
 function toggleAirLawBanner(){
   var body=document.getElementById('air-law-body');
   var chevron=document.getElementById('air-law-chevron');
@@ -2512,13 +2393,6 @@ function toggleAirLawBanner(){
   chevron.style.transform=open?'rotate(180deg)':'rotate(0deg)';
   hint.textContent=open?'클릭하여 접기':'클릭하여 펼치기';
 }
-
-function toggleCheck(el){el.classList.toggle('done');}
-async function saveChecklist(){alert('체크리스트 저장 기능은 준비 중입니다.');}
-async function loadWasteStorage(){}
-async function saveWasteStorage(){}
-async function loadContractors(){}
-async function addContractor(){}
 
 function sanitizeNum(el){el.value=el.value.replace(/[^0-9]/g,'').slice(0,2);}
 
@@ -2830,8 +2704,6 @@ async function exportAirLogExcel(){
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(prRows),'방지시설전력');
   XLSX.writeFile(wb,'대기운영기록_'+date+'.xlsx');
 }
-
-function clearAirLogFilter(){}
 
 var selectedAirFacilities=[];
 
@@ -3570,14 +3442,14 @@ async function checkAndNotify(){
     // 배출업체 D-3
     var d3=new Date(today);d3.setDate(d3.getDate()+3);
     var d3Str=d3.toISOString().split('T')[0];
-    var ws=await sbQ('waste_schedules','?scheduled_date=eq.'+d3Str+'&status=eq.pending&select=company_name');
+    var ws=await sbQ('waste_oil_schedule','?scheduled_date=eq.'+d3Str+'&status=eq.예정&select=line_names');
     if(ws&&ws.length){
-      sendLocalNotif('배출업체 수거 D-3',ws.map(function(r){return r.company_name;}).join(', ')+' 수거 3일 전입니다.','admin.html#waste-schedule');
+      sendLocalNotif('배출업체 수거 D-3',ws.map(function(r){return r.line_names;}).join(', ')+' 수거 3일 전입니다.','admin.html#waste-schedule');
     }
     // 대기측정 D-7
     var d7=new Date(today);d7.setDate(d7.getDate()+7);
     var d7Str=d7.toISOString().split('T')[0];
-    var am=await sbQ('air_measures','?scheduled_date=eq.'+d7Str+'&status=eq.pending&select=facility_name');
+    var am=await sbQ('air_measurement','?measure_date=eq.'+d7Str+'&status=eq.예정&select=facility_name');
     if(am&&am.length){
       sendLocalNotif('대기측정 D-7',am.map(function(r){return r.facility_name;}).join(', ')+' 측정 7일 전입니다.','admin.html#air');
     }
