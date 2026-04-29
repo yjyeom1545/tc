@@ -1063,6 +1063,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
         <div class="table-header">
           <span class="table-title">일자별 조회</span>
           <button onclick="exportAirLogExcel()" class="al-excel-btn" style="padding:6px 14px;background:#217346;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">엑셀 내보내기</button>
+          <button id="daily-sheet-btn" onclick="exportDailyCheckSheet()" style="display:none;padding:6px 14px;background:#7c3aed;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">일일점검시트 출력</button>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f4f6;">
           <span class="filter-label">날짜 선택</span>
@@ -1313,6 +1314,8 @@ function checkAuth(){
     var smEl=document.getElementById('sems-month');
     if(smEl&&!smEl.value){var _dn=new Date();smEl.value=_dn.getFullYear()+'-'+String(_dn.getMonth()+1).padStart(2,'0');}
   }
+  var dsBtn=document.getElementById('daily-sheet-btn');
+  if(dsBtn&&isAdmin())dsBtn.style.display='';
   return true;
 }
 
@@ -2825,6 +2828,61 @@ async function exportSemsFacility(){
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'시설운전사항');
     XLSX.writeFile(wb,'시설운전사항_'+year+mon+'.xlsx');
   }catch(e){errEl.textContent='내보내기 실패: '+e.message;}
+}
+
+async function exportDailyCheckSheet(){
+  var date=document.getElementById('al-view-date').value;
+  if(!date){alert('먼저 날짜를 선택해주세요.');return;}
+  try{
+    var resp=await fetch('대기운영일일점검시트.xlsx');
+    if(!resp.ok)throw new Error('템플릿 파일을 불러올 수 없습니다.');
+    var buf=await resp.arrayBuffer();
+    var wb=XLSX.read(new Uint8Array(buf),{type:'array',cellStyles:true});
+    var ws=wb.Sheets['Table 1'];
+    if(!ws)throw new Error('"Table 1" 시트를 찾을 수 없습니다.');
+
+    var data=await sb('air_operation_log','?log_date=eq.'+date+'&select=*&order=facility_type.asc,facility_no.asc');
+    var emMap={},prMap={};
+    (data||[]).forEach(function(r){
+      if(r.facility_type==='배출구')emMap[r.facility_no]=r;
+      if(r.facility_type==='방지시설')prMap[r.facility_no]=r;
+    });
+
+    function setCell(ref,value,isNum){
+      var existing=ws[ref]||{};
+      if(isNum){ws[ref]={v:value,t:'n',s:existing.s};}
+      else{ws[ref]={v:value,t:'s',s:existing.s};}
+    }
+
+    // A6: 날짜 문자열
+    var days=['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+    var dp=date.split('-');
+    var d=new Date(+dp[0],+dp[1]-1,+dp[2]);
+    var mm=String(d.getMonth()+1).padStart(2,'0');
+    var dd=String(d.getDate()).padStart(2,'0');
+    var dow=days[d.getDay()];
+    setCell('A6',dp[0]+'   년   '+mm+'월   '+dd+'일   '+dow+'          날 씨 :              온 도 :');
+
+    // 배출구 가동시간: L9~L17, R9~R17
+    for(var no=1;no<=9;no++){
+      var row=8+no;
+      var rec=emMap[no];
+      if(rec){
+        setCell('L'+row,(rec.start_time||'')+' ~ '+(rec.end_time||''));
+        setCell('R'+row,'( '+(rec.operation_hours!=null?rec.operation_hours:'')+'시간)');
+      }
+    }
+
+    // 방지시설 전력사용량: F22~F30
+    for(var pno=1;pno<=9;pno++){
+      var prec=prMap[pno];
+      if(prec&&prec.power_today!=null){
+        setCell('F'+(21+pno),parseFloat(prec.power_today),true);
+      }
+    }
+
+    XLSX.writeFile(wb,'대기운영일일점검시트_'+date.replace(/-/g,'')+'.xlsx');
+  }catch(e){alert('일일점검시트 출력 실패: '+e.message);}
 }
 
 var selectedAirFacilities=[];
