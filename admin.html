@@ -599,6 +599,12 @@ tr.inspect-row.selected td{background:#eff6ff;}
 @media(max-width:1100px){.dash-3col-grid{grid-template-columns:1fr 1fr !important;}}
 @media(max-width:700px){.dash-3col-grid{grid-template-columns:1fr !important;}.dash-2col-grid{grid-template-columns:1fr !important;}#dash-2col-grid{grid-template-columns:1fr !important;}}
 @media(max-width:900px){.dash-2col-grid{grid-template-columns:1fr !important;}#dash-2col-grid{grid-template-columns:1fr 1fr !important;}}
+/* ── 앱 전용 대시보드: 단일 컬럼 (body.is-pwa + ≤768px) ── */
+@media(max-width:768px){
+  body.is-pwa #tab-home #dash-2col-grid,
+  body.is-pwa #tab-home .dash-3col-grid{grid-template-columns:1fr !important;}
+  body.is-pwa #tab-home .card{width:100%;margin-bottom:10px;}
+}
 /* airlog 카드 overflow: 일반 모바일 규칙(.card{overflow:visible})으로 대체됨 */
 
 /* 힌트: 웹 전체(769px+) 완전 숨김 */
