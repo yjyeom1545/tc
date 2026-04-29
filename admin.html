@@ -858,6 +858,17 @@ tr.inspect-row.selected td{background:#eff6ff;}
 <!-- 대기운영기록 탭 -->
 <div id="tab-airlog" class="content hidden">
 
+  <!-- SEMS 내보내기 바 (관리자 전용) -->
+  <div id="sems-export-bar" style="display:none;background:white;border:1px solid #e8ecf0;border-radius:8px;padding:12px 16px;margin-bottom:14px;">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:12px;font-weight:700;color:#0f2744;white-space:nowrap;">SEMS 내보내기</span>
+      <input type="month" id="sems-month" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;">
+      <button onclick="exportSemsEmission()" style="padding:7px 14px;background:#1d4ed8;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;">배출구 가동시간 내보내기</button>
+      <button onclick="exportSemsFacility()" style="padding:7px 14px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;">시설운전사항 내보내기</button>
+      <span id="sems-export-err" style="font-size:11px;color:#dc2626;"></span>
+    </div>
+  </div>
+
   <!-- 법령 안내 배너 (기본: 접힘) -->
   <div style="background:white;border:1px solid #e8ecf0;border-radius:8px;margin-bottom:14px;overflow:hidden;border-left:3px solid #dc2626;">
     <button onclick="toggleAirLawBanner()" id="air-law-toggle"
@@ -1295,6 +1306,12 @@ function checkAuth(){
     if(adminSection)adminSection.style.display='none';
     var moreUsers=document.getElementById('more-item-users');
     if(moreUsers)moreUsers.style.display='none';
+  }
+  var semsBar=document.getElementById('sems-export-bar');
+  if(semsBar&&isAdmin()){
+    semsBar.style.display='block';
+    var smEl=document.getElementById('sems-month');
+    if(smEl&&!smEl.value){var _dn=new Date();smEl.value=_dn.getFullYear()+'-'+String(_dn.getMonth()+1).padStart(2,'0');}
   }
   return true;
 }
@@ -2709,6 +2726,105 @@ async function exportAirLogExcel(){
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(emRows),'배출구가동시간');
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(prRows),'방지시설전력');
   XLSX.writeFile(wb,'대기운영기록_'+date+'.xlsx');
+}
+
+async function exportSemsEmission(){
+  var errEl=document.getElementById('sems-export-err');
+  errEl.textContent='';
+  var month=document.getElementById('sems-month').value;
+  if(!month){errEl.textContent='월을 선택해주세요.';return;}
+  var parts=month.split('-'),year=parts[0],mon=parts[1];
+  var dateFrom=year+'-'+mon+'-01';
+  var lastDay=new Date(+year,+mon,0).getDate();
+  var dateTo=year+'-'+mon+'-'+String(lastDay).padStart(2,'0');
+  try{
+    var data=await sb('air_operation_log','?facility_type=eq.배출구&log_date=gte.'+dateFrom+'&log_date=lte.'+dateTo+'&select=*&order=log_date.asc,facility_no.asc');
+    if(!data||!data.length){errEl.textContent='해당 월에 배출구 데이터가 없습니다.';return;}
+    var dates=[...new Set(data.map(function(r){return r.log_date;}))].sort();
+    var lookup={};
+    data.forEach(function(r){if(!lookup[r.log_date])lookup[r.log_date]={};lookup[r.log_date][r.facility_no]=r;});
+    var emFac=[
+      {no:1,id:'FCL000155482',seq:2,lic:1,name:'굴뚝1-야외탈청'},
+      {no:2,id:'FCL000155483',seq:3,lic:2,name:'굴뚝2-야외도장1'},
+      {no:3,id:'FCL000155484',seq:4,lic:3,name:'굴뚝3-야외도장2'},
+      {no:4,id:'FCL000155485',seq:5,lic:4,name:'굴뚝4-야외도장3'},
+      {no:5,id:'FCL000155486',seq:6,lic:5,name:'굴뚝5-실내건조'},
+      {no:6,id:'FCL000155487',seq:7,lic:6,name:'굴뚝6-실내건조도장1'},
+      {no:7,id:'FCL000155488',seq:8,lic:7,name:'굴뚝7-실내건조도장2'},
+      {no:8,id:'FCL000155489',seq:9,lic:8,name:'굴뚝8-연마'},
+      {no:9,id:'FCL000155490',seq:10,lic:9,name:'굴뚝9-도장집진(1000㎥)'}
+    ];
+    var rows=[['조사년도','배출구시설ID','배출구일련번호','허가증상배출구일련번호','배출구명','IEPS시설번호','가동일자','가동시간(시간)','가동시간(분)','비고']];
+    dates.forEach(function(date){
+      var dateStr=date.replace(/-/g,'');
+      var dayData=lookup[date]||{};
+      emFac.forEach(function(f){
+        var hrs,mins;
+        if(f.no===8){hrs='00';mins='00';}
+        else{
+          var rec=dayData[f.no];
+          if(!rec)return;
+          var opH=parseFloat(rec.operation_hours)||0;
+          var h=Math.floor(opH);
+          var m=Math.round((opH-h)*60);
+          hrs=String(h).padStart(2,'0');
+          mins=String(m).padStart(2,'0');
+        }
+        rows.push([year,f.id,f.seq,f.lic,f.name,'',dateStr,hrs,mins,'']);
+      });
+    });
+    if(rows.length<=1){errEl.textContent='내보낼 데이터가 없습니다.';return;}
+    var wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'배출구가동시간');
+    XLSX.writeFile(wb,'배출구가동시간_'+year+mon+'.xlsx');
+  }catch(e){errEl.textContent='내보내기 실패: '+e.message;}
+}
+
+async function exportSemsFacility(){
+  var errEl=document.getElementById('sems-export-err');
+  errEl.textContent='';
+  var month=document.getElementById('sems-month').value;
+  if(!month){errEl.textContent='월을 선택해주세요.';return;}
+  var parts=month.split('-'),year=parts[0],mon=parts[1];
+  var dateFrom=year+'-'+mon+'-01';
+  var lastDay=new Date(+year,+mon,0).getDate();
+  var dateTo=year+'-'+mon+'-'+String(lastDay).padStart(2,'0');
+  try{
+    var data=await sb('air_operation_log','?facility_type=eq.방지시설&log_date=gte.'+dateFrom+'&log_date=lte.'+dateTo+'&select=*&order=log_date.asc,facility_no.asc');
+    if(!data||!data.length){errEl.textContent='해당 월에 방지시설 데이터가 없습니다.';return;}
+    var dates=[...new Set(data.map(function(r){return r.log_date;}))].sort();
+    var lookup={};
+    data.forEach(function(r){if(!lookup[r.log_date])lookup[r.log_date]={};lookup[r.log_date][r.facility_no]=r;});
+    var facItems=[
+      {db:1, bSeq:2, bLic:1, bName:'굴뚝1-야외탈청',          fID:'FCL000323470',fSeq:1,fLic:1,fName:'여과집진시설1',      meter:1},
+      {db:2, bSeq:3, bLic:2, bName:'굴뚝2-야외도장1',         fID:'FCL000323471',fSeq:1,fLic:1,fName:'흡착에의한시설2',     meter:1},
+      {db:3, bSeq:4, bLic:3, bName:'굴뚝3-야외도장2',         fID:'FCL000323472',fSeq:1,fLic:1,fName:'흡착에의한시설3',     meter:1},
+      {db:4, bSeq:5, bLic:4, bName:'굴뚝4-야외도장3',         fID:'FCL000323473',fSeq:1,fLic:1,fName:'흡착에의한시설4',     meter:1},
+      {db:5, bSeq:6, bLic:5, bName:'굴뚝5-실내건조',          fID:'FCL000323474',fSeq:1,fLic:1,fName:'흡착에의한시설5',     meter:1},
+      {db:6, bSeq:7, bLic:6, bName:'굴뚝6-실내건조도장1',     fID:'FCL000323475',fSeq:1,fLic:1,fName:'2차흡착에의한시설',  meter:1},
+      {db:6, bSeq:7, bLic:6, bName:'굴뚝6-실내건조도장1',     fID:'FCL000323476',fSeq:2,fLic:2,fName:'1차여과에의한시설',  meter:0},
+      {db:7, bSeq:8, bLic:7, bName:'굴뚝7-실내건조도장2',     fID:'FCL000323477',fSeq:1,fLic:1,fName:'2차흡착에의한시설',  meter:1},
+      {db:7, bSeq:8, bLic:7, bName:'굴뚝7-실내건조도장2',     fID:'FCL000323478',fSeq:2,fLic:2,fName:'1차여과에의한시설',  meter:0},
+      {db:8, bSeq:9, bLic:8, bName:'굴뚝8-연마',              fID:'FCL000323479',fSeq:1,fLic:1,fName:'여과집진시설',       meter:1},
+      {db:9, bSeq:10,bLic:9, bName:'굴뚝9-도장집진(1000㎥)', fID:'FCL000323480',fSeq:1,fLic:1,fName:'2차흡착에의한시설',  meter:1},
+      {db:9, bSeq:10,bLic:9, bName:'굴뚝9-도장집진(1000㎥)', fID:'FCL000323481',fSeq:2,fLic:2,fName:'1차여과집진시설',    meter:0}
+    ];
+    var header=['조사년도','배출구일련번호','허가증상배출구일련번호','배출구명','방지시설ID','방지시설일련번호','허가증상방지시설번호','방지시설명','IEPS시설번호','적산전력계번호','운전일자','전력검침량(kWh)'];
+    var rows=[header,new Array(header.length).fill('')];
+    dates.forEach(function(date){
+      var dateStr=date.replace(/-/g,'');
+      var dayData=lookup[date]||{};
+      facItems.forEach(function(f){
+        var rec=dayData[f.db];
+        var power='';
+        if(rec&&rec.power_today!=null)power=parseFloat(rec.power_today).toFixed(3);
+        rows.push([year,f.bSeq,f.bLic,f.bName,f.fID,f.fSeq,f.fLic,f.fName,'',f.meter,dateStr,power]);
+      });
+    });
+    var wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'시설운전사항');
+    XLSX.writeFile(wb,'시설운전사항_'+year+mon+'.xlsx');
+  }catch(e){errEl.textContent='내보내기 실패: '+e.message;}
 }
 
 var selectedAirFacilities=[];
