@@ -499,8 +499,8 @@ tr.inspect-row.selected td{background:#eff6ff;}
     </div>
   </div>
 
-  <!-- 3분할: 점검이력 / 여과지 / 폐유고상 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;" class="dash-2col-grid" id="dash-2col-grid">
+  <!-- 2분할: 점검이력 / 폐유고상 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" class="dash-2col-grid" id="dash-2col-grid">
 
     <!-- 점검이력 요약 -->
     <div class="card" style="border-radius:10px;border-width:0.5px;">
@@ -518,23 +518,6 @@ tr.inspect-row.selected td{background:#eff6ff;}
         </div>
         <div style="font-size:10px;font-weight:600;color:#9ca3af;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;">최신 미개선</div>
         <div id="dash-insp-list"><div style="font-size:12px;color:#d1d5db;padding:8px 0;">-</div></div>
-      </div>
-    </div>
-
-    <!-- 여과지 필터 교체 -->
-    <div class="card" style="border-radius:10px;border-width:0.5px;">
-      <div class="table-header"><span class="table-title">여과지 필터 교체</span><button onclick="showTab('filter')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button></div>
-      <div style="padding:12px 16px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div style="background:#f8fafc;border:0.5px solid #e8ecf0;border-radius:8px;padding:10px 12px;">
-            <div style="font-size:22px;font-weight:700;color:#0f2744;line-height:1;" id="dash-f-month">-</div>
-            <div style="font-size:10px;color:#9ca3af;margin-top:3px;">이번 달 교체</div>
-          </div>
-          <div style="background:#f8fafc;border:0.5px solid #e8ecf0;border-radius:8px;padding:10px 12px;">
-            <div style="font-size:22px;font-weight:700;color:#0f2744;line-height:1;" id="dash-f-qty">-</div>
-            <div style="font-size:10px;color:#9ca3af;margin-top:3px;">이번 달 수량</div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -590,7 +573,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
 .dash-3col-grid,.dash-2col-grid{align-items:start;}
 @media(max-width:1100px){.dash-3col-grid{grid-template-columns:1fr 1fr !important;}}
 @media(max-width:700px){.dash-3col-grid{grid-template-columns:1fr !important;}.dash-2col-grid{grid-template-columns:1fr !important;}#dash-2col-grid{grid-template-columns:1fr !important;}}
-@media(max-width:900px){.dash-2col-grid{grid-template-columns:1fr !important;}#dash-2col-grid{grid-template-columns:1fr 1fr !important;}}
+@media(max-width:900px){.dash-2col-grid{grid-template-columns:1fr 1fr !important;}}
 /* ── 앱 전용 대시보드: 단일 컬럼 (body.is-pwa + ≤768px) ── */
 @media(max-width:768px){
   body.is-pwa #tab-home #dash-2col-grid,
@@ -1434,7 +1417,6 @@ async function loadDashboard(){
 
   // 병렬 로드
   var results=await Promise.all([
-    sb('filter_records','?select=*&record_date=gte.'+ym+'-01&order=record_date.desc'),
     sb('waste_oil_storage','?select=*&order=line_name.asc'),
     sb('air_operation_log','?log_date=gte.'+ym+'-01&facility_type=eq.배출구&select=log_date,submitted_by&order=log_date.asc'),
     sb('air_operation_log','?log_date=gte.'+weekStartStr+'&log_date=lte.'+weekEndStr+'&facility_type=eq.배출구&select=log_date,submitted_by'),
@@ -1444,15 +1426,14 @@ async function loadDashboard(){
     sb('waste_oil_requests','?select=line_name,pack_type,bag_count,status,checked&order=request_date.desc'),
     sb('inspection_records','?select=id,inspect_date,issue,status&order=inspect_date.desc')
   ]);
-  var filterMonth=results[0]||[];
-  var storageData=results[1]||[];
-  var airlogMonth=results[2]||[];
-  var airlogWeek=results[3]||[];
-  var wasteSchedule=results[4]||[];
-  var airSchedule=results[5]||[];
-  var airlogYear=results[6]||[];
-  var wasteRequests=results[7]||[];
-  var inspectAll=results[8]||[];
+  var storageData=results[0]||[];
+  var airlogMonth=results[1]||[];
+  var airlogWeek=results[2]||[];
+  var wasteSchedule=results[3]||[];
+  var airSchedule=results[4]||[];
+  var airlogYear=results[5]||[];
+  var wasteRequests=results[6]||[];
+  var inspectAll=results[7]||[];
 
   // ── 알림칩 ──
   var inspectMiss=inspectAll.filter(function(r){return r.status==='miss';});
@@ -1489,11 +1470,6 @@ async function loadDashboard(){
       '</div>';
     }).join('');}
   }
-
-  // ── 필터 교체 현황 ──
-  var fQty=filterMonth.reduce(function(s,r){return s+(r.quantity||0);},0);
-  document.getElementById('dash-f-month').textContent=filterMonth.length;
-  document.getElementById('dash-f-qty').textContent=fQty;
 
   // ── 위젯3: 라인별 보관량 (톤백/링팩 구분) ──
   var dashUnconfirmedEl=document.getElementById('dash-waste-unconfirmed');
