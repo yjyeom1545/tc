@@ -178,6 +178,16 @@ document.addEventListener('visibilitychange',function(){
 });
 requestWakeLock();
 
+// URL param: ?room=상도 → 상도룸만, ?room=하도 → 하도룸만
+(function(){
+  var param=(new URLSearchParams(window.location.search).get('room')||'').trim();
+  if(param==='상도'){
+    document.getElementById('rbtn-2').style.display='none';
+  }else if(param==='하도'){
+    document.querySelector('.room-row').style.display='none';
+  }
+})();
+
 // Room selection
 function selectRoom(idx){
   selectedIdx=idx;
