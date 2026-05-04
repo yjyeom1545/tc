@@ -2,260 +2,233 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TC 도장시설 여과지 필터 교체 기록</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>필터 교체 등록</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Noto Sans KR',sans-serif;background:#f4f6f9;min-height:100vh;padding:2rem 1rem;}
-  .wrap{max-width:480px;margin:0 auto;}
-  .header{text-align:center;margin-bottom:1.5rem;}
-  .logo{display:inline-block;background:#1a3a5c;color:white;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:1px;margin-bottom:10px;}
-  .header h1{font-size:20px;font-weight:700;color:#1a3a5c;margin-bottom:4px;}
-  .header p{font-size:13px;color:#6b7280;}
-  .lang-toggle{display:flex;gap:8px;justify-content:center;margin-bottom:1.5rem;}
-  .lang-btn{padding:5px 14px;border:1px solid #d1d5db;border-radius:20px;background:white;color:#6b7280;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
-  .lang-btn.active{background:#1a3a5c;color:white;border-color:#1a3a5c;}
-  .card{background:white;border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
-  .field-label{font-size:13px;color:#6b7280;margin-bottom:10px;font-weight:500;}
-  .required{color:#ef4444;}
-  input[type=date],input[type=text]{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:14px;font-family:'Noto Sans KR',sans-serif;color:#111827;background:white;outline:none;}
-  input[type=date]:focus,input[type=text]:focus{border-color:#1a3a5c;}
-  .radio-group{display:flex;flex-direction:column;gap:7px;}
-  .radio-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:14px;color:#374151;}
-  .radio-item.selected{border-color:#1a3a5c;background:#eef3f9;color:#1a3a5c;}
-  .radio-dot{width:17px;height:17px;border-radius:50%;border:1.5px solid #d1d5db;flex-shrink:0;}
-  .radio-item.selected .radio-dot{border:5px solid #1a3a5c;background:white;}
-  .etc-wrap{margin-top:8px;}
-  .room-block{border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:8px;}
-  .room-block.checked{border-color:#1a3a5c;}
-  .room-header{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;font-size:14px;color:#374151;background:white;}
-  .room-block.checked .room-header{background:#eef3f9;color:#1a3a5c;}
-  .checkbox-box{width:18px;height:18px;border-radius:4px;border:1.5px solid #d1d5db;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:white;}
-  .room-block.checked .checkbox-box{background:#1a3a5c;border-color:#1a3a5c;}
-  .checkmark{display:none;width:10px;height:7px;border-left:2px solid white;border-bottom:2px solid white;transform:rotate(-45deg) translate(1px,-1px);}
-  .room-block.checked .checkmark{display:block;}
-  .room-qty{padding:12px;background:#f9fafb;border-top:1px solid #e5e7eb;}
-  .room-qty-label{font-size:12px;color:#6b7280;margin-bottom:8px;}
-  .qty-group{display:flex;gap:8px;}
-  .qty-btn{flex:1;padding:11px 8px;border:1.5px solid #e5e7eb;border-radius:8px;background:white;font-size:16px;font-weight:700;color:#9ca3af;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
-  .qty-btn.selected{border:2.5px solid #1a3a5c;background:#eef3f9;color:#1a3a5c;}
-  textarea{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:14px;font-family:'Noto Sans KR',sans-serif;color:#111827;background:white;resize:none;height:80px;outline:none;}
-  textarea:focus{border-color:#1a3a5c;}
-  .submit-btn{width:100%;padding:14px;background:#1a3a5c;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:4px;}
-  .submit-btn:disabled{background:#9ca3af;cursor:not-allowed;}
-  .hidden{display:none;}
-  .success-wrap{text-align:center;padding:2.5rem 1rem;}
-  .success-icon{width:56px;height:56px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
-  .success-icon svg{width:28px;height:28px;stroke:#059669;fill:none;stroke-width:2.5;}
-  .success-title{font-size:17px;font-weight:700;color:#1a3a5c;margin-bottom:6px;}
-  .success-msg{font-size:13px;color:#6b7280;margin-bottom:20px;}
-  .success-detail{text-align:left;border-top:1px solid #e5e7eb;padding-top:14px;font-size:13px;color:#6b7280;display:flex;flex-direction:column;gap:7px;}
-  .success-detail b{color:#374151;font-weight:500;}
-  .reset-btn{width:100%;padding:12px;background:white;color:#1a3a5c;border:1.5px solid #1a3a5c;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:16px;}
-  .close-btn{width:100%;padding:12px;background:white;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:8px;}
-  .order-section{background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px;}
-  .order-section-title{font-size:13px;font-weight:700;color:#92400e;margin-bottom:10px;}
-  .order-check-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;cursor:pointer;}
-  .order-checkbox{width:18px;height:18px;border-radius:4px;border:1.5px solid #d97706;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:white;}
-  .order-checkbox.checked{background:#d97706;border-color:#d97706;}
-  .order-checkmark{display:none;width:10px;height:7px;border-left:2px solid white;border-bottom:2px solid white;transform:rotate(-45deg) translate(1px,-1px);}
-  .order-checkbox.checked .order-checkmark{display:block;}
-  .order-check-text{font-size:13px;color:#92400e;line-height:1.5;}
-  .order-btn{width:100%;padding:12px;background:#d97706;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
-  .order-btn:disabled{background:#fcd34d;color:#92400e;cursor:not-allowed;opacity:0.6;}
-  .order-done{text-align:center;padding:10px;font-size:13px;color:#059669;font-weight:500;}
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#374151;color:white;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;z-index:999;}
-  .toast.show{opacity:1;}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f4f8;min-height:100vh;}
+
+.header{background:#1a3a5c;color:white;text-align:center;padding:24px 16px 32px;}
+.header .tag{display:inline-block;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);font-size:11px;font-weight:600;padding:3px 12px;border-radius:12px;letter-spacing:1px;margin-bottom:10px;}
+.header h1{font-size:24px;font-weight:700;letter-spacing:-0.3px;}
+.header .today{font-size:14px;color:#93c5fd;margin-top:6px;}
+
+.main{max-width:390px;margin:0 auto;padding:24px 16px 40px;}
+
+.sec-label{font-size:12px;font-weight:700;color:#9ca3af;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:10px;margin-top:24px;}
+
+/* Room buttons */
+.room-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.room-btn{
+  height:82px;width:100%;
+  border:2.5px solid #e5e7eb;border-radius:14px;
+  background:white;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;font-size:19px;font-weight:700;color:#374151;
+  text-align:center;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06);
+  transition:border-color 0.12s,background 0.12s,color 0.12s;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+.room-btn:active{opacity:0.75;}
+.room-btn.selected{border-color:#1a3a5c;border-width:3px;background:#eef3f9;color:#1a3a5c;}
+
+/* Quantity */
+.qty-wrap{
+  background:white;border-radius:14px;padding:20px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06);
+}
+.qty-left-label{font-size:17px;font-weight:600;color:#374151;}
+.qty-controls{display:flex;align-items:center;gap:18px;}
+.qty-ctrl-btn{
+  width:54px;height:54px;border-radius:50%;
+  border:2.5px solid #1a3a5c;background:white;color:#1a3a5c;
+  font-size:30px;font-weight:300;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;user-select:none;flex-shrink:0;
+  transition:background 0.1s;
+}
+.qty-ctrl-btn:active{background:#eef3f9;}
+.qty-ctrl-btn:disabled{border-color:#e5e7eb;color:#d1d5db;cursor:not-allowed;}
+.qty-num-wrap{display:flex;align-items:baseline;gap:4px;}
+.qty-num{font-size:40px;font-weight:700;color:#1a3a5c;line-height:1;min-width:44px;text-align:center;}
+.qty-unit{font-size:16px;color:#6b7280;font-weight:500;}
+
+/* Date */
+.date-wrap{
+  background:white;border-radius:14px;padding:18px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06);
+}
+.date-lbl{font-size:16px;color:#6b7280;}
+.date-val{font-size:17px;font-weight:700;color:#1a3a5c;}
+
+/* Submit */
+.submit-btn{
+  width:100%;padding:22px;
+  background:#1a3a5c;color:white;border:none;border-radius:14px;
+  font-size:19px;font-weight:700;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  -webkit-tap-highlight-color:transparent;
+  transition:opacity 0.15s;
+}
+.submit-btn:disabled{background:#9ca3af;cursor:not-allowed;}
+.submit-btn:not(:disabled):active{opacity:0.82;}
+
+/* Success overlay */
+.success-overlay{
+  position:fixed;inset:0;background:white;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:100;opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+.success-overlay.show{opacity:1;pointer-events:auto;}
+.success-circle{
+  width:100px;height:100px;border-radius:50%;background:#d1fae5;
+  display:flex;align-items:center;justify-content:center;margin-bottom:24px;
+}
+.success-circle svg{width:50px;height:50px;stroke:#059669;fill:none;stroke-width:3;}
+.success-title{font-size:30px;font-weight:700;color:#1a3a5c;margin-bottom:10px;}
+.success-info{font-size:16px;color:#6b7280;text-align:center;line-height:1.6;}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
+  background:#374151;color:white;padding:12px 24px;border-radius:10px;
+  font-size:14px;opacity:0;transition:opacity 0.3s;pointer-events:none;
+  white-space:nowrap;z-index:200;
+}
+.toast.show{opacity:1;}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="lang-toggle">
-    <button class="lang-btn active" onclick="setLang('ko')">한국어</button>
-    <button class="lang-btn" onclick="setLang('en')">English</button>
+
+<div class="header">
+  <div class="tag">TC 도장시설</div>
+  <h1>필터 교체 등록</h1>
+  <div class="today" id="header-today"></div>
+</div>
+
+<div class="main">
+  <div class="sec-label" style="margin-top:0;">시설 선택</div>
+  <div class="room-row">
+    <button class="room-btn" id="rbtn-0" onclick="selectRoom(0)">상도룸 #1</button>
+    <button class="room-btn" id="rbtn-1" onclick="selectRoom(1)">상도룸 #2</button>
   </div>
-  <div class="header">
-    <div class="logo" id="tag">TC 도장시설</div>
-    <h1 id="title">여과지 필터 교체 기록</h1>
-    <p id="subtitle">교체 후 아래 항목을 작성하고 제출해주세요.</p>
-  </div>
-  <div id="form-view">
-    <div class="card">
-      <div class="field-label" id="lbl-date">교체 날짜 <span class="required">*</span></div>
-      <input type="date" id="date-input">
+  <button class="room-btn" id="rbtn-2" onclick="selectRoom(2)">하도룸</button>
+
+  <div class="sec-label">수량</div>
+  <div class="qty-wrap">
+    <div class="qty-left-label">교체 수량</div>
+    <div class="qty-controls">
+      <button class="qty-ctrl-btn" id="qty-minus" onclick="changeQty(-1)">−</button>
+      <div class="qty-num-wrap">
+        <div class="qty-num" id="qty-display">1</div>
+        <span class="qty-unit">개</span>
+      </div>
+      <button class="qty-ctrl-btn" onclick="changeQty(1)">+</button>
     </div>
-    <div class="card">
-      <div class="field-label" id="lbl-person">교체 담당자 <span class="required">*</span></div>
-      <div class="radio-group" id="person-group">
-        <div class="radio-item" onclick="selectPerson(this,'성시훈')"><div class="radio-dot"></div>성시훈</div>
-        <div class="radio-item" onclick="selectPerson(this,'금미연')"><div class="radio-dot"></div>금미연</div>
-        <div class="radio-item" onclick="selectPerson(this,'강태문')"><div class="radio-dot"></div>강태문</div>
-        <div class="radio-item" onclick="selectPerson(this,'남대희')"><div class="radio-dot"></div>남대희</div>
-        <div class="radio-item" onclick="selectPerson(this,'사치스')"><div class="radio-dot"></div>사치스</div>
-        <div class="radio-item" onclick="selectPerson(this,'라히루')"><div class="radio-dot"></div>라히루</div>
-        <div class="radio-item" onclick="selectPerson(this,'__etc__')"><div class="radio-dot"></div><span id="lbl-etc">기타</span></div>
-      </div>
-      <div class="etc-wrap hidden" id="etc-wrap">
-        <input type="text" id="etc-input" placeholder="담당자 이름 직접 입력">
-      </div>
-    </div>
-    <div class="card">
-      <div class="field-label" id="lbl-room">교체 시설명 <span class="required">*</span> <span style="font-size:11px;color:#9ca3af;" id="lbl-multi">(중복 선택 가능)</span></div>
-      <div class="room-block" id="rb-0">
-        <div class="room-header" onclick="toggleRoom(0)"><div class="checkbox-box"><div class="checkmark"></div></div><div><div id="r1">상도룸</div><div style="font-size:11px;color:#9ca3af" id="r1s">흡입구 3개 기준</div></div></div>
-        <div class="room-qty hidden" id="rq-0"><div class="room-qty-label" id="qty-lbl-0">교체 수량 <span class="required">*</span></div><div class="qty-group" id="qg-0"><button class="qty-btn" onclick="selectQty(event,0,1)">1</button><button class="qty-btn" onclick="selectQty(event,0,2)">2</button><button class="qty-btn" onclick="selectQty(event,0,3)">3</button></div></div>
-      </div>
-      <div class="room-block" id="rb-1">
-        <div class="room-header" onclick="toggleRoom(1)"><div class="checkbox-box"><div class="checkmark"></div></div><div><div id="r2">하도룸 #1</div><div style="font-size:11px;color:#9ca3af" id="r2s">흡입구 2개 기준</div></div></div>
-        <div class="room-qty hidden" id="rq-1"><div class="room-qty-label" id="qty-lbl-1">교체 수량 <span class="required">*</span></div><div class="qty-group" id="qg-1"><button class="qty-btn" onclick="selectQty(event,1,1)">1</button><button class="qty-btn" onclick="selectQty(event,1,2)">2</button></div></div>
-      </div>
-      <div class="room-block" id="rb-2">
-        <div class="room-header" onclick="toggleRoom(2)"><div class="checkbox-box"><div class="checkmark"></div></div><div><div id="r3">하도룸 #2</div><div style="font-size:11px;color:#9ca3af" id="r3s">흡입구 2개 기준</div></div></div>
-        <div class="room-qty hidden" id="rq-2"><div class="room-qty-label" id="qty-lbl-2">교체 수량 <span class="required">*</span></div><div class="qty-group" id="qg-2"><button class="qty-btn" onclick="selectQty(event,2,1)">1</button><button class="qty-btn" onclick="selectQty(event,2,2)">2</button></div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="field-label" id="lbl-note">특이사항 <span style="color:#9ca3af;font-size:11px;">(선택)</span></div>
-      <textarea id="note-input" placeholder="여과지 재고 부족 / 설비 파손 / 기계장치 고장 등"></textarea>
-    </div>
-    <button class="submit-btn" id="submit-btn" onclick="submitForm()">제출하기</button>
   </div>
 
-  <div class="order-section" id="order-section" style="margin-top:4px;">
-    <div class="order-section-title" id="lbl-order-title">여과지 발주 요청</div>
-    <div class="order-check-row" onclick="toggleOrderCheck()">
-      <div class="order-checkbox" id="order-checkbox"><div class="order-checkmark"></div></div>
-      <div class="order-check-text" id="lbl-order-check">여과지 재고가 부족하여 발주가 필요함을 확인했습니다.</div>
-    </div>
-    <button class="order-btn" id="order-btn" disabled onclick="submitOrderRequest()">발주 요청 전송</button>
+  <div class="sec-label">날짜</div>
+  <div class="date-wrap">
+    <div class="date-lbl">교체 날짜</div>
+    <div class="date-val" id="date-display"></div>
   </div>
-  <div class="hidden card" id="success-view">
-    <div class="success-wrap">
-      <div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-      <div class="success-title">제출 완료</div>
-      <div class="success-msg">교체 기록이 저장되었습니다.</div>
-      <div class="success-detail" id="success-detail"></div>
-      <button class="reset-btn" onclick="resetForm()">새 기록 작성</button>
-      <button class="close-btn" onclick="window.close()">나가기</button>
-    </div>
+
+  <div style="margin-top:32px;">
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()" disabled>등록</button>
   </div>
 </div>
+
+<div class="success-overlay" id="success-overlay">
+  <div class="success-circle">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  </div>
+  <div class="success-title">✓ 등록 완료</div>
+  <div class="success-info" id="success-info"></div>
+</div>
+
 <div class="toast" id="toast"></div>
+
 <script>
-var SUPABASE_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
-var SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
-var lang='ko',selPerson=null,etcMode=false,roomSelected=[false,false,false],roomQty=[null,null,null];
+var SB_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
 
-var T={
-  ko:{tag:'TC 도장시설',title:'여과지 필터 교체 기록',subtitle:'교체 후 아래 항목을 작성하고 제출해주세요.',date:'교체 날짜',person:'교체 담당자',room:'교체 시설명',multi:'(중복 선택 가능)',note:'특이사항',opt:'(선택)',qty:'교체 수량',submit:'제출하기',submitting:'저장 중...',reset:'새 기록 작성',close:'나가기',r1:'상도룸',r1s:'흡입구 3개 기준',r2:'하도룸 #1',r2s:'흡입구 2개 기준',r3:'하도룸 #2',r3s:'흡입구 2개 기준',etc:'기타',etcPh:'담당자 이름 직접 입력',notePh:'여과지 재고 부족 / 설비 파손 / 기계장치 고장 등',dateLabel:'날짜',personLabel:'담당자',noteLabel:'특이사항',
-    orderTitle:'Filter Order Request',orderName:'Requester Name',orderNamePh:'Enter name',orderCheck:'I confirm that filter stock is low and a purchase order is needed.',orderBtn:'Submit Order Request',orderSending:'Sending...',orderDone:'Order request sent successfully.'},
-  en:{tag:'TC Paint Facility',title:'Filter Replacement Log',subtitle:'Please fill in the details after replacing the filter.',date:'Replacement Date',person:'Technician',room:'Facility',multi:'(multiple allowed)',note:'Notes',opt:'(optional)',qty:'Quantity',submit:'Submit',submitting:'Saving...',reset:'New Entry',close:'Close',r1:'Top Coat Room',r1s:'3 inlets',r2:'Primer Room #1',r2s:'2 inlets',r3:'Primer Room #2',r3s:'2 inlets',etc:'Other',etcPh:'Enter technician name',notePh:'Stock shortage / Equipment damage / Machine failure, etc.',dateLabel:'Date',personLabel:'Technician',noteLabel:'Notes',
-    orderTitle:'Filter Order Request',orderName:'Requester Name',orderNamePh:'Enter name',orderCheck:'I confirm that filter stock is low and a purchase order is needed.',orderBtn:'Submit Order Request',orderSending:'Sending...',orderDone:'Order request sent successfully.'}
-};
-function setLang(l){
-  lang=l;
-  document.querySelectorAll('.lang-btn').forEach(function(b,i){b.classList.toggle('active',(i===0&&l==='ko')||(i===1&&l==='en'));});
-  var d=T[l];
-  document.getElementById('title').textContent=d.title;
-  document.getElementById('subtitle').textContent=d.subtitle;
-  document.getElementById('lbl-date').innerHTML=d.date+' <span class="required">*</span>';
-  document.getElementById('lbl-person').innerHTML=d.person+' <span class="required">*</span>';
-  document.getElementById('lbl-room').innerHTML=d.room+' <span class="required">*</span> <span style="font-size:11px;color:#9ca3af;">'+d.multi+'</span>';
-  document.getElementById('lbl-note').innerHTML=d.note+' <span style="color:#9ca3af;font-size:11px;">'+d.opt+'</span>';
-  document.getElementById('lbl-etc').textContent=d.etc;
-  document.getElementById('etc-input').placeholder=d.etcPh;
-  document.getElementById('note-input').placeholder=d.notePh;
-  document.getElementById('r1').textContent=d.r1; document.getElementById('r1s').textContent=d.r1s;
-  document.getElementById('r2').textContent=d.r2; document.getElementById('r2s').textContent=d.r2s;
-  document.getElementById('r3').textContent=d.r3; document.getElementById('r3s').textContent=d.r3s;
-  document.getElementById('lbl-note').innerHTML=d.note+' <span style="color:#9ca3af;font-size:11px;">'+d.opt+'</span>';
-  for(var i=0;i<3;i++)document.getElementById('qty-lbl-'+i).innerHTML=d.qty+' <span class="required">*</span>';
-  document.getElementById('submit-btn').textContent=d.submit;
-  document.getElementById('tag').textContent=d.tag;
-  document.getElementById('lbl-order-title').textContent=d.orderTitle;
-  document.getElementById('lbl-order-name').textContent=d.orderName;
-  document.getElementById('order-name-input').placeholder=d.orderNamePh;
-  document.getElementById('lbl-order-check').textContent=d.orderCheck;
-  document.getElementById('order-btn').textContent=d.orderBtn;
+var ROOMS=['상도룸 #1','상도룸 #2','하도룸'];
+var selectedIdx=-1;
+var qty=1;
+var wakeLock=null;
+
+function getTodayISO(){return new Date().toISOString().split('T')[0];}
+function getTodayKo(){var d=new Date();return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일';}
+
+document.getElementById('header-today').textContent=getTodayKo();
+document.getElementById('date-display').textContent=getTodayKo();
+document.getElementById('qty-minus').disabled=true;
+
+// Wake Lock
+async function requestWakeLock(){
+  if('wakeLock' in navigator){
+    try{wakeLock=await navigator.wakeLock.request('screen');}catch(e){}
+  }
 }
-function selectPerson(el,name){document.querySelectorAll('#person-group .radio-item').forEach(function(i){i.classList.remove('selected');});el.classList.add('selected');selPerson=name;etcMode=(name==='__etc__');document.getElementById('etc-wrap').classList.toggle('hidden',!etcMode);if(etcMode)document.getElementById('etc-input').focus();}
-function toggleRoom(idx){roomSelected[idx]=!roomSelected[idx];var b=document.getElementById('rb-'+idx);var q=document.getElementById('rq-'+idx);if(roomSelected[idx]){b.classList.add('checked');q.classList.remove('hidden');}else{b.classList.remove('checked');q.classList.add('hidden');roomQty[idx]=null;document.querySelectorAll('#qg-'+idx+' .qty-btn').forEach(function(b){b.classList.remove('selected');});}}
-function selectQty(e,ri,qty){e.stopPropagation();document.querySelectorAll('#qg-'+ri+' .qty-btn').forEach(function(b){b.classList.remove('selected');});e.target.classList.add('selected');roomQty[ri]=qty;}
-function getPersonName(){if(!selPerson)return null;if(selPerson==='__etc__'){var v=document.getElementById('etc-input').value.trim();return v||null;}return selPerson;}
-function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible')requestWakeLock();
+});
+requestWakeLock();
 
+// Room selection
+function selectRoom(idx){
+  selectedIdx=idx;
+  for(var i=0;i<3;i++){document.getElementById('rbtn-'+i).classList.toggle('selected',i===idx);}
+  document.getElementById('submit-btn').disabled=false;
+}
+
+// Quantity
+function changeQty(delta){
+  qty=Math.max(1,qty+delta);
+  document.getElementById('qty-display').textContent=qty;
+  document.getElementById('qty-minus').disabled=(qty<=1);
+}
+
+// Toast
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},3000);
+}
+
+// Submit
 async function submitForm(){
-  var date=document.getElementById('date-input').value;
-  var person=getPersonName();
-  if(!date||!person){alert('필수 항목을 모두 입력해주세요.');return;}
-  if(etcMode&&!document.getElementById('etc-input').value.trim()){alert('담당자 이름을 입력해주세요.');return;}
-  if(!roomSelected.some(function(v){return v;})){alert('시설을 선택해주세요.');return;}
-  for(var i=0;i<3;i++){if(roomSelected[i]&&!roomQty[i]){alert('선택한 시설의 수량을 입력해주세요.');return;}}
+  if(selectedIdx<0)return;
   var btn=document.getElementById('submit-btn');
   btn.disabled=true;btn.textContent='저장 중...';
-  var roomNames=['상도룸','하도룸 #1','하도룸 #2'];
-  var records=[];
-  for(var j=0;j<3;j++){if(roomSelected[j])records.push({record_date:date,technician:person,room_name:roomNames[j],quantity:roomQty[j],notes:document.getElementById('note-input').value||null});}
   try{
-    var res=await fetch(SUPABASE_URL+'/rest/v1/filter_records',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'return=minimal'},body:JSON.stringify(records)});
-    if(!res.ok)throw new Error();
-    document.getElementById('form-view').classList.add('hidden');
-    document.getElementById('success-view').classList.remove('hidden');
-    var d=T[lang];
-    var rl='';for(var k=0;k<3;k++){if(roomSelected[k])rl+='<div>'+roomNames[k]+' <b>'+roomQty[k]+'개</b></div>';}
-    var note=document.getElementById('note-input').value;
-    document.getElementById('success-detail').innerHTML='<div>'+d.dateLabel+' <b>'+date+'</b></div><div>'+d.personLabel+' <b>'+person+'</b></div>'+rl+(note?'<div>'+d.noteLabel+' <b>'+note+'</b></div>':'');
-    document.querySelector('.reset-btn').textContent=d.reset;
-    document.querySelector('.close-btn').textContent=d.close;
-  }catch(e){showToast('저장 실패. 네트워크를 확인해주세요.');btn.disabled=false;btn.textContent='제출하기';}
-}
-
-function toggleOrderCheck(){
-  var cb=document.getElementById('order-checkbox');
-  var btn=document.getElementById('order-btn');
-  cb.classList.toggle('checked');
-  btn.disabled=!cb.classList.contains('checked');
-}
-
-async function submitOrderRequest(){
-  var btn=document.getElementById('order-btn');
-  btn.disabled=true;btn.textContent=T[lang].orderSending;
-  try{
-    var res=await fetch(SUPABASE_URL+'/rest/v1/filter_order_requests',{
+    var res=await fetch(SB_URL+'/rest/v1/filter_records',{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'return=minimal'},
-      body:JSON.stringify({request_date:new Date().toISOString().split('T')[0],technician:'작업자',checked:false})
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
+      body:JSON.stringify({record_date:getTodayISO(),room_name:ROOMS[selectedIdx],quantity:qty,created_by:'field'})
     });
-    if(!res.ok)throw new Error();
-    document.getElementById('order-section').innerHTML='<div class="order-done">'+T[lang].orderDone+'</div>';
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    var overlay=document.getElementById('success-overlay');
+    document.getElementById('success-info').textContent=ROOMS[selectedIdx]+' · '+qty+'개\n'+getTodayKo();
+    overlay.classList.add('show');
+    setTimeout(function(){overlay.classList.remove('show');resetForm();},3000);
   }catch(e){
-    showToast(lang==='ko'?'전송 실패. 다시 시도해주세요.':'Failed. Please try again.');
-    btn.disabled=false;btn.textContent=T[lang].orderBtn;
+    showToast('잠시 후 다시 시도해주세요.');
+    btn.disabled=false;btn.textContent='등록';
   }
 }
 
-function resetOrderSection(){
-  var d=T[lang];
-  document.getElementById('order-section').innerHTML=
-    '<div class="order-section-title" id="lbl-order-title">'+d.orderTitle+'</div>'+
-    '<div class="order-check-row" onclick="toggleOrderCheck()"><div class="order-checkbox" id="order-checkbox"><div class="order-checkmark"></div></div><div class="order-check-text" id="lbl-order-check">'+d.orderCheck+'</div></div>'+
-    '<button class="order-btn" id="order-btn" disabled onclick="submitOrderRequest()">'+d.orderBtn+'</button>';
-}
 function resetForm(){
-  resetOrderSection();
-  document.getElementById('form-view').classList.remove('hidden');
-  document.getElementById('success-view').classList.add('hidden');
-  document.getElementById('date-input').value=new Date().toISOString().split('T')[0];
-  document.getElementById('note-input').value='';
-  document.getElementById('etc-input').value='';
-  document.getElementById('etc-wrap').classList.add('hidden');
-  document.querySelectorAll('.radio-item').forEach(function(i){i.classList.remove('selected');});
-  for(var i=0;i<3;i++){roomSelected[i]=false;roomQty[i]=null;document.getElementById('rb-'+i).classList.remove('checked');document.getElementById('rq-'+i).classList.add('hidden');document.querySelectorAll('#qg-'+i+' .qty-btn').forEach(function(b){b.classList.remove('selected');});}
-  selPerson=null;etcMode=false;
-  var btn=document.getElementById('submit-btn');btn.disabled=false;btn.textContent='제출하기';
+  selectedIdx=-1;qty=1;
+  for(var i=0;i<3;i++){document.getElementById('rbtn-'+i).classList.remove('selected');}
+  document.getElementById('qty-display').textContent='1';
+  document.getElementById('qty-minus').disabled=true;
+  document.getElementById('submit-btn').disabled=true;
+  document.getElementById('submit-btn').textContent='등록';
 }
-document.getElementById('date-input').value=new Date().toISOString().split('T')[0];
 </script>
 </body>
 </html>
