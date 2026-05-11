@@ -334,25 +334,52 @@ tr.inspect-row.selected td{background:#eff6ff;}
 /* 월별 일괄 입력 위젯 숨김 (웹/앱 모두) */
 #bulk-filter-widget{display:none !important;}
 
-/* ── 3정5S ── */
-.ss-subtab-bar{display:flex;gap:0;border-bottom:2px solid #e8ecf0;margin-bottom:16px;overflow-x:auto;}
-.ss-subtab{padding:10px 20px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;transition:all 0.12s;}
-.ss-subtab:hover{color:#0f2744;}
-.ss-subtab.active{color:#0f2744;border-bottom-color:#2563eb;font-weight:700;}
+/* ── 3정5S 사이드바 아코디언 ── */
+.nav-parent{position:relative;justify-content:flex-start;}
+.nav-parent-arrow{margin-left:auto;transition:transform 0.2s;opacity:0.5;}
+.nav-parent.open .nav-parent-arrow{transform:rotate(180deg);}
+.nav-children{background:rgba(0,0,0,0.15);}
+.nav-child{padding-left:38px !important;font-size:12px !important;color:rgba(255,255,255,0.5) !important;}
+.nav-child.active{color:white !important;background:rgba(37,99,235,0.2) !important;border-left-color:#3b82f6 !important;}
+.nav-child:hover{color:rgba(255,255,255,0.85) !important;}
+
+/* ── 3정5S 공통 ── */
 .ss-line-btn{padding:7px 14px;border-radius:20px;border:1px solid #e8ecf0;background:white;color:#6b7280;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
 .ss-line-btn:hover{background:#f4f6f9;}
 .ss-line-btn.active{background:#0f2744;color:white;border-color:#0f2744;}
+.ss-seg-bar{display:flex;gap:0;margin-bottom:16px;border-radius:6px;overflow:hidden;border:1px solid #e8ecf0;}
+.ss-seg-btn{flex:1;padding:9px;background:white;border:none;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:#6b7280;transition:all 0.12s;}
+.ss-seg-btn+.ss-seg-btn{border-left:1px solid #e8ecf0;}
+.ss-seg-btn.active{background:#0f2744;color:white;}
 .data-table{width:100%;border-collapse:collapse;font-size:12.5px;}
 .data-table th{text-align:left;padding:8px 12px;font-size:11px;color:#6b7280;font-weight:500;background:#f9fafb;border-bottom:1px solid #f3f4f6;}
 .data-table td{padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#374151;vertical-align:middle;}
 .data-table tbody tr:hover{background:#fafbfc;}
-.ss-score-radio{display:flex;gap:0;justify-content:center;}
-.ss-score-radio input[type=radio]{display:none;}
-.ss-score-radio label{display:inline-flex;align-items:center;justify-content:center;width:36px;height:28px;border:1px solid #e8ecf0;background:white;font-size:12px;font-weight:500;color:#6b7280;cursor:pointer;transition:all 0.1s;}
-.ss-score-radio label:first-of-type{border-radius:4px 0 0 4px;}
-.ss-score-radio label:last-of-type{border-radius:0 4px 4px 0;}
-.ss-score-radio label:not(:first-of-type){border-left:none;}
-.ss-score-radio input[type=radio]:checked+label{background:#0f2744;color:white;border-color:#0f2744;}
+
+/* ── 3정5S 서명 ── */
+.ss-sig-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.ss-sig-item{flex:1;min-width:110px;border:1px solid #e8ecf0;border-radius:8px;padding:10px 12px;background:#f9fafb;text-align:center;transition:all 0.15s;}
+.ss-sig-item.signed{background:#f0fdf4;border-color:#86efac;}
+.ss-sig-name{font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;}
+.ss-sig-btn{width:100%;padding:6px 4px;border:1px solid #d1d5db;background:white;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
+.ss-sig-btn:hover:not(:disabled){background:#0f2744;color:white;border-color:#0f2744;}
+.ss-sig-btn:disabled{opacity:0.35;cursor:default;}
+.ss-sig-btn.signed{background:#16a34a;color:white;border-color:#16a34a;}
+.ss-sig-time{font-size:10px;color:#6b7280;margin-top:4px;min-height:14px;}
+
+/* ── 3정5S 현장개선 카드 ── */
+.ss-imp-card{background:white;border-radius:10px;border:0.5px solid #e8ecf0;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.ss-imp-hdr{padding:12px 44px 12px 14px;cursor:pointer;position:relative;}
+.ss-imp-chevron{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#c4c9d4;font-size:14px;transition:transform 0.22s;}
+.ss-imp-card.open .ss-imp-chevron{transform:translateY(-50%) rotate(180deg);}
+.ss-imp-body{display:none;padding:12px 14px 16px;border-top:1px solid #f3f4f6;}
+.ss-imp-card.open .ss-imp-body{display:block;}
+
+/* ── 3정5S 결과 사이드탭 ── */
+.ss-res-tabs{display:flex;gap:0;margin-bottom:16px;border-radius:6px;overflow:hidden;border:1px solid #e8ecf0;}
+.ss-res-tab{flex:1;padding:9px;background:white;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:#6b7280;transition:all 0.12s;}
+.ss-res-tab+.ss-res-tab{border-left:1px solid #e8ecf0;}
+.ss-res-tab.active{background:#0f2744;color:white;}
 </style>
 </head>
 <body>
@@ -415,9 +442,24 @@ tr.inspect-row.selected td{background:#eff6ff;}
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       환경점검
     </div>
-    <div class="nav-item" id="nav-3s5s" onclick="showTab('3s5s')">
+    <div class="nav-item nav-parent" id="nav-3s5s" onclick="toggle3s5sMenu()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17 14h3m-3 3h3m-3 3h3"/></svg>
       3정5S
+      <svg class="nav-parent-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div id="nav-3s5s-children" class="nav-children" style="display:none;">
+      <div class="nav-item nav-child" id="nav-3s5s-input" onclick="show3s5sPanel('input')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M16 3l5 5-9 9H7v-5l9-9z"/></svg>
+        심사 입력
+      </div>
+      <div class="nav-item nav-child" id="nav-3s5s-improve" onclick="show3s5sPanel('improve')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        현장개선
+      </div>
+      <div class="nav-item nav-child" id="nav-3s5s-result" onclick="show3s5sPanel('result')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        결과
+      </div>
     </div>
     <div class="nav-section" id="nav-section-admin">관리</div>
     <div class="nav-item" id="nav-users" onclick="showTab('users')">
@@ -1261,7 +1303,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
 <!-- 3정5S 탭 -->
 <div id="tab-3s5s" class="content hidden">
 
-  <!-- 비관리자: 개발 중 화면 -->
+  <!-- 개발 중 화면 (비관리자) -->
   <div id="ss-under-construction" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;">
     <div style="width:72px;height:72px;border-radius:50%;background:rgba(15,39,68,0.08);display:flex;align-items:center;justify-content:center;">
       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0f2744" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -1270,139 +1312,224 @@ tr.inspect-row.selected td{background:#eff6ff;}
     <div style="font-size:13px;color:#6b7280;">빠른 시일 내 제공될 예정입니다</div>
   </div>
 
-  <!-- 관리자(yjyeom): 3정5S 심사 시스템 -->
-  <div id="ss-admin-panel" style="display:none;">
+  <!-- 관리자 전용 패널 영역 -->
+  <div id="ss-admin-panels" style="display:none;">
 
-    <!-- 서브탭 헤더 -->
-    <div class="ss-subtab-bar">
-      <button class="ss-subtab active" id="sstab-btn-input" onclick="showSsSubTab('input')">심사 입력</button>
-      <button class="ss-subtab" id="sstab-btn-result" onclick="showSsSubTab('result')">결과·순위</button>
-      <button class="ss-subtab" id="sstab-btn-sheet" onclick="showSsSubTab('sheet')">심사위원별 평가지</button>
-    </div>
-
-    <!-- ① 심사 입력 -->
-    <div id="ss-panel-input" class="ss-panel">
+    <!-- ══ 패널 A: 심사 입력 ══ -->
+    <div id="ss-panel-input" style="display:none;">
       <div class="card">
         <div class="card-body">
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+          <!-- 심사 구분 세그먼트 -->
+          <div class="ss-seg-bar" style="margin-bottom:14px;">
+            <button class="ss-seg-btn active" id="ss-seg-field" onclick="setSsInputSeg('field')">현장심사</button>
+            <button class="ss-seg-btn" id="ss-seg-quality" onclick="setSsInputSeg('quality')">기초품질</button>
+          </div>
+          <!-- 공통 입력 -->
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
             <div class="form-group" style="margin:0;flex:0 0 130px;">
-              <label>년월</label>
+              <label>심사월</label>
               <input type="month" id="ss-input-month" style="font-size:13px;padding:6px 10px;">
             </div>
-            <div class="form-group" style="margin:0;flex:0 0 160px;">
+            <div class="form-group" style="margin:0;flex:1;min-width:140px;">
               <label>심사위원</label>
-              <input type="text" id="ss-inspector-name" placeholder="이름 입력" style="font-size:13px;padding:6px 10px;">
+              <input type="text" id="ss-inspector-name" placeholder="이름 직접 입력" style="font-size:13px;padding:6px 10px;">
             </div>
           </div>
-          <!-- 라인 선택 버튼 -->
-          <div style="margin-bottom:16px;">
+          <!-- 라인 선택 -->
+          <div>
             <div style="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;letter-spacing:0.5px;">라인 선택</div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;" id="ss-line-btns"></div>
+            <div id="ss-quality-no-line" style="display:none;font-size:12px;color:#f59e0b;margin-top:6px;">※ 기초품질 평가는 직영을 제외한 6개 라인이 대상입니다.</div>
           </div>
         </div>
       </div>
 
-      <!-- 현장심사 섹션 -->
-      <div class="card" id="ss-field-card">
+      <!-- 현장심사 테이블 -->
+      <div class="card" id="ss-field-section">
         <div class="table-header">
-          <span class="table-title">현장심사 <span style="font-size:11px;font-weight:400;color:#6b7280;">(30점 만점 · 0~3점)</span></span>
+          <span class="table-title">현장심사 <span style="font-size:11px;font-weight:400;color:#6b7280;">(만점 30점 · 0~3점)</span></span>
           <span id="ss-field-total-badge" style="font-size:13px;font-weight:700;color:#0f2744;">합계: 0 / 30점</span>
         </div>
         <div style="overflow-x:auto;">
-          <table class="data-table" id="ss-field-table">
-            <thead><tr><th style="width:40px;">No.</th><th>항목</th><th style="width:60px;text-align:center;">0</th><th style="width:60px;text-align:center;">1</th><th style="width:60px;text-align:center;">2</th><th style="width:60px;text-align:center;">3</th></tr></thead>
+          <table class="data-table">
+            <thead><tr><th style="width:36px;">No</th><th>항목</th><th style="width:50px;text-align:center;">0</th><th style="width:50px;text-align:center;">1</th><th style="width:50px;text-align:center;">2</th><th style="width:50px;text-align:center;">3</th></tr></thead>
             <tbody id="ss-field-tbody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- 현장개선 섹션 -->
-      <div class="card">
+      <!-- 기초품질 테이블 -->
+      <div class="card" id="ss-quality-section" style="display:none;">
         <div class="table-header">
-          <span class="table-title">현장개선 <span style="font-size:11px;font-weight:400;color:#6b7280;">(30% · 집계 방식 미정)</span></span>
-        </div>
-        <div class="card-body">
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
-            <div class="form-group" style="margin:0;">
-              <label>개선 건수</label>
-              <input type="number" id="ss-improve-count" min="0" placeholder="건" style="font-size:13px;padding:6px 10px;">
-            </div>
-            <div class="form-group" style="margin:0;">
-              <label>비고</label>
-              <input type="text" id="ss-improve-note" placeholder="메모" style="font-size:13px;padding:6px 10px;">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 10대 기초품질 섹션 -->
-      <div class="card" id="ss-quality-card">
-        <div class="table-header">
-          <span class="table-title">10대 기초품질 <span style="font-size:11px;font-weight:400;color:#6b7280;">(40점 만점 · 1~4점)</span></span>
+          <span class="table-title">기초품질 <span style="font-size:11px;font-weight:400;color:#6b7280;">(만점 40점 · 1:불량 2:미흡 3:양호 4:우수)</span></span>
           <span id="ss-quality-total-badge" style="font-size:13px;font-weight:700;color:#0f2744;">합계: 0 / 40점</span>
         </div>
         <div style="overflow-x:auto;">
-          <table class="data-table" id="ss-quality-table">
-            <thead><tr><th style="width:40px;">No.</th><th>항목</th><th style="width:60px;text-align:center;">1</th><th style="width:60px;text-align:center;">2</th><th style="width:60px;text-align:center;">3</th><th style="width:60px;text-align:center;">4</th></tr></thead>
+          <table class="data-table">
+            <thead><tr><th style="width:36px;">No</th><th>항목</th><th style="width:50px;text-align:center;">1</th><th style="width:50px;text-align:center;">2</th><th style="width:50px;text-align:center;">3</th><th style="width:50px;text-align:center;">4</th></tr></thead>
             <tbody id="ss-quality-tbody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- 저장 버튼 -->
-      <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
         <button class="add-btn" onclick="saveSsInspection()">저장</button>
       </div>
-    </div>
+    </div><!-- /ss-panel-input -->
 
-    <!-- ② 결과·순위 -->
-    <div id="ss-panel-result" class="ss-panel" style="display:none;">
-      <div class="card">
-        <div class="card-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <div class="form-group" style="margin:0;flex:0 0 130px;">
-            <label>조회 년월</label>
-            <input type="month" id="ss-result-month" style="font-size:13px;padding:6px 10px;">
+    <!-- ══ 패널 B: 현장개선 ══ -->
+    <div id="ss-panel-improve" style="display:none;">
+      <!-- 필터 + 등록 버튼 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="ss-imp-filter-bar">
+          <button class="insp-fbtn active" data-f="all"       onclick="setSsImpFilter('all',this)">전체</button>
+          <button class="insp-fbtn"        data-f="정위치"    onclick="setSsImpFilter('정위치',this)">정위치</button>
+          <button class="insp-fbtn"        data-f="정리정돈"  onclick="setSsImpFilter('정리정돈',this)">정리정돈</button>
+          <button class="insp-fbtn"        data-f="miss"      onclick="setSsImpFilter('miss',this)">미개선</button>
+          <button class="insp-fbtn"        data-f="done"      onclick="setSsImpFilter('done',this)">완료</button>
+        </div>
+        <button class="add-btn" onclick="openSsImpForm()">+ 신규 등록</button>
+      </div>
+      <div id="ss-imp-list"><div class="loading">로딩 중...</div></div>
+    </div><!-- /ss-panel-improve -->
+
+    <!-- ══ 패널 C: 결과 ══ -->
+    <div id="ss-panel-result" style="display:none;">
+      <!-- 결과 내부 서브탭 -->
+      <div class="ss-res-tabs">
+        <button class="ss-res-tab active" id="ss-res-tab-rank" onclick="showSsResSubTab('rank')">라인별 결과·순위</button>
+        <button class="ss-res-tab" id="ss-res-tab-sheet" onclick="showSsResSubTab('sheet')">심사위원별 평가지</button>
+      </div>
+
+      <!-- 라인별 결과·순위 -->
+      <div id="ss-res-rank">
+        <div class="card">
+          <div class="card-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div class="form-group" style="margin:0;flex:0 0 100px;">
+              <label>분기</label>
+              <select id="ss-rank-quarter" style="font-size:13px;padding:6px 10px;">
+                <option value="1">1분기</option><option value="2">2분기</option>
+                <option value="3">3분기</option><option value="4">4분기</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;flex:0 0 130px;">
+              <label>월 선택</label>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <button onclick="moveSsRankMonth(-1)" style="padding:5px 8px;border:1px solid #e8ecf0;background:white;border-radius:4px;cursor:pointer;">◀</button>
+                <input type="month" id="ss-rank-month" style="font-size:13px;padding:5px 8px;flex:1;min-width:110px;">
+                <button onclick="moveSsRankMonth(1)" style="padding:5px 8px;border:1px solid #e8ecf0;background:white;border-radius:4px;cursor:pointer;">▶</button>
+              </div>
+            </div>
+            <button class="add-btn" onclick="loadSsRankResult()" style="margin-top:18px;">조회</button>
           </div>
-          <button class="add-btn" onclick="loadSsResults()" style="margin-top:18px;">조회</button>
+        </div>
+        <div class="card">
+          <div class="table-header"><span class="table-title">라인별 종합 점수</span><span style="font-size:11px;color:#6b7280;">현장심사 30% + 현장개선 30% + 기초품질 40%</span></div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead><tr><th style="width:44px;text-align:center;">순위</th><th>라인</th><th style="text-align:center;">현장심사<br><span style="font-size:10px;font-weight:400;">/30점</span></th><th style="text-align:center;">현장개선<br><span style="font-size:10px;font-weight:400;">(30%)</span></th><th style="text-align:center;">기초품질<br><span style="font-size:10px;font-weight:400;">/40점</span></th><th style="text-align:center;">합계</th></tr></thead>
+              <tbody id="ss-rank-tbody"><tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:28px;">조회 버튼을 눌러 결과를 확인하세요</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
-      <div class="card">
-        <div class="table-header"><span class="table-title">라인별 결과·순위</span></div>
-        <div style="overflow-x:auto;">
-          <table class="data-table" id="ss-result-table">
-            <thead>
-              <tr>
-                <th>순위</th><th>라인</th><th>현장심사<br><span style="font-size:10px;font-weight:400;">(30점)</span></th>
-                <th>현장개선<br><span style="font-size:10px;font-weight:400;">(30%)</span></th>
-                <th>기초품질<br><span style="font-size:10px;font-weight:400;">(40점)</span></th>
-                <th>총점</th><th>심사위원</th>
-              </tr>
-            </thead>
-            <tbody id="ss-result-tbody"><tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:24px;">년월을 선택 후 조회하세요</td></tr></tbody>
-          </table>
+
+      <!-- 심사위원별 평가지 -->
+      <div id="ss-res-sheet" style="display:none;">
+        <div class="card">
+          <div class="card-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div class="form-group" style="margin:0;flex:0 0 130px;">
+              <label>년월</label>
+              <input type="month" id="ss-sheet-month" style="font-size:13px;padding:6px 10px;">
+            </div>
+            <div class="form-group" style="margin:0;flex:0 0 150px;">
+              <label>라인</label>
+              <select id="ss-sheet-line" style="font-size:13px;padding:6px 10px;"></select>
+            </div>
+            <div class="form-group" style="margin:0;flex:0 0 120px;">
+              <label>구분</label>
+              <select id="ss-sheet-type" style="font-size:13px;padding:6px 10px;">
+                <option value="field">현장심사</option>
+                <option value="quality">기초품질</option>
+              </select>
+            </div>
+            <button class="add-btn" onclick="loadSsSheet()" style="margin-top:18px;">조회</button>
+          </div>
+        </div>
+        <div id="ss-sheet-content"></div>
+      </div>
+    </div><!-- /ss-panel-result -->
+
+  </div><!-- /ss-admin-panels -->
+
+  <!-- 현장개선 등록 모달 -->
+  <div class="modal-bg" id="ss-imp-form-modal" style="display:none;">
+    <div class="modal" style="max-width:540px;width:96%;">
+      <div class="modal-title">현장개선 등록</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>구분 *</label>
+          <div style="display:flex;gap:8px;">
+            <button class="ss-seg-btn active" id="ss-imp-cat-loc"   onclick="setSsImpCat('정위치')"  style="flex:1;border-radius:6px;border:1px solid #e8ecf0;padding:7px;">정위치</button>
+            <button class="ss-seg-btn"        id="ss-imp-cat-clean" onclick="setSsImpCat('정리정돈')" style="flex:1;border-radius:6px;border:1px solid #e8ecf0;padding:7px;">정리정돈</button>
+          </div>
+          <input type="hidden" id="ss-imp-category" value="정위치">
+        </div>
+        <div class="form-group">
+          <label>활동업체(라인) *</label>
+          <select id="ss-imp-line" onchange="autoFillSsImpManager()" style="font-size:13px;padding:6px 10px;">
+            <option value="">선택</option>
+            <option>소형하부/GS4655</option><option>강건재</option><option>G16동</option>
+            <option>다성테크</option><option>포항패킹</option><option>유창페인트</option>
+          </select>
         </div>
       </div>
-    </div>
-
-    <!-- ③ 심사위원별 평가지 -->
-    <div id="ss-panel-sheet" class="ss-panel" style="display:none;">
-      <div class="card">
-        <div class="card-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <div class="form-group" style="margin:0;flex:0 0 130px;">
-            <label>조회 년월</label>
-            <input type="month" id="ss-sheet-month" style="font-size:13px;padding:6px 10px;">
-          </div>
-          <div class="form-group" style="margin:0;flex:0 0 160px;">
-            <label>라인</label>
-            <select id="ss-sheet-line" style="font-size:13px;padding:6px 10px;"></select>
-          </div>
-          <button class="add-btn" onclick="loadSsSheet()" style="margin-top:18px;">조회</button>
+      <div class="form-row">
+        <div class="form-group"><label>점검일자 *</label><input type="date" id="ss-imp-inspect-date"></div>
+        <div class="form-group"><label>책임자</label><input type="text" id="ss-imp-manager" placeholder="자동 입력 (수정 가능)"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>활동일자</label><input type="date" id="ss-imp-activity-date"></div>
+        <div class="form-group">
+          <label>상태</label>
+          <select id="ss-imp-status" style="font-size:13px;padding:6px 10px;">
+            <option value="미개선">미개선</option><option value="보류">보류</option><option value="완료">완료</option>
+          </select>
         </div>
       </div>
-      <div id="ss-sheet-content"></div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>개선 전</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-bottom:6px;">
+          <label style="padding:6px 12px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
+            사진 선택<input type="file" id="ss-imp-before-file" accept="image/*" style="display:none;" onchange="handleSsImpPhoto(this,'before')">
+          </label>
+          <label style="padding:6px 12px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
+            촬영<input type="file" id="ss-imp-before-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleSsImpPhoto(this,'before')">
+          </label>
+          <img id="ss-imp-before-thumb" src="" style="width:64px;height:48px;object-fit:cover;border-radius:6px;display:none;">
+        </div>
+        <textarea id="ss-imp-before-text" placeholder="개선 전 상황 메모" style="width:100%;height:60px;resize:none;font-size:13px;padding:8px;border:1px solid #e8ecf0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;"></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>개선 후</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-bottom:6px;">
+          <label style="padding:6px 12px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
+            사진 선택<input type="file" id="ss-imp-after-file" accept="image/*" style="display:none;" onchange="handleSsImpPhoto(this,'after')">
+          </label>
+          <label style="padding:6px 12px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
+            촬영<input type="file" id="ss-imp-after-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleSsImpPhoto(this,'after')">
+          </label>
+          <img id="ss-imp-after-thumb" src="" style="width:64px;height:48px;object-fit:cover;border-radius:6px;display:none;">
+        </div>
+        <textarea id="ss-imp-after-text" placeholder="개선 후 내용 메모" style="width:100%;height:60px;resize:none;font-size:13px;padding:8px;border:1px solid #e8ecf0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;"></textarea>
+      </div>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="closeSsImpForm()">취소</button>
+        <button class="add-btn" onclick="submitSsImprovement()">등록</button>
+      </div>
     </div>
+  </div>
 
-  </div><!-- /ss-admin-panel -->
 </div><!-- /tab-3s5s -->
 
 <!-- 사용자 관리 탭 -->
@@ -1536,6 +1663,12 @@ function showTab(tab){
   var btabMap={'home':'home','inspect':'inspect','3s5s':'inspect','airlog':'airlog','air':'airlog','waste-oil':'waste-oil','waste-schedule':'waste-oil','waste-search':'waste-oil','filter':'more','users':'more'};
   var btabEl=document.getElementById('btab-'+(btabMap[tab]||tab));
   if(btabEl)btabEl.classList.add('active');
+  // 3정5S 사이드바 아코디언 동기화
+  if(tab==='3s5s'){
+    var p3=document.getElementById('nav-3s5s');
+    var c3=document.getElementById('nav-3s5s-children');
+    if(p3&&c3&&c3.style.display==='none'){p3.classList.add('open');c3.style.display='block';}
+  }
   // topbar 타이틀
   var titles={home:'홈',filter:'필터 교체','waste-oil':'폐유고상','waste-schedule':'배출업체 스케줄','waste-search':'폐기물 분류 검색',airlog:'대기운영기록',air:'대기측정 일정',inspect:'환경점검','3s5s':'3정5S',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
@@ -1564,7 +1697,7 @@ function loadCurrentTab(){
     else if(currentTab==='airlog')loadAirLog();
     else if(currentTab==='air')loadAirMeasures();
     else if(currentTab==='inspect')loadInspect();
-    else if(currentTab==='3s5s')init3s5sTab();
+    else if(currentTab==='3s5s')init3s5sTab(window._ss3panel||'input');
     else if(currentTab==='users')loadUsers();
   }catch(e){console.error('탭 로딩 오류:',e);}
 }
@@ -3898,364 +4031,594 @@ async function sbQ(table,query){
 </div>
 
 <script>
-/* ────────────────────────────────────────
-   3정5S 데이터 정의
-──────────────────────────────────────── */
+/* ═══════════════════════════════════════
+   3정5S 전체 구현
+═══════════════════════════════════════ */
+
+/* ── 데이터 ── */
 var SS_LINES = ['소형하부/GS4655','강건재','G16동','다성테크','포항패킹','유창페인트','직영'];
+var SS_QUALITY_LINES = SS_LINES.slice(0,6); // 직영 제외
 
 var SS_FIELD_ITEMS = {
-  '소형하부/GS4655': ['불필요품 제거 및 구분 관리','필요품 정위치·정품·정량 관리','작업장 청소·청결 유지','청소·점검 기준 작성 및 준수','제품 보관 및 전용 팔레트 적용 여부','안전 표시 및 위험 구역 관리','설비 사용 후 청결 상태','공구 보관 상태 관리','검사구 및 게이지 관리','정위치 활동 및 개선 지속성'],
-  '강건재':           ['불필요품 제거 및 구분 관리','필요품 정위치·정품·정량 관리','작업장 청소·청결 유지','청소·점검 기준 작성 및 준수','가공유·페인트·방청유·목재 자재 보관 장소 및 형태','안전 표시 및 위험 구역 관리','설비 사용 후 청결 상태','공구 보관 상태 관리','검사구 및 게이지 관리','정위치 활동 및 개선 지속성'],
-  'G16동':            ['불필요품 제거 및 구분 관리','필요품 정위치·정품·정량 관리','작업장 청소·청결 유지','청소·점검 기준 작성 및 준수','옥외(출하동) 리턴 팔레트 정리 정돈 관리','안전 표시 및 위험 구역 관리','설비 사용 후 청결 상태','공구 보관 상태 관리','검사구 및 게이지 관리','정위치 활동 및 개선 지속성'],
-  '다성테크':         ['불필요품 제거 및 구분 관리','필요품 정위치·정품·정량 관리','작업장 청소·청결 유지','청소·점검 기준 작성 및 준수','자재·부품 보관 및 관리','안전 표시 및 위험 구역 관리','설비 사용 후 청결 상태 (칩 제거)','공구 보관 상태 (Tool 보관)','검사구 및 전용 달기구 관리','정위치 활동 및 개선 지속성'],
-  '포항패킹':         ['불필요품 제거 및 구분 관리','필요품 정위치·정품·정량 관리','작업장 청소·청결 유지','청소·점검 기준 작성 및 준수','자재·부품 보관 및 관리','안전 표시 및 위험 구역 관리','설비 사용 후 청결 상태 (방청장 바닥)','공구 보관 상태 (후끼·보호구)','달기구·스파이럴 탭 교환 관리','정위치 활동 및 개선 지속성'],
-  '유창페인트':       ['불필요품 제거 및 구분 관리','필요품 정위치·정품·정량 관리','작업장 청소·청결 유지','청소·점검 기준 작성 및 준수','자재·부품 보관 및 관리','안전 표시 및 위험 구역 관리','설비 사용 후 청결 상태 (필터 교환)','공구 보관 상태 (샌드페이퍼·공구)','검사구·조도 측정기 관리','정위치 활동 및 개선 지속성'],
-  '직영':             ['불필요품 제거 및 구분 관리','필요품 정위치·정품·정량 관리','작업장 청소·청결 유지','청소·점검 기준 작성 및 준수','옥외 리턴 팔레트 정리','가공 칩·분진·폐유 처리','산업 폐기물·고철·폐목 처리','공장내 에어 누기','공장내 CO₂ 누기','정위치 활동 및 구획 관리 지속 유지']
+  '소형하부/GS4655': ['공용 공간 청결 상태 (통로)','작업장내 바닥 상태 (LINE OFF 시 확인)','불용 자재 라인내 보관 여부','불필요 설비 라인내 보관 여부','제품 보관 및 전용 팔레트 적용 여부','청소용품 위치 지정 및 주변 상태','치공구(설비) 사용 후 청결 상태','치공구 전용 공구 보관 상태','템플레이트 보관 형태','정위치 활동 지속 진행 여부'],
+  '강건재':           ['공용 공간 청결 상태 (통로)','작업장내 바닥 상태 (LINE OFF 시 확인)','불용 자재 라인내 보관 여부','불필요 설비 라인내 보관 여부','가공유·페인트·방청유·목재 자재 보관 장소 및 형태','청소용품 위치 지정 및 주변 상태','치공구(설비) 사용 후 청결 상태','치공구 전용 공구 보관 상태','템플레이트 보관 형태','정위치 활동 지속 진행 여부'],
+  'G16동':            ['공용 공간 청결 상태 (통로)','작업장내 바닥 상태 (LINE OFF 시 확인)','불용 자재 라인내 보관 여부','불필요 설비 라인내 보관 여부','옥외(출하동) 리턴 팔레트 정리 정돈 관리','청소용품 위치 지정 및 주변 상태','치공구(설비) 사용 후 청결 상태','치공구 전용 공구 보관 상태','템플레이트 보관 형태','정위치 활동 지속 진행 여부'],
+  '다성테크':         ['공용 공간 청결 상태 (통로)','작업장내 바닥 상태 (LINE OFF 시 확인)','불용 자재 라인내 보관 여부','불필요 설비 라인내 보관 여부','가공유·페인트·방청유·목재 자재 보관','청소용품 위치 지정 및 주변 상태','설비 사용 후 청결 상태 (칩 제거)','공구 보관 상태 (Tool 보관)','검사구 및 전용 달기구 관리','정위치 활동 지속 진행 여부'],
+  '포항패킹':         ['공용 공간 청결 상태 (통로)','작업장내 바닥 상태 (LINE OFF 시 확인)','불용 자재 라인내 보관 여부','불필요 설비 라인내 보관 여부','가공유·페인트·방청유·목재 자재 보관','청소용품 위치 지정 및 주변 상태','설비 사용 후 청결 상태 (방청장 바닥)','공구 보관 상태 (후끼·보호구)','달기구·스파이럴 탭 교환 관리','정위치 활동 지속 진행 여부'],
+  '유창페인트':       ['공용 공간 청결 상태 (통로)','작업장내 바닥 상태 (LINE OFF 시 확인)','불용 자재 라인내 보관 여부','불필요 설비 라인내 보관 여부','가공유·페인트·방청유·목재 자재 보관','청소용품 위치 지정 및 주변 상태','설비 사용 후 청결 상태 (필터 교환)','공구 보관 상태 (샌드페이퍼·공구)','검사구·조도 측정기 관리','정위치 활동 지속 진행 여부'],
+  '직영':             ['공용 공간 청결 상태 (통로)','작업장내 바닥 상태 (LINE OFF 시 확인)','불용 자재 라인내 보관 여부','불필요 설비 라인내 보관 여부','옥외(출하동) 리턴 팔레트 정리 정돈 관리','가공 칩·분진·폐유 처리 및 주변 상태','산업 폐기물·고철·폐목 처리 및 주변 상태','공장내 에어 누기 여부','공장내 CO₂ 누기 여부','정위치 활동 및 구획 관리 지속 유지']
 };
 
 var SS_QUALITY_ITEMS = {
-  '소형하부/GS4655': ['자주검사 성적서 작성/보관','용접재료 기명제/보관','가용접 품질','템플레이트 보관','용접사 자격증','보호가스 유량계','용접기 식별표','용접기 접지'],
-  '강건재':          ['자주검사 성적서 작성/보관','용접재료 기명제/보관','가용접 품질','템플레이트 보관','용접사 자격증','보호가스 유량계','용접기 식별표','용접기 접지'],
-  'G16동':           ['자주검사 성적서 작성/보관','용접재료 기명제/보관','가용접 품질','템플레이트 보관','용접사 자격증','보호가스 유량계','용접기 식별표','용접기 접지'],
-  '다성테크':        ['자주검사 성적서 작성/보관','버 제거','가공 홀 편심','절삭 공구 마모','지그/고정구','측정 도구','가공 완성품 검사구','가공부 조도 ①','가공부 조도 ②'],
-  '포항패킹':        ['출하 타각 관리','팔레트 상태','밴딩/스트래핑','리턴 팔레트','목재 팔레트 ISPM15','가공부 손상 수정','연마작업','마스킹 해체','방청 작업','검사구 관리'],
-  '유창페인트':      ['자주검사 성적서 작성/보관','마스킹구 체결/보관/노후품','도장 도어 개폐','페인트 보관','도장 검사구','쇼트 후 표면','도장 환경 측정'],
+  '소형하부/GS4655': ['자주검사 성적서 작성 상태','자주검사 성적서 보관 관리 상태','용접재료 기명제 상태','용접재료 보관 및 관리 상태','가용접 품질 및 적정 길이','템플레이트 및 검사구 보관상태','용접사 자격증 현장 게시판 부착 여부','보호가스 유량계 적정 유량 표기 상태','용접기 식별표 및 검교정 부착 상태','용접기 접지 체결 상태'],
+  '강건재':          ['자주검사 성적서 작성 상태','자주검사 성적서 보관 관리 상태','용접재료 기명제 상태','용접재료 보관 및 관리 상태','가용접 품질 및 적정 길이','템플레이트 및 검사구 보관상태','용접사 자격증 현장 게시판 부착 여부','보호가스 유량계 적정 유량 표기 상태','용접기 식별표 및 검교정 부착 상태','용접기 접지 체결 상태'],
+  'G16동':           ['자주검사 성적서 작성 상태','자주검사 성적서 보관 관리 상태','용접재료 기명제 상태','용접재료 보관 및 관리 상태','가용접 품질 및 적정 길이','템플레이트 및 검사구 보관상태','용접사 자격증 현장 게시판 부착 여부','보호가스 유량계 적정 유량 표기 상태','용접기 식별표 및 검교정 부착 상태','용접기 접지 체결 상태'],
+  '유창페인트':      ['자주검사 성적서 작성 상태','자주검사 성적서 보관 관리 상태','마스킹구 적정 체결 상태','마스킹구 보관 및 관리 상태','마스킹재 노후품 교체 상태','도장 작업 도어 개폐 상태 확인','페인트 보관 상태','도장 검사구 관리 상태','쇼트 후 표면 청결 상태','도장 환경 측정'],
+  '포항패킹':        ['출하 타각 관리','출하 대기 목재 팔레트 상태 확인','밴딩/스트래핑 상태 확인','리턴 팔레트 사용의 적합성','목재 팔레트 관리 (ISPM 15)','가공부 손상 수정 상태','가공부에 대한 연마작업의 적정성','마스킹 해체 작업의 적정성','방청 작업 적정성','검사구 관리 상태'],
+  '다성테크':        ['자주검사 성적서 작성 상태','자주검사 성적서 보관 관리 상태','가공 완료 후 버 제거 상태 확인','가공 홀 편심으로 인한 외관 문제','절삭 공구 마모상태','지그 및 고정구에 대한 오염 및 파손 확인','측정 도구에 대한 관리 상태','가공 완성품에 대한 검사구 관리 상태','가공부 조도 상태','가공부 조도 상태 (표면 거칠기)'],
   '직영':            []
 };
 
+/* ── 상태 변수 ── */
 var ssCurrentLine = SS_LINES[0];
-var ssInspState = {}; // {line: {field:[scores], quality:[scores], improveCount:'', improveNote:''}}
+var ssCurrentSeg  = 'field'; // 'field' | 'quality'
+var ssCurrentPanel = 'input'; // 'input' | 'improve' | 'result'
+var ssInspState = {};
 var ssInited = false;
+var ssImpFilter = 'all';
+var ssImpPhotoData = {before: null, after: null};
+var ssImpCurrentCat = '정위치';
 
-/* ── 탭 초기화 ── */
-function init3s5sTab() {
-  if (isAdmin()) {
-    document.getElementById('ss-under-construction').style.display = 'none';
-    document.getElementById('ss-admin-panel').style.display = 'block';
-    if (!ssInited) {
-      ssInited = true;
-      // 라인 버튼 렌더링
-      var lineBtns = document.getElementById('ss-line-btns');
-      lineBtns.innerHTML = '';
-      SS_LINES.forEach(function(ln) {
-        var b = document.createElement('button');
-        b.className = 'ss-line-btn' + (ln === ssCurrentLine ? ' active' : '');
-        b.textContent = ln;
-        b.onclick = function() { selectSsLine(ln); };
-        lineBtns.appendChild(b);
-      });
-      // 라인 select (평가지용)
-      var sel = document.getElementById('ss-sheet-line');
-      sel.innerHTML = SS_LINES.map(function(ln) { return '<option value="'+ln+'">'+ln+'</option>'; }).join('');
-      // 기본 년월
-      var now = new Date();
-      var ym = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-      document.getElementById('ss-input-month').value = ym;
-      document.getElementById('ss-result-month').value = ym;
-      document.getElementById('ss-sheet-month').value = ym;
-      // 첫 라인 렌더
-      renderSsInputSheet(ssCurrentLine);
-    }
-    showSsSubTab('input');
+/* ══════════════════════════
+   사이드바 아코디언
+══════════════════════════ */
+function toggle3s5sMenu() {
+  var p = document.getElementById('nav-3s5s');
+  var c = document.getElementById('nav-3s5s-children');
+  var isOpen = c.style.display !== 'none';
+  if (isOpen) {
+    p.classList.remove('open');
+    c.style.display = 'none';
   } else {
-    document.getElementById('ss-under-construction').style.display = 'flex';
-    document.getElementById('ss-admin-panel').style.display = 'none';
+    p.classList.add('open');
+    c.style.display = 'block';
+    // 처음 열릴 때 tab 전환
+    showTab('3s5s');
   }
 }
 
-/* ── 서브탭 전환 ── */
-function showSsSubTab(name) {
-  ['input','result','sheet'].forEach(function(n) {
-    document.getElementById('ss-panel-' + n).style.display = n === name ? 'block' : 'none';
-    var btn = document.getElementById('sstab-btn-' + n);
-    if (btn) { btn.classList.toggle('active', n === name); }
+function show3s5sPanel(panel) {
+  window._ss3panel = panel;
+  showTab('3s5s');
+  init3s5sTab(panel);
+}
+
+/* ══════════════════════════
+   탭 초기화
+══════════════════════════ */
+function init3s5sTab(panel) {
+  panel = panel || ssCurrentPanel || 'input';
+  ssCurrentPanel = panel;
+  // 하위메뉴 활성화
+  ['input','improve','result'].forEach(function(p) {
+    var el = document.getElementById('nav-3s5s-' + p);
+    if (el) el.classList.toggle('active', p === panel);
+  });
+
+  if (isAdmin()) {
+    document.getElementById('ss-under-construction').style.display = 'none';
+    document.getElementById('ss-admin-panels').style.display = 'block';
+
+    if (!ssInited) {
+      ssInited = true;
+      _initSsLineBtns();
+      _initSsSelects();
+      _initSsDefaultDates();
+    }
+
+    ['input','improve','result'].forEach(function(p) {
+      document.getElementById('ss-panel-' + p).style.display = p === panel ? 'block' : 'none';
+    });
+
+    if (panel === 'input')   renderSsInputSheet(ssCurrentLine);
+    if (panel === 'improve') loadSsImprovements();
+    if (panel === 'result')  showSsResSubTab('rank');
+  } else {
+    document.getElementById('ss-under-construction').style.display = 'flex';
+    document.getElementById('ss-admin-panels').style.display = 'none';
+  }
+}
+
+function _initSsLineBtns() {
+  var c = document.getElementById('ss-line-btns');
+  c.innerHTML = '';
+  SS_LINES.forEach(function(ln) {
+    var b = document.createElement('button');
+    b.className = 'ss-line-btn' + (ln === ssCurrentLine ? ' active' : '');
+    b.textContent = ln;
+    b.onclick = function() { selectSsLine(ln); };
+    c.appendChild(b);
   });
 }
 
-/* ── 라인 선택 ── */
+function _initSsSelects() {
+  var sel = document.getElementById('ss-sheet-line');
+  if (sel) sel.innerHTML = SS_LINES.map(function(ln) { return '<option value="'+ln+'">'+ln+'</option>'; }).join('');
+}
+
+function _initSsDefaultDates() {
+  var now = new Date();
+  var ym = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  ['ss-input-month','ss-rank-month','ss-sheet-month'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && !el.value) el.value = ym;
+  });
+  var qEl = document.getElementById('ss-rank-quarter');
+  if (qEl && !qEl.value) qEl.value = Math.ceil((now.getMonth() + 1) / 3);
+}
+
+/* ══════════════════════════
+   심사 입력
+══════════════════════════ */
+function setSsInputSeg(seg) {
+  ssCurrentSeg = seg;
+  document.getElementById('ss-seg-field').classList.toggle('active', seg === 'field');
+  document.getElementById('ss-seg-quality').classList.toggle('active', seg === 'quality');
+  document.getElementById('ss-field-section').style.display   = seg === 'field'   ? 'block' : 'none';
+  document.getElementById('ss-quality-section').style.display = seg === 'quality' ? 'block' : 'none';
+  // 기초품질: 직영 제외 알림
+  var isQuality = seg === 'quality';
+  var isJiyeong = ssCurrentLine === '직영';
+  document.getElementById('ss-quality-no-line').style.display = (isQuality && isJiyeong) ? 'block' : 'none';
+}
+
 function selectSsLine(ln) {
   ssCurrentLine = ln;
   document.querySelectorAll('.ss-line-btn').forEach(function(b) {
     b.classList.toggle('active', b.textContent === ln);
   });
+  // 직영+기초품질 경고
+  var isJiyeong = ln === '직영';
+  document.getElementById('ss-quality-no-line').style.display = (ssCurrentSeg === 'quality' && isJiyeong) ? 'block' : 'none';
   renderSsInputSheet(ln);
 }
 
-/* ── 입력 시트 렌더링 ── */
 function renderSsInputSheet(ln) {
   if (!ssInspState[ln]) {
     ssInspState[ln] = {
-      field: new Array((SS_FIELD_ITEMS[ln] || []).length).fill(null),
-      quality: new Array((SS_QUALITY_ITEMS[ln] || []).length).fill(null),
-      improveCount: '', improveNote: ''
+      field:   new Array(10).fill(null),
+      quality: new Array((SS_QUALITY_ITEMS[ln] || []).length).fill(null)
     };
   }
   var st = ssInspState[ln];
+  _renderScoreTable('ss-field-tbody',   SS_FIELD_ITEMS[ln]   || [], st.field,   'F', ln, [0,1,2,3], 'onSsScore');
+  _renderScoreTable('ss-quality-tbody', SS_QUALITY_ITEMS[ln] || [], st.quality, 'Q', ln, [1,2,3,4], 'onSsScore');
+  _updateSsTotals(ln);
+}
 
-  // 현장심사 테이블
-  var fieldItems = SS_FIELD_ITEMS[ln] || [];
-  var ftbody = document.getElementById('ss-field-tbody');
-  ftbody.innerHTML = '';
-  fieldItems.forEach(function(item, i) {
-    var tr = document.createElement('tr');
-    tr.innerHTML = '<td style="text-align:center;color:#9ca3af;">' + (i + 1) + '</td>'
-      + '<td>' + item + '</td>'
-      + [0, 1, 2, 3].map(function(v) {
-          var checked = st.field[i] === v ? ' checked' : '';
-          return '<td style="text-align:center;"><label style="cursor:pointer;">'
-            + '<input type="radio" name="ss-f-' + ln.replace(/\//g,'_') + '-' + i + '" value="' + v + '"' + checked + ' onchange="onSsFieldScore(\'' + ln + '\',' + i + ',' + v + ')">'
-            + '<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:28px;border-radius:4px;border:1px solid '
-            + (st.field[i] === v ? '#0f2744' : '#e8ecf0') + ';background:' + (st.field[i] === v ? '#0f2744' : 'white') + ';color:' + (st.field[i] === v ? 'white' : '#6b7280') + ';font-size:12px;font-weight:500;">' + v + '</span>'
-            + '</label></td>';
-        }).join('');
-    ftbody.appendChild(tr);
-  });
-  updateSsFieldTotal(ln);
-
-  // 기초품질 테이블
-  var qualItems = SS_QUALITY_ITEMS[ln] || [];
-  var qtbody = document.getElementById('ss-quality-tbody');
-  qtbody.innerHTML = '';
-  if (qualItems.length === 0) {
-    qtbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:20px;">해당 라인의 기초품질 항목은 추후 업데이트됩니다</td></tr>';
-  } else {
-    qualItems.forEach(function(item, i) {
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td style="text-align:center;color:#9ca3af;">' + (i + 1) + '</td>'
-        + '<td>' + item + '</td>'
-        + [1, 2, 3, 4].map(function(v) {
-            var checked = st.quality[i] === v ? ' checked' : '';
-            return '<td style="text-align:center;"><label style="cursor:pointer;">'
-              + '<input type="radio" name="ss-q-' + ln.replace(/\//g,'_') + '-' + i + '" value="' + v + '"' + checked + ' onchange="onSsQualityScore(\'' + ln + '\',' + i + ',' + v + ')">'
-              + '<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:28px;border-radius:4px;border:1px solid '
-              + (st.quality[i] === v ? '#0f2744' : '#e8ecf0') + ';background:' + (st.quality[i] === v ? '#0f2744' : 'white') + ';color:' + (st.quality[i] === v ? 'white' : '#6b7280') + ';font-size:12px;font-weight:500;">' + v + '</span>'
-              + '</label></td>';
-          }).join('');
-      qtbody.appendChild(tr);
-    });
+function _renderScoreTable(tbodyId, items, scores, prefix, ln, opts, cb) {
+  var tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:20px;">' + (prefix === 'Q' ? '직영은 기초품질 평가 대상이 아닙니다.' : '항목 없음') + '</td></tr>';
+    return;
   }
-  updateSsQualityTotal(ln);
-
-  // 현장개선 복원
-  document.getElementById('ss-improve-count').value = st.improveCount;
-  document.getElementById('ss-improve-note').value = st.improveNote;
-  document.getElementById('ss-improve-count').onchange = function() { ssInspState[ln].improveCount = this.value; };
-  document.getElementById('ss-improve-note').onchange = function() { ssInspState[ln].improveNote = this.value; };
-}
-
-function onSsFieldScore(ln, i, v) {
-  if (!ssInspState[ln]) return;
-  ssInspState[ln].field[i] = v;
-  // 시각 업데이트 (re-render 없이 span 색상만)
-  var radios = document.querySelectorAll('input[name="ss-f-' + ln.replace(/\//g,'_') + '-' + i + '"]');
-  radios.forEach(function(r) {
-    var span = r.nextElementSibling;
-    if (!span) return;
-    var sel = parseInt(r.value) === v;
-    span.style.background = sel ? '#0f2744' : 'white';
-    span.style.color = sel ? 'white' : '#6b7280';
-    span.style.borderColor = sel ? '#0f2744' : '#e8ecf0';
+  var key = prefix + '-' + ln.replace(/[\/\s]/g,'_');
+  tbody.innerHTML = '';
+  items.forEach(function(item, i) {
+    var tr = document.createElement('tr');
+    var cells = '<td style="text-align:center;color:#9ca3af;font-size:11px;">' + (i+1) + '</td><td style="font-size:12.5px;">' + item + '</td>';
+    opts.forEach(function(v) {
+      var sel = scores[i] === v;
+      cells += '<td style="text-align:center;padding:6px 4px;">'
+        + '<label style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:34px;height:28px;border-radius:4px;border:1px solid '
+        + (sel ? '#0f2744' : '#e8ecf0') + ';background:' + (sel ? '#0f2744' : 'white') + ';color:' + (sel ? 'white' : '#6b7280') + ';font-size:12px;font-weight:500;">'
+        + '<input type="radio" name="' + key + '-' + i + '" value="' + v + '"' + (sel ? ' checked' : '') + ' onchange="onSsScore(\'' + prefix + '\',\'' + ln + '\',' + i + ',' + v + ')" style="display:none;">'
+        + v + '</label></td>';
+    });
+    tr.innerHTML = cells;
+    tbody.appendChild(tr);
   });
-  updateSsFieldTotal(ln);
 }
 
-function onSsQualityScore(ln, i, v) {
+function onSsScore(prefix, ln, i, v) {
   if (!ssInspState[ln]) return;
-  ssInspState[ln].quality[i] = v;
-  var radios = document.querySelectorAll('input[name="ss-q-' + ln.replace(/\//g,'_') + '-' + i + '"]');
-  radios.forEach(function(r) {
-    var span = r.nextElementSibling;
-    if (!span) return;
+  var arr = prefix === 'F' ? ssInspState[ln].field : ssInspState[ln].quality;
+  arr[i] = v;
+  var key = prefix + '-' + ln.replace(/[\/\s]/g,'_') + '-' + i;
+  document.querySelectorAll('input[name="' + key + '"]').forEach(function(r) {
+    var lbl = r.parentElement;
     var sel = parseInt(r.value) === v;
-    span.style.background = sel ? '#0f2744' : 'white';
-    span.style.color = sel ? 'white' : '#6b7280';
-    span.style.borderColor = sel ? '#0f2744' : '#e8ecf0';
+    lbl.style.background = sel ? '#0f2744' : 'white';
+    lbl.style.color = sel ? 'white' : '#6b7280';
+    lbl.style.borderColor = sel ? '#0f2744' : '#e8ecf0';
   });
-  updateSsQualityTotal(ln);
+  _updateSsTotals(ln);
 }
 
-function updateSsFieldTotal(ln) {
+function _updateSsTotals(ln) {
   var st = ssInspState[ln];
   if (!st) return;
-  var total = st.field.reduce(function(s, v) { return s + (v !== null ? v : 0); }, 0);
-  var max = (SS_FIELD_ITEMS[ln] || []).length * 3;
-  var badge = document.getElementById('ss-field-total-badge');
-  if (badge) badge.textContent = '합계: ' + total + ' / ' + max + '점';
+  var fTotal = st.field.reduce(function(s,v){return s+(v!==null?v:0);},0);
+  var qTotal = st.quality.reduce(function(s,v){return s+(v!==null?v:0);},0);
+  var fEl = document.getElementById('ss-field-total-badge');
+  var qEl = document.getElementById('ss-quality-total-badge');
+  if (fEl) fEl.textContent = '합계: ' + fTotal + ' / 30점';
+  if (qEl) qEl.textContent = '합계: ' + qTotal + ' / ' + ((SS_QUALITY_ITEMS[ln]||[]).length*4) + '점';
 }
 
-function updateSsQualityTotal(ln) {
-  var st = ssInspState[ln];
-  if (!st) return;
-  var filled = st.quality.filter(function(v) { return v !== null; });
-  var total = filled.reduce(function(s, v) { return s + v; }, 0);
-  var max = (SS_QUALITY_ITEMS[ln] || []).length * 4;
-  var badge = document.getElementById('ss-quality-total-badge');
-  if (badge) badge.textContent = '합계: ' + total + ' / ' + max + '점';
-}
-
-/* ── 저장 ── */
 async function saveSsInspection() {
-  var month = document.getElementById('ss-input-month').value;
-  var inspector = document.getElementById('ss-inspector-name').value.trim();
+  var month = (document.getElementById('ss-input-month')||{}).value;
+  var inspector = ((document.getElementById('ss-inspector-name')||{}).value||'').trim();
   var ln = ssCurrentLine;
-  if (!month) { alert('년월을 선택하세요.'); return; }
+  if (!month) { alert('심사월을 선택하세요.'); return; }
   if (!inspector) { alert('심사위원 이름을 입력하세요.'); return; }
   var st = ssInspState[ln];
   if (!st) { alert('라인을 선택하세요.'); return; }
-
   var parts = month.split('-');
   var year = parseInt(parts[0]), mon = parseInt(parts[1]);
-
-  var fieldTotal = st.field.reduce(function(s, v) { return s + (v !== null ? v : 0); }, 0);
-  var qualTotal  = st.quality.reduce(function(s, v) { return s + (v !== null ? v : 0); }, 0);
-  var fieldMax   = (SS_FIELD_ITEMS[ln] || []).length * 3;
-  var qualMax    = (SS_QUALITY_ITEMS[ln] || []).length * 4;
-
-  async function postInsp(payload) {
-    var r = await fetch(SB_URL + '/rest/v1/ss_inspections', {
-      method: 'POST',
-      headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation'},
-      body: JSON.stringify(payload)
-    });
-    var j = await r.json();
-    if (!r.ok || !j || !j[0]) throw new Error(JSON.stringify(j));
-    return j[0].id;
-  }
-  async function postScores(inspId, scores) {
-    var r = await fetch(SB_URL + '/rest/v1/ss_scores', {
-      method: 'POST',
-      headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify(scores.map(function(s) { return {inspection_id: inspId, item_no: s.item_no, score: s.score}; }))
-    });
-    if (!r.ok) throw new Error(await r.text());
-  }
+  var isSaving = ssCurrentSeg;
+  var scores = isSaving === 'field' ? st.field : st.quality;
+  var items  = isSaving === 'field' ? (SS_FIELD_ITEMS[ln]||[]) : (SS_QUALITY_ITEMS[ln]||[]);
+  var total  = scores.reduce(function(s,v){return s+(v!==null?v:0);},0);
+  var maxSc  = isSaving === 'field' ? items.length*3 : items.length*4;
+  var prefix = isSaving === 'field' ? 'F' : 'Q';
 
   try {
-    // ① 현장심사
-    var fieldId = await postInsp({month: mon, year: year, line: ln, type: 'field', inspector: inspector, total: fieldTotal, max_score: fieldMax});
-    await postScores(fieldId, st.field.map(function(v, i) { return {item_no: 'F'+(i+1), score: v !== null ? v : 0}; }));
-
-    // ② 기초품질 (항목 있는 라인만)
-    if ((SS_QUALITY_ITEMS[ln] || []).length > 0) {
-      var qualId = await postInsp({month: mon, year: year, line: ln, type: 'quality', inspector: inspector, total: qualTotal, max_score: qualMax});
-      await postScores(qualId, st.quality.map(function(v, i) { return {item_no: 'Q'+(i+1), score: v !== null ? v : 0}; }));
-    }
-
-    // ③ 현장개선
-    if (st.improveCount || st.improveNote) {
-      await postInsp({month: mon, year: year, line: ln, type: 'improve', inspector: inspector, total: parseInt(st.improveCount) || 0, max_score: 0, note: st.improveNote || ''});
-    }
-
+    var r1 = await fetch(SB_URL + '/rest/v1/ss_inspections', {
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify({month:mon,year:year,line:ln,type:isSaving,inspector:inspector,total:total,max_score:maxSc})
+    });
+    var j1 = await r1.json();
+    if (!r1.ok || !j1||!j1[0]) throw new Error(JSON.stringify(j1));
+    var inspId = j1[0].id;
+    await fetch(SB_URL + '/rest/v1/ss_scores', {
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify(scores.map(function(v,i){return {inspection_id:inspId,item_no:prefix+(i+1),score:v!==null?v:0};}))
+    });
     alert('저장되었습니다.');
-    ssInspState[ln] = null;
+    if (isSaving==='field') ssInspState[ln].field = new Array(10).fill(null);
+    else ssInspState[ln].quality = new Array(items.length).fill(null);
     renderSsInputSheet(ln);
   } catch(e) {
-    console.error(e);
     alert('저장 실패: ' + e.message);
   }
 }
 
-/* ── 결과·순위 조회 ── */
-async function loadSsResults() {
-  var month = document.getElementById('ss-result-month').value;
-  if (!month) { alert('년월을 선택하세요.'); return; }
-  var parts = month.split('-');
-  var year = parseInt(parts[0]), mon = parseInt(parts[1]);
-  var tbody = document.getElementById('ss-result-tbody');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#9ca3af;">조회 중...</td></tr>';
+/* ══════════════════════════
+   현장개선
+══════════════════════════ */
+var SS_IMP_MANAGERS = {
+  '소형하부/GS4655':'정원섭','강건재':'정원섭','G16동':'정원섭',
+  '다성테크':'김춘용','포항패킹':'조진용','유창페인트':'성시훈'
+};
+var SS_SIG_NAMES = ['문경봉','형준상','윤우석','황재홍'];
+
+function setSsImpFilter(f, btn) {
+  ssImpFilter = f;
+  document.querySelectorAll('#ss-imp-filter-bar .insp-fbtn').forEach(function(b){b.classList.remove('active');});
+  if (btn) btn.classList.add('active');
+  loadSsImprovements();
+}
+
+async function loadSsImprovements() {
+  var list = document.getElementById('ss-imp-list');
+  list.innerHTML = '<div class="loading">로딩 중...</div>';
   try {
-    var rows = await sbQ('ss_inspections', '?year=eq.' + year + '&month=eq.' + mon + '&select=id,line,type,inspector,total,max_score&order=line.asc');
+    var qs = '?order=created_at.desc&limit=80';
+    if (ssImpFilter === 'miss')      qs += '&status=eq.미개선';
+    else if (ssImpFilter === 'done') qs += '&status=eq.완료';
+    else if (ssImpFilter === '정위치' || ssImpFilter === '정리정돈') qs += '&category=eq.' + encodeURIComponent(ssImpFilter);
+    var rows = await sbQ('ss_improvements', qs);
     if (!rows || rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#9ca3af;">데이터 없음</td></tr>';
+      list.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:40px;">등록된 현장개선 항목이 없습니다.</div>';
       return;
     }
-    // 라인별 집계
-    var byLine = {};
-    rows.forEach(function(r) {
-      if (!byLine[r.line]) byLine[r.line] = {field: 0, fieldMax: 30, quality: 0, qualityMax: 40, improve: null, inspector: ''};
-      var b = byLine[r.line];
-      if (r.type === 'field')   { b.field = r.total; b.fieldMax = r.max_score || 30; if (!b.inspector) b.inspector = r.inspector; }
-      if (r.type === 'quality') { b.quality = r.total; b.qualityMax = r.max_score || 40; }
-      if (r.type === 'improve') { b.improve = r.total; if (!b.inspector) b.inspector = r.inspector; }
-    });
-    var lines = SS_LINES.filter(function(ln) { return byLine[ln]; });
-    lines.sort(function(a, b) {
-      var sa = (byLine[a].field || 0) + (byLine[a].quality || 0);
-      var sb = (byLine[b].field || 0) + (byLine[b].quality || 0);
-      return sb - sa;
-    });
-    tbody.innerHTML = '';
-    lines.forEach(function(ln, idx) {
-      var b = byLine[ln];
-      var total = (b.field || 0) + (b.quality || 0);
-      var rankColors = ['#f59e0b','#6b7280','#b45309'];
-      var rankIcon = idx < 3 ? '<span style="font-weight:700;color:' + rankColors[idx] + ';">' + (idx+1) + '위</span>' : (idx+1) + '위';
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td style="text-align:center;">' + rankIcon + '</td>'
-        + '<td style="font-weight:500;">' + ln + '</td>'
-        + '<td style="text-align:center;">' + (b.field || 0) + '<span style="color:#9ca3af;font-size:11px;">/' + (b.fieldMax || 30) + '</span></td>'
-        + '<td style="text-align:center;">' + (b.improve || '-') + '</td>'
-        + '<td style="text-align:center;">' + (b.quality || 0) + '<span style="color:#9ca3af;font-size:11px;">/' + (b.qualityMax || 40) + '</span></td>'
-        + '<td style="text-align:center;font-weight:700;color:#0f2744;">' + total + '</td>'
-        + '<td style="color:#6b7280;">' + (b.inspector || '-') + '</td>';
-      tbody.appendChild(tr);
+    list.innerHTML = '';
+    rows.forEach(function(row) {
+      list.appendChild(_buildSsImpCard(row));
     });
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#dc2626;">오류: ' + e.message + '</td></tr>';
+    list.innerHTML = '<div style="text-align:center;color:#dc2626;padding:24px;">오류: ' + e.message + '</div>';
   }
 }
 
-/* ── 심사위원별 평가지 ── */
+function _buildSsImpCard(row) {
+  var wrap = document.createElement('div');
+  wrap.className = 'ss-imp-card';
+  wrap.id = 'ss-imp-card-' + row.id;
+  var catColor = row.category === '정위치' ? '#3b82f6' : '#8b5cf6';
+  var stBg = {미개선:'#fef2f2',보류:'#fef3c7',완료:'#f0fdf4'}[row.status]||'#f4f6f9';
+  var stColor = {미개선:'#dc2626',보류:'#d97706',완료:'#16a34a'}[row.status]||'#6b7280';
+  var sigDots = SS_SIG_NAMES.map(function(n) {
+    var sigKey = 'sig_' + n;
+    var done = !!row[sigKey];
+    return '<span title="' + n + '" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + (done ? '#16a34a' : '#e5e7eb') + ';margin-right:2px;"></span>';
+  }).join('');
+
+  wrap.innerHTML = '<div class="ss-imp-hdr" onclick="toggleSsImpCard(' + row.id + ')">'
+    + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">'
+    + '<span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:' + catColor + '20;color:' + catColor + ';">' + row.category + '</span>'
+    + '<span style="font-size:12px;font-weight:600;color:#0f2744;">' + row.line + '</span>'
+    + '<span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:' + stBg + ';color:' + stColor + ';">' + row.status + '</span>'
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:8px;">'
+    + '<span style="font-size:11px;color:#9ca3af;">' + (row.inspect_date||'') + '</span>'
+    + '<span style="font-size:11px;color:#9ca3af;margin-left:6px;">서명: ' + sigDots + '</span>'
+    + '</div>'
+    + '<span class="ss-imp-chevron">▼</span>'
+    + '</div>'
+    + '<div class="ss-imp-body">' + _buildSsImpBody(row) + '</div>';
+  return wrap;
+}
+
+function _buildSsImpBody(row) {
+  var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">';
+  // 개선 전/후 사진+텍스트
+  ['before','after'].forEach(function(side) {
+    var lbl = side === 'before' ? '개선 전' : '개선 후';
+    var ph = row[side+'_photo'];
+    var tx = row[side+'_text']||'';
+    html += '<div><div style="font-size:11px;color:#9ca3af;font-weight:600;margin-bottom:5px;">' + lbl + '</div>';
+    if (ph) html += '<img src="' + ph + '" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:5px;" onclick="openSsImpLightbox(\'' + ph + '\')">';
+    if (tx) html += '<div style="font-size:12px;color:#4b5563;background:#f8fafc;border-radius:5px;padding:7px;">' + tx + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  // 상태 변경 (관리자만)
+  if (isAdmin()) {
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">'
+      + '<select id="ss-imp-st-' + row.id + '" style="flex:1;border:1px solid #e8ecf0;border-radius:6px;padding:7px 10px;font-size:13px;font-family:\'Noto Sans KR\',sans-serif;">'
+      + ['미개선','보류','완료'].map(function(s){return '<option value="'+s+'"'+(s===row.status?' selected':'')+'>'+s+'</option>';}).join('')
+      + '</select>'
+      + '<button class="insp-card-save" onclick="updateSsImpStatus(' + row.id + ')">저장</button>'
+      + '</div>';
+  }
+  // 서명 행
+  html += '<div style="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;">서명 확인</div><div class="ss-sig-row">';
+  SS_SIG_NAMES.forEach(function(name) {
+    var sigKey = 'sig_' + name;
+    var atKey  = 'sig_' + name + '_at';
+    var done = !!row[sigKey];
+    var loginName = currentUser ? (currentUser.name || currentUser.username) : '';
+    var isMe = loginName === name;
+    var timeStr = done && row[atKey] ? new Date(row[atKey]).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    html += '<div class="ss-sig-item' + (done ? ' signed' : '') + '">'
+      + '<div class="ss-sig-name">' + name + '</div>'
+      + '<button class="ss-sig-btn' + (done ? ' signed' : '') + '" '
+      + ((!isMe || done) ? 'disabled' : 'onclick="signSsImprovement(' + row.id + ',\'' + name + '\')"')
+      + '>' + (done ? '✓ 확인됨' : '확인') + '</button>'
+      + '<div class="ss-sig-time">' + timeStr + '</div>'
+      + '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function toggleSsImpCard(id) {
+  var card = document.getElementById('ss-imp-card-' + id);
+  if (card) card.classList.toggle('open');
+}
+
+async function updateSsImpStatus(id) {
+  var sel = document.getElementById('ss-imp-st-' + id);
+  if (!sel) return;
+  try {
+    var r = await fetch(SB_URL + '/rest/v1/ss_improvements?id=eq.' + id, {
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({status:sel.value})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    loadSsImprovements();
+  } catch(e) { alert('저장 실패: ' + e.message); }
+}
+
+async function signSsImprovement(id, name) {
+  var now = new Date().toISOString();
+  var patch = {};
+  patch['sig_' + name] = currentUser.name || currentUser.username;
+  patch['sig_' + name + '_at'] = now;
+  try {
+    var r = await fetch(SB_URL + '/rest/v1/ss_improvements?id=eq.' + id, {
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify(patch)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    loadSsImprovements();
+  } catch(e) { alert('서명 실패: ' + e.message); }
+}
+
+/* 현장개선 등록 모달 */
+function openSsImpForm() {
+  ssImpPhotoData = {before: null, after: null};
+  ssImpCurrentCat = '정위치';
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('ss-imp-inspect-date').value = today;
+  document.getElementById('ss-imp-activity-date').value = '';
+  document.getElementById('ss-imp-manager').value = '';
+  document.getElementById('ss-imp-line').value = '';
+  document.getElementById('ss-imp-status').value = '미개선';
+  document.getElementById('ss-imp-before-text').value = '';
+  document.getElementById('ss-imp-after-text').value = '';
+  document.getElementById('ss-imp-before-thumb').style.display = 'none';
+  document.getElementById('ss-imp-after-thumb').style.display = 'none';
+  setSsImpCat('정위치');
+  document.getElementById('ss-imp-form-modal').style.display = 'flex';
+}
+function closeSsImpForm() {
+  document.getElementById('ss-imp-form-modal').style.display = 'none';
+}
+function setSsImpCat(cat) {
+  ssImpCurrentCat = cat;
+  document.getElementById('ss-imp-category').value = cat;
+  document.getElementById('ss-imp-cat-loc').classList.toggle('active', cat==='정위치');
+  document.getElementById('ss-imp-cat-clean').classList.toggle('active', cat==='정리정돈');
+}
+function autoFillSsImpManager() {
+  var ln = document.getElementById('ss-imp-line').value;
+  var mgr = SS_IMP_MANAGERS[ln] || '';
+  document.getElementById('ss-imp-manager').value = mgr;
+}
+function handleSsImpPhoto(input, side) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    ssImpPhotoData[side] = e.target.result;
+    var thumb = document.getElementById('ss-imp-' + side + '-thumb');
+    thumb.src = e.target.result;
+    thumb.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+async function submitSsImprovement() {
+  var line = document.getElementById('ss-imp-line').value;
+  var idate = document.getElementById('ss-imp-inspect-date').value;
+  if (!line) { alert('라인을 선택하세요.'); return; }
+  if (!idate) { alert('점검일자를 입력하세요.'); return; }
+  var payload = {
+    category: ssImpCurrentCat,
+    line: line,
+    manager: document.getElementById('ss-imp-manager').value.trim(),
+    inspect_date: idate,
+    activity_date: document.getElementById('ss-imp-activity-date').value || null,
+    before_photo: ssImpPhotoData.before,
+    before_text: document.getElementById('ss-imp-before-text').value.trim(),
+    after_photo: ssImpPhotoData.after,
+    after_text: document.getElementById('ss-imp-after-text').value.trim(),
+    status: document.getElementById('ss-imp-status').value,
+    created_by: currentUser ? (currentUser.name || currentUser.username) : ''
+  };
+  try {
+    var r = await fetch(SB_URL + '/rest/v1/ss_improvements', {
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    closeSsImpForm();
+    loadSsImprovements();
+  } catch(e) { alert('등록 실패: ' + e.message); }
+}
+function openSsImpLightbox(src) {
+  var lb = document.getElementById('inspect-photo-lightbox');
+  if (lb) {
+    var img = lb.querySelector('#lb-before');
+    if (img) img.src = src;
+    lb.style.display = 'flex';
+  }
+}
+
+/* ══════════════════════════
+   결과
+══════════════════════════ */
+function showSsResSubTab(name) {
+  ['rank','sheet'].forEach(function(n) {
+    var el = document.getElementById('ss-res-' + n);
+    var btn = document.getElementById('ss-res-tab-' + n);
+    if (el) el.style.display = n === name ? 'block' : 'none';
+    if (btn) btn.classList.toggle('active', n === name);
+  });
+}
+
+function moveSsRankMonth(dir) {
+  var el = document.getElementById('ss-rank-month');
+  if (!el || !el.value) return;
+  var d = new Date(el.value + '-01');
+  d.setMonth(d.getMonth() + dir);
+  el.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,'0');
+}
+
+async function loadSsRankResult() {
+  var month = document.getElementById('ss-rank-month').value;
+  if (!month) { alert('월을 선택하세요.'); return; }
+  var parts = month.split('-');
+  var year = parseInt(parts[0]), mon = parseInt(parts[1]);
+  var tbody = document.getElementById('ss-rank-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;">조회 중...</td></tr>';
+  try {
+    var rows = await sbQ('ss_inspections', '?year=eq.'+year+'&month=eq.'+mon+'&select=id,line,type,inspector,total,max_score');
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;">데이터 없음</td></tr>';
+      return;
+    }
+    var byLine = {};
+    rows.forEach(function(r) {
+      if (!byLine[r.line]) byLine[r.line] = {field:0,fieldMax:30,quality:0,qualityMax:40,inspector:''};
+      var b = byLine[r.line];
+      if (r.type==='field')   { b.field=r.total; b.fieldMax=r.max_score||30; b.inspector=b.inspector||r.inspector; }
+      if (r.type==='quality') { b.quality=r.total; b.qualityMax=r.max_score||40; }
+    });
+    var lines = SS_LINES.filter(function(ln) { return byLine[ln]; });
+    lines.sort(function(a,b_) { return (byLine[b_].field+byLine[b_].quality) - (byLine[a].field+byLine[a].quality); });
+    var rankMedals = ['🥇','🥈','🥉'];
+    tbody.innerHTML = '';
+    lines.forEach(function(ln, idx) {
+      var b = byLine[ln];
+      var total = b.field + b.quality;
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td style="text-align:center;font-size:18px;">' + (rankMedals[idx] || (idx+1)+'위') + '</td>'
+        + '<td style="font-weight:600;">' + ln + '</td>'
+        + '<td style="text-align:center;">' + b.field + '<span style="color:#9ca3af;font-size:10px;">/'+(b.fieldMax||30)+'</span></td>'
+        + '<td style="text-align:center;color:#9ca3af;">-</td>'
+        + '<td style="text-align:center;">' + b.quality + '<span style="color:#9ca3af;font-size:10px;">/'+(b.qualityMax||40)+'</span></td>'
+        + '<td style="text-align:center;font-weight:700;color:#0f2744;font-size:14px;">' + total + '</td>';
+      tbody.appendChild(tr);
+    });
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#dc2626;">오류: '+e.message+'</td></tr>';
+  }
+}
+
 async function loadSsSheet() {
   var month = document.getElementById('ss-sheet-month').value;
-  var ln = document.getElementById('ss-sheet-line').value;
+  var ln    = document.getElementById('ss-sheet-line').value;
+  var type  = document.getElementById('ss-sheet-type').value;
   if (!month || !ln) { alert('년월과 라인을 선택하세요.'); return; }
   var parts = month.split('-');
   var year = parseInt(parts[0]), mon = parseInt(parts[1]);
   var container = document.getElementById('ss-sheet-content');
   container.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;color:#9ca3af;">조회 중...</div></div>';
   try {
-    var rows = await sbQ('ss_inspections', '?year=eq.' + year + '&month=eq.' + mon + '&line=eq.' + encodeURIComponent(ln) + '&select=*,ss_scores(item_no,score)&order=created_at.asc');
+    var rows = await sbQ('ss_inspections', '?year=eq.'+year+'&month=eq.'+mon+'&line=eq.'+encodeURIComponent(ln)+'&type=eq.'+type+'&select=*,ss_scores(item_no,score)&order=created_at.asc');
     if (!rows || rows.length === 0) {
-      container.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;color:#9ca3af;">해당 월/라인의 데이터가 없습니다.</div></div>';
+      container.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;color:#9ca3af;">데이터 없음</div></div>';
       return;
     }
-    var fieldItems = SS_FIELD_ITEMS[ln] || [];
-    var qualItems  = SS_QUALITY_ITEMS[ln] || [];
-    // inspector 별로 묶기 (field row 기준)
-    var byInspector = {};
-    rows.forEach(function(r) {
-      if (!byInspector[r.inspector]) byInspector[r.inspector] = {field: null, quality: null};
-      if (r.type === 'field')   byInspector[r.inspector].field   = r;
-      if (r.type === 'quality') byInspector[r.inspector].quality = r;
-    });
-    var html = '';
-    Object.keys(byInspector).forEach(function(insp) {
-      var grp = byInspector[insp];
-      var fRow = grp.field;
-      var qRow = grp.quality;
-      var fScores = {}, qScores = {};
-      if (fRow) (fRow.ss_scores || []).forEach(function(s) { fScores[s.item_no] = s.score; });
-      if (qRow) (qRow.ss_scores || []).forEach(function(s) { qScores[s.item_no] = s.score; });
-      var fTotal = fRow ? fRow.total : 0;
-      var qTotal = qRow ? qRow.total : 0;
-      html += '<div class="card"><div class="table-header"><span class="table-title">심사위원: ' + insp + '</span><span style="font-size:12px;color:#6b7280;">' + year + '년 ' + mon + '월 · ' + ln + '</span></div><div style="overflow-x:auto;">';
-      html += '<table class="data-table"><thead><tr><th>구분</th><th>No.</th><th>항목</th><th style="text-align:center;">점수</th></tr></thead><tbody>';
-      fieldItems.forEach(function(item, i) {
-        html += '<tr><td style="color:#6b7280;">' + (i === 0 ? '현장심사' : '') + '</td><td style="text-align:center;color:#9ca3af;">' + (i+1) + '</td><td>' + item + '</td><td style="text-align:center;font-weight:600;">' + (fScores['F'+(i+1)] !== undefined ? fScores['F'+(i+1)] : '-') + '</td></tr>';
+    var items = type === 'field' ? (SS_FIELD_ITEMS[ln]||[]) : (SS_QUALITY_ITEMS[ln]||[]);
+    var prefix = type === 'field' ? 'F' : 'Q';
+    var opts = type === 'field' ? [0,1,2,3] : [1,2,3,4];
+    var maxPer = type === 'field' ? 3 : 4;
+    // 헤더: 심사위원 목록
+    var inspectors = rows.map(function(r){return r.inspector;});
+    var html = '<div class="card"><div style="overflow-x:auto;"><table class="data-table"><thead><tr>'
+      + '<th>No</th><th>항목</th>'
+      + inspectors.map(function(n){return '<th style="text-align:center;white-space:nowrap;">'+n+'</th>';}).join('')
+      + '</tr></thead><tbody>';
+    // 각 항목별 행
+    items.forEach(function(item, i) {
+      html += '<tr><td style="text-align:center;color:#9ca3af;font-size:11px;">' + (i+1) + '</td><td>' + item + '</td>';
+      rows.forEach(function(r) {
+        var sc = {};
+        (r.ss_scores||[]).forEach(function(s){sc[s.item_no]=s.score;});
+        var v = sc[prefix+(i+1)];
+        html += '<td style="text-align:center;font-weight:600;">' + (v!==undefined ? v : '-') + '</td>';
       });
-      html += '<tr style="background:#f9fafb;font-weight:700;"><td colspan="3" style="text-align:right;">현장심사 합계</td><td style="text-align:center;">' + fTotal + ' / ' + (fieldItems.length * 3) + '</td></tr>';
-      if (qualItems.length > 0) {
-        qualItems.forEach(function(item, i) {
-          html += '<tr><td style="color:#6b7280;">' + (i === 0 ? '기초품질' : '') + '</td><td style="text-align:center;color:#9ca3af;">' + (i+1) + '</td><td>' + item + '</td><td style="text-align:center;font-weight:600;">' + (qScores['Q'+(i+1)] !== undefined ? qScores['Q'+(i+1)] : '-') + '</td></tr>';
-        });
-        html += '<tr style="background:#f9fafb;font-weight:700;"><td colspan="3" style="text-align:right;">기초품질 합계</td><td style="text-align:center;">' + qTotal + ' / ' + (qualItems.length * 4) + '</td></tr>';
-      }
-      html += '</tbody></table></div></div>';
+      html += '</tr>';
     });
-    container.innerHTML = html || '<div class="card"><div class="card-body" style="text-align:center;color:#9ca3af;">데이터가 없습니다.</div></div>';
+    // 합계 행
+    html += '<tr style="background:#f9fafb;font-weight:700;"><td colspan="2" style="text-align:right;">합계</td>';
+    rows.forEach(function(r) {
+      html += '<td style="text-align:center;color:#0f2744;">' + r.total + '/' + (items.length*maxPer) + '</td>';
+    });
+    html += '</tr></tbody></table></div></div>';
+    container.innerHTML = html;
   } catch(e) {
-    container.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;color:#dc2626;">오류: ' + e.message + '</div></div>';
+    container.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;color:#dc2626;">오류: '+e.message+'</div></div>';
   }
 }
 </script>
