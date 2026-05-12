@@ -367,13 +367,25 @@ tr.inspect-row.selected td{background:#eff6ff;}
 .ss-sig-btn.signed{background:#16a34a;color:white;border-color:#16a34a;}
 .ss-sig-time{font-size:10px;color:#6b7280;margin-top:4px;min-height:14px;}
 
-/* ── 3정5S 현장개선 카드 ── */
-.ss-imp-card{background:white;border-radius:10px;border:0.5px solid #e8ecf0;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
-.ss-imp-hdr{padding:12px 44px 12px 14px;cursor:pointer;position:relative;}
-.ss-imp-chevron{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#c4c9d4;font-size:14px;transition:transform 0.22s;}
-.ss-imp-card.open .ss-imp-chevron{transform:translateY(-50%) rotate(180deg);}
-.ss-imp-body{display:none;padding:12px 14px 16px;border-top:1px solid #f3f4f6;}
-.ss-imp-card.open .ss-imp-body{display:block;}
+/* ── 3정5S 현장개선 그리드 ── */
+.ss-imp-line-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none;}
+.ss-imp-line-scroll::-webkit-scrollbar{display:none;}
+.ss-imp-ltab{padding:7px 14px;border-radius:20px;border:1px solid #e8ecf0;background:white;color:#6b7280;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
+.ss-imp-ltab:hover{background:#f4f6f9;}
+.ss-imp-ltab.active{background:#0f2744;color:white;border-color:#0f2744;}
+.ss-imp-subbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.ss-imp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;}
+.ss-imp-gcard{background:white;border-radius:10px;border:1px solid #e8ecf0;overflow:hidden;cursor:pointer;transition:box-shadow 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.ss-imp-gcard:hover{box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+.ss-imp-thumb-wrap{position:relative;width:100%;padding-top:75%;background:#f4f6f9;overflow:hidden;}
+.ss-imp-thumb-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.ss-imp-thumb-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.ss-imp-sig-indicator{position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:50%;border:2px solid white;}
+.ss-imp-gcard-body{padding:10px 10px 8px;}
+.ss-imp-cat-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;margin-bottom:6px;}
+.ss-imp-gcard-title{font-size:12px;color:#374151;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px;min-height:2.8em;}
+.ss-imp-gcard-meta{font-size:10px;color:#9ca3af;margin-bottom:8px;}
+.ss-imp-sig-row-mini{display:flex;gap:4px;}
 
 /* ── 3정5S 결과 사이드탭 ── */
 .ss-res-tabs{display:flex;gap:0;margin-bottom:16px;border-radius:6px;overflow:hidden;border:1px solid #e8ecf0;}
@@ -1379,18 +1391,30 @@ tr.inspect-row.selected td{background:#eff6ff;}
 
     <!-- ══ 패널 B: 현장개선 ══ -->
     <div id="ss-panel-improve" style="display:none;">
-      <!-- 필터 + 등록 버튼 -->
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="ss-imp-filter-bar">
-          <button class="insp-fbtn active" data-f="all"       onclick="setSsImpFilter('all',this)">전체</button>
-          <button class="insp-fbtn"        data-f="정위치"    onclick="setSsImpFilter('정위치',this)">정위치</button>
-          <button class="insp-fbtn"        data-f="정리정돈"  onclick="setSsImpFilter('정리정돈',this)">정리정돈</button>
-          <button class="insp-fbtn"        data-f="miss"      onclick="setSsImpFilter('miss',this)">미개선</button>
-          <button class="insp-fbtn"        data-f="done"      onclick="setSsImpFilter('done',this)">완료</button>
+      <!-- 라인 탭 -->
+      <div class="ss-imp-line-scroll">
+        <button class="ss-imp-ltab active" onclick="setSsImpLine('all',this)">전체</button>
+        <button class="ss-imp-ltab" onclick="setSsImpLine('소형하부/GS4655',this)">소형하부/GS4655</button>
+        <button class="ss-imp-ltab" onclick="setSsImpLine('강건재',this)">강건재</button>
+        <button class="ss-imp-ltab" onclick="setSsImpLine('G16동',this)">G16동</button>
+        <button class="ss-imp-ltab" onclick="setSsImpLine('다성테크',this)">다성테크</button>
+        <button class="ss-imp-ltab" onclick="setSsImpLine('포항패킹',this)">포항패킹</button>
+        <button class="ss-imp-ltab" onclick="setSsImpLine('유창페인트',this)">유창페인트</button>
+      </div>
+      <!-- 서브 바 -->
+      <div class="ss-imp-subbar">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <select id="ss-imp-cat-filter" onchange="loadSsImprovements()" style="border:1px solid #e8ecf0;border-radius:6px;padding:6px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;">
+            <option value="all">전체</option>
+            <option value="정위치">정위치</option>
+            <option value="정리정돈">정리정돈</option>
+          </select>
+          <span id="ss-imp-count-text" style="font-size:12px;color:#6b7280;white-space:nowrap;">총 0건 · 서명 완료 0건</span>
         </div>
         <button class="add-btn" onclick="openSsImpForm()">+ 신규 등록</button>
       </div>
-      <div id="ss-imp-list"><div class="loading">로딩 중...</div></div>
+      <!-- 카드 그리드 -->
+      <div id="ss-imp-list" class="ss-imp-grid"><div class="loading" style="grid-column:1/-1;">로딩 중...</div></div>
     </div><!-- /ss-panel-improve -->
 
     <!-- ══ 패널 C: 결과 ══ -->
@@ -1462,70 +1486,94 @@ tr.inspect-row.selected td{background:#eff6ff;}
 
   </div><!-- /ss-admin-panels -->
 
+  <!-- 현장개선 상세 모달 -->
+  <div class="modal-bg" id="ss-imp-detail-modal" style="display:none;" onclick="if(event.target===this)closeSsImpDetail()">
+    <div class="modal" style="max-width:680px;width:96%;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px;">
+        <div id="ss-imp-detail-title" style="font-size:14px;font-weight:700;color:#0f2744;line-height:1.4;flex:1;"></div>
+        <button onclick="closeSsImpDetail()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#9ca3af;line-height:1;flex-shrink:0;">✕</button>
+      </div>
+      <div id="ss-imp-detail-meta" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:16px;background:#f9fafb;border-radius:8px;padding:12px;font-size:12px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;" id="ss-imp-detail-photos"></div>
+      <div style="border-top:1px solid #f3f4f6;padding-top:14px;">
+        <div style="font-size:11px;color:#9ca3af;margin-bottom:10px;">개선 완료 확인 후 해당 심사위원이 직접 서명합니다</div>
+        <div class="ss-sig-row" id="ss-imp-detail-sigs"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- 현장개선 등록 모달 -->
-  <div class="modal-bg" id="ss-imp-form-modal" style="display:none;">
-    <div class="modal" style="max-width:540px;width:96%;">
-      <div class="modal-title">현장개선 등록</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>구분 *</label>
-          <div style="display:flex;gap:8px;">
-            <button class="ss-seg-btn active" id="ss-imp-cat-loc"   onclick="setSsImpCat('정위치')"  style="flex:1;border-radius:6px;border:1px solid #e8ecf0;padding:7px;">정위치</button>
-            <button class="ss-seg-btn"        id="ss-imp-cat-clean" onclick="setSsImpCat('정리정돈')" style="flex:1;border-radius:6px;border:1px solid #e8ecf0;padding:7px;">정리정돈</button>
+  <div class="modal-bg" id="ss-imp-form-modal" style="display:none;" onclick="if(event.target===this)closeSsImpForm()">
+    <div class="modal" style="max-width:720px;width:96%;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div class="modal-title" style="margin:0;">현장개선 등록</div>
+        <button onclick="closeSsImpForm()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#9ca3af;line-height:1;">✕</button>
+      </div>
+      <!-- 구분 선택 -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button class="ss-seg-btn active" id="ss-imp-cat-loc" onclick="setSsImpCat('정위치')" style="flex:1;border-radius:6px;border:1px solid #e8ecf0;padding:9px;">정위치</button>
+        <button class="ss-seg-btn" id="ss-imp-cat-clean" onclick="setSsImpCat('정리정돈')" style="flex:1;border-radius:6px;border:1px solid #e8ecf0;padding:9px;">정리정돈</button>
+      </div>
+      <input type="hidden" id="ss-imp-category" value="정위치">
+      <!-- 2분할 레이아웃 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <!-- 왼쪽: 기본 정보 -->
+        <div>
+          <div class="form-group">
+            <label>활동업체(라인) *</label>
+            <select id="ss-imp-line" onchange="autoFillSsImpManager()" style="font-size:13px;padding:6px 10px;">
+              <option value="">선택</option>
+              <option>소형하부/GS4655</option><option>강건재</option><option>G16동</option>
+              <option>다성테크</option><option>포항패킹</option><option>유창페인트</option>
+            </select>
           </div>
-          <input type="hidden" id="ss-imp-category" value="정위치">
+          <div class="form-group">
+            <label>책임자</label>
+            <input type="text" id="ss-imp-manager" placeholder="자동 입력 (수정 가능)" style="font-size:13px;padding:6px 10px;">
+          </div>
+          <div class="form-group">
+            <label>점검일자 *</label>
+            <input type="date" id="ss-imp-inspect-date" style="font-size:13px;padding:6px 10px;">
+          </div>
+          <div class="form-group">
+            <label>활동일자</label>
+            <input type="date" id="ss-imp-activity-date" style="font-size:13px;padding:6px 10px;">
+          </div>
         </div>
-        <div class="form-group">
-          <label>활동업체(라인) *</label>
-          <select id="ss-imp-line" onchange="autoFillSsImpManager()" style="font-size:13px;padding:6px 10px;">
-            <option value="">선택</option>
-            <option>소형하부/GS4655</option><option>강건재</option><option>G16동</option>
-            <option>다성테크</option><option>포항패킹</option><option>유창페인트</option>
-          </select>
+        <!-- 오른쪽: 사진 + 내용 -->
+        <div>
+          <div class="form-group" style="margin-bottom:8px;">
+            <label>개선 전 사진</label>
+            <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
+              <label style="padding:5px 10px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:11px;cursor:pointer;color:#374151;">
+                파일<input type="file" id="ss-imp-before-file" accept="image/*" style="display:none;" onchange="handleSsImpPhoto(this,'before')">
+              </label>
+              <label style="padding:5px 10px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:11px;cursor:pointer;color:#374151;">
+                촬영<input type="file" id="ss-imp-before-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleSsImpPhoto(this,'before')">
+              </label>
+              <img id="ss-imp-before-thumb" src="" style="width:48px;height:36px;object-fit:cover;border-radius:4px;display:none;">
+            </div>
+            <textarea id="ss-imp-before-text" placeholder="개선 전 상황 메모" rows="3" style="width:100%;resize:none;font-size:12px;padding:7px;border:1px solid #e8ecf0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;"></textarea>
+          </div>
+          <hr style="border:none;border-top:1px solid #f3f4f6;margin:8px 0;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>개선 후 사진</label>
+            <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
+              <label style="padding:5px 10px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:11px;cursor:pointer;color:#374151;">
+                파일<input type="file" id="ss-imp-after-file" accept="image/*" style="display:none;" onchange="handleSsImpPhoto(this,'after')">
+              </label>
+              <label style="padding:5px 10px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:11px;cursor:pointer;color:#374151;">
+                촬영<input type="file" id="ss-imp-after-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleSsImpPhoto(this,'after')">
+              </label>
+              <img id="ss-imp-after-thumb" src="" style="width:48px;height:36px;object-fit:cover;border-radius:4px;display:none;">
+            </div>
+            <textarea id="ss-imp-after-text" placeholder="개선 후 내용 메모" rows="3" style="width:100%;resize:none;font-size:12px;padding:7px;border:1px solid #e8ecf0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;"></textarea>
+          </div>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>점검일자 *</label><input type="date" id="ss-imp-inspect-date"></div>
-        <div class="form-group"><label>책임자</label><input type="text" id="ss-imp-manager" placeholder="자동 입력 (수정 가능)"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>활동일자</label><input type="date" id="ss-imp-activity-date"></div>
-        <div class="form-group">
-          <label>상태</label>
-          <select id="ss-imp-status" style="font-size:13px;padding:6px 10px;">
-            <option value="미개선">미개선</option><option value="보류">보류</option><option value="완료">완료</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group" style="margin-bottom:10px;">
-        <label>개선 전</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-bottom:6px;">
-          <label style="padding:6px 12px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
-            사진 선택<input type="file" id="ss-imp-before-file" accept="image/*" style="display:none;" onchange="handleSsImpPhoto(this,'before')">
-          </label>
-          <label style="padding:6px 12px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
-            촬영<input type="file" id="ss-imp-before-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleSsImpPhoto(this,'before')">
-          </label>
-          <img id="ss-imp-before-thumb" src="" style="width:64px;height:48px;object-fit:cover;border-radius:6px;display:none;">
-        </div>
-        <textarea id="ss-imp-before-text" placeholder="개선 전 상황 메모" style="width:100%;height:60px;resize:none;font-size:13px;padding:8px;border:1px solid #e8ecf0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;"></textarea>
-      </div>
-      <div class="form-group" style="margin-bottom:10px;">
-        <label>개선 후</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-bottom:6px;">
-          <label style="padding:6px 12px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
-            사진 선택<input type="file" id="ss-imp-after-file" accept="image/*" style="display:none;" onchange="handleSsImpPhoto(this,'after')">
-          </label>
-          <label style="padding:6px 12px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
-            촬영<input type="file" id="ss-imp-after-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleSsImpPhoto(this,'after')">
-          </label>
-          <img id="ss-imp-after-thumb" src="" style="width:64px;height:48px;object-fit:cover;border-radius:6px;display:none;">
-        </div>
-        <textarea id="ss-imp-after-text" placeholder="개선 후 내용 메모" style="width:100%;height:60px;resize:none;font-size:13px;padding:8px;border:1px solid #e8ecf0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;"></textarea>
-      </div>
-      <div class="modal-btns">
+      <div class="modal-btns" style="margin-top:16px;">
         <button class="modal-cancel" onclick="closeSsImpForm()">취소</button>
-        <button class="add-btn" onclick="submitSsImprovement()">등록</button>
+        <button class="add-btn" id="ss-imp-submit-btn" onclick="submitSsImprovement()">등록</button>
       </div>
     </div>
   </div>
@@ -4065,9 +4113,6 @@ var ssCurrentSeg  = 'field'; // 'field' | 'quality'
 var ssCurrentPanel = 'input'; // 'input' | 'improve' | 'result'
 var ssInspState = {};
 var ssInited = false;
-var ssImpFilter = 'all';
-var ssImpPhotoData = {before: null, after: null};
-var ssImpCurrentCat = '정위치';
 
 /* ══════════════════════════
    사이드바 아코디언
@@ -4295,144 +4340,162 @@ var SS_IMP_MANAGERS = {
   '다성테크':'김춘용','포항패킹':'조진용','유창페인트':'성시훈'
 };
 var SS_SIG_NAMES = ['문경봉','형준상','윤우석','황재홍'];
+var ssImpCurrentLine = 'all';
+var ssImpPhotoData = {before: null, after: null};
+var ssImpCurrentCat = '정위치';
+var ssImpRows = [];
 
-function setSsImpFilter(f, btn) {
-  ssImpFilter = f;
-  document.querySelectorAll('#ss-imp-filter-bar .insp-fbtn').forEach(function(b){b.classList.remove('active');});
+function setSsImpLine(line, btn) {
+  ssImpCurrentLine = line;
+  document.querySelectorAll('.ss-imp-ltab').forEach(function(b) { b.classList.remove('active'); });
   if (btn) btn.classList.add('active');
   loadSsImprovements();
 }
 
 async function loadSsImprovements() {
   var list = document.getElementById('ss-imp-list');
-  list.innerHTML = '<div class="loading">로딩 중...</div>';
+  list.innerHTML = '<div class="loading" style="grid-column:1/-1;">로딩 중...</div>';
   try {
-    var qs = '?order=created_at.desc&limit=80';
-    if (ssImpFilter === 'miss')      qs += '&status=eq.미개선';
-    else if (ssImpFilter === 'done') qs += '&status=eq.완료';
-    else if (ssImpFilter === '정위치' || ssImpFilter === '정리정돈') qs += '&category=eq.' + encodeURIComponent(ssImpFilter);
+    var qs = '?order=created_at.desc&limit=200';
+    if (ssImpCurrentLine !== 'all') qs += '&line=eq.' + encodeURIComponent(ssImpCurrentLine);
+    var catFilter = (document.getElementById('ss-imp-cat-filter') || {}).value || 'all';
+    if (catFilter !== 'all') qs += '&category=eq.' + encodeURIComponent(catFilter);
     var rows = await sbQ('ss_improvements', qs);
+    ssImpRows = rows || [];
     if (!rows || rows.length === 0) {
-      list.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:40px;">등록된 현장개선 항목이 없습니다.</div>';
+      list.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#9ca3af;padding:40px;">등록된 현장개선 항목이 없습니다.</div>';
+      var ct = document.getElementById('ss-imp-count-text');
+      if (ct) ct.textContent = '총 0건 · 서명 완료 0건';
       return;
     }
+    var sigDone = rows.filter(function(r) {
+      return SS_SIG_NAMES.every(function(n) { return !!r['sig_' + n]; });
+    }).length;
+    var ct = document.getElementById('ss-imp-count-text');
+    if (ct) ct.textContent = '총 ' + rows.length + '건 · 서명 완료 ' + sigDone + '건';
     list.innerHTML = '';
-    rows.forEach(function(row) {
-      list.appendChild(_buildSsImpCard(row));
-    });
+    rows.forEach(function(row) { list.appendChild(_buildSsImpGridCard(row)); });
   } catch(e) {
-    list.innerHTML = '<div style="text-align:center;color:#dc2626;padding:24px;">오류: ' + e.message + '</div>';
+    list.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#dc2626;padding:24px;">오류: ' + e.message + '</div>';
   }
 }
 
-function _buildSsImpCard(row) {
-  var wrap = document.createElement('div');
-  wrap.className = 'ss-imp-card';
-  wrap.id = 'ss-imp-card-' + row.id;
-  var catColor = row.category === '정위치' ? '#3b82f6' : '#8b5cf6';
-  var stBg = {미개선:'#fef2f2',보류:'#fef3c7',완료:'#f0fdf4'}[row.status]||'#f4f6f9';
-  var stColor = {미개선:'#dc2626',보류:'#d97706',완료:'#16a34a'}[row.status]||'#6b7280';
+function _buildSsImpGridCard(row) {
+  var card = document.createElement('div');
+  card.className = 'ss-imp-gcard';
+  card.onclick = function() { openSsImpDetail(row.id); };
+  var catColor = row.category === '정위치' ? '#3b82f6' : '#16a34a';
+  var catIcon = row.category === '정위치'
+    ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'
+    : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+  var allSigned = SS_SIG_NAMES.every(function(n) { return !!row['sig_' + n]; });
   var sigDots = SS_SIG_NAMES.map(function(n) {
-    var sigKey = 'sig_' + n;
-    var done = !!row[sigKey];
-    return '<span title="' + n + '" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + (done ? '#16a34a' : '#e5e7eb') + ';margin-right:2px;"></span>';
+    return '<span title="' + n + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (row['sig_' + n] ? '#16a34a' : '#e5e7eb') + ';"></span>';
   }).join('');
-
-  wrap.innerHTML = '<div class="ss-imp-hdr" onclick="toggleSsImpCard(' + row.id + ')">'
-    + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">'
-    + '<span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:' + catColor + '20;color:' + catColor + ';">' + row.category + '</span>'
-    + '<span style="font-size:12px;font-weight:600;color:#0f2744;">' + row.line + '</span>'
-    + '<span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:' + stBg + ';color:' + stColor + ';">' + row.status + '</span>'
+  var thumbHtml = row.before_photo
+    ? '<img src="' + row.before_photo + '" loading="lazy">'
+    : '<div class="ss-imp-thumb-placeholder"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>';
+  var title = ((row.before_text || row.after_text || '(내용 없음)') + '').replace(/\n/g, ' ');
+  card.innerHTML = '<div class="ss-imp-thumb-wrap">'
+    + thumbHtml
+    + '<span class="ss-imp-sig-indicator" style="background:' + (allSigned ? '#16a34a' : '#d1d5db') + ';"></span>'
     + '</div>'
-    + '<div style="display:flex;align-items:center;gap:8px;">'
-    + '<span style="font-size:11px;color:#9ca3af;">' + (row.inspect_date||'') + '</span>'
-    + '<span style="font-size:11px;color:#9ca3af;margin-left:6px;">서명: ' + sigDots + '</span>'
-    + '</div>'
-    + '<span class="ss-imp-chevron">▼</span>'
-    + '</div>'
-    + '<div class="ss-imp-body">' + _buildSsImpBody(row) + '</div>';
-  return wrap;
+    + '<div class="ss-imp-gcard-body">'
+    + '<div class="ss-imp-cat-tag" style="color:' + catColor + ';background:' + catColor + '18;">' + catIcon + ' ' + row.category + '</div>'
+    + '<div class="ss-imp-gcard-title">' + title + '</div>'
+    + '<div class="ss-imp-gcard-meta">' + (row.line || '') + ' · ' + (row.inspect_date || '') + '</div>'
+    + '<div class="ss-imp-sig-row-mini">' + sigDots + '</div>'
+    + '</div>';
+  return card;
 }
 
-function _buildSsImpBody(row) {
-  var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">';
-  // 개선 전/후 사진+텍스트
-  ['before','after'].forEach(function(side) {
+/* 상세 모달 */
+function openSsImpDetail(id) {
+  var row = ssImpRows.find(function(r) { return r.id === id; });
+  if (!row) return;
+  var catColor = row.category === '정위치' ? '#3b82f6' : '#16a34a';
+  document.getElementById('ss-imp-detail-title').textContent = (row.before_text || row.after_text || '현장개선 상세').split('\n')[0].slice(0, 50);
+  var metas = [
+    ['라인', row.line || '-'],
+    ['구분', row.category || '-'],
+    ['책임자', row.manager || '-'],
+    ['점검일', row.inspect_date || '-'],
+    ['활동일', row.activity_date || '-']
+  ];
+  document.getElementById('ss-imp-detail-meta').innerHTML = metas.map(function(m) {
+    var val = m[0] === '구분'
+      ? '<span style="color:' + catColor + ';font-weight:600;">' + m[1] + '</span>'
+      : m[1];
+    return '<div><div style="font-size:10px;color:#9ca3af;margin-bottom:2px;">' + m[0] + '</div><div style="font-weight:500;color:#374151;">' + val + '</div></div>';
+  }).join('');
+  document.getElementById('ss-imp-detail-photos').innerHTML = ['before', 'after'].map(function(side) {
     var lbl = side === 'before' ? '개선 전' : '개선 후';
-    var ph = row[side+'_photo'];
-    var tx = row[side+'_text']||'';
-    html += '<div><div style="font-size:11px;color:#9ca3af;font-weight:600;margin-bottom:5px;">' + lbl + '</div>';
-    if (ph) html += '<img src="' + ph + '" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:5px;" onclick="openSsImpLightbox(\'' + ph + '\')">';
-    if (tx) html += '<div style="font-size:12px;color:#4b5563;background:#f8fafc;border-radius:5px;padding:7px;">' + tx + '</div>';
-    html += '</div>';
-  });
-  html += '</div>';
-  // 상태 변경 (관리자만)
-  if (isAdmin()) {
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">'
-      + '<select id="ss-imp-st-' + row.id + '" style="flex:1;border:1px solid #e8ecf0;border-radius:6px;padding:7px 10px;font-size:13px;font-family:\'Noto Sans KR\',sans-serif;">'
-      + ['미개선','보류','완료'].map(function(s){return '<option value="'+s+'"'+(s===row.status?' selected':'')+'>'+s+'</option>';}).join('')
-      + '</select>'
-      + '<button class="insp-card-save" onclick="updateSsImpStatus(' + row.id + ')">저장</button>'
+    var ph = row[side + '_photo'];
+    var tx = row[side + '_text'] || '';
+    return '<div>'
+      + '<div style="font-size:11px;color:#9ca3af;font-weight:600;margin-bottom:6px;">' + lbl + '</div>'
+      + '<div style="position:relative;width:100%;padding-top:75%;background:#f4f6f9;border-radius:8px;overflow:hidden;margin-bottom:8px;">'
+      + (ph
+        ? '<img src="' + ph + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;cursor:pointer;" onclick="openSsImpLightbox(\'' + ph + '\')">'
+        : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>')
+      + '</div>'
+      + (tx ? '<div style="font-size:12px;color:#4b5563;background:#f8fafc;border-radius:6px;padding:8px;line-height:1.5;">' + tx + '</div>' : '')
       + '</div>';
-  }
-  // 서명 행
-  html += '<div style="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;">서명 확인</div><div class="ss-sig-row">';
-  SS_SIG_NAMES.forEach(function(name) {
-    var sigKey = 'sig_' + name;
-    var atKey  = 'sig_' + name + '_at';
-    var done = !!row[sigKey];
-    var loginName = currentUser ? (currentUser.name || currentUser.username) : '';
-    var isMe = loginName === name;
-    var timeStr = done && row[atKey] ? new Date(row[atKey]).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-    html += '<div class="ss-sig-item' + (done ? ' signed' : '') + '">'
+  }).join('');
+  document.getElementById('ss-imp-detail-sigs').innerHTML = SS_SIG_NAMES.map(function(name) {
+    var done = !!row['sig_' + name];
+    var timeStr = done && row['sig_' + name + '_at']
+      ? new Date(row['sig_' + name + '_at']).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'})
+      : '';
+    return '<div class="ss-sig-item' + (done ? ' signed' : '') + '">'
       + '<div class="ss-sig-name">' + name + '</div>'
-      + '<button class="ss-sig-btn' + (done ? ' signed' : '') + '" '
-      + ((!isMe || done) ? 'disabled' : 'onclick="signSsImprovement(' + row.id + ',\'' + name + '\')"')
+      + '<button class="ss-sig-btn' + (done ? ' signed' : '') + '" id="ss-det-sig-btn-' + name + '"'
+      + (done ? ' disabled' : ' onclick="signSsImprovement(' + id + ',\'' + name + '\')"')
       + '>' + (done ? '✓ 확인됨' : '확인') + '</button>'
       + '<div class="ss-sig-time">' + timeStr + '</div>'
       + '</div>';
-  });
-  html += '</div>';
-  return html;
+  }).join('');
+  var modal = document.getElementById('ss-imp-detail-modal');
+  modal.dataset.rowId = id;
+  modal.style.display = 'flex';
 }
 
-function toggleSsImpCard(id) {
-  var card = document.getElementById('ss-imp-card-' + id);
-  if (card) card.classList.toggle('open');
-}
-
-async function updateSsImpStatus(id) {
-  var sel = document.getElementById('ss-imp-st-' + id);
-  if (!sel) return;
-  try {
-    var r = await fetch(SB_URL + '/rest/v1/ss_improvements?id=eq.' + id, {
-      method:'PATCH',
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify({status:sel.value})
-    });
-    if (!r.ok) throw new Error(await r.text());
-    loadSsImprovements();
-  } catch(e) { alert('저장 실패: ' + e.message); }
+function closeSsImpDetail() {
+  document.getElementById('ss-imp-detail-modal').style.display = 'none';
 }
 
 async function signSsImprovement(id, name) {
   var now = new Date().toISOString();
   var patch = {};
-  patch['sig_' + name] = currentUser.name || currentUser.username;
+  patch['sig_' + name] = true;
   patch['sig_' + name + '_at'] = now;
   try {
     var r = await fetch(SB_URL + '/rest/v1/ss_improvements?id=eq.' + id, {
-      method:'PATCH',
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify(patch)
+      method: 'PATCH',
+      headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify(patch)
     });
     if (!r.ok) throw new Error(await r.text());
+    var row = ssImpRows.find(function(r_) { return r_.id === id; });
+    if (row) { row['sig_' + name] = true; row['sig_' + name + '_at'] = now; }
+    var btn = document.getElementById('ss-det-sig-btn-' + name);
+    if (btn) {
+      btn.classList.add('signed');
+      btn.disabled = true;
+      btn.textContent = '✓ 확인됨';
+      btn.removeAttribute('onclick');
+      var item = btn.closest('.ss-sig-item');
+      if (item) {
+        item.classList.add('signed');
+        var timeEl = item.querySelector('.ss-sig-time');
+        if (timeEl) timeEl.textContent = new Date(now).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+      }
+    }
     loadSsImprovements();
   } catch(e) { alert('서명 실패: ' + e.message); }
 }
 
-/* 현장개선 등록 모달 */
+/* 등록 모달 */
 function openSsImpForm() {
   ssImpPhotoData = {before: null, after: null};
   ssImpCurrentCat = '정위치';
@@ -4441,11 +4504,12 @@ function openSsImpForm() {
   document.getElementById('ss-imp-activity-date').value = '';
   document.getElementById('ss-imp-manager').value = '';
   document.getElementById('ss-imp-line').value = '';
-  document.getElementById('ss-imp-status').value = '미개선';
   document.getElementById('ss-imp-before-text').value = '';
   document.getElementById('ss-imp-after-text').value = '';
-  document.getElementById('ss-imp-before-thumb').style.display = 'none';
-  document.getElementById('ss-imp-after-thumb').style.display = 'none';
+  ['before', 'after'].forEach(function(s) {
+    var t = document.getElementById('ss-imp-' + s + '-thumb');
+    if (t) { t.src = ''; t.style.display = 'none'; }
+  });
   setSsImpCat('정위치');
   document.getElementById('ss-imp-form-modal').style.display = 'flex';
 }
@@ -4455,54 +4519,72 @@ function closeSsImpForm() {
 function setSsImpCat(cat) {
   ssImpCurrentCat = cat;
   document.getElementById('ss-imp-category').value = cat;
-  document.getElementById('ss-imp-cat-loc').classList.toggle('active', cat==='정위치');
-  document.getElementById('ss-imp-cat-clean').classList.toggle('active', cat==='정리정돈');
+  document.getElementById('ss-imp-cat-loc').classList.toggle('active', cat === '정위치');
+  document.getElementById('ss-imp-cat-clean').classList.toggle('active', cat === '정리정돈');
 }
 function autoFillSsImpManager() {
   var ln = document.getElementById('ss-imp-line').value;
-  var mgr = SS_IMP_MANAGERS[ln] || '';
-  document.getElementById('ss-imp-manager').value = mgr;
+  document.getElementById('ss-imp-manager').value = SS_IMP_MANAGERS[ln] || '';
 }
 function handleSsImpPhoto(input, side) {
   var file = input.files[0];
   if (!file) return;
+  ssImpPhotoData[side] = file;
   var reader = new FileReader();
   reader.onload = function(e) {
-    ssImpPhotoData[side] = e.target.result;
     var thumb = document.getElementById('ss-imp-' + side + '-thumb');
     thumb.src = e.target.result;
     thumb.style.display = 'block';
   };
   reader.readAsDataURL(file);
 }
+async function _uploadSsImpPhoto(file, side) {
+  if (!file) return null;
+  var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  var path = side + '/' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + ext;
+  var r = await fetch(SB_URL + '/storage/v1/object/ss-improvements/' + path, {
+    method: 'POST',
+    headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type, 'x-upsert': 'true'},
+    body: file
+  });
+  if (!r.ok) throw new Error('사진 업로드 실패: ' + await r.text());
+  return SB_URL + '/storage/v1/object/public/ss-improvements/' + path;
+}
 async function submitSsImprovement() {
   var line = document.getElementById('ss-imp-line').value;
   var idate = document.getElementById('ss-imp-inspect-date').value;
   if (!line) { alert('라인을 선택하세요.'); return; }
   if (!idate) { alert('점검일자를 입력하세요.'); return; }
-  var payload = {
-    category: ssImpCurrentCat,
-    line: line,
-    manager: document.getElementById('ss-imp-manager').value.trim(),
-    inspect_date: idate,
-    activity_date: document.getElementById('ss-imp-activity-date').value || null,
-    before_photo: ssImpPhotoData.before,
-    before_text: document.getElementById('ss-imp-before-text').value.trim(),
-    after_photo: ssImpPhotoData.after,
-    after_text: document.getElementById('ss-imp-after-text').value.trim(),
-    status: document.getElementById('ss-imp-status').value,
-    created_by: currentUser ? (currentUser.name || currentUser.username) : ''
-  };
+  var submitBtn = document.getElementById('ss-imp-submit-btn');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '업로드 중...'; }
   try {
+    var beforeUrl = await _uploadSsImpPhoto(ssImpPhotoData.before, 'before');
+    var afterUrl  = await _uploadSsImpPhoto(ssImpPhotoData.after,  'after');
+    var payload = {
+      category:      ssImpCurrentCat,
+      line:          line,
+      manager:       document.getElementById('ss-imp-manager').value.trim(),
+      inspect_date:  idate,
+      activity_date: document.getElementById('ss-imp-activity-date').value || null,
+      before_photo:  beforeUrl,
+      before_text:   document.getElementById('ss-imp-before-text').value.trim(),
+      after_photo:   afterUrl,
+      after_text:    document.getElementById('ss-imp-after-text').value.trim(),
+      created_by:    currentUser ? (currentUser.name || currentUser.username) : ''
+    };
     var r = await fetch(SB_URL + '/rest/v1/ss_improvements', {
-      method:'POST',
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
+      method: 'POST',
+      headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
     });
     if (!r.ok) throw new Error(await r.text());
     closeSsImpForm();
     loadSsImprovements();
-  } catch(e) { alert('등록 실패: ' + e.message); }
+  } catch(e) {
+    alert('등록 실패: ' + e.message);
+  } finally {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '등록'; }
+  }
 }
 function openSsImpLightbox(src) {
   var lb = document.getElementById('inspect-photo-lightbox');
