@@ -265,8 +265,8 @@ tr:hover td{background:#fafbfd;}
 .role-admin{background:#dbeafe;color:#1e40af;}
 .role-manager{background:#dcfce7;color:#166534;}
 .role-viewer{background:#f1f5f9;color:#6b7280;}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;display:none;}
-.modal-bg.show{display:flex;align-items:center;justify-content:center;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px;box-sizing:border-box;}
+.modal-bg.show{display:flex;}
 .modal{background:white;border-radius:10px;padding:1.5rem;width:90%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,0.16);}
 .modal-title{font-size:14px;font-weight:700;color:#0f2744;margin-bottom:1rem;}
 .modal-btns{display:flex;gap:8px;margin-top:1rem;justify-content:flex-end;}
@@ -1504,74 +1504,79 @@ tr.inspect-row.selected td{background:#eff6ff;}
 
   <!-- 현장개선 등록 모달 -->
   <div class="modal-bg" id="ss-imp-form-modal" style="display:none;" onclick="if(event.target===this)closeSsImpForm()">
-    <div class="modal" style="max-width:720px;width:96%;max-height:90vh;overflow-y:auto;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <div class="modal" style="max-width:900px;width:96%;padding:20px;">
+      <!-- 헤더 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div class="modal-title" style="margin:0;">현장개선 등록</div>
         <button onclick="closeSsImpForm()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#9ca3af;line-height:1;">✕</button>
       </div>
-      <!-- 구분 선택 -->
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <button class="ss-seg-btn active" id="ss-imp-cat-loc" onclick="setSsImpCat('정위치')" style="flex:1;border-radius:6px;border:1px solid #e8ecf0;padding:9px;">정위치</button>
-        <button class="ss-seg-btn" id="ss-imp-cat-clean" onclick="setSsImpCat('정리정돈')" style="flex:1;border-radius:6px;border:1px solid #e8ecf0;padding:9px;">정리정돈</button>
-      </div>
       <input type="hidden" id="ss-imp-category" value="정위치">
-      <!-- 2분할 레이아웃 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <!-- 왼쪽: 기본 정보 -->
+
+      <!-- [상단] 구분 + 기본 정보 한 줄 -->
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;background:#f9fafb;border-radius:8px;padding:14px;margin-bottom:18px;">
         <div>
-          <div class="form-group">
-            <label>활동업체(라인) *</label>
-            <select id="ss-imp-line" onchange="autoFillSsImpManager()" style="font-size:13px;padding:6px 10px;">
-              <option value="">선택</option>
-              <option>소형하부/GS4655</option><option>강건재</option><option>G16동</option>
-              <option>다성테크</option><option>포항패킹</option><option>유창페인트</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>책임자</label>
-            <input type="text" id="ss-imp-manager" placeholder="자동 입력 (수정 가능)" style="font-size:13px;padding:6px 10px;">
-          </div>
-          <div class="form-group">
-            <label>점검일자 *</label>
-            <input type="date" id="ss-imp-inspect-date" style="font-size:13px;padding:6px 10px;">
-          </div>
-          <div class="form-group">
-            <label>활동일자</label>
-            <input type="date" id="ss-imp-activity-date" style="font-size:13px;padding:6px 10px;">
+          <div style="font-size:11px;color:#6b7280;font-weight:500;margin-bottom:5px;">구분 *</div>
+          <div style="display:flex;gap:6px;">
+            <button class="ss-seg-btn active" id="ss-imp-cat-loc" onclick="setSsImpCat('정위치')" style="border-radius:6px;border:1px solid #e8ecf0;padding:7px 14px;font-size:12px;">정위치</button>
+            <button class="ss-seg-btn" id="ss-imp-cat-clean" onclick="setSsImpCat('정리정돈')" style="border-radius:6px;border:1px solid #e8ecf0;padding:7px 14px;font-size:12px;">정리정돈</button>
           </div>
         </div>
-        <!-- 오른쪽: 사진 + 내용 -->
+        <div style="flex:1;min-width:140px;">
+          <div style="font-size:11px;color:#6b7280;font-weight:500;margin-bottom:5px;">활동업체(라인) *</div>
+          <select id="ss-imp-line" onchange="autoFillSsImpManager()" style="width:100%;border:1px solid #e8ecf0;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:white;">
+            <option value="">선택</option>
+            <option>소형하부/GS4655</option><option>강건재</option><option>G16동</option>
+            <option>다성테크</option><option>포항패킹</option><option>유창페인트</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:110px;">
+          <div style="font-size:11px;color:#6b7280;font-weight:500;margin-bottom:5px;">책임자</div>
+          <input type="text" id="ss-imp-manager" placeholder="자동 입력" style="width:100%;border:1px solid #e8ecf0;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;">
+        </div>
         <div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <label>개선 전 사진</label>
-            <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
-              <label style="padding:5px 10px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:11px;cursor:pointer;color:#374151;">
-                파일<input type="file" id="ss-imp-before-file" accept="image/*" style="display:none;" onchange="handleSsImpPhoto(this,'before')">
-              </label>
-              <label style="padding:5px 10px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:11px;cursor:pointer;color:#374151;">
-                촬영<input type="file" id="ss-imp-before-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleSsImpPhoto(this,'before')">
-              </label>
-              <img id="ss-imp-before-thumb" src="" style="width:48px;height:36px;object-fit:cover;border-radius:4px;display:none;">
-            </div>
-            <textarea id="ss-imp-before-text" placeholder="개선 전 상황 메모" rows="3" style="width:100%;resize:none;font-size:12px;padding:7px;border:1px solid #e8ecf0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;"></textarea>
-          </div>
-          <hr style="border:none;border-top:1px solid #f3f4f6;margin:8px 0;">
-          <div class="form-group" style="margin-bottom:0;">
-            <label>개선 후 사진</label>
-            <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
-              <label style="padding:5px 10px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:11px;cursor:pointer;color:#374151;">
-                파일<input type="file" id="ss-imp-after-file" accept="image/*" style="display:none;" onchange="handleSsImpPhoto(this,'after')">
-              </label>
-              <label style="padding:5px 10px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:11px;cursor:pointer;color:#374151;">
-                촬영<input type="file" id="ss-imp-after-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleSsImpPhoto(this,'after')">
-              </label>
-              <img id="ss-imp-after-thumb" src="" style="width:48px;height:36px;object-fit:cover;border-radius:4px;display:none;">
-            </div>
-            <textarea id="ss-imp-after-text" placeholder="개선 후 내용 메모" rows="3" style="width:100%;resize:none;font-size:12px;padding:7px;border:1px solid #e8ecf0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;"></textarea>
-          </div>
+          <div style="font-size:11px;color:#6b7280;font-weight:500;margin-bottom:5px;">점검일자 *</div>
+          <input type="date" id="ss-imp-inspect-date" style="border:1px solid #e8ecf0;border-radius:6px;padding:7px 10px;font-size:13px;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:#6b7280;font-weight:500;margin-bottom:5px;">활동일자</div>
+          <input type="date" id="ss-imp-activity-date" style="border:1px solid #e8ecf0;border-radius:6px;padding:7px 10px;font-size:13px;">
         </div>
       </div>
-      <div class="modal-btns" style="margin-top:16px;">
+
+      <!-- [중단] 개선 전/후 2분할 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;">
+        <!-- 개선 전 -->
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">개선 전</div>
+          <div id="ss-imp-before-area" onclick="document.getElementById('ss-imp-before-file').click()" style="position:relative;width:100%;padding-top:75%;background:#f4f6f9;border:2px dashed #e2e8f0;border-radius:8px;cursor:pointer;overflow:hidden;margin-bottom:8px;transition:border-color 0.15s;" onmouseenter="this.style.borderColor='#94a3b8'" onmouseleave="this.style.borderColor='#e2e8f0'">
+            <div id="ss-imp-before-placeholder" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:#9ca3af;pointer-events:none;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span style="font-size:11px;">클릭하여 사진 선택</span>
+            </div>
+            <img id="ss-imp-before-thumb" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;">
+            <input type="file" id="ss-imp-before-file" accept="image/*" style="display:none;" onchange="handleSsImpPhoto(this,'before')">
+            <input type="file" id="ss-imp-before-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleSsImpPhoto(this,'before')">
+          </div>
+          <textarea id="ss-imp-before-text" placeholder="개선 전 상황 메모" rows="4" style="width:100%;resize:none;font-size:12px;padding:8px;border:1px solid #e8ecf0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;"></textarea>
+        </div>
+        <!-- 개선 후 -->
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">개선 후</div>
+          <div id="ss-imp-after-area" onclick="document.getElementById('ss-imp-after-file').click()" style="position:relative;width:100%;padding-top:75%;background:#f4f6f9;border:2px dashed #e2e8f0;border-radius:8px;cursor:pointer;overflow:hidden;margin-bottom:8px;transition:border-color 0.15s;" onmouseenter="this.style.borderColor='#94a3b8'" onmouseleave="this.style.borderColor='#e2e8f0'">
+            <div id="ss-imp-after-placeholder" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:#9ca3af;pointer-events:none;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span style="font-size:11px;">클릭하여 사진 선택</span>
+            </div>
+            <img id="ss-imp-after-thumb" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;">
+            <input type="file" id="ss-imp-after-file" accept="image/*" style="display:none;" onchange="handleSsImpPhoto(this,'after')">
+            <input type="file" id="ss-imp-after-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleSsImpPhoto(this,'after')">
+          </div>
+          <textarea id="ss-imp-after-text" placeholder="개선 후 내용 메모" rows="4" style="width:100%;resize:none;font-size:12px;padding:8px;border:1px solid #e8ecf0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;"></textarea>
+        </div>
+      </div>
+
+      <!-- [하단] 버튼 -->
+      <div class="modal-btns">
         <button class="modal-cancel" onclick="closeSsImpForm()">취소</button>
         <button class="add-btn" id="ss-imp-submit-btn" onclick="submitSsImprovement()">등록</button>
       </div>
@@ -4509,6 +4514,10 @@ function openSsImpForm() {
   ['before', 'after'].forEach(function(s) {
     var t = document.getElementById('ss-imp-' + s + '-thumb');
     if (t) { t.src = ''; t.style.display = 'none'; }
+    var p = document.getElementById('ss-imp-' + s + '-placeholder');
+    if (p) p.style.display = 'flex';
+    var f = document.getElementById('ss-imp-' + s + '-file');
+    if (f) f.value = '';
   });
   setSsImpCat('정위치');
   document.getElementById('ss-imp-form-modal').style.display = 'flex';
@@ -4535,6 +4544,8 @@ function handleSsImpPhoto(input, side) {
     var thumb = document.getElementById('ss-imp-' + side + '-thumb');
     thumb.src = e.target.result;
     thumb.style.display = 'block';
+    var placeholder = document.getElementById('ss-imp-' + side + '-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
   };
   reader.readAsDataURL(file);
 }
