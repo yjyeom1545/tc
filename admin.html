@@ -401,14 +401,19 @@ tr.inspect-row.selected td{background:#eff6ff;}
   body.is-pwa #ss-web-input-wrap{display:none !important;}
   body.is-pwa #ss-pwa-input-wrap{display:block !important;padding-bottom:80px;}
 }
+/* 서브탭 */
+.ss-pwa-subtabs{display:flex;background:white;border-radius:10px;border:0.5px solid #e8ecf0;padding:4px;gap:4px;margin-bottom:12px;}
+.ss-pwa-subtab-btn{flex:1;padding:9px;border:none;border-radius:7px;background:transparent;color:#6b7280;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+.ss-pwa-subtab-btn.active{background:#0f2744;color:white;}
 /* 헤더 카드 */
 .ss-pwa-header-card{background:white;border-radius:12px;border:0.5px solid #e8ecf0;margin-bottom:12px;overflow:hidden;}
 .ss-pwa-hdr{background:#0f2744;color:white;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .ss-pwa-hdr-title{font-size:15px;font-weight:700;}
 .ss-pwa-hdr-status{font-size:12px;color:rgba(255,255,255,0.75);white-space:nowrap;}
-.ss-pwa-top-fields{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;border-bottom:1px solid #f3f4f6;}
-.ss-pwa-top-fields label{font-size:11px;color:#6b7280;font-weight:600;display:block;margin-bottom:4px;letter-spacing:0.3px;}
-.ss-pwa-top-fields input{width:100%;border:1px solid #e8ecf0;border-radius:7px;padding:9px 10px;font-size:16px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;color:#374151;}
+/* 겹침 수정: 세로 2단 */
+.ss-pwa-top-fields{padding:14px 16px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid #f3f4f6;}
+.ss-pwa-top-fields label{font-size:11px;color:#6b7280;font-weight:600;display:block;margin-bottom:5px;letter-spacing:0.3px;}
+.ss-pwa-top-fields input{width:100%;border:1px solid #e8ecf0;border-radius:7px;padding:10px 12px;font-size:16px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;color:#374151;}
 .ss-pwa-seg-bar{display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid #f3f4f6;}
 .ss-pwa-seg{flex:1;padding:10px 6px;border:1.5px solid #e8ecf0;border-radius:8px;background:white;color:#6b7280;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
 .ss-pwa-seg.active{background:#0f2744;color:white;border-color:#0f2744;}
@@ -446,6 +451,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
 .ss-pwa-action-bar{display:none;}
 @media(max-width:768px){
   body.is-pwa .ss-pwa-action-bar{display:flex;position:fixed;bottom:calc(60px + env(safe-area-inset-bottom));left:0;right:0;background:white;border-top:1px solid #e8ecf0;padding:10px 16px;align-items:center;justify-content:space-between;gap:12px;z-index:200;box-shadow:0 -2px 8px rgba(0,0,0,0.06);}
+  body.is-pwa .ss-pwa-action-bar.hidden{display:none !important;}
 }
 .ss-pwa-action-status{font-size:13px;color:#6b7280;font-weight:500;white-space:nowrap;}
 .ss-pwa-action-btns{display:flex;gap:8px;}
@@ -453,6 +459,43 @@ tr.inspect-row.selected td{background:#eff6ff;}
 .ss-pwa-tmp-btn:disabled{opacity:0.35;cursor:default;}
 .ss-pwa-final-btn{padding:10px 16px;border-radius:8px;border:none;background:#0f2744;color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:opacity 0.12s;}
 .ss-pwa-final-btn:disabled{opacity:0.35;cursor:default;}
+/* 내역 조회 */
+.ss-pwa-hist-filter-wrap{padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
+.ss-pwa-hist-filter-row{display:flex;flex-direction:column;gap:12px;}
+.ss-pwa-hist-filter-row label{font-size:11px;color:#6b7280;font-weight:600;display:block;margin-bottom:5px;letter-spacing:0.3px;}
+.ss-pwa-hist-filter-row input{width:100%;border:1px solid #e8ecf0;border-radius:7px;padding:10px 12px;font-size:16px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;color:#374151;}
+.ss-pwa-hist-type-row{display:flex;gap:6px;align-items:center;}
+.ss-pwa-hist-type{flex:1;padding:9px 4px;border:1.5px solid #e8ecf0;border-radius:8px;background:white;color:#6b7280;font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
+.ss-pwa-hist-type.active{background:#0f2744;color:white;border-color:#0f2744;}
+.ss-pwa-hist-load-btn{padding:9px 14px;border:none;border-radius:8px;background:#2563eb;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;}
+/* 내역 카드 */
+.ss-pwa-hist-card{background:white;border-radius:12px;border:0.5px solid #e8ecf0;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ss-pwa-hist-card:active{box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+.ss-pwa-hist-card-left{flex:1;min-width:0;}
+.ss-pwa-hist-card-line{font-size:15px;font-weight:700;color:#0f2744;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ss-pwa-hist-card-meta{font-size:12px;color:#6b7280;display:flex;gap:8px;flex-wrap:wrap;}
+.ss-pwa-hist-card-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;}
+.ss-pwa-hist-card-tag-field{background:#eff6ff;color:#2563eb;}
+.ss-pwa-hist-card-tag-quality{background:#fef9c3;color:#a16207;}
+.ss-pwa-hist-card-score{font-size:20px;font-weight:700;color:#0f2744;white-space:nowrap;}
+.ss-pwa-hist-card-score-max{font-size:12px;color:#9ca3af;font-weight:400;}
+/* 내역 바텀시트 */
+.ss-pwa-det-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1200;touch-action:none;}
+.ss-pwa-det-overlay.open{display:block;}
+.ss-pwa-det-sheet{display:none;position:fixed;bottom:0;left:0;right:0;max-height:88vh;background:white;border-radius:16px 16px 0 0;z-index:1201;flex-direction:column;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);}
+.ss-pwa-det-sheet.open{transform:translateY(0);display:flex;}
+.ss-pwa-det-handle{display:flex;justify-content:center;padding:12px 0 6px;flex-shrink:0;cursor:pointer;}
+.ss-pwa-det-handle::before{content:'';display:block;width:36px;height:4px;background:#d1d5db;border-radius:2px;}
+.ss-pwa-det-body{flex:1;overflow-y:auto;padding:4px 16px 32px;-webkit-overflow-scrolling:touch;}
+.ss-pwa-det-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:16px;}
+.ss-pwa-det-info-item{font-size:12px;}
+.ss-pwa-det-info-label{color:#9ca3af;margin-bottom:2px;}
+.ss-pwa-det-info-val{font-weight:600;color:#374151;}
+.ss-pwa-det-score-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f3f4f6;}
+.ss-pwa-det-score-row:last-child{border-bottom:none;}
+.ss-pwa-det-score-num{width:24px;height:24px;border-radius:50%;background:#f4f6f9;color:#6b7280;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ss-pwa-det-score-text{font-size:13px;color:#374151;flex:1;margin:0 10px;line-height:1.4;}
+.ss-pwa-det-score-badge{padding:3px 10px;border-radius:10px;font-size:13px;font-weight:700;min-width:28px;text-align:center;}
 </style>
 </head>
 <body>
@@ -1455,44 +1498,84 @@ tr.inspect-row.selected td{background:#eff6ff;}
 
     <!-- ▸ 앱 전용 입력 UI (body.is-pwa + ≤768px) ◂ -->
     <div id="ss-pwa-input-wrap">
-      <!-- 상단 카드 -->
-      <div class="ss-pwa-header-card">
-        <div class="ss-pwa-hdr">
-          <span class="ss-pwa-hdr-title">3정5S 심사 입력</span>
-          <span class="ss-pwa-hdr-status" id="ss-pwa-hdr-status">미입력 · 0/7 완료</span>
-        </div>
-        <div class="ss-pwa-top-fields">
-          <div>
-            <label>심사월</label>
-            <input type="month" id="ss-pwa-month">
+      <!-- 서브탭 -->
+      <div class="ss-pwa-subtabs">
+        <button class="ss-pwa-subtab-btn active" id="ss-pwa-stab-input" onclick="switchPwaSubtab('input')">심사 입력</button>
+        <button class="ss-pwa-subtab-btn" id="ss-pwa-stab-history" onclick="switchPwaSubtab('history')">내역 조회</button>
+      </div>
+
+      <!-- ── 심사 입력 서브탭 ── -->
+      <div id="ss-pwa-sub-input">
+        <!-- 상단 카드 -->
+        <div class="ss-pwa-header-card">
+          <div class="ss-pwa-hdr">
+            <span class="ss-pwa-hdr-title">3정5S 심사 입력</span>
+            <span class="ss-pwa-hdr-status" id="ss-pwa-hdr-status">미입력 · 0/7 완료</span>
           </div>
-          <div>
-            <label>심사위원 이름</label>
-            <input type="text" id="ss-pwa-inspector" placeholder="이름 직접 입력">
+          <div class="ss-pwa-top-fields">
+            <div>
+              <label>심사월</label>
+              <input type="month" id="ss-pwa-month">
+            </div>
+            <div>
+              <label>심사위원 이름</label>
+              <input type="text" id="ss-pwa-inspector" placeholder="이름 직접 입력">
+            </div>
+          </div>
+          <div class="ss-pwa-seg-bar">
+            <button class="ss-pwa-seg active" id="ss-pwa-seg-field" onclick="setPwaSeg('field')">현장심사 30%</button>
+            <button class="ss-pwa-seg" id="ss-pwa-seg-quality" onclick="setPwaSeg('quality')">기초품질 40%</button>
+          </div>
+          <div class="ss-pwa-line-scroll" id="ss-pwa-line-scroll"></div>
+        </div>
+        <!-- 완료 배너 -->
+        <div id="ss-pwa-done-banner" class="ss-pwa-done-banner" style="display:none;">
+          <span>모든 라인 임시저장 완료<br>최종 저장을 눌러주세요</span>
+          <button onclick="finalSavePwa()">최종 저장</button>
+        </div>
+        <!-- 점수 입력 카드 -->
+        <div class="ss-pwa-score-card">
+          <div class="ss-pwa-score-hdr">
+            <span class="ss-pwa-score-hdr-line" id="ss-pwa-score-line-name">-</span>
+            <span class="ss-pwa-score-hdr-prog" id="ss-pwa-score-progress">0/10</span>
+          </div>
+          <div class="ss-pwa-legend" id="ss-pwa-legend"></div>
+          <div id="ss-pwa-items-list"></div>
+        </div>
+      </div><!-- /ss-pwa-sub-input -->
+
+      <!-- ── 내역 조회 서브탭 ── -->
+      <div id="ss-pwa-sub-history" style="display:none;padding-bottom:20px;">
+        <div class="ss-pwa-header-card">
+          <div class="ss-pwa-hdr">
+            <span class="ss-pwa-hdr-title">심사 내역 조회</span>
+          </div>
+          <div class="ss-pwa-hist-filter-wrap">
+            <div class="ss-pwa-hist-filter-row">
+              <div>
+                <label>조회 월</label>
+                <input type="month" id="ss-pwa-hist-month">
+              </div>
+              <div>
+                <label>심사위원 이름 <span style="font-weight:400;color:#9ca3af;">(비우면 전체)</span></label>
+                <input type="text" id="ss-pwa-hist-inspector" placeholder="이름 입력 또는 비워두기">
+              </div>
+            </div>
+            <div class="ss-pwa-hist-type-row">
+              <button class="ss-pwa-hist-type active" id="ss-pwa-hist-type-all" onclick="setPwaHistType('all')">전체</button>
+              <button class="ss-pwa-hist-type" id="ss-pwa-hist-type-field" onclick="setPwaHistType('field')">현장심사</button>
+              <button class="ss-pwa-hist-type" id="ss-pwa-hist-type-quality" onclick="setPwaHistType('quality')">기초품질</button>
+              <button class="ss-pwa-hist-load-btn" onclick="loadPwaHistory()">조회</button>
+            </div>
           </div>
         </div>
-        <div class="ss-pwa-seg-bar">
-          <button class="ss-pwa-seg active" id="ss-pwa-seg-field" onclick="setPwaSeg('field')">현장심사 30%</button>
-          <button class="ss-pwa-seg" id="ss-pwa-seg-quality" onclick="setPwaSeg('quality')">기초품질 40%</button>
+        <div id="ss-pwa-hist-list">
+          <div class="ss-pwa-empty">조회 버튼을 눌러주세요</div>
         </div>
-        <div class="ss-pwa-line-scroll" id="ss-pwa-line-scroll"></div>
-      </div>
-      <!-- 완료 배너 (모든 라인 임시저장 완료 시) -->
-      <div id="ss-pwa-done-banner" class="ss-pwa-done-banner" style="display:none;">
-        <span>모든 라인 임시저장 완료<br>최종 저장을 눌러주세요</span>
-        <button onclick="finalSavePwa()">최종 저장</button>
-      </div>
-      <!-- 점수 입력 카드 -->
-      <div class="ss-pwa-score-card">
-        <div class="ss-pwa-score-hdr">
-          <span class="ss-pwa-score-hdr-line" id="ss-pwa-score-line-name">-</span>
-          <span class="ss-pwa-score-hdr-prog" id="ss-pwa-score-progress">0/10</span>
-        </div>
-        <div class="ss-pwa-legend" id="ss-pwa-legend"></div>
-        <div id="ss-pwa-items-list"></div>
-      </div>
-      <!-- 하단 액션 바 -->
-      <div class="ss-pwa-action-bar">
+      </div><!-- /ss-pwa-sub-history -->
+
+      <!-- 하단 액션 바 (심사 입력 탭에서만 표시) -->
+      <div class="ss-pwa-action-bar" id="ss-pwa-action-bar">
         <span class="ss-pwa-action-status" id="ss-pwa-action-status">임시저장 0 / 7</span>
         <div class="ss-pwa-action-btns">
           <button class="ss-pwa-tmp-btn" id="ss-pwa-tmp-btn" disabled onclick="tmpSavePwa()">임시저장</button>
@@ -1500,6 +1583,13 @@ tr.inspect-row.selected td{background:#eff6ff;}
         </div>
       </div>
     </div><!-- /ss-pwa-input-wrap -->
+
+    <!-- 심사 내역 상세 바텀시트 -->
+    <div class="ss-pwa-det-overlay" id="ss-pwa-det-overlay" onclick="closePwaHistDetail()"></div>
+    <div class="ss-pwa-det-sheet" id="ss-pwa-det-sheet">
+      <div class="ss-pwa-det-handle" onclick="closePwaHistDetail()"></div>
+      <div class="ss-pwa-det-body" id="ss-pwa-det-body"></div>
+    </div>
 
     </div><!-- /ss-panel-input -->
 
@@ -4461,7 +4551,7 @@ async function saveSsInspection() {
 }
 
 /* ══════════════════════════
-   PWA 전용 심사 입력
+   PWA 전용 심사 입력 + 내역 조회
 ══════════════════════════ */
 var ssP = {
   seg: 'field',
@@ -4469,6 +4559,8 @@ var ssP = {
   lineData: { field: {}, quality: {} }
 };
 var ssPwaInited = false;
+var ssPwaSubtab = 'input';
+var ssPwaHistType = 'all';
 
 function _isPwaInput() {
   return document.body.classList.contains('is-pwa') && window.innerWidth <= 768;
@@ -4479,10 +4571,11 @@ function _initPwaInput() {
   var ym = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
   var mEl = document.getElementById('ss-pwa-month');
   if (mEl && !mEl.value) mEl.value = ym;
+  var hEl = document.getElementById('ss-pwa-hist-month');
+  if (hEl && !hEl.value) hEl.value = ym;
 
   if (!ssPwaInited) {
     ssPwaInited = true;
-    if (mEl) mEl.addEventListener('change', function() {});
     var iEl = document.getElementById('ss-pwa-inspector');
     if (iEl) iEl.addEventListener('input', function() {
       updatePwaActionBar();
@@ -4497,11 +4590,25 @@ function _initPwaInput() {
   }
 
   if (!ssP.line) ssP.line = SS_LINES[0];
-  _renderPwaLegend();
-  renderPwaLineTabs();
-  renderPwaScoreItems();
-  updatePwaActionBar();
-  updatePwaHdrStatus();
+  switchPwaSubtab(ssPwaSubtab);
+}
+
+/* ── 서브탭 전환 ── */
+function switchPwaSubtab(tab) {
+  ssPwaSubtab = tab;
+  document.getElementById('ss-pwa-stab-input').classList.toggle('active', tab === 'input');
+  document.getElementById('ss-pwa-stab-history').classList.toggle('active', tab === 'history');
+  document.getElementById('ss-pwa-sub-input').style.display = tab === 'input' ? 'block' : 'none';
+  document.getElementById('ss-pwa-sub-history').style.display = tab === 'history' ? 'block' : 'none';
+  var bar = document.getElementById('ss-pwa-action-bar');
+  if (bar) bar.classList.toggle('hidden', tab !== 'input');
+  if (tab === 'input') {
+    _renderPwaLegend();
+    renderPwaLineTabs();
+    renderPwaScoreItems();
+    updatePwaActionBar();
+    updatePwaHdrStatus();
+  }
 }
 
 function _hasPwaUnsavedData() {
@@ -4734,6 +4841,121 @@ async function finalSavePwa() {
     if (finalBtn) { finalBtn.disabled = false; finalBtn.textContent = '최종 저장'; }
     updatePwaActionBar();
   }
+}
+
+/* ── 내역 조회 ── */
+function setPwaHistType(type) {
+  ssPwaHistType = type;
+  ['all','field','quality'].forEach(function(t) {
+    var el = document.getElementById('ss-pwa-hist-type-' + t);
+    if (el) el.classList.toggle('active', t === type);
+  });
+}
+
+async function loadPwaHistory() {
+  var monthEl = document.getElementById('ss-pwa-hist-month');
+  var inspEl = document.getElementById('ss-pwa-hist-inspector');
+  var listEl = document.getElementById('ss-pwa-hist-list');
+  var month = (monthEl && monthEl.value) || '';
+  var inspector = (inspEl && inspEl.value.trim()) || '';
+  if (!month) { alert('조회할 월을 선택하세요.'); return; }
+  if (listEl) listEl.innerHTML = '<div class="ss-pwa-empty">조회 중...</div>';
+  var parts = month.split('-');
+  var year = parseInt(parts[0]), mon = parseInt(parts[1]);
+  var qs = '?year=eq.' + year + '&month=eq.' + mon + '&order=created_at.desc&select=*';
+  if (ssPwaHistType !== 'all') qs += '&type=eq.' + ssPwaHistType;
+  if (inspector) qs += '&inspector=eq.' + encodeURIComponent(inspector);
+  try {
+    var rows = await sbQ('ss_inspections', qs);
+    if (!rows || rows.length === 0) {
+      listEl.innerHTML = '<div class="ss-pwa-empty">조회된 심사 내역이 없습니다.</div>';
+      return;
+    }
+    listEl.innerHTML = '';
+    rows.forEach(function(row) {
+      var card = document.createElement('div');
+      card.className = 'ss-pwa-hist-card';
+      var typeTag = row.type === 'field'
+        ? '<span class="ss-pwa-hist-card-tag ss-pwa-hist-card-tag-field">현장심사</span>'
+        : '<span class="ss-pwa-hist-card-tag ss-pwa-hist-card-tag-quality">기초품질</span>';
+      card.innerHTML = '<div class="ss-pwa-hist-card-left">'
+        + '<div class="ss-pwa-hist-card-line">' + (row.line || '-') + '</div>'
+        + '<div class="ss-pwa-hist-card-meta">'
+        + typeTag
+        + '<span>' + (row.year || '') + '.' + String(row.month || '').padStart(2,'0') + '</span>'
+        + '<span>' + (row.inspector || '-') + '</span>'
+        + '</div></div>'
+        + '<div><div class="ss-pwa-hist-card-score">' + (row.total !== null ? row.total : '-')
+        + '<span class="ss-pwa-hist-card-score-max">/' + (row.max_score || '?') + '</span></div></div>';
+      card.onclick = (function(r){ return function(){ openPwaHistDetail(r); }; })(row);
+      listEl.appendChild(card);
+    });
+  } catch(e) {
+    if (listEl) listEl.innerHTML = '<div class="ss-pwa-empty" style="color:#dc2626;">오류: ' + e.message + '</div>';
+  }
+}
+
+async function openPwaHistDetail(row) {
+  var overlay = document.getElementById('ss-pwa-det-overlay');
+  var sheet = document.getElementById('ss-pwa-det-sheet');
+  var body = document.getElementById('ss-pwa-det-body');
+  if (!overlay || !sheet || !body) return;
+
+  var typeLabel = row.type === 'field' ? '현장심사' : '기초품질';
+  var monthStr = (row.year || '') + '년 ' + (row.month || '') + '월';
+  body.innerHTML = '<div style="font-size:16px;font-weight:700;color:#0f2744;margin-bottom:14px;">' + (row.line||'-') + ' · ' + typeLabel + '</div>'
+    + '<div class="ss-pwa-det-info">'
+    + '<div class="ss-pwa-det-info-item"><div class="ss-pwa-det-info-label">심사월</div><div class="ss-pwa-det-info-val">' + monthStr + '</div></div>'
+    + '<div class="ss-pwa-det-info-item"><div class="ss-pwa-det-info-label">심사위원</div><div class="ss-pwa-det-info-val">' + (row.inspector||'-') + '</div></div>'
+    + '<div class="ss-pwa-det-info-item"><div class="ss-pwa-det-info-label">구분</div><div class="ss-pwa-det-info-val">' + typeLabel + '</div></div>'
+    + '<div class="ss-pwa-det-info-item"><div class="ss-pwa-det-info-label">합계</div><div class="ss-pwa-det-info-val" style="color:#0f2744;">' + (row.total !== null ? row.total : '-') + ' / ' + (row.max_score||'?') + '</div></div>'
+    + '</div>'
+    + '<div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:8px;letter-spacing:0.3px;">항목별 점수</div>'
+    + '<div id="ss-pwa-det-scores"><div class="ss-pwa-empty">불러오는 중...</div></div>';
+
+  overlay.classList.add('open');
+  requestAnimationFrame(function(){
+    sheet.style.display = 'flex';
+    requestAnimationFrame(function(){ sheet.classList.add('open'); });
+  });
+
+  var scoresEl = document.getElementById('ss-pwa-det-scores');
+  try {
+    var scRows = await sbQ('ss_scores', '?inspection_id=eq.' + row.id + '&order=item_no.asc');
+    if (!scRows || scRows.length === 0) {
+      scoresEl.innerHTML = '<div class="ss-pwa-empty">점수 데이터 없음</div>';
+      return;
+    }
+    var itemNames = row.type === 'field' ? (SS_FIELD_ITEMS[row.line]||[]) : (SS_QUALITY_ITEMS[row.line]||[]);
+    var maxVal = row.type === 'field' ? 3 : 4;
+    var colorMap = {0:'#fef2f2|#dc2626', 1:'#fffbeb|#d97706', 2:'#eff6ff|#2563eb', 3:'#f0fdf4|#16a34a', 4:'#f0fdf4|#16a34a'};
+    scoresEl.innerHTML = '';
+    scRows.forEach(function(sc, i) {
+      var name = itemNames[i] || sc.item_no || ('항목 ' + (i+1));
+      var v = sc.score;
+      var colors = (colorMap[v] || '#f3f4f6|#374151').split('|');
+      var pct = maxVal > 0 ? Math.round((v / maxVal) * 100) : 0;
+      var div = document.createElement('div');
+      div.className = 'ss-pwa-det-score-row';
+      div.innerHTML = '<span class="ss-pwa-det-score-num">' + (i+1) + '</span>'
+        + '<span class="ss-pwa-det-score-text">' + name + '</span>'
+        + '<span class="ss-pwa-det-score-badge" style="background:' + colors[0] + ';color:' + colors[1] + ';">' + v + '</span>';
+      scoresEl.appendChild(div);
+    });
+  } catch(e) {
+    scoresEl.innerHTML = '<div class="ss-pwa-empty" style="color:#dc2626;">오류: ' + e.message + '</div>';
+  }
+}
+
+function closePwaHistDetail() {
+  var overlay = document.getElementById('ss-pwa-det-overlay');
+  var sheet = document.getElementById('ss-pwa-det-sheet');
+  if (!sheet) return;
+  sheet.classList.remove('open');
+  setTimeout(function(){
+    sheet.style.display = 'none';
+    if (overlay) overlay.classList.remove('open');
+  }, 300);
 }
 
 /* ══════════════════════════
