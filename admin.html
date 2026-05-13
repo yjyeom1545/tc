@@ -392,6 +392,65 @@ tr.inspect-row.selected td{background:#eff6ff;}
 .ss-res-tab{flex:1;padding:9px;background:white;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:#6b7280;transition:all 0.12s;}
 .ss-res-tab+.ss-res-tab{border-left:1px solid #e8ecf0;}
 .ss-res-tab.active{background:#0f2744;color:white;}
+
+/* ── 3정5S 심사 입력: 앱 전용 (body.is-pwa + ≤768px) ── */
+#ss-pwa-input-wrap{display:none;}
+@media(max-width:768px){
+  body.is-pwa #ss-web-input-wrap{display:none !important;}
+  body.is-pwa #ss-pwa-input-wrap{display:block !important;padding-bottom:80px;}
+}
+/* 헤더 카드 */
+.ss-pwa-header-card{background:white;border-radius:12px;border:0.5px solid #e8ecf0;margin-bottom:12px;overflow:hidden;}
+.ss-pwa-hdr{background:#0f2744;color:white;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ss-pwa-hdr-title{font-size:15px;font-weight:700;}
+.ss-pwa-hdr-status{font-size:12px;color:rgba(255,255,255,0.75);white-space:nowrap;}
+.ss-pwa-top-fields{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;border-bottom:1px solid #f3f4f6;}
+.ss-pwa-top-fields label{font-size:11px;color:#6b7280;font-weight:600;display:block;margin-bottom:4px;letter-spacing:0.3px;}
+.ss-pwa-top-fields input{width:100%;border:1px solid #e8ecf0;border-radius:7px;padding:9px 10px;font-size:16px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;color:#374151;}
+.ss-pwa-seg-bar{display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid #f3f4f6;}
+.ss-pwa-seg{flex:1;padding:10px 6px;border:1.5px solid #e8ecf0;border-radius:8px;background:white;color:#6b7280;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
+.ss-pwa-seg.active{background:#0f2744;color:white;border-color:#0f2744;}
+.ss-pwa-line-scroll{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.ss-pwa-line-scroll::-webkit-scrollbar{display:none;}
+.ss-pwa-ltab{position:relative;padding:8px 14px;border-radius:20px;border:1.5px solid #e8ecf0;background:white;color:#6b7280;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;flex-shrink:0;transition:all 0.12s;}
+.ss-pwa-ltab.active{background:#0f2744;color:white;border-color:#0f2744;}
+.ss-pwa-ltab.saved{border-color:#22c55e;}
+.ss-pwa-ltab-badge{position:absolute;top:-5px;right:-5px;background:#22c55e;color:white;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+/* 완료 배너 */
+.ss-pwa-done-banner{background:#16a34a;color:white;border-radius:10px;padding:13px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ss-pwa-done-banner span{font-size:13px;font-weight:600;line-height:1.4;}
+.ss-pwa-done-banner button{background:white;color:#16a34a;border:none;padding:9px 14px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;flex-shrink:0;}
+/* 점수 카드 */
+.ss-pwa-score-card{background:white;border-radius:12px;border:0.5px solid #e8ecf0;margin-bottom:12px;overflow:hidden;}
+.ss-pwa-score-hdr{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f3f4f6;}
+.ss-pwa-score-hdr-line{font-size:15px;font-weight:700;color:#0f2744;}
+.ss-pwa-score-hdr-prog{font-size:13px;color:#6b7280;}
+.ss-pwa-legend{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;}
+.ss-pwa-leg{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;}
+.ss-pwa-leg-0{background:#fef2f2;color:#dc2626;}
+.ss-pwa-leg-1{background:#fffbeb;color:#d97706;}
+.ss-pwa-leg-2{background:#eff6ff;color:#2563eb;}
+.ss-pwa-leg-3{background:#f0fdf4;color:#16a34a;}
+.ss-pwa-leg-4{background:#f0fdf4;color:#16a34a;}
+.ss-pwa-item-row{padding:14px 16px;border-bottom:1px solid #f3f4f6;}
+.ss-pwa-item-row:last-child{border-bottom:none;}
+.ss-pwa-item-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.ss-pwa-item-num{width:28px;height:28px;border-radius:50%;background:#f4f6f9;color:#6b7280;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.ss-pwa-item-text{font-size:17px;color:#374151;line-height:1.5;flex:1;}
+.ss-pwa-score-btns{display:flex;gap:6px;}
+.ss-pwa-score-btn{flex:1;height:52px;border:1.5px solid #e8ecf0;border-radius:8px;background:white;color:#374151;font-size:16px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
+.ss-pwa-empty{text-align:center;color:#9ca3af;padding:36px 16px;font-size:14px;}
+/* 하단 액션 바 */
+.ss-pwa-action-bar{display:none;}
+@media(max-width:768px){
+  body.is-pwa .ss-pwa-action-bar{display:flex;position:fixed;bottom:calc(60px + env(safe-area-inset-bottom));left:0;right:0;background:white;border-top:1px solid #e8ecf0;padding:10px 16px;align-items:center;justify-content:space-between;gap:12px;z-index:200;box-shadow:0 -2px 8px rgba(0,0,0,0.06);}
+}
+.ss-pwa-action-status{font-size:13px;color:#6b7280;font-weight:500;white-space:nowrap;}
+.ss-pwa-action-btns{display:flex;gap:8px;}
+.ss-pwa-tmp-btn{padding:10px 16px;border-radius:8px;border:1.5px solid #0f2744;background:white;color:#0f2744;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:opacity 0.12s;}
+.ss-pwa-tmp-btn:disabled{opacity:0.35;cursor:default;}
+.ss-pwa-final-btn{padding:10px 16px;border-radius:8px;border:none;background:#0f2744;color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:opacity 0.12s;}
+.ss-pwa-final-btn:disabled{opacity:0.35;cursor:default;}
 </style>
 </head>
 <body>
@@ -1329,6 +1388,9 @@ tr.inspect-row.selected td{background:#eff6ff;}
 
     <!-- ══ 패널 A: 심사 입력 ══ -->
     <div id="ss-panel-input" style="display:none;">
+
+    <!-- ▸ 웹 전용 입력 UI ◂ -->
+    <div id="ss-web-input-wrap">
       <div class="card">
         <div class="card-body">
           <!-- 심사 구분 세그먼트 -->
@@ -1387,6 +1449,56 @@ tr.inspect-row.selected td{background:#eff6ff;}
       <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
         <button class="add-btn" onclick="saveSsInspection()">저장</button>
       </div>
+    </div><!-- /ss-web-input-wrap -->
+
+    <!-- ▸ 앱 전용 입력 UI (body.is-pwa + ≤768px) ◂ -->
+    <div id="ss-pwa-input-wrap">
+      <!-- 상단 카드 -->
+      <div class="ss-pwa-header-card">
+        <div class="ss-pwa-hdr">
+          <span class="ss-pwa-hdr-title">3정5S 심사 입력</span>
+          <span class="ss-pwa-hdr-status" id="ss-pwa-hdr-status">미입력 · 0/7 완료</span>
+        </div>
+        <div class="ss-pwa-top-fields">
+          <div>
+            <label>심사월</label>
+            <input type="month" id="ss-pwa-month">
+          </div>
+          <div>
+            <label>심사위원 이름</label>
+            <input type="text" id="ss-pwa-inspector" placeholder="이름 직접 입력">
+          </div>
+        </div>
+        <div class="ss-pwa-seg-bar">
+          <button class="ss-pwa-seg active" id="ss-pwa-seg-field" onclick="setPwaSeg('field')">현장심사 30%</button>
+          <button class="ss-pwa-seg" id="ss-pwa-seg-quality" onclick="setPwaSeg('quality')">기초품질 40%</button>
+        </div>
+        <div class="ss-pwa-line-scroll" id="ss-pwa-line-scroll"></div>
+      </div>
+      <!-- 완료 배너 (모든 라인 임시저장 완료 시) -->
+      <div id="ss-pwa-done-banner" class="ss-pwa-done-banner" style="display:none;">
+        <span>모든 라인 임시저장 완료<br>최종 저장을 눌러주세요</span>
+        <button onclick="finalSavePwa()">최종 저장</button>
+      </div>
+      <!-- 점수 입력 카드 -->
+      <div class="ss-pwa-score-card">
+        <div class="ss-pwa-score-hdr">
+          <span class="ss-pwa-score-hdr-line" id="ss-pwa-score-line-name">-</span>
+          <span class="ss-pwa-score-hdr-prog" id="ss-pwa-score-progress">0/10</span>
+        </div>
+        <div class="ss-pwa-legend" id="ss-pwa-legend"></div>
+        <div id="ss-pwa-items-list"></div>
+      </div>
+      <!-- 하단 액션 바 -->
+      <div class="ss-pwa-action-bar">
+        <span class="ss-pwa-action-status" id="ss-pwa-action-status">임시저장 0 / 7</span>
+        <div class="ss-pwa-action-btns">
+          <button class="ss-pwa-tmp-btn" id="ss-pwa-tmp-btn" disabled onclick="tmpSavePwa()">임시저장</button>
+          <button class="ss-pwa-final-btn" id="ss-pwa-final-btn" disabled onclick="finalSavePwa()">최종 저장</button>
+        </div>
+      </div>
+    </div><!-- /ss-pwa-input-wrap -->
+
     </div><!-- /ss-panel-input -->
 
     <!-- ══ 패널 B: 현장개선 ══ -->
@@ -4170,7 +4282,10 @@ function init3s5sTab(panel) {
       document.getElementById('ss-panel-' + p).style.display = p === panel ? 'block' : 'none';
     });
 
-    if (panel === 'input')   renderSsInputSheet(ssCurrentLine);
+    if (panel === 'input') {
+      if (_isPwaInput()) { _initPwaInput(); }
+      else { renderSsInputSheet(ssCurrentLine); }
+    }
     if (panel === 'improve') loadSsImprovements();
     if (panel === 'result')  showSsResSubTab('rank');
   } else {
@@ -4334,6 +4449,282 @@ async function saveSsInspection() {
     renderSsInputSheet(ln);
   } catch(e) {
     alert('저장 실패: ' + e.message);
+  }
+}
+
+/* ══════════════════════════
+   PWA 전용 심사 입력
+══════════════════════════ */
+var ssP = {
+  seg: 'field',
+  line: null,
+  lineData: { field: {}, quality: {} }
+};
+var ssPwaInited = false;
+
+function _isPwaInput() {
+  return document.body.classList.contains('is-pwa') && window.innerWidth <= 768;
+}
+
+function _initPwaInput() {
+  var now = new Date();
+  var ym = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  var mEl = document.getElementById('ss-pwa-month');
+  if (mEl && !mEl.value) mEl.value = ym;
+
+  if (!ssPwaInited) {
+    ssPwaInited = true;
+    if (mEl) mEl.addEventListener('change', function() {});
+    var iEl = document.getElementById('ss-pwa-inspector');
+    if (iEl) iEl.addEventListener('input', function() {
+      updatePwaActionBar();
+      updatePwaHdrStatus();
+    });
+    window.addEventListener('beforeunload', function(e) {
+      if (!_hasPwaUnsavedData()) return;
+      e.preventDefault();
+      e.returnValue = '입력한 데이터가 있습니다. 페이지를 나가면 데이터가 사라집니다.';
+      return e.returnValue;
+    });
+  }
+
+  if (!ssP.line) ssP.line = SS_LINES[0];
+  _renderPwaLegend();
+  renderPwaLineTabs();
+  renderPwaScoreItems();
+  updatePwaActionBar();
+  updatePwaHdrStatus();
+}
+
+function _hasPwaUnsavedData() {
+  var segs = ['field','quality'];
+  for (var s = 0; s < segs.length; s++) {
+    var lines = Object.keys(ssP.lineData[segs[s]]);
+    for (var l = 0; l < lines.length; l++) {
+      var d = ssP.lineData[segs[s]][lines[l]];
+      if (d && d.scores.some(function(v){return v!==null;})) return true;
+    }
+  }
+  return false;
+}
+
+function setPwaSeg(seg) {
+  ssP.seg = seg;
+  document.getElementById('ss-pwa-seg-field').classList.toggle('active', seg === 'field');
+  document.getElementById('ss-pwa-seg-quality').classList.toggle('active', seg === 'quality');
+  var lines = seg === 'quality' ? SS_QUALITY_LINES : SS_LINES;
+  if (!lines.includes(ssP.line)) ssP.line = lines[0];
+  _renderPwaLegend();
+  renderPwaLineTabs();
+  renderPwaScoreItems();
+  updatePwaActionBar();
+  updatePwaDoneBanner();
+  updatePwaHdrStatus();
+}
+
+function _renderPwaLegend() {
+  var el = document.getElementById('ss-pwa-legend');
+  if (!el) return;
+  if (ssP.seg === 'field') {
+    el.innerHTML = '<span class="ss-pwa-leg ss-pwa-leg-0">0=불량</span><span class="ss-pwa-leg ss-pwa-leg-1">1=미흡</span><span class="ss-pwa-leg ss-pwa-leg-2">2=보통</span><span class="ss-pwa-leg ss-pwa-leg-3">3=양호</span>';
+  } else {
+    el.innerHTML = '<span class="ss-pwa-leg ss-pwa-leg-1">1=불량</span><span class="ss-pwa-leg ss-pwa-leg-2">2=미흡</span><span class="ss-pwa-leg ss-pwa-leg-3">3=양호</span><span class="ss-pwa-leg ss-pwa-leg-4">4=우수</span>';
+  }
+}
+
+function renderPwaLineTabs() {
+  var seg = ssP.seg;
+  var lines = seg === 'quality' ? SS_QUALITY_LINES : SS_LINES;
+  var c = document.getElementById('ss-pwa-line-scroll');
+  if (!c) return;
+  c.innerHTML = '';
+  lines.forEach(function(ln) {
+    var d = ssP.lineData[seg][ln];
+    var saved = !!(d && d.saved);
+    var active = ln === ssP.line;
+    var btn = document.createElement('button');
+    btn.className = 'ss-pwa-ltab' + (active ? ' active' : '') + (saved ? ' saved' : '');
+    btn.textContent = ln;
+    if (saved) {
+      var badge = document.createElement('span');
+      badge.className = 'ss-pwa-ltab-badge';
+      badge.textContent = '✓';
+      btn.appendChild(badge);
+    }
+    btn.onclick = (function(l){ return function(){ selectPwaLine(l); }; })(ln);
+    c.appendChild(btn);
+  });
+}
+
+function selectPwaLine(ln) {
+  ssP.line = ln;
+  renderPwaLineTabs();
+  renderPwaScoreItems();
+  updatePwaActionBar();
+}
+
+function _getOrInitPwaData(seg, ln) {
+  if (!ssP.lineData[seg][ln]) {
+    var items = seg === 'field' ? (SS_FIELD_ITEMS[ln]||[]) : (SS_QUALITY_ITEMS[ln]||[]);
+    ssP.lineData[seg][ln] = { scores: new Array(items.length).fill(null), saved: false };
+  }
+  return ssP.lineData[seg][ln];
+}
+
+function renderPwaScoreItems() {
+  var seg = ssP.seg;
+  var ln = ssP.line;
+  if (!ln) return;
+  var items = seg === 'field' ? (SS_FIELD_ITEMS[ln]||[]) : (SS_QUALITY_ITEMS[ln]||[]);
+  var opts = seg === 'field' ? [0,1,2,3] : [1,2,3,4];
+  var d = _getOrInitPwaData(seg, ln);
+  var answered = d.scores.filter(function(v){return v!==null;}).length;
+  var lineEl = document.getElementById('ss-pwa-score-line-name');
+  var progEl = document.getElementById('ss-pwa-score-progress');
+  if (lineEl) lineEl.textContent = ln;
+  if (progEl) progEl.textContent = answered + ' / ' + items.length;
+  var listEl = document.getElementById('ss-pwa-items-list');
+  if (!listEl) return;
+  if (items.length === 0) {
+    listEl.innerHTML = '<div class="ss-pwa-empty">직영은 기초품질 평가 대상이 아닙니다.</div>';
+    return;
+  }
+  var colorMap = {0:'#dc2626',1:'#d97706',2:'#2563eb',3:'#16a34a',4:'#16a34a'};
+  listEl.innerHTML = '';
+  items.forEach(function(item, i) {
+    var row = document.createElement('div');
+    row.className = 'ss-pwa-item-row';
+    var btnsHtml = opts.map(function(v) {
+      var sel = d.scores[i] === v;
+      var color = colorMap[v]||'#6b7280';
+      var styleAttr = sel ? 'background:'+color+';color:white;border-color:'+color+';' : '';
+      return '<button class="ss-pwa-score-btn' + (sel?' active':'') + '" style="'+styleAttr+'"'
+        + ' onclick="onPwaScore(\''+seg+'\',\''+ln.replace(/'/g,"\\'")+'\',' + i + ',' + v + ')">' + v + '</button>';
+    }).join('');
+    row.innerHTML = '<div class="ss-pwa-item-top">'
+      + '<span class="ss-pwa-item-num">' + (i+1) + '</span>'
+      + '<span class="ss-pwa-item-text">' + item + '</span>'
+      + '</div>'
+      + '<div class="ss-pwa-score-btns">' + btnsHtml + '</div>';
+    listEl.appendChild(row);
+  });
+}
+
+function onPwaScore(seg, ln, i, v) {
+  var d = _getOrInitPwaData(seg, ln);
+  d.scores[i] = v;
+  d.saved = false;
+  renderPwaScoreItems();
+  updatePwaActionBar();
+  updatePwaHdrStatus();
+}
+
+function updatePwaActionBar() {
+  var seg = ssP.seg;
+  var ln = ssP.line;
+  var lines = seg === 'quality' ? SS_QUALITY_LINES : SS_LINES;
+  var savedCount = lines.filter(function(l){
+    var d = ssP.lineData[seg][l]; return !!(d && d.saved);
+  }).length;
+  var statusEl = document.getElementById('ss-pwa-action-status');
+  if (statusEl) statusEl.textContent = '임시저장 ' + savedCount + ' / ' + lines.length;
+  var inspEl = document.getElementById('ss-pwa-inspector');
+  var hasName = !!(inspEl && inspEl.value.trim());
+  var items = ln ? (seg==='field'?(SS_FIELD_ITEMS[ln]||[]):(SS_QUALITY_ITEMS[ln]||[])) : [];
+  var d = ln ? _getOrInitPwaData(seg, ln) : null;
+  var allAnswered = items.length > 0 && d && d.scores.every(function(v){return v!==null;});
+  var tmpBtn = document.getElementById('ss-pwa-tmp-btn');
+  if (tmpBtn) tmpBtn.disabled = !(allAnswered && hasName);
+  var allSaved = lines.length > 0 && savedCount === lines.length;
+  var finalBtn = document.getElementById('ss-pwa-final-btn');
+  if (finalBtn) finalBtn.disabled = !(allSaved && hasName);
+  updatePwaDoneBanner(savedCount, lines.length);
+}
+
+function updatePwaDoneBanner(savedCount, total) {
+  var seg = ssP.seg;
+  var lines = seg === 'quality' ? SS_QUALITY_LINES : SS_LINES;
+  var sc = savedCount !== undefined ? savedCount : lines.filter(function(l){
+    var d=ssP.lineData[seg][l]; return !!(d&&d.saved);
+  }).length;
+  var tot = total !== undefined ? total : lines.length;
+  var banner = document.getElementById('ss-pwa-done-banner');
+  if (banner) banner.style.display = (sc === tot && tot > 0) ? 'flex' : 'none';
+}
+
+function updatePwaHdrStatus() {
+  var seg = ssP.seg;
+  var lines = seg === 'quality' ? SS_QUALITY_LINES : SS_LINES;
+  var savedCount = lines.filter(function(l){
+    var d=ssP.lineData[seg][l]; return !!(d&&d.saved);
+  }).length;
+  var inspEl = document.getElementById('ss-pwa-inspector');
+  var name = (inspEl && inspEl.value.trim()) || '미입력';
+  var el = document.getElementById('ss-pwa-hdr-status');
+  if (el) el.textContent = name + ' · ' + savedCount + '/' + lines.length + ' 완료';
+}
+
+function tmpSavePwa() {
+  var seg = ssP.seg;
+  var ln = ssP.line;
+  if (!ln) return;
+  var d = _getOrInitPwaData(seg, ln);
+  d.saved = true;
+  renderPwaLineTabs();
+  updatePwaActionBar();
+  updatePwaHdrStatus();
+}
+
+async function finalSavePwa() {
+  var seg = ssP.seg;
+  var lines = seg === 'quality' ? SS_QUALITY_LINES : SS_LINES;
+  var inspEl = document.getElementById('ss-pwa-inspector');
+  var monthEl = document.getElementById('ss-pwa-month');
+  var inspector = (inspEl && inspEl.value.trim()) || '';
+  var month = (monthEl && monthEl.value) || '';
+  if (!inspector) { alert('심사위원 이름을 입력하세요.'); return; }
+  if (!month) { alert('심사월을 선택하세요.'); return; }
+  var savedLines = lines.filter(function(l){ var d=ssP.lineData[seg][l]; return !!(d&&d.saved); });
+  if (savedLines.length !== lines.length) { alert('모든 라인을 임시저장 후 최종 저장하세요.'); return; }
+  var parts = month.split('-');
+  var year = parseInt(parts[0]), mon = parseInt(parts[1]);
+  var finalBtn = document.getElementById('ss-pwa-final-btn');
+  if (finalBtn) { finalBtn.disabled = true; finalBtn.textContent = '저장 중...'; }
+  try {
+    for (var i = 0; i < savedLines.length; i++) {
+      var ln = savedLines[i];
+      var d = ssP.lineData[seg][ln];
+      var items = seg === 'field' ? (SS_FIELD_ITEMS[ln]||[]) : (SS_QUALITY_ITEMS[ln]||[]);
+      if (items.length === 0) continue;
+      var total = d.scores.reduce(function(s,v){return s+(v!==null?v:0);},0);
+      var maxSc = seg === 'field' ? items.length*3 : items.length*4;
+      var prefix = seg === 'field' ? 'F' : 'Q';
+      var r1 = await fetch(SB_URL + '/rest/v1/ss_inspections', {
+        method:'POST',
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+        body:JSON.stringify({month:mon,year:year,line:ln,type:seg,inspector:inspector,total:total,max_score:maxSc})
+      });
+      var j1 = await r1.json();
+      if (!r1.ok || !j1||!j1[0]) throw new Error(JSON.stringify(j1));
+      var inspId = j1[0].id;
+      await fetch(SB_URL + '/rest/v1/ss_scores', {
+        method:'POST',
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify(d.scores.map(function(v,idx){return {inspection_id:inspId,item_no:prefix+(idx+1),score:v!==null?v:0};}))
+      });
+    }
+    alert('최종 저장 완료!');
+    ssP.lineData = { field: {}, quality: {} };
+    ssP.line = (seg === 'quality' ? SS_QUALITY_LINES : SS_LINES)[0];
+    renderPwaLineTabs();
+    renderPwaScoreItems();
+    updatePwaActionBar();
+    updatePwaHdrStatus();
+  } catch(e) {
+    alert('저장 실패: ' + e.message);
+  } finally {
+    if (finalBtn) { finalBtn.disabled = false; finalBtn.textContent = '최종 저장'; }
+    updatePwaActionBar();
   }
 }
 
