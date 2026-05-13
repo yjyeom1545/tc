@@ -111,6 +111,8 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
 .more-drawer-item{display:flex;align-items:center;gap:12px;padding:13px 24px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:500;cursor:pointer;}
 .more-drawer-item:hover{background:rgba(255,255,255,0.06);}
 .more-drawer-item svg{opacity:0.6;flex-shrink:0;}
+.more-drawer-section{padding:10px 24px 4px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:1.2px;}
+.more-drawer-divider{height:1px;background:rgba(255,255,255,0.08);margin:6px 0;}
 
 /* ── 콘텐츠 ── */
 .content{width:100%;padding:1.5rem 1.75rem;overflow-x:hidden;}
@@ -4165,6 +4167,12 @@ async function sbQ(table,query){
 <div class="more-drawer-overlay" id="more-drawer-overlay" onclick="closeMoreDrawer()"></div>
 <div class="more-drawer" id="more-drawer">
   <div class="more-drawer-handle" onclick="closeMoreDrawer()"></div>
+  <div class="more-drawer-section">점검관리</div>
+  <div class="more-drawer-item" onclick="closeMoreDrawer();show3s5sPanel('input')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17 14h3m-3 3h3m-3 3h3"/></svg>
+    3정5S 심사 입력
+  </div>
+  <div class="more-drawer-divider"></div>
   <div class="more-drawer-item" onclick="closeMoreDrawer();showTab('air')">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     대기측정 일정
