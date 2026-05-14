@@ -1907,6 +1907,7 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_photo_before"> 점검사진(전)</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_photo_after"> 점검사진(후)</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_status"> 점검상태변경</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-ss_input"> 3정5S 심사입력</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-airlog_1to8"> 대기운영 1~8번</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-airlog_9"> 대기운영 9번</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-air_schedule_write"> 대기일정작성</label>
@@ -1996,8 +1997,8 @@ function getAirLogPrNos(){
 }
 function logout(){localStorage.removeItem('tc_user');window.location.href='login.html';}
 
-var PERM_LABELS={filter_write:'필터기록',waste_confirm:'폐유고상확인',waste_complete:'폐유고상배출완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정'};
-var PERM_KEYS=['filter_write','waste_confirm','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','airlog_1to8','airlog_9','air_schedule_write'];
+var PERM_LABELS={filter_write:'필터기록',waste_confirm:'폐유고상확인',waste_complete:'폐유고상배출완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',ss_input:'3정5S 심사입력',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정'};
+var PERM_KEYS=['filter_write','waste_confirm','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','ss_input','airlog_1to8','airlog_9','air_schedule_write'];
 
 async function sb(table,query,opts){
   opts=opts||{};
@@ -4666,15 +4667,27 @@ function show3s5sPanel(panel) {
 function init3s5sTab(panel) {
   panel = panel || ssCurrentPanel || 'input';
   ssCurrentPanel = panel;
-  // 하위메뉴 활성화
+
+  var canInput = isAdmin() || hasPerm('ss_input');
+
+  // 하위메뉴 활성화 (비관리자는 input 탭만 노출)
   ['input','improve','result'].forEach(function(p) {
     var el = document.getElementById('nav-3s5s-' + p);
-    if (el) el.classList.toggle('active', p === panel);
+    if (!el) return;
+    // improve·result는 관리자만 표시
+    if (p !== 'input') el.style.display = isAdmin() ? '' : 'none';
+    el.classList.toggle('active', p === panel);
   });
 
-  if (isAdmin()) {
+  if (canInput) {
     document.getElementById('ss-under-construction').style.display = 'none';
     document.getElementById('ss-admin-panels').style.display = 'block';
+
+    // 비관리자가 관리자 전용 패널 접근 시 input으로 강제
+    if (!isAdmin() && panel !== 'input') {
+      panel = 'input';
+      ssCurrentPanel = 'input';
+    }
 
     if (!ssInited) {
       ssInited = true;
@@ -4691,8 +4704,10 @@ function init3s5sTab(panel) {
       if (_isPwaInput()) { _initPwaInput(); }
       else { renderSsInputSheet(ssCurrentLine); }
     }
-    if (panel === 'improve') loadSsImprovements();
-    if (panel === 'result')  showSsResSubTab('rank');
+    if (isAdmin()) {
+      if (panel === 'improve') loadSsImprovements();
+      if (panel === 'result')  showSsResSubTab('rank');
+    }
   } else {
     document.getElementById('ss-under-construction').style.display = 'flex';
     document.getElementById('ss-admin-panels').style.display = 'none';
