@@ -3984,6 +3984,7 @@ function renderInspectTable(data){
     var sel=r.id===inspectSelectedId?'selected':'';
     var chkSel=inspectSelectedIds.has(r.id)?'chk-sel':'';
     var chked=inspectSelectedIds.has(r.id)?'checked':'';
+    var delCell=isAdmin()?'<td class="insp-chk-td" onclick="event.stopPropagation();"><button class="del-btn" onclick="confirmDelete(\'inspection_records\',\''+r.id+'\',function(){inspectSelectedIds.delete(\''+r.id+'\');updateInspectPdfBtn();loadInspect();})">✕</button></td>':'';
     return '<tr class="inspect-row '+sel+' '+chkSel+'">'
       +'<td class="insp-chk-td" onclick="event.stopPropagation();"><input type="checkbox" class="insp-chk" '+chked+' onchange="toggleInspectRowSel(\''+r.id+'\',this)"></td>'
       +'<td onclick="showInspectDetail(\''+r.id+'\')">'+r.inspect_date+'</td>'
@@ -3991,11 +3992,14 @@ function renderInspectTable(data){
       +'<td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" onclick="showInspectDetail(\''+r.id+'\')">'+escHtml(r.issue)+'</td>'
       +'<td onclick="showInspectDetail(\''+r.id+'\')">'+extBadge+'</td>'
       +'<td onclick="showInspectDetail(\''+r.id+'\')">'+statusBadge+'</td>'
+      +delCell
       +'</tr>';
   }).join('');
+  var delTh=isAdmin()?'<th style="padding:12px 8px;width:38px;"></th>':'';
   el.innerHTML='<div style="overflow-x:auto;"><table style="min-width:600px;"><thead><tr>'
     +'<th class="insp-chk-th" style="padding:12px 8px;"><input type="checkbox" class="insp-chk" id="insp-chk-all" '+(allChecked?'checked':'')+' onchange="toggleInspectAll(this,'+JSON.stringify(data.map(function(r){return r.id;})).replace(/"/g,'&quot;')+')"></th>'
     +'<th style="padding:12px 14px;font-size:12px;">점검일</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;"></th><th style="padding:12px 14px;font-size:12px;">상태</th>'
+    +delTh
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
   updateInspectPdfBtn();
 }
@@ -4083,7 +4087,10 @@ function showInspectDetail(id){
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">비고</label>'
       +'<textarea id="detail-note" style="height:72px;resize:none;border:1px solid #e8ecf0;border-radius:6px;padding:10px 12px;font-size:14px;line-height:1.7;font-family:\'Noto Sans KR\',sans-serif;outline:none;width:100%;">'+escHtml(r.note||'')+'</textarea>'
     +'</div>'
-    +'<button onclick="saveInspectDetail(\''+id+'\')" class="save-btn" style="margin-bottom:20px;">저장</button>'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">'
+      +'<button onclick="saveInspectDetail(\''+id+'\')" class="save-btn">저장</button>'
+      +(isAdmin()?'<button onclick="confirmDelete(\'inspection_records\',\''+id+'\',function(){closeInspectDetail();inspectSelectedIds.delete(\''+id+'\');updateInspectPdfBtn();loadInspect();})" style="padding:8px 14px;background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">삭제</button>':'')
+    +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'
       +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 전</div>'+beforeHtml+'</div>'
       +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 후</div>'+afterHtml+'</div>'
