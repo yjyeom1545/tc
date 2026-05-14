@@ -4668,26 +4668,19 @@ function init3s5sTab(panel) {
   panel = panel || ssCurrentPanel || 'input';
   ssCurrentPanel = panel;
 
-  var canInput = isAdmin() || hasPerm('ss_input');
+  var can3s5s = isAdmin() || hasPerm('ss_input');
 
-  // 하위메뉴 활성화 (비관리자는 input 탭만 노출)
+  // 하위메뉴 활성화
   ['input','improve','result'].forEach(function(p) {
     var el = document.getElementById('nav-3s5s-' + p);
     if (!el) return;
-    // improve·result는 관리자만 표시
-    if (p !== 'input') el.style.display = isAdmin() ? '' : 'none';
+    el.style.display = '';
     el.classList.toggle('active', p === panel);
   });
 
-  if (canInput) {
+  if (can3s5s) {
     document.getElementById('ss-under-construction').style.display = 'none';
     document.getElementById('ss-admin-panels').style.display = 'block';
-
-    // 비관리자가 관리자 전용 패널 접근 시 input으로 강제
-    if (!isAdmin() && panel !== 'input') {
-      panel = 'input';
-      ssCurrentPanel = 'input';
-    }
 
     if (!ssInited) {
       ssInited = true;
@@ -4704,10 +4697,8 @@ function init3s5sTab(panel) {
       if (_isPwaInput()) { _initPwaInput(); }
       else { renderSsInputSheet(ssCurrentLine); }
     }
-    if (isAdmin()) {
-      if (panel === 'improve') loadSsImprovements();
-      if (panel === 'result')  showSsResSubTab('rank');
-    }
+    if (panel === 'improve') loadSsImprovements();
+    if (panel === 'result')  showSsResSubTab('rank');
   } else {
     document.getElementById('ss-under-construction').style.display = 'flex';
     document.getElementById('ss-admin-panels').style.display = 'none';
