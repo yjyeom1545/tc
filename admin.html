@@ -496,6 +496,70 @@ tr.inspect-row.selected td{background:#eff6ff;}
 .ss-pwa-det-score-num{width:24px;height:24px;border-radius:50%;background:#f4f6f9;color:#6b7280;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .ss-pwa-det-score-text{font-size:13px;color:#374151;flex:1;margin:0 10px;line-height:1.4;}
 .ss-pwa-det-score-badge{padding:3px 10px;border-radius:10px;font-size:13px;font-weight:700;min-width:28px;text-align:center;}
+
+/* ── 환경점검 PDF 내보내기 ── */
+.insp-pdf-btn{padding:8px 16px;background:#1d4ed8;color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:background 0.12s;display:inline-flex;align-items:center;gap:5px;}
+.insp-pdf-btn:hover:not(:disabled){background:#1e40af;}
+.insp-pdf-btn:disabled{background:#9ca3af;cursor:not-allowed;}
+.insp-sel-label{font-size:12px;color:#6b7280;white-space:nowrap;}
+th.insp-chk-th,td.insp-chk-td{width:38px;padding:0 8px;text-align:center;vertical-align:middle;}
+input.insp-chk{width:15px;height:15px;cursor:pointer;accent-color:#0f2744;vertical-align:middle;}
+tr.inspect-row.chk-sel td{background:#eff6ff !important;}
+/* PDF 미리보기 모달 */
+#insp-pdf-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;display:none;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;padding:24px 12px;box-sizing:border-box;}
+#insp-pdf-modal.show{display:flex;}
+.insp-pdf-modal-inner{background:white;border-radius:12px;width:100%;max-width:940px;display:flex;flex-direction:column;max-height:calc(100vh - 48px);overflow:hidden;}
+.insp-pdf-modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e8ecf0;flex-shrink:0;}
+.insp-pdf-modal-title{font-size:14px;font-weight:700;color:#0f2744;}
+.insp-pdf-modal-close{background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1;padding:0;}
+.insp-pdf-modal-body{overflow-y:auto;padding:20px;background:#d1d5db;flex:1;}
+.insp-pdf-modal-ftr{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid #e8ecf0;flex-shrink:0;}
+/* PDF 페이지 */
+.pdf-page-wrap{margin:0 auto 16px;width:100%;max-width:860px;}
+.pdf-page{background:white;padding:14px 18px;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.1);display:flex;flex-direction:column;gap:12px;}
+.pdf-page-hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:2px solid #0f2744;margin-bottom:4px;}
+.pdf-page-hdr-title{font-size:13px;font-weight:700;color:#0f2744;}
+.pdf-page-hdr-meta{font-size:11px;color:#6b7280;}
+.pdf-record{border:1px solid #e8ecf0;border-radius:6px;overflow:hidden;}
+.pdf-record-hdr{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e8ecf0;flex-wrap:wrap;}
+.pdf-record-no{font-size:12px;font-weight:700;color:#0f2744;min-width:36px;}
+.pdf-record-issue{font-size:13px;font-weight:600;color:#1e293b;flex:1;line-height:1.4;}
+.pdf-record-meta{font-size:11px;color:#6b7280;white-space:nowrap;}
+.pdf-record-body{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.pdf-record-side{padding:10px 12px;}
+.pdf-record-side+.pdf-record-side{border-left:1px solid #e8ecf0;}
+.pdf-record-side-lbl{font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;letter-spacing:0.2px;}
+.pdf-photo-box{width:100%;aspect-ratio:4/3;background:#f4f6f9;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
+.pdf-photo-box img{width:100%;height:100%;object-fit:cover;}
+.pdf-photo-empty{font-size:11px;color:#d1d5db;}
+.pdf-record-text{font-size:11px;color:#374151;line-height:1.6;}
+/* 인쇄 스타일 */
+@media print{
+  body > *:not(#insp-pdf-print-area){display:none !important;}
+  #insp-pdf-print-area{display:block !important;}
+  #insp-pdf-print-area .pdf-print-page{page-break-after:always;width:267mm;min-height:180mm;padding:0;margin:0;display:flex;flex-direction:column;gap:8mm;}
+  #insp-pdf-print-area .pdf-print-page:last-child{page-break-after:auto;}
+  #insp-pdf-print-area .pdf-page-hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:4mm;border-bottom:2px solid #0f2744;margin-bottom:3mm;}
+  #insp-pdf-print-area .pdf-page-hdr-title{font-size:11pt;font-weight:700;color:#0f2744;}
+  #insp-pdf-print-area .pdf-page-hdr-meta{font-size:9pt;color:#6b7280;}
+  #insp-pdf-print-area .pdf-record{border:1pt solid #e8ecf0;border-radius:3pt;overflow:hidden;break-inside:avoid;}
+  #insp-pdf-print-area .pdf-record-hdr{display:flex;align-items:center;gap:6pt;padding:5pt 8pt;background:#f8fafc !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-bottom:1pt solid #e8ecf0;}
+  #insp-pdf-print-area .pdf-record-no{font-size:10pt;font-weight:700;color:#0f2744;}
+  #insp-pdf-print-area .pdf-record-issue{font-size:11pt;font-weight:600;color:#1e293b;flex:1;}
+  #insp-pdf-print-area .pdf-record-meta{font-size:8pt;color:#6b7280;}
+  #insp-pdf-print-area .pdf-record-body{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  #insp-pdf-print-area .pdf-record-side{padding:6pt 8pt;}
+  #insp-pdf-print-area .pdf-record-side+.pdf-record-side{border-left:1pt solid #e8ecf0;}
+  #insp-pdf-print-area .pdf-record-side-lbl{font-size:8pt;font-weight:600;color:#6b7280;margin-bottom:3pt;}
+  #insp-pdf-print-area .pdf-photo-box{width:100%;aspect-ratio:4/3;background:#f4f6f9 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:2pt;overflow:hidden;margin-bottom:3pt;}
+  #insp-pdf-print-area .pdf-photo-box img{width:100%;height:100%;object-fit:cover;}
+  #insp-pdf-print-area .pdf-photo-empty{font-size:8pt;color:#d1d5db;}
+  #insp-pdf-print-area .pdf-record-text{font-size:8pt;color:#374151;line-height:1.5;}
+  #insp-pdf-print-area .status-miss{background:#fee2e2 !important;color:#dc2626 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #insp-pdf-print-area .status-done{background:#dcfce7 !important;color:#16a34a !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #insp-pdf-print-area .status-hold{background:#fef3c7 !important;color:#d97706 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  @page{size:A4 landscape;margin:15mm;}
+}
 </style>
 </head>
 <body>
@@ -1321,7 +1385,14 @@ tr.inspect-row.selected td{background:#eff6ff;}
       <button class="insp-fbtn"        data-filter="miss"   onclick="setInspFilter('miss',this)">미개선</button>
       <button class="insp-fbtn"        data-filter="hold"   onclick="setInspFilter('hold',this)">보류</button>
     </div>
-    <button class="add-btn" id="inspect-add-btn" onclick="openInspectForm()">+ 신규 등록</button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="insp-sel-label" id="insp-sel-label" style="display:none;"></span>
+      <button class="insp-pdf-btn" id="insp-pdf-btn" disabled onclick="openInspectPdfModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        PDF 내보내기
+      </button>
+      <button class="add-btn" id="inspect-add-btn" onclick="openInspectForm()">+ 신규 등록</button>
+    </div>
   </div>
 
   <!-- 목록 + 상세 패널 -->
@@ -1399,6 +1470,27 @@ tr.inspect-row.selected td{background:#eff6ff;}
       </div>
     </div>
   </div>
+
+  <!-- PDF 미리보기 모달 -->
+  <div id="insp-pdf-modal">
+    <div class="insp-pdf-modal-inner">
+      <div class="insp-pdf-modal-hdr">
+        <span class="insp-pdf-modal-title" id="insp-pdf-modal-title">환경점검 PDF 미리보기</span>
+        <button class="insp-pdf-modal-close" onclick="closeInspectPdfModal()">×</button>
+      </div>
+      <div class="insp-pdf-modal-body" id="insp-pdf-modal-body"></div>
+      <div class="insp-pdf-modal-ftr">
+        <button class="modal-cancel" onclick="closeInspectPdfModal()">닫기</button>
+        <button class="add-btn" onclick="printInspectPdf()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          인쇄 / PDF 저장
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 인쇄 전용 숨김 영역 -->
+  <div id="insp-pdf-print-area" style="display:none;"></div>
 
   <!-- 사진 전체화면 팝업 -->
   <div id="inspect-photo-lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;align-items:center;justify-content:center;flex-direction:column;padding:20px;box-sizing:border-box;">
@@ -3668,6 +3760,7 @@ async function addUser(){
 var inspectAllData=[];
 var inspectCurrentFilter='all';
 var inspectSelectedId=null;
+var inspectSelectedIds=new Set();
 var inspectBeforeDataUrl=null;
 var inspectAfterDataUrl=null;
 
@@ -3793,6 +3886,84 @@ function getInspectFiltered(){
   });
 }
 
+function buildInspectPdfHtml(records,forPrint){
+  var today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+  var pages=[];
+  for(var i=0;i<records.length;i+=2){
+    var pair=records.slice(i,i+2);
+    var pageNo=Math.floor(i/2)+1;
+    var totalPages=Math.ceil(records.length/2);
+    var pageHdr='<div class="pdf-page-hdr">'
+      +'<span class="pdf-page-hdr-title">TC 환경관리 · 환경점검 이력</span>'
+      +'<span class="pdf-page-hdr-meta">'+today+' &nbsp;|&nbsp; '+pageNo+' / '+totalPages+'</span>'
+      +'</div>';
+    var cards=pair.map(function(r,idx){
+      var no=i+idx+1;
+      var statusBadge=r.status==='miss'?'<span class="status-miss">미개선</span>':r.status==='hold'?'<span class="status-hold">보류</span>':'<span class="status-done">완료</span>';
+      var catColor=r.category==='환경'?'background:#dbeafe;color:#1e40af':'background:#dcfce7;color:#166534';
+      var catBadge='<span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:10px;font-weight:600;'+catColor+';">'+escHtml(r.category)+'</span>';
+      var extBadge=r.is_external?'<span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:10px;font-weight:600;background:#ede9fe;color:#7c3aed;margin-left:4px;">외부기관</span>':'';
+      var noteHtml=r.note?'<div style="font-size:11px;color:#6b7280;margin-top:2px;">비고: '+escHtml(r.note)+'</div>':'';
+      var beforeImg=r.before_photo?'<img src="'+r.before_photo+'" alt="개선 전">':'<span class="pdf-photo-empty">사진 없음</span>';
+      var afterImg=r.after_photo?'<img src="'+r.after_photo+'" alt="개선 후">':'<span class="pdf-photo-empty">사진 없음</span>';
+      return '<div class="pdf-record">'
+        +'<div class="pdf-record-hdr">'
+          +'<span class="pdf-record-no">No.'+no+'</span>'
+          +'<span class="pdf-record-issue">'+escHtml(r.issue)+'</span>'
+          +catBadge+extBadge
+          +'<span class="pdf-record-meta">'+r.inspect_date+'</span>'
+          +statusBadge
+          +noteHtml
+        +'</div>'
+        +'<div class="pdf-record-body">'
+          +'<div class="pdf-record-side">'
+            +'<div class="pdf-record-side-lbl">개선 전</div>'
+            +'<div class="pdf-photo-box">'+beforeImg+'</div>'
+          +'</div>'
+          +'<div class="pdf-record-side">'
+            +'<div class="pdf-record-side-lbl">개선 후</div>'
+            +'<div class="pdf-photo-box">'+afterImg+'</div>'
+          +'</div>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+    if(forPrint){
+      pages.push('<div class="pdf-print-page">'+pageHdr+cards+'</div>');
+    } else {
+      pages.push('<div class="pdf-page-wrap"><div class="pdf-page">'+pageHdr+cards+'</div></div>');
+    }
+  }
+  return pages.join('');
+}
+
+function openInspectPdfModal(){
+  var records=inspectAllData.filter(function(r){return inspectSelectedIds.has(r.id);});
+  if(!records.length)return;
+  var modal=document.getElementById('insp-pdf-modal');
+  var body=document.getElementById('insp-pdf-modal-body');
+  var title=document.getElementById('insp-pdf-modal-title');
+  if(title)title.textContent='환경점검 PDF 미리보기 · '+records.length+'건 선택';
+  if(body)body.innerHTML=buildInspectPdfHtml(records,false);
+  if(modal){modal.classList.add('show');document.body.style.overflow='hidden';}
+}
+
+function closeInspectPdfModal(){
+  var modal=document.getElementById('insp-pdf-modal');
+  if(modal){modal.classList.remove('show');document.body.style.overflow='';}
+}
+
+function printInspectPdf(){
+  var records=inspectAllData.filter(function(r){return inspectSelectedIds.has(r.id);});
+  if(!records.length)return;
+  var printArea=document.getElementById('insp-pdf-print-area');
+  if(printArea){
+    printArea.innerHTML=buildInspectPdfHtml(records,true);
+    printArea.style.display='block';
+  }
+  window.print();
+  if(printArea){printArea.style.display='none';}
+}
+
 function setInspFilter(f,btn){
   inspectCurrentFilter=f;
   document.querySelectorAll('.insp-fbtn').forEach(function(b){b.classList.remove('active');});
@@ -3805,14 +3976,58 @@ function renderInspectTable(data){
   if(cnt)cnt.textContent=data.length+'건';
   var el=document.getElementById('inspect-table');
   if(!el)return;
-  if(!data.length){el.innerHTML='<div class="empty">점검 이력이 없습니다.</div>';return;}
+  if(!data.length){el.innerHTML='<div class="empty">점검 이력이 없습니다.</div>';updateInspectPdfBtn();return;}
+  var allChecked=data.length>0&&data.every(function(r){return inspectSelectedIds.has(r.id);});
   var rows=data.map(function(r){
     var statusBadge=r.status==='miss'?'<span class="status-miss">미개선</span>':r.status==='hold'?'<span class="status-hold">보류</span>':'<span class="status-done">완료</span>';
     var extBadge=r.is_external?'<span class="ext-badge">외부기관</span>':'';
     var sel=r.id===inspectSelectedId?'selected':'';
-    return '<tr class="inspect-row '+sel+'" onclick="showInspectDetail(\''+r.id+'\')"><td>'+r.inspect_date+'</td><td>'+r.category+'</td><td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escHtml(r.issue)+'</td><td>'+extBadge+'</td><td>'+statusBadge+'</td></tr>';
+    var chkSel=inspectSelectedIds.has(r.id)?'chk-sel':'';
+    var chked=inspectSelectedIds.has(r.id)?'checked':'';
+    return '<tr class="inspect-row '+sel+' '+chkSel+'">'
+      +'<td class="insp-chk-td" onclick="event.stopPropagation();"><input type="checkbox" class="insp-chk" '+chked+' onchange="toggleInspectRowSel(\''+r.id+'\',this)"></td>'
+      +'<td onclick="showInspectDetail(\''+r.id+'\')">'+r.inspect_date+'</td>'
+      +'<td onclick="showInspectDetail(\''+r.id+'\')">'+r.category+'</td>'
+      +'<td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" onclick="showInspectDetail(\''+r.id+'\')">'+escHtml(r.issue)+'</td>'
+      +'<td onclick="showInspectDetail(\''+r.id+'\')">'+extBadge+'</td>'
+      +'<td onclick="showInspectDetail(\''+r.id+'\')">'+statusBadge+'</td>'
+      +'</tr>';
   }).join('');
-  el.innerHTML='<div style="overflow-x:auto;"><table style="min-width:560px;"><thead><tr><th style="padding:12px 14px;font-size:12px;">점검일</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;"></th><th style="padding:12px 14px;font-size:12px;">상태</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  el.innerHTML='<div style="overflow-x:auto;"><table style="min-width:600px;"><thead><tr>'
+    +'<th class="insp-chk-th" style="padding:12px 8px;"><input type="checkbox" class="insp-chk" id="insp-chk-all" '+(allChecked?'checked':'')+' onchange="toggleInspectAll(this,'+JSON.stringify(data.map(function(r){return r.id;})).replace(/"/g,'&quot;')+')"></th>'
+    +'<th style="padding:12px 14px;font-size:12px;">점검일</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;"></th><th style="padding:12px 14px;font-size:12px;">상태</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+  updateInspectPdfBtn();
+}
+
+function toggleInspectRowSel(id,chk){
+  if(chk.checked)inspectSelectedIds.add(id);
+  else inspectSelectedIds.delete(id);
+  var row=chk.closest('tr');
+  if(row){row.classList.toggle('chk-sel',chk.checked);}
+  updateInspectPdfBtn();
+  // 전체 선택 체크박스 상태 동기화
+  var allChk=document.getElementById('insp-chk-all');
+  if(allChk){
+    var data=getInspectFiltered();
+    allChk.checked=data.length>0&&data.every(function(r){return inspectSelectedIds.has(r.id);});
+  }
+}
+
+function toggleInspectAll(chk,ids){
+  ids.forEach(function(id){if(chk.checked)inspectSelectedIds.add(id);else inspectSelectedIds.delete(id);});
+  renderInspectTable(getInspectFiltered());
+}
+
+function updateInspectPdfBtn(){
+  var btn=document.getElementById('insp-pdf-btn');
+  var lbl=document.getElementById('insp-sel-label');
+  var n=inspectSelectedIds.size;
+  if(btn){btn.disabled=n===0;}
+  if(lbl){
+    if(n>0){lbl.textContent=n+'건 선택';lbl.style.display='';}
+    else lbl.style.display='none';
+  }
 }
 
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
