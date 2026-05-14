@@ -151,6 +151,7 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
   body.is-pwa #inspect-layout{display:none !important;}
   body.is-pwa #insp-pwa-wrap{display:block !important;}
 }
+body.is-pwa #ss-imp-pdf-btn{display:none !important;}
 .insp-pwa-kpi{display:flex;gap:10px;margin-bottom:14px;}
 .insp-pwa-kpi-card{flex:1;background:white;border-radius:10px;border:0.5px solid #e8ecf0;padding:12px 14px;text-align:center;}
 .insp-pwa-kpi-val{font-size:26px;font-weight:700;line-height:1;}
@@ -1707,7 +1708,13 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
           </select>
           <span id="ss-imp-count-text" style="font-size:12px;color:#6b7280;white-space:nowrap;">총 0건 · 서명 완료 0건</span>
         </div>
-        <button class="add-btn" onclick="openSsImpForm()">+ 신규 등록</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button id="ss-imp-pdf-btn" class="insp-pdf-btn" onclick="printSsImpPdf()" style="display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            PDF 내보내기
+          </button>
+          <button class="add-btn" onclick="openSsImpForm()">+ 신규 등록</button>
+        </div>
       </div>
       <!-- 카드 그리드 -->
       <div id="ss-imp-list" class="ss-imp-grid"><div class="loading" style="grid-column:1/-1;">로딩 중...</div></div>
@@ -5301,9 +5308,119 @@ async function loadSsImprovements() {
     if (ct) ct.textContent = '총 ' + rows.length + '건 · 서명 완료 ' + sigDone + '건';
     list.innerHTML = '';
     rows.forEach(function(row) { list.appendChild(_buildSsImpGridCard(row)); });
+    // 관리자 PDF 버튼 표시 (웹 전용)
+    var pdfBtn = document.getElementById('ss-imp-pdf-btn');
+    if (pdfBtn) pdfBtn.style.display = isAdmin() ? '' : 'none';
   } catch(e) {
     list.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#dc2626;padding:24px;">오류: ' + e.message + '</div>';
   }
+}
+
+function printSsImpPdf() {
+  var records = ssImpRows;
+  if (!records || !records.length) { alert('출력할 항목이 없습니다.'); return; }
+  // A4 landscape: 297×210mm, margin 15mm → content 267×180mm
+  var today = new Date().toLocaleDateString('ko-KR', {year:'numeric', month:'long', day:'numeric'});
+  var totalPages = records.length;
+
+  function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escNl(s) { return esc(s||'').replace(/\n/g,'<br>'); }
+  function fmtTime(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+  }
+
+  function buildPages() {
+    var html = '';
+    records.forEach(function(r, i) {
+      var no = i + 1;
+      var isLast = (no === totalPages);
+      var catColor = r.category === '정위치' ? 'background:#dbeafe;color:#1e40af' : 'background:#dcfce7;color:#166534';
+      var titleText = (r.before_text || r.after_text || '').replace(/\n/g,' ').slice(0, 80) || '-';
+      var beforeImg = r.before_photo
+        ? '<img src="' + r.before_photo + '" style="width:100%;height:100%;object-fit:cover;" alt="개선 전">'
+        : '<span style="font-size:12px;color:#d1d5db;">사진 없음</span>';
+      var afterImg = r.after_photo
+        ? '<img src="' + r.after_photo + '" style="width:100%;height:100%;object-fit:cover;" alt="개선 후">'
+        : '<span style="font-size:12px;color:#d1d5db;">사진 없음</span>';
+
+      // 서명 4칸
+      var sigHtml = SS_SIG_NAMES.map(function(name) {
+        var done = !!r['sig_' + name];
+        var t = done ? fmtTime(r['sig_' + name + '_at']) : '';
+        return '<div style="flex:1;border:1pt solid #e8ecf0;border-radius:3pt;padding:5px 8px;text-align:center;min-width:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;background:' + (done ? '#f0fdf4' : 'white') + ';">'
+          + '<div style="font-size:12px;font-weight:700;color:#0f2744;margin-bottom:4px;">' + esc(name) + '</div>'
+          + (done
+            ? '<div style="font-size:11px;color:#16a34a;font-weight:600;">✓ 확인</div>'
+              + '<div style="font-size:10px;color:#6b7280;margin-top:2px;">' + esc(t) + '</div>'
+            : '<div style="font-size:11px;color:#d1d5db;">미서명</div>')
+          + '</div>';
+      }).join('');
+
+      html += ''
+        + '<div style="width:267mm;height:180mm;box-sizing:border-box;display:flex;flex-direction:column;' + (isLast ? '' : 'page-break-after:always;') + '">'
+
+          // 페이지 헤더
+          + '<div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding-bottom:2.5mm;border-bottom:2pt solid #0f2744;margin-bottom:3mm;-webkit-print-color-adjust:exact;print-color-adjust:exact;">'
+            + '<span style="font-size:13px;font-weight:700;color:#0f2744;">TC 환경관리 · 3정5S 현장개선</span>'
+            + '<span style="font-size:11px;color:#6b7280;">' + today + '&nbsp;&nbsp;|&nbsp;&nbsp;' + no + ' / ' + totalPages + '</span>'
+          + '</div>'
+
+          // 건 헤더
+          + '<div style="flex-shrink:0;display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:5px 10px;background:#f8fafc;border:1pt solid #e8ecf0;border-radius:4pt;margin-bottom:3mm;-webkit-print-color-adjust:exact;print-color-adjust:exact;">'
+            + '<span style="font-size:13px;font-weight:700;color:#0f2744;min-width:30pt;">No.' + no + '</span>'
+            + '<span style="font-size:13px;font-weight:600;color:#1e293b;flex:1;line-height:1.4;">' + esc(titleText) + '</span>'
+            + '<span style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:600;' + catColor + ';-webkit-print-color-adjust:exact;print-color-adjust:exact;">' + esc(r.category || '') + '</span>'
+            + '<span style="font-size:11px;color:#6b7280;white-space:nowrap;">' + esc(r.line || '') + '</span>'
+            + '<span style="font-size:11px;color:#6b7280;white-space:nowrap;">책임자: ' + esc(r.manager || '-') + '</span>'
+            + '<span style="font-size:11px;color:#6b7280;white-space:nowrap;">점검일: ' + esc(r.inspect_date || '-') + '</span>'
+            + '<span style="font-size:11px;color:#6b7280;white-space:nowrap;">활동일: ' + esc(r.activity_date || '-') + '</span>'
+          + '</div>'
+
+          // 본문: 좌우 2분할 (사진 + 텍스트)
+          + '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:4mm;min-height:0;margin-bottom:3mm;">'
+
+            // 개선 전
+            + '<div style="display:flex;flex-direction:column;min-height:0;">'
+              + '<div style="flex-shrink:0;font-size:13px;font-weight:700;color:#0f2744;margin-bottom:2mm;padding-bottom:2mm;border-bottom:1pt solid #e8ecf0;">개선 전</div>'
+              + '<div style="flex:1;background:#f4f6f9;border-radius:3pt;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;">' + beforeImg + '</div>'
+              + (r.before_text ? '<div style="flex-shrink:0;font-size:12px;color:#374151;line-height:1.6;margin-top:5px;padding:5px 6px;background:#f8fafc;border-radius:3pt;max-height:22mm;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;">' + escNl(r.before_text) + '</div>' : '')
+            + '</div>'
+
+            // 개선 후
+            + '<div style="display:flex;flex-direction:column;min-height:0;border-left:1pt solid #e8ecf0;padding-left:4mm;">'
+              + '<div style="flex-shrink:0;font-size:13px;font-weight:700;color:#0f2744;margin-bottom:2mm;padding-bottom:2mm;border-bottom:1pt solid #e8ecf0;">개선 후</div>'
+              + '<div style="flex:1;background:#f4f6f9;border-radius:3pt;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;">' + afterImg + '</div>'
+              + (r.after_text ? '<div style="flex-shrink:0;font-size:12px;color:#374151;line-height:1.6;margin-top:5px;padding:5px 6px;background:#f8fafc;border-radius:3pt;max-height:22mm;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;">' + escNl(r.after_text) + '</div>' : '')
+            + '</div>'
+
+          + '</div>'
+
+          // 서명 4칸
+          + '<div style="flex-shrink:0;display:flex;gap:4mm;">' + sigHtml + '</div>'
+
+        + '</div>';
+    });
+    return html;
+  }
+
+  var win = window.open('', '_blank', 'width=1100,height=800');
+  if (!win) { alert('팝업이 차단되었습니다. 팝업을 허용한 후 다시 시도해주세요.'); return; }
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    + '<title>3정5S 현장개선</title>'
+    + '<style>'
+    + '*{box-sizing:border-box;margin:0;padding:0;font-family:\'Malgun Gothic\',\'Apple SD Gothic Neo\',\'Noto Sans KR\',sans-serif;}'
+    + 'body{background:white;}'
+    + '@media print{'
+    + '  @page{size:A4 landscape;margin:15mm;}'
+    + '  body{margin:0;}'
+    + '}'
+    + '</style>'
+    + '</head><body>'
+    + buildPages()
+    + '<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};};<\/script>'
+    + '</body></html>');
+  win.document.close();
 }
 
 function _buildSsImpGridCard(row) {
