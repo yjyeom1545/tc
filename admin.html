@@ -1910,7 +1910,7 @@ function checkAuth(){
     var smEl=document.getElementById('sems-month');
     if(smEl&&!smEl.value){var _dn=new Date();smEl.value=_dn.getFullYear()+'-'+String(_dn.getMonth()+1).padStart(2,'0');}
   }
-  if(isAdmin()){initBatchWidget();}
+  if(isAdmin()){initBatchWidget();initDifyChatbot();}
   return true;
 }
 
@@ -5446,25 +5446,20 @@ async function loadSsSheet() {
 }
 </script>
 <script>
+function initDifyChatbot(){
   window.difyChatbotConfig = {
     token: 'pkcaD1UEOx5vFy2E',
     systemVariables: {},
     userVariables: {},
-  }
+  };
+  var style=document.createElement('style');
+  style.textContent='#dify-chatbot-bubble-button{background-color:#0F2744!important;}#dify-chatbot-bubble-window{width:24rem!important;height:40rem!important;}';
+  document.head.appendChild(style);
+  var s=document.createElement('script');
+  s.src='https://udify.app/embed.min.js';
+  s.id='pkcaD1UEOx5vFy2E';
+  document.body.appendChild(s);
+}
 </script>
-<script
-  src="https://udify.app/embed.min.js"
-  id="pkcaD1UEOx5vFy2E"
-  defer>
-</script>
-<style>
-  #dify-chatbot-bubble-button {
-    background-color: #0F2744 !important;
-  }
-  #dify-chatbot-bubble-window {
-    width: 24rem !important;
-    height: 40rem !important;
-  }
-</style>
 </body>
 </html>
