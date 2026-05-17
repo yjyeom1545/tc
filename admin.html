@@ -659,7 +659,7 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
       <button class="menu-toggle" onclick="toggleSidebar()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <span class="topbar-title" id="topbar-title">필터 교체</span>
+      <span class="topbar-title" id="topbar-title">홈</span>
     </div>
     <div class="topbar-right">
       <button class="top-btn" onclick="location.reload()">새로고침</button>
@@ -2309,8 +2309,11 @@ function renderMonthlyChart(data){
   var datasets=rooms.map(function(room,ri){
     return{label:room,data:months.map(function(m){return data.filter(function(r){return r.record_date&&r.record_date.startsWith(m)&&r.room_name===room;}).reduce(function(s,r){return s+(r.quantity||0);},0);}),backgroundColor:colors[ri],borderRadius:3};
   });
-  if(monthlyChart)monthlyChart.destroy();
-  monthlyChart=new Chart(document.getElementById('monthlyChart').getContext('2d'),{
+  var _mc=document.getElementById('monthlyChart');
+  var _existing=Chart.getChart(_mc);
+  if(_existing)_existing.destroy();
+  monthlyChart=null;
+  monthlyChart=new Chart(_mc.getContext('2d'),{
     type:'bar',data:{labels:labels,datasets:datasets},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:11},stepSize:1}}}}
   });
