@@ -561,6 +561,8 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   #insp-pdf-print-area .status-hold{background:#fef3c7 !important;color:#d97706 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   @page{size:A4 portrait;margin:15mm;}
 }
+#readonly-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(15,39,68,0.92);color:white;padding:10px 22px;border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif;z-index:10000;pointer-events:none;opacity:0;transition:opacity 0.2s;white-space:nowrap;}
+#readonly-toast.show{opacity:1;}
 </style>
 </head>
 <body>
@@ -1866,6 +1868,8 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   </div>
 </div>
 
+<div id="readonly-toast">테스트 계정은 조회만 가능합니다.</div>
+
 <div class="modal-bg" id="del-modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="modal-title">삭제 확인</div>
@@ -1926,6 +1930,8 @@ function closeSidebar(){
 }
 
 function isAdmin(){return currentUser&&currentUser.username==='yjyeom';}
+function isReadOnly(){return currentUser&&currentUser.username==='tc1234';}
+function showReadOnlyToast(){var t=document.getElementById('readonly-toast');if(!t)return;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(function(){t.classList.remove('show');},3000);}
 function hasPerm(key){if(isAdmin())return true;return !!(currentUser&&currentUser.permissions&&currentUser.permissions[key]);}
 function getAirLogEmNos(){
   var nos=[];
@@ -2675,6 +2681,7 @@ async function loadWasteSchedule(){
 }
 
 async function addWasteSchedule(){
+  if(isReadOnly()){showReadOnlyToast();return;}
   var date=document.getElementById('ws-date').value;
   if(!date){alert('예정일을 입력해주세요.');return;}
   if(!selectedSchedLines.length){alert('폐기물 종류를 선택해주세요.');return;}
@@ -3080,6 +3087,7 @@ async function loadAirLogView(){
 }
 
 async function saveAirLog(){
+  if(isReadOnly()){showReadOnlyToast();return;}
   var date=document.getElementById('al-input-date').value;
   if(!date){alert('날짜를 입력해주세요.');return;}
   if(!validatePowerInputs()){
@@ -3328,6 +3336,7 @@ async function updateAirStatus(id,status,reason){
 }
 
 async function addAirMeasure(){
+  if(isReadOnly()){showReadOnlyToast();return;}
   var date=document.getElementById('air-date').value;
   if(!date){alert('측정일을 입력해주세요.');return;}
   var facilities=selectedAirFacilities.join(',');
@@ -3395,6 +3404,7 @@ function markNameDirty(uid){
 }
 
 async function saveUserName(uid){
+  if(isReadOnly()){showReadOnlyToast();return;}
   var inp=document.getElementById('name-inp-'+uid);
   if(!inp)return;
   var name=inp.value.trim();
@@ -3422,6 +3432,7 @@ async function loadUserNameMap(){
 function displayName(u){return u?(userNameMap[u]||u):'-';}
 
 async function saveUserPermissions(uid){
+  if(isReadOnly()){showReadOnlyToast();return;}
   var checkboxes=document.querySelectorAll('input[data-uid="'+uid+'"]:not([disabled])');
   var perms={};
   checkboxes.forEach(function(cb){if(cb.checked)perms[cb.dataset.perm]=true;});
@@ -3438,6 +3449,7 @@ async function saveUserPermissions(uid){
 }
 
 async function addUser(){
+  if(isReadOnly()){showReadOnlyToast();return;}
   var username=document.getElementById('new-username').value.trim();
   var name=document.getElementById('new-name').value.trim();
   if(!username){alert('아이디를 입력해주세요.');return;}
@@ -3938,6 +3950,7 @@ function closeInspectDetail(){
 }
 
 async function saveInspectDetail(id){
+  if(isReadOnly()){showReadOnlyToast();return;}
   var status=document.getElementById('detail-status').value;
   var note=document.getElementById('detail-note').value;
   await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{status:status,note:note||null}});
@@ -4028,6 +4041,7 @@ function closeInspectLightbox(){
 }
 
 function openInspectForm(){
+  if(isReadOnly()){showReadOnlyToast();return;}
   inspectBeforeDataUrl=null;inspectAfterDataUrl=null;
   var beforeWrap=document.getElementById('if-before-wrap');
   var preview=document.getElementById('if-before-preview');
@@ -4043,6 +4057,7 @@ function closeInspectForm(){
 }
 
 async function submitInspect(){
+  if(isReadOnly()){showReadOnlyToast();return;}
   var date=document.getElementById('if-date').value;
   var issue=document.getElementById('if-issue').value.trim();
   if(!date||!issue){alert('점검일과 지적 내용은 필수입니다.');return;}
@@ -4067,6 +4082,7 @@ async function submitInspect(){
 
 var pendingDelete={};
 function confirmDelete(table,id,cb){
+  if(isReadOnly()){showReadOnlyToast();return;}
   pendingDelete={table:table,id:id,cb:cb};
   document.getElementById('del-modal').classList.add('show');
   document.getElementById('modal-confirm-btn').onclick=function(){doDelete();};
@@ -4534,6 +4550,7 @@ function _updateSsTotals(ln) {
 }
 
 async function saveSsInspection() {
+  if(isReadOnly()){showReadOnlyToast();return;}
   var month = (document.getElementById('ss-input-month')||{}).value;
   var inspector = ((document.getElementById('ss-inspector-name')||{}).value||'').trim();
   var ln = ssCurrentLine;
@@ -4803,6 +4820,7 @@ function updatePwaHdrStatus() {
 }
 
 function tmpSavePwa() {
+  if(isReadOnly()){showReadOnlyToast();return;}
   var seg = ssP.seg;
   var ln = ssP.line;
   if (!ln) return;
@@ -4814,6 +4832,7 @@ function tmpSavePwa() {
 }
 
 async function finalSavePwa() {
+  if(isReadOnly()){showReadOnlyToast();return;}
   var seg = ssP.seg;
   var lines = seg === 'quality' ? SS_QUALITY_LINES : SS_LINES;
   var inspEl = document.getElementById('ss-pwa-inspector');
@@ -5259,6 +5278,7 @@ async function signSsImprovement(id, name) {
 
 /* 등록 모달 */
 function openSsImpForm() {
+  if(isReadOnly()){showReadOnlyToast();return;}
   ssImpPhotoData = {before: null, after: null};
   ssImpCurrentCat = '정위치';
   var today = new Date().toISOString().split('T')[0];
@@ -5319,6 +5339,7 @@ async function _uploadSsImpPhoto(file, side) {
   return SB_URL + '/storage/v1/object/public/ss-improvements/' + path;
 }
 async function submitSsImprovement() {
+  if(isReadOnly()){showReadOnlyToast();return;}
   var line = document.getElementById('ss-imp-line').value;
   var idate = document.getElementById('ss-imp-inspect-date').value;
   if (!line) { alert('라인을 선택하세요.'); return; }
