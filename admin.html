@@ -400,7 +400,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
 #ss-pwa-input-wrap{display:none;}
 @media(max-width:768px){
   body.is-pwa #ss-web-input-wrap{display:none !important;}
-  body.is-pwa #ss-pwa-input-wrap{display:block !important;padding-bottom:80px;}
+  body.is-pwa #ss-pwa-input-wrap{display:block !important;padding-bottom:calc(80px + env(safe-area-inset-bottom));}
 }
 /* 서브탭 */
 .ss-pwa-subtabs{display:flex;background:white;border-radius:10px;border:0.5px solid #e8ecf0;padding:4px;gap:4px;margin-bottom:12px;}
@@ -451,7 +451,7 @@ tr.inspect-row.selected td{background:#eff6ff;}
 /* 하단 액션 바 */
 .ss-pwa-action-bar{display:none;}
 @media(max-width:768px){
-  body.is-pwa .ss-pwa-action-bar{display:flex;position:fixed;bottom:calc(60px + env(safe-area-inset-bottom));left:0;right:0;background:white;border-top:1px solid #e8ecf0;padding:10px 16px;align-items:center;justify-content:space-between;gap:12px;z-index:200;box-shadow:0 -2px 8px rgba(0,0,0,0.06);}
+  body.is-pwa .ss-pwa-action-bar{display:flex;position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #e8ecf0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));align-items:center;justify-content:space-between;gap:12px;z-index:200;box-shadow:0 -2px 8px rgba(0,0,0,0.06);}
   body.is-pwa .ss-pwa-action-bar.hidden{display:none !important;}
 }
 .ss-pwa-action-status{font-size:13px;color:#6b7280;font-weight:500;white-space:nowrap;}
