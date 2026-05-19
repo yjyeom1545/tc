@@ -849,6 +849,109 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 }
 
 /* ── 폐유고상 탭: showTab()의 hidden 클래스가 관리 ── */
+
+/* ══════════════════════════════════════
+   PWA 앱 전면 개편
+══════════════════════════════════════ */
+@media(max-width:768px){
+  /* 하단 탭바·드로어 완전 제거 */
+  body.is-pwa .bottom-tabbar{display:none!important;}
+  body.is-pwa .more-drawer-overlay,body.is-pwa .more-drawer{display:none!important;}
+  /* topbar 숨김 (pwa-nav-header로 대체) */
+  body.is-pwa .topbar{display:none!important;}
+  /* main-area 기본: 여백 제거 */
+  body.is-pwa .main-area{margin-left:0;padding-bottom:0;}
+  /* 서브스크린: nav-header 높이만큼 top 여백 */
+  body.is-pwa.pwa-subscreen .main-area{padding-top:calc(54px + env(safe-area-inset-top));}
+  /* Dify 챗봇 버블: PWA 완전 숨김 */
+  body.is-pwa #dify-chatbot-bubble-button,
+  body.is-pwa #dify-chatbot-bubble-window{display:none!important;}
+}
+
+/* ── PWA 메인 화면 ── */
+#pwa-main{display:none;}
+@media(max-width:768px){
+  body.is-pwa #pwa-main{
+    display:flex;flex-direction:column;
+    position:fixed;inset:0;
+    background:#f0f4f8;
+    z-index:400;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  body.is-pwa #pwa-main.pwa-hidden{display:none!important;}
+}
+.pwa-top-bar{background:#0f2744;flex-shrink:0;}
+.pwa-top-bar-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(14px + env(safe-area-inset-top)) 20px 14px;
+}
+.pwa-top-bar-logo{font-size:15px;font-weight:700;color:white;letter-spacing:0.3px;}
+.pwa-top-bar-logout{
+  background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
+  color:rgba(255,255,255,0.82);padding:6px 12px;border-radius:6px;
+  font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;
+}
+.pwa-top-bar-logout:active{background:rgba(255,255,255,0.22);}
+.pwa-greeting{padding:20px 20px 26px;background:#0f2744;}
+.pwa-greeting-name{font-size:22px;font-weight:700;color:white;line-height:1.25;}
+.pwa-greeting-date{font-size:13px;color:rgba(255,255,255,0.5);margin-top:5px;}
+.pwa-menu-area{flex:1;padding:20px 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;}
+.pwa-menu-card{
+  background:white;border-radius:14px;
+  box-shadow:0 1px 6px rgba(0,0,0,0.08);
+  overflow:hidden;-webkit-tap-highlight-color:transparent;
+  cursor:pointer;
+}
+.pwa-menu-card:active{opacity:0.88;}
+.pwa-menu-card-main{display:flex;align-items:center;gap:14px;padding:18px 16px;}
+.pwa-menu-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pwa-menu-icon-inspect{background:#dbeafe;}
+.pwa-menu-icon-airlog{background:#d1fae5;}
+.pwa-menu-icon-ecoon{background:#ede9fe;}
+.pwa-menu-icon-3s5s{background:#fef3c7;}
+.pwa-menu-text{flex:1;min-width:0;}
+.pwa-menu-title{font-size:16px;font-weight:700;color:#0f2744;}
+.pwa-menu-desc{font-size:12px;color:#9ca3af;margin-top:2px;}
+.pwa-menu-chevron{color:#d1d5db;flex-shrink:0;}
+.pwa-3s5s-btns{display:flex;gap:8px;padding:0 16px 14px;}
+.pwa-3s5s-btn{
+  flex:1;padding:9px 4px;text-align:center;
+  background:#f4f6f9;border:1px solid #e8ecf0;border-radius:8px;
+  font-size:13px;font-weight:600;color:#0f2744;
+  cursor:pointer;font-family:'Noto Sans KR',sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+.pwa-3s5s-btn:active{background:#e2e8f0;}
+
+/* ── PWA 서브스크린 상단 헤더 ── */
+#pwa-nav-header{display:none;}
+@media(max-width:768px){
+  body.is-pwa.pwa-subscreen #pwa-nav-header{
+    display:flex;position:fixed;top:0;left:0;right:0;
+    height:calc(54px + env(safe-area-inset-top));
+    padding-top:env(safe-area-inset-top);
+    background:#0f2744;z-index:500;
+    align-items:center;padding-left:4px;padding-right:16px;
+  }
+}
+.pwa-back-btn{
+  background:none;border:none;cursor:pointer;color:white;
+  padding:10px 12px;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;flex-shrink:0;
+}
+.pwa-nav-title{font-size:16px;font-weight:700;color:white;flex:1;}
+
+/* ── TC에코온 탭 ── */
+#tab-ecoon{padding:0!important;}
+@media(max-width:768px){
+  body.is-pwa.pwa-subscreen #tab-ecoon{
+    position:fixed;
+    top:calc(54px + env(safe-area-inset-top));
+    left:0;right:0;bottom:0;
+    padding:0!important;margin:0!important;z-index:10;overflow:hidden;
+  }
+  body.is-pwa.pwa-subscreen #tab-ecoon iframe{width:100%;height:100%;border:none;display:block;}
+}
 </style>
 
 <!-- 필터 교체 탭 -->
@@ -1880,6 +1983,11 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
     </div>
   </div>
 </div>
+<!-- TC에코온 챗봇 탭 -->
+<div id="tab-ecoon" class="content hidden">
+  <iframe src="https://udify.app/chatbot/pkcaD1UEOx5vFy2E" allow="microphone" style="width:100%;height:calc(100vh - 110px);border:none;display:block;"></iframe>
+</div>
+
 </div><!-- /main-area -->
 
 <!-- 삭제 확인 모달 -->
@@ -1959,13 +2067,18 @@ async function sb(table,query,opts){
 }
 
 function showTab(tab){
+  // PWA 모바일: home → 메인 화면으로 리다이렉트
+  if(tab==='home'&&document.body.classList.contains('is-pwa')&&window.innerWidth<=768){
+    showPwaMain();
+    return;
+  }
   document.querySelectorAll('[id^="tab-"]').forEach(function(el){el.classList.add('hidden');});
   document.getElementById('tab-'+tab).classList.remove('hidden');
   // 사이드바 nav-item 활성화
   document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active');});
   var navEl=document.getElementById('nav-'+tab);
   if(navEl)navEl.classList.add('active');
-  // 하단 탭 바 활성화
+  // 하단 탭 바 활성화 (웹 전용, PWA에서는 없음)
   document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('active');});
   var btabMap={'home':'home','inspect':'inspect','3s5s':'inspect','airlog':'airlog','air':'airlog','waste-oil':'waste-oil','waste-schedule':'waste-oil','filter':'more','users':'more'};
   var btabEl=document.getElementById('btab-'+(btabMap[tab]||tab));
@@ -1983,9 +2096,6 @@ function showTab(tab){
   currentTab=tab;
   loadCurrentTab();
   if(tab==='airlog')applyAirlogScrollFix();
-  if(document.body.classList.contains('is-pwa')){
-    document.body.classList.toggle('pwa-not-home',tab!=='home');
-  }
 }
 
 function openMoreDrawer(){
@@ -4115,7 +4225,16 @@ function initDifyChatbot(){
 }
 
 initPWAMode();
-if(checkAuth()){initPushNotifications();loadUserNameMap().then(function(){loadCurrentTab();});}
+if(checkAuth()){
+  initPushNotifications();
+  loadUserNameMap().then(function(){
+    if(document.body.classList.contains('is-pwa')&&window.innerWidth<=768){
+      showPwaMain();
+    } else {
+      loadCurrentTab();
+    }
+  });
+}
 
 function initPWAMode(){
   var standalone=window.matchMedia('(display-mode: standalone)').matches
@@ -4325,6 +4444,89 @@ async function sbQ(table,query){
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     로그아웃
   </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PWA 앱 메인 화면
+══════════════════════════════════ -->
+<div id="pwa-main">
+  <div class="pwa-top-bar">
+    <div class="pwa-top-bar-inner">
+      <span class="pwa-top-bar-logo">TC 환경관리</span>
+      <button class="pwa-top-bar-logout" onclick="logout()">로그아웃</button>
+    </div>
+    <div class="pwa-greeting">
+      <div class="pwa-greeting-name" id="pwa-greeting-name">안녕하세요!</div>
+      <div class="pwa-greeting-date" id="pwa-greeting-date"></div>
+    </div>
+  </div>
+  <div class="pwa-menu-area">
+    <!-- 환경점검 -->
+    <div class="pwa-menu-card" onclick="showPwaSubscreen('inspect','환경점검')">
+      <div class="pwa-menu-card-main">
+        <div class="pwa-menu-icon pwa-menu-icon-inspect">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div class="pwa-menu-text">
+          <div class="pwa-menu-title">환경점검</div>
+          <div class="pwa-menu-desc">설비·환경 점검 기록</div>
+        </div>
+        <div class="pwa-menu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <!-- 대기운영일지 -->
+    <div class="pwa-menu-card" onclick="showPwaSubscreen('airlog','대기운영일지')">
+      <div class="pwa-menu-card-main">
+        <div class="pwa-menu-icon pwa-menu-icon-airlog">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="pwa-menu-text">
+          <div class="pwa-menu-title">대기운영일지</div>
+          <div class="pwa-menu-desc">대기오염물질 운영기록</div>
+        </div>
+        <div class="pwa-menu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <!-- TC에코온 -->
+    <div class="pwa-menu-card" onclick="showPwaSubscreen('ecoon','TC에코온')">
+      <div class="pwa-menu-card-main">
+        <div class="pwa-menu-icon pwa-menu-icon-ecoon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="pwa-menu-text">
+          <div class="pwa-menu-title">TC에코온</div>
+          <div class="pwa-menu-desc">AI 환경 도우미</div>
+        </div>
+        <div class="pwa-menu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <!-- 3정5S -->
+    <div class="pwa-menu-card">
+      <div class="pwa-menu-card-main" onclick="showPwaSubscreen('3s5s','3정5S')">
+        <div class="pwa-menu-icon pwa-menu-icon-3s5s">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17 14h3m-3 3h3m-3 3h3"/></svg>
+        </div>
+        <div class="pwa-menu-text">
+          <div class="pwa-menu-title">3정5S</div>
+          <div class="pwa-menu-desc">3정5S 심사 관리</div>
+        </div>
+        <div class="pwa-menu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="pwa-3s5s-btns">
+        <button class="pwa-3s5s-btn" onclick="showPwa3s5s('input')">심사 입력</button>
+        <button class="pwa-3s5s-btn" onclick="showPwa3s5s('improve')">현장개선</button>
+        <button class="pwa-3s5s-btn" onclick="showPwa3s5s('result')">결&nbsp;&nbsp;과</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PWA 서브스크린 상단 헤더 -->
+<div id="pwa-nav-header">
+  <button class="pwa-back-btn" onclick="showPwaMain()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <span class="pwa-nav-title" id="pwa-nav-title">메뉴</span>
 </div>
 
 <script>
@@ -5493,6 +5695,51 @@ async function loadSsSheet() {
     container.innerHTML = html;
   } catch(e) {
     container.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;color:#dc2626;">오류: '+e.message+'</div></div>';
+  }
+}
+
+/* ══════════════════════════════════════
+   PWA 앱 내비게이션
+══════════════════════════════════════ */
+function showPwaMain(){
+  document.body.classList.remove('pwa-subscreen');
+  var pwaMain=document.getElementById('pwa-main');
+  if(pwaMain)pwaMain.classList.remove('pwa-hidden');
+  document.querySelectorAll('[id^="tab-"]').forEach(function(el){el.classList.add('hidden');});
+  _updatePwaGreeting();
+}
+
+function showPwaSubscreen(tab,title){
+  var pwaMain=document.getElementById('pwa-main');
+  if(pwaMain)pwaMain.classList.add('pwa-hidden');
+  var navTitle=document.getElementById('pwa-nav-title');
+  if(navTitle)navTitle.textContent=title;
+  document.body.classList.add('pwa-subscreen');
+  if(tab==='ecoon'){
+    document.querySelectorAll('[id^="tab-"]').forEach(function(el){el.classList.add('hidden');});
+    var ecoon=document.getElementById('tab-ecoon');
+    if(ecoon)ecoon.classList.remove('hidden');
+    currentTab='ecoon';
+    return;
+  }
+  showTab(tab);
+}
+
+function showPwa3s5s(panel){
+  window._ss3panel=panel;
+  showPwaSubscreen('3s5s','3정5S');
+}
+
+function _updatePwaGreeting(){
+  var nameEl=document.getElementById('pwa-greeting-name');
+  var dateEl=document.getElementById('pwa-greeting-date');
+  if(nameEl&&currentUser){
+    nameEl.textContent='안녕하세요, '+(currentUser.name||currentUser.username)+'님!';
+  }
+  if(dateEl){
+    var d=new Date();
+    var days=['일','월','화','수','목','금','토'];
+    dateEl.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')';
   }
 }
 </script>
