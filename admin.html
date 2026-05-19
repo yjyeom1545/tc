@@ -1983,6 +1983,9 @@ function showTab(tab){
   currentTab=tab;
   loadCurrentTab();
   if(tab==='airlog')applyAirlogScrollFix();
+  if(document.body.classList.contains('is-pwa')){
+    document.body.classList.toggle('pwa-not-home',tab!=='home');
+  }
 }
 
 function openMoreDrawer(){
@@ -4102,7 +4105,7 @@ function initDifyChatbot(){
     userVariables: {},
   };
   var style=document.createElement('style');
-  style.textContent='#dify-chatbot-bubble-button{background-color:#1C64F2!important;}#dify-chatbot-bubble-window{width:460px!important;height:680px!important;position:fixed!important;bottom:90px!important;right:20px!important;z-index:9999!important;}body.is-pwa #dify-chatbot-bubble-button{bottom:calc(60px + env(safe-area-inset-bottom) + 16px)!important;}body.is-pwa #dify-chatbot-bubble-window{bottom:calc(60px + env(safe-area-inset-bottom) + 16px)!important;}';
+  style.textContent='#dify-chatbot-bubble-button{background-color:#1C64F2!important;z-index:9998!important;}#dify-chatbot-bubble-window{width:460px!important;height:680px!important;position:fixed!important;bottom:90px!important;right:20px!important;z-index:9999!important;}body.is-pwa #dify-chatbot-bubble-button{bottom:calc(60px + env(safe-area-inset-bottom) + 16px)!important;}body.is-pwa #dify-chatbot-bubble-window{bottom:calc(60px + env(safe-area-inset-bottom) + 16px)!important;}body.is-pwa.pwa-not-home #dify-chatbot-bubble-button{display:none!important;}';
   document.head.appendChild(style);
   var s=document.createElement('script');
   s.src='https://udify.app/embed.min.js';
