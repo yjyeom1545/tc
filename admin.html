@@ -880,6 +880,12 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   }
   body.is-pwa #pwa-main.pwa-hidden{display:none!important;}
 }
+/* ── 앱 개발 중 화면 (TODO: 앱 개발 완료 후 제거 - 전체 공개 시) ── */
+#pwa-dev-screen{display:none;position:fixed;inset:0;background:#0f2744;z-index:500;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;padding:32px;}
+#pwa-dev-screen.open{display:flex;}
+.pwa-dev-icon{width:80px;height:80px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
+.pwa-dev-title{font-size:20px;font-weight:700;color:white;font-family:'Noto Sans KR',sans-serif;}
+.pwa-dev-sub{font-size:13px;color:rgba(255,255,255,0.55);font-family:'Noto Sans KR',sans-serif;line-height:1.6;}
 .pwa-top-bar{background:#0f2744;flex-shrink:0;}
 .pwa-top-bar-inner{
   display:flex;align-items:center;justify-content:space-between;
@@ -4229,6 +4235,11 @@ if(checkAuth()){
   initPushNotifications();
   loadUserNameMap().then(function(){
     if(document.body.classList.contains('is-pwa')&&window.innerWidth<=768){
+      // TODO: 앱 개발 완료 후 제거 - 전체 공개 시
+      if(currentUser&&currentUser.username!=='yjyeom'){
+        document.getElementById('pwa-dev-screen').classList.add('open');
+        return;
+      }
       showPwaMain();
     } else {
       loadCurrentTab();
@@ -4527,6 +4538,15 @@ async function sbQ(table,query){
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
   </button>
   <span class="pwa-nav-title" id="pwa-nav-title">메뉴</span>
+</div>
+
+<!-- 앱 개발 중 화면 (TODO: 앱 개발 완료 후 제거 - 전체 공개 시) -->
+<div id="pwa-dev-screen">
+  <div class="pwa-dev-icon">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+  </div>
+  <div class="pwa-dev-title">앱 업데이트 중입니다</div>
+  <div class="pwa-dev-sub">더 나은 서비스로 곧 찾아뵙겠습니다</div>
 </div>
 
 <script>
