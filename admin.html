@@ -863,9 +863,9 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   body.is-pwa .main-area{margin-left:0;padding-bottom:0;}
   /* 서브스크린: nav-header 높이만큼 top 여백 */
   body.is-pwa.pwa-subscreen .main-area{padding-top:calc(54px + env(safe-area-inset-top));}
-  /* Dify 챗봇 버블: PWA 완전 숨김 */
-  body.is-pwa #dify-chatbot-bubble-button,
-  body.is-pwa #dify-chatbot-bubble-window{display:none!important;}
+  /* TC 챗봇 버블: PWA 완전 숨김 (앱은 에코온 탭으로 접근) */
+  body.is-pwa .tc-chatbot-bubble,
+  body.is-pwa .tc-chatbot-window{display:none!important;}
 }
 
 /* ── PWA 메인 화면 ── */
@@ -1992,7 +1992,7 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 <!-- TC에코온 챗봇 탭 -->
 <div id="tab-ecoon" class="content hidden">
   <iframe
-    src="https://udify.app/chatbot/424d0pBVljsa3ohW"
+    src="https://webapp-conversation-eight-fawn.vercel.app"
     style="width: 100%; height: 100%; min-height: 700px"
     frameborder="0"
     allow="microphone">
@@ -2033,7 +2033,7 @@ function checkAuth(){
     var smEl=document.getElementById('sems-month');
     if(smEl&&!smEl.value){var _dn=new Date();smEl.value=_dn.getFullYear()+'-'+String(_dn.getMonth()+1).padStart(2,'0');}
   }
-  if(isAdmin()){initBatchWidget();initDifyChatbot();}
+  if(isAdmin()){initBatchWidget();}
   return true;
 }
 
@@ -4218,22 +4218,6 @@ async function doDelete(){
 }
 function closeModal(){document.getElementById('del-modal').classList.remove('show');}
 
-function initDifyChatbot(){
-  window.difyChatbotConfig = {
-    token: '424d0pBVljsa3ohW',
-    inputs: {},
-    systemVariables: {},
-    userVariables: {},
-  };
-  var style=document.createElement('style');
-  style.textContent='#dify-chatbot-bubble-button{background-color:#0f2744!important;z-index:9998!important;}#dify-chatbot-bubble-window{width:460px!important;height:680px!important;position:fixed!important;bottom:90px!important;right:20px!important;z-index:9999!important;}body.is-pwa #dify-chatbot-bubble-button{bottom:calc(60px + env(safe-area-inset-bottom) + 16px)!important;}body.is-pwa #dify-chatbot-bubble-window{bottom:calc(60px + env(safe-area-inset-bottom) + 16px)!important;}body.is-pwa.pwa-not-home #dify-chatbot-bubble-button{display:none!important;}';
-  document.head.appendChild(style);
-  var s=document.createElement('script');
-  s.src='https://udify.app/embed.min.js';
-  s.id='424d0pBVljsa3ohW';
-  s.defer=true;
-  document.body.appendChild(s);
-}
 
 initPWAMode();
 if(checkAuth()){
@@ -5767,6 +5751,90 @@ function _updatePwaGreeting(){
     dateEl.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')';
   }
 }
+</script>
+
+<!-- TC 챗봇 버블 (자체 구현) -->
+<style>
+  .tc-chatbot-bubble {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #0f2744;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+    transition: transform 0.2s;
+  }
+  .tc-chatbot-bubble:hover {
+    transform: scale(1.05);
+  }
+  .tc-chatbot-bubble svg {
+    width: 28px;
+    height: 28px;
+  }
+  .tc-chatbot-window {
+    position: fixed;
+    bottom: 96px;
+    right: 24px;
+    width: 400px;
+    height: 600px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    z-index: 9999;
+    background: #ffffff;
+    overflow: hidden;
+    display: none;
+  }
+  .tc-chatbot-window.open {
+    display: block;
+  }
+  .tc-chatbot-window iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  @media (max-width: 600px) {
+    .tc-chatbot-window {
+      width: calc(100vw - 16px);
+      height: calc(100vh - 120px);
+      right: 8px;
+      bottom: 88px;
+    }
+  }
+</style>
+
+<button class="tc-chatbot-bubble" id="tc-chatbot-toggle" aria-label="챗봇 열기">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+</button>
+
+<div class="tc-chatbot-window" id="tc-chatbot-window">
+  <iframe src="https://webapp-conversation-eight-fawn.vercel.app" allow="microphone"></iframe>
+</div>
+
+<script>
+  (function() {
+    var bubble = document.getElementById('tc-chatbot-toggle');
+    var win = document.getElementById('tc-chatbot-window');
+    var loaded = false;
+
+    bubble.addEventListener('click', function() {
+      win.classList.toggle('open');
+      if (!loaded) {
+        loaded = true;
+      }
+    });
+  })();
 </script>
 </body>
 </html>
