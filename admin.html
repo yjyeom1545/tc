@@ -5726,9 +5726,15 @@ function _updatePwaGreeting(){
   defer>
 </script>
 <style>
-  #dify-chatbot-bubble-window {
-    width: 24rem !important;
-    height: 40rem !important;
+  /* 웹(PC) 전용: 챗봇 창 우측 하단 고정 */
+  body:not(.is-pwa) #dify-chatbot-bubble-window {
+    position: fixed !important;
+    bottom: 90px !important;
+    right: 20px !important;
+    width: 460px !important;
+    height: 680px !important;
+    z-index: 9999 !important;
+    transform: none !important;
   }
 </style>
 </body>
