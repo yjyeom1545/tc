@@ -72,47 +72,14 @@ body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height
   body.is-pwa .sidebar{display:none !important;}
   body.is-pwa .menu-toggle{display:none !important;}
   body.is-pwa .sidebar-overlay{display:none !important;}
-  body.is-pwa .main-area{margin-left:0;padding-bottom:calc(64px + env(safe-area-inset-bottom));}
+  body.is-pwa .main-area{margin-left:0;padding-bottom:0;}
 }
 
-/* ── 하단 탭바: PWA + 모바일에서만 표시 ── */
-.bottom-tabbar{display:none;}
-@media(max-width:768px){
-  body.is-pwa .bottom-tabbar{
-    display:flex;position:fixed;bottom:0;left:0;right:0;
-    height:calc(60px + env(safe-area-inset-bottom));
-    padding-bottom:env(safe-area-inset-bottom);
-    background:#0f2744;border-top:1px solid rgba(255,255,255,0.1);
-    z-index:300;align-items:stretch;
-  }
-  body.is-pwa .btab{
-    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:3px;cursor:pointer;color:rgba(255,255,255,0.45);font-size:10px;font-weight:500;
-    border:none;background:none;font-family:'Noto Sans KR',sans-serif;
-    transition:color 0.12s;padding:6px 0;position:relative;
-  }
-  body.is-pwa .btab.active{color:#60a5fa;}
-  body.is-pwa .btab svg{opacity:0.6;}
-  body.is-pwa .btab.active svg{opacity:1;}
-  body.is-pwa .btab-badge{position:absolute;top:6px;right:calc(50% - 14px);background:#dc2626;color:white;font-size:8px;font-weight:700;padding:1px 4px;border-radius:6px;min-width:14px;text-align:center;}
-}
+/* ── 하단 탭바: 완전 제거 ── */
+.bottom-tabbar{display:none!important;}
 
-/* ── 더보기 드로어 (PWA 모바일 전용) ── */
-/* 웹(769px+)에서 완전 숨김 */
-@media(min-width:769px){
-  .more-drawer-overlay,.more-drawer{display:none !important;}
-}
-.more-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:350;}
-.more-drawer-overlay.open{display:block;}
-.more-drawer{position:fixed;bottom:60px;left:0;right:0;background:#0f2744;border-radius:16px 16px 0 0;z-index:351;padding:8px 0 12px;transform:translateY(calc(100% + 60px));transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);}
-.more-drawer.open{transform:translateY(0);}
-.more-drawer-handle{display:flex;justify-content:center;padding:8px 0 4px;cursor:pointer;}
-.more-drawer-handle::before{content:'';display:block;width:32px;height:3px;background:rgba(255,255,255,0.25);border-radius:2px;}
-.more-drawer-item{display:flex;align-items:center;gap:12px;padding:13px 24px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:500;cursor:pointer;}
-.more-drawer-item:hover{background:rgba(255,255,255,0.06);}
-.more-drawer-item svg{opacity:0.6;flex-shrink:0;}
-.more-drawer-section{padding:10px 24px 4px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:1.2px;}
-.more-drawer-divider{height:1px;background:rgba(255,255,255,0.08);margin:6px 0;}
+/* ── 더보기 드로어: 완전 숨김 ── */
+.more-drawer-overlay,.more-drawer{display:none!important;}
 
 /* ── 콘텐츠 ── */
 .content{width:100%;padding:1.5rem 1.75rem;overflow-x:hidden;}
@@ -844,7 +811,7 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   body.is-pwa #pwa-main{
     display:flex;flex-direction:column;
     position:fixed;inset:0;
-    background:#f0f4f8;
+    background:#0f2744;
     z-index:400;
     overflow-y:auto;-webkit-overflow-scrolling:touch;
   }
@@ -863,41 +830,44 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 }
 .pwa-top-bar-logo{font-size:15px;font-weight:700;color:white;letter-spacing:0.3px;}
 .pwa-top-bar-logout{
+  display:flex;align-items:center;gap:5px;
   background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
-  color:rgba(255,255,255,0.82);padding:6px 12px;border-radius:6px;
+  color:rgba(255,255,255,0.82);padding:6px 12px;border-radius:20px;
   font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;
 }
 .pwa-top-bar-logout:active{background:rgba(255,255,255,0.22);}
-.pwa-greeting{padding:20px 20px 26px;background:#0f2744;}
+.pwa-greeting{padding:14px 20px 28px;background:#0f2744;}
+.pwa-greeting-hello{font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:2px;}
 .pwa-greeting-name{font-size:22px;font-weight:700;color:white;line-height:1.25;}
 .pwa-greeting-date{font-size:13px;color:rgba(255,255,255,0.5);margin-top:5px;}
-.pwa-menu-area{flex:1;padding:20px 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;}
-.pwa-menu-card{
-  background:white;border-radius:14px;
-  box-shadow:0 1px 6px rgba(0,0,0,0.08);
-  overflow:hidden;-webkit-tap-highlight-color:transparent;
-  cursor:pointer;
+.pwa-menu-area{
+  flex:1;background:white;
+  border-radius:22px 22px 0 0;
+  margin-top:-20px;
+  padding:20px 16px calc(28px + env(safe-area-inset-bottom));
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  align-content:start;
 }
-.pwa-menu-card:active{opacity:0.88;}
-.pwa-menu-card-main{display:flex;align-items:center;gap:14px;padding:18px 16px;}
-.pwa-menu-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pwa-menu-card{
+  background:#f8fafc;border-radius:14px;
+  border:1px solid #eef0f3;
+  box-shadow:0 1px 4px rgba(0,0,0,0.06);
+  -webkit-tap-highlight-color:transparent;
+  cursor:pointer;
+  height:130px;
+}
+.pwa-menu-card:active{opacity:0.82;}
+.pwa-menu-card-main{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;padding:12px 8px;gap:8px;text-align:center;
+}
+.pwa-menu-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .pwa-menu-icon-inspect{background:#dbeafe;}
 .pwa-menu-icon-airlog{background:#d1fae5;}
 .pwa-menu-icon-ecoon{background:#ede9fe;}
 .pwa-menu-icon-3s5s{background:#fef3c7;}
-.pwa-menu-text{flex:1;min-width:0;}
-.pwa-menu-title{font-size:16px;font-weight:700;color:#0f2744;}
-.pwa-menu-desc{font-size:12px;color:#9ca3af;margin-top:2px;}
-.pwa-menu-chevron{color:#d1d5db;flex-shrink:0;}
-.pwa-3s5s-btns{display:flex;gap:8px;padding:0 16px 14px;}
-.pwa-3s5s-btn{
-  flex:1;padding:9px 4px;text-align:center;
-  background:#f4f6f9;border:1px solid #e8ecf0;border-radius:8px;
-  font-size:13px;font-weight:600;color:#0f2744;
-  cursor:pointer;font-family:'Noto Sans KR',sans-serif;
-  -webkit-tap-highlight-color:transparent;
-}
-.pwa-3s5s-btn:active{background:#e2e8f0;}
+.pwa-menu-title{font-size:14px;font-weight:700;color:#0f2744;line-height:1.2;}
+.pwa-menu-desc{font-size:10px;color:#9ca3af;line-height:1.4;}
 
 /* ── PWA 서브스크린 상단 헤더 ── */
 #pwa-nav-header{display:none;}
@@ -1962,12 +1932,7 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 </div>
 <!-- TC에코온 챗봇 탭 -->
 <div id="tab-ecoon" class="content hidden">
-  <iframe
-    src="https://udify.app/chatbot/424d0pBVljsa3ohW"
-    style="width: 100%; height: 100%"
-    frameborder="0"
-    allow="microphone">
-  </iframe>
+  <iframe src="https://udify.app/chatbot/424d0pBVljsa3ohW" allow="microphone" style="width:100%;height:calc(100vh - 110px);border:none;display:block;"></iframe>
 </div>
 
 </div><!-- /main-area -->
@@ -2080,14 +2045,8 @@ function showTab(tab){
   if(tab==='airlog')applyAirlogScrollFix();
 }
 
-function openMoreDrawer(){
-  document.getElementById('more-drawer-overlay').classList.add('open');
-  document.getElementById('more-drawer').classList.add('open');
-}
-function closeMoreDrawer(){
-  document.getElementById('more-drawer').classList.remove('open');
-  setTimeout(function(){document.getElementById('more-drawer-overlay').classList.remove('open');},280);
-}
+function openMoreDrawer(){}
+function closeMoreDrawer(){}
 
 function loadCurrentTab(){
   try{
@@ -4357,66 +4316,6 @@ async function sbQ(table,query){
   </div>
 </div>
 
-<!-- 하단 탭 바 (모바일) -->
-<nav class="bottom-tabbar" id="bottom-tabbar">
-  <button class="btab active" id="btab-home" onclick="showTab('home')">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-    홈
-  </button>
-  <button class="btab" id="btab-inspect" onclick="showTab('inspect')">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    환경점검
-  </button>
-  <button class="btab" id="btab-airlog" onclick="showTab('airlog')">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    대기
-  </button>
-  <button class="btab" id="btab-waste-oil" onclick="showTab('waste-oil')">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
-    폐기물
-  </button>
-  <button class="btab" id="btab-more" onclick="openMoreDrawer()">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>
-    더보기
-  </button>
-</nav>
-
-<!-- 더보기 드로어 -->
-<div class="more-drawer-overlay" id="more-drawer-overlay" onclick="closeMoreDrawer()"></div>
-<div class="more-drawer" id="more-drawer">
-  <div class="more-drawer-handle" onclick="closeMoreDrawer()"></div>
-  <div class="more-drawer-section">점검관리</div>
-  <div class="more-drawer-item" onclick="closeMoreDrawer();show3s5sPanel('input')">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17 14h3m-3 3h3m-3 3h3"/></svg>
-    3정5S 심사 입력
-  </div>
-  <div class="more-drawer-divider"></div>
-  <div class="more-drawer-item" onclick="closeMoreDrawer();showTab('air')">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    대기측정 일정
-  </div>
-  <div class="more-drawer-item" onclick="closeMoreDrawer();showTab('waste-schedule')">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-    배출업체 스케줄
-  </div>
-  <div class="more-drawer-item" onclick="closeMoreDrawer();showTab('filter')">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-    필터 교체
-  </div>
-  <div class="more-drawer-item" id="more-item-waste-oil" onclick="closeMoreDrawer();showTab('waste-oil')">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
-    폐유고상
-  </div>
-  <div class="more-drawer-item" id="more-item-users" onclick="closeMoreDrawer();showTab('users')">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    사용자 관리
-  </div>
-  <div class="more-drawer-item" onclick="closeMoreDrawer();logout()">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-    로그아웃
-  </div>
-</div>
-
 <!-- ══════════════════════════════════
      PWA 앱 메인 화면
 ══════════════════════════════════ -->
@@ -4424,10 +4323,14 @@ async function sbQ(table,query){
   <div class="pwa-top-bar">
     <div class="pwa-top-bar-inner">
       <span class="pwa-top-bar-logo">TC 환경관리</span>
-      <button class="pwa-top-bar-logout" onclick="logout()">로그아웃</button>
+      <button class="pwa-top-bar-logout" onclick="logout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        로그아웃
+      </button>
     </div>
     <div class="pwa-greeting">
-      <div class="pwa-greeting-name" id="pwa-greeting-name">안녕하세요!</div>
+      <div class="pwa-greeting-hello">안녕하세요,</div>
+      <div class="pwa-greeting-name" id="pwa-greeting-name">-</div>
       <div class="pwa-greeting-date" id="pwa-greeting-date"></div>
     </div>
   </div>
@@ -4436,57 +4339,40 @@ async function sbQ(table,query){
     <div class="pwa-menu-card" onclick="showPwaSubscreen('inspect','환경점검')">
       <div class="pwa-menu-card-main">
         <div class="pwa-menu-icon pwa-menu-icon-inspect">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         </div>
-        <div class="pwa-menu-text">
-          <div class="pwa-menu-title">환경점검</div>
-          <div class="pwa-menu-desc">설비·환경 점검 기록</div>
-        </div>
-        <div class="pwa-menu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        <div class="pwa-menu-title">환경점검</div>
+        <div class="pwa-menu-desc">점검사항 조회 및 등록</div>
       </div>
     </div>
     <!-- 대기운영일지 -->
     <div class="pwa-menu-card" onclick="showPwaSubscreen('airlog','대기운영일지')">
       <div class="pwa-menu-card-main">
         <div class="pwa-menu-icon pwa-menu-icon-airlog">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
-        <div class="pwa-menu-text">
-          <div class="pwa-menu-title">대기운영일지</div>
-          <div class="pwa-menu-desc">대기오염물질 운영기록</div>
-        </div>
-        <div class="pwa-menu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        <div class="pwa-menu-title">대기운영일지</div>
+        <div class="pwa-menu-desc">운영기록 입력 및 조회</div>
       </div>
     </div>
     <!-- TC에코온 -->
     <div class="pwa-menu-card" onclick="showPwaSubscreen('ecoon','에코온(ECO-ON)')">
       <div class="pwa-menu-card-main">
         <div class="pwa-menu-icon pwa-menu-icon-ecoon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         </div>
-        <div class="pwa-menu-text">
-          <div class="pwa-menu-title">에코온(ECO-ON)</div>
-          <div class="pwa-menu-desc">AI 환경 도우미</div>
-        </div>
-        <div class="pwa-menu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        <div class="pwa-menu-title">TC에코온</div>
+        <div class="pwa-menu-desc">환경·안전 법령 AI 안내</div>
       </div>
     </div>
     <!-- 3정5S -->
-    <div class="pwa-menu-card">
-      <div class="pwa-menu-card-main" onclick="showPwaSubscreen('3s5s','3정5S')">
+    <div class="pwa-menu-card" onclick="showPwaSubscreen('3s5s','3정5S')">
+      <div class="pwa-menu-card-main">
         <div class="pwa-menu-icon pwa-menu-icon-3s5s">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17 14h3m-3 3h3m-3 3h3"/></svg>
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17 14h3m-3 3h3m-3 3h3"/></svg>
         </div>
-        <div class="pwa-menu-text">
-          <div class="pwa-menu-title">3정5S</div>
-          <div class="pwa-menu-desc">3정5S 심사 관리</div>
-        </div>
-        <div class="pwa-menu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
-      </div>
-      <div class="pwa-3s5s-btns">
-        <button class="pwa-3s5s-btn" onclick="showPwa3s5s('input')">심사 입력</button>
-        <button class="pwa-3s5s-btn" onclick="showPwa3s5s('improve')">현장개선</button>
-        <button class="pwa-3s5s-btn" onclick="showPwa3s5s('result')">결&nbsp;&nbsp;과</button>
+        <div class="pwa-menu-title">3정5S</div>
+        <div class="pwa-menu-desc">심사 입력 및 현장개선</div>
       </div>
     </div>
   </div>
@@ -5714,7 +5600,7 @@ function _updatePwaGreeting(){
   var nameEl=document.getElementById('pwa-greeting-name');
   var dateEl=document.getElementById('pwa-greeting-date');
   if(nameEl&&currentUser){
-    nameEl.textContent='안녕하세요, '+(currentUser.name||currentUser.username)+'님!';
+    nameEl.textContent=(currentUser.name||currentUser.username)+'님';
   }
   if(dateEl){
     var d=new Date();
