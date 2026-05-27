@@ -875,6 +875,26 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   }
   body.is-pwa #pwa-3s5s-menu.pwa-hidden{display:none!important;}
 }
+
+/* ── PWA 폐기물 서브메뉴 화면 ── */
+#pwa-waste-menu{display:none;}
+@media(max-width:768px){
+  body.is-pwa #pwa-waste-menu{
+    display:flex;flex-direction:column;
+    position:fixed;inset:0;
+    background:#0f2744;
+    z-index:400;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  body.is-pwa #pwa-waste-menu.pwa-hidden{display:none!important;}
+}
+
+/* ── 보관 현황 / 연간 배출량 모바일 보완 ── */
+@media(max-width:768px){
+  .ws-action-bar{flex-wrap:wrap;justify-content:flex-start;}
+  .ws-record-form{grid-template-columns:1fr;}
+  .ws-record-form button{margin-top:4px;}
+}
 .pwa-submenu-area{
   flex:1;background:white;
   border-radius:22px 22px 0 0;
@@ -5345,6 +5365,16 @@ async function sbQ(table,query){
         <div class="pwa-menu-desc">심사 입력 및 현장개선</div>
       </div>
     </div>
+    <!-- 폐기물 -->
+    <div class="pwa-menu-card" onclick="showPwaWasteMenu()">
+      <div class="pwa-menu-card-main">
+        <div class="pwa-menu-icon" style="background:#FFF7ED;">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0f2744" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="4" y1="7" x2="20" y2="7"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg>
+        </div>
+        <div class="pwa-menu-title">폐기물</div>
+        <div class="pwa-menu-desc">보관 현황 및 배출 기록</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -5396,6 +5426,57 @@ async function sbQ(table,query){
       <div class="pwa-submenu-info">
         <div class="pwa-submenu-title">결과</div>
         <div class="pwa-submenu-desc">점수 조회 및 분석</div>
+      </div>
+      <div class="pwa-submenu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PWA 폐기물 서브메뉴 화면
+══════════════════════════════════ -->
+<div id="pwa-waste-menu" class="pwa-hidden">
+  <div class="pwa-top-bar">
+    <div class="pwa-top-bar-inner">
+      <button class="pwa-back-btn" style="margin-left:-12px;" onclick="showPwaMain()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="pwa-top-bar-logo" style="font-size:17px;">폐기물</span>
+      <div style="width:40px;"></div>
+    </div>
+    <div style="height:12px;"></div>
+  </div>
+  <div class="pwa-submenu-area">
+    <!-- 보관 현황 -->
+    <div class="pwa-submenu-card" onclick="showPwaWaste('waste-storage','폐기물 보관 현황')">
+      <div class="pwa-submenu-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0f2744" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
+      </div>
+      <div class="pwa-submenu-info">
+        <div class="pwa-submenu-title">보관 현황</div>
+        <div class="pwa-submenu-desc">10종 보관량 조회 및 업데이트</div>
+      </div>
+      <div class="pwa-submenu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <!-- 연간 배출량 -->
+    <div class="pwa-submenu-card" onclick="showPwaWaste('waste-annual','연간 폐기물 배출량')">
+      <div class="pwa-submenu-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0f2744" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </div>
+      <div class="pwa-submenu-info">
+        <div class="pwa-submenu-title">연간 배출량</div>
+        <div class="pwa-submenu-desc">월별 배출량 입력 및 조회</div>
+      </div>
+      <div class="pwa-submenu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <!-- 배출 일정 -->
+    <div class="pwa-submenu-card" onclick="showPwaWaste('waste-schedule','배출 일정')">
+      <div class="pwa-submenu-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0f2744" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="4" y="5" width="16" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="4" y1="11" x2="20" y2="11"/></svg>
+      </div>
+      <div class="pwa-submenu-info">
+        <div class="pwa-submenu-title">배출 일정</div>
+        <div class="pwa-submenu-desc">배출업체 스케줄 조회</div>
       </div>
       <div class="pwa-submenu-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
@@ -6589,6 +6670,8 @@ function showPwaMain(){
   if(pwaMain)pwaMain.classList.remove('pwa-hidden');
   var s3menu=document.getElementById('pwa-3s5s-menu');
   if(s3menu)s3menu.classList.add('pwa-hidden');
+  var wasteMenu=document.getElementById('pwa-waste-menu');
+  if(wasteMenu)wasteMenu.classList.add('pwa-hidden');
   document.querySelectorAll('[id^="tab-"]').forEach(function(el){el.classList.add('hidden');});
   _updatePwaGreeting();
 }
@@ -6598,6 +6681,19 @@ function showPwa3s5sMenu(){
   if(pwaMain)pwaMain.classList.add('pwa-hidden');
   var s3menu=document.getElementById('pwa-3s5s-menu');
   if(s3menu)s3menu.classList.remove('pwa-hidden');
+}
+
+function showPwaWasteMenu(){
+  var pwaMain=document.getElementById('pwa-main');
+  if(pwaMain)pwaMain.classList.add('pwa-hidden');
+  var wasteMenu=document.getElementById('pwa-waste-menu');
+  if(wasteMenu)wasteMenu.classList.remove('pwa-hidden');
+}
+
+function showPwaWaste(tab,title){
+  var wasteMenu=document.getElementById('pwa-waste-menu');
+  if(wasteMenu)wasteMenu.classList.add('pwa-hidden');
+  showPwaSubscreen(tab,title);
 }
 
 function showPwaSubscreen(tab,title){
