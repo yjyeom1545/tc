@@ -992,6 +992,58 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   .ws-record-form{grid-template-columns:1fr 1fr;}
 }
 
+/* ── 연간 폐기물 배출량 탭 ── */
+.wa-page-title{font-size:17px;font-weight:500;color:#0f2744;padding:0 4px 12px;border-bottom:2px solid #0f2744;display:flex;align-items:center;gap:8px;margin-bottom:0;}
+.wa-page-title-icon{width:4px;height:16px;background:#0f2744;flex-shrink:0;}
+.wa-page-title .unit-note{font-size:12px;font-weight:400;color:#6b7280;margin-left:auto;}
+.wa-filter-section{background:white;border:1px solid #d4dce5;border-top:none;}
+.wa-filter-grid{display:grid;grid-template-columns:110px 1fr 110px 1fr 110px 1fr;align-items:stretch;}
+.wa-filter-label{background:#f3f6fa;padding:9px 12px;font-size:12px;font-weight:500;color:#374151;display:flex;align-items:center;border-right:1px solid #e2e8f0;}
+.wa-filter-input{padding:7px 10px;display:flex;align-items:center;gap:6px;border-right:1px solid #e2e8f0;}
+.wa-filter-input:last-child{border-right:none;}
+.wa-filter-input select{height:28px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:12.5px;background:white;color:#1e2633;font-family:inherit;min-width:140px;}
+.wa-action-bar{background:white;border:1px solid #d4dce5;border-top:none;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:16px;}
+.wa-action-left,.wa-action-right{display:flex;gap:6px;}
+.wa-btn{display:inline-flex;align-items:center;height:30px;padding:0 14px;font-size:12.5px;font-weight:500;background:white;border:1px solid #f59e0b;color:#b45309;border-radius:3px;cursor:pointer;font-family:inherit;}
+.wa-btn:hover{background:#fffbeb;}
+.wa-btn-primary{background:#0f2744;border-color:#0f2744;color:white;}
+.wa-btn-primary:hover{background:#1e3a5f;}
+.wa-btn-sec{border-color:#cbd5e1;color:#475569;}
+.wa-btn-sec:hover{background:#f8fafc;}
+.wa-summary-bar{background:white;border:1px solid #d4dce5;border-radius:4px;padding:12px 16px;margin-bottom:10px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.wa-chip{display:flex;align-items:center;gap:8px;padding-right:24px;border-right:1px solid #e2e8f0;}
+.wa-chip:last-child{border-right:none;padding-right:0;}
+.wa-chip-label{font-size:12px;color:#475569;}
+.wa-chip-value{font-size:16px;font-weight:500;color:#0f2744;font-variant-numeric:tabular-nums;}
+.wa-chip-value.danger{color:#b91c1c;}
+.wa-chip-value .unit{font-size:11px;font-weight:400;color:#6b7280;margin-left:3px;}
+.wa-section{background:white;border:1px solid #d4dce5;border-radius:4px;margin-bottom:16px;overflow:hidden;}
+.wa-section-hdr{background:#f3f6fa;border-bottom:1px solid #d4dce5;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;}
+.wa-section-title{font-size:12.5px;font-weight:500;color:#0f2744;display:flex;align-items:center;gap:6px;}
+.wa-section-title::before{content:'';width:3px;height:12px;background:#0f2744;flex-shrink:0;}
+.wa-section-hint{font-size:11.5px;color:#6b7280;}
+.wa-annual-wrap{overflow-x:auto;}
+table.wa-annual{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1200px;}
+table.wa-annual thead th{background:#eaf0f6;color:#1e2633;font-weight:500;font-size:12px;padding:8px 6px;border:1px solid #c5d0dc;text-align:center;white-space:nowrap;}
+table.wa-annual thead th.wa-month{background:#dde6f0;width:70px;}
+table.wa-annual thead th.wa-total{background:#0f2744;color:white;width:90px;}
+table.wa-annual tbody td{padding:0;border:1px solid #d4dce5;vertical-align:middle;text-align:center;background:white;height:36px;}
+table.wa-annual tbody td.wa-group{background:#f3f6fa;font-weight:500;color:#0f2744;font-size:12.5px;width:60px;border-right:2px solid #c5d0dc;}
+table.wa-annual tbody td.wa-area{background:#fafbfd;color:#475569;font-size:12px;width:60px;border-right:1px solid #d4dce5;}
+table.wa-annual tbody td.wa-type{text-align:left;padding:0 12px;font-weight:500;background:#fafbfd;width:140px;border-right:2px solid #c5d0dc;}
+table.wa-annual tbody td.wa-total-cell{background:#f0f5fb;font-weight:500;color:#0f2744;font-variant-numeric:tabular-nums;padding:0 10px;text-align:right;border-left:2px solid #c5d0dc;}
+table.wa-annual tbody tr.wa-row-total td{background:#0f2744;color:white;font-weight:500;height:38px;}
+table.wa-annual tbody tr.wa-row-total td.wa-total-cell{background:#1e3a5f;color:white;border-left:2px solid #1e3a5f;}
+table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color:white;text-align:right;padding:0 10px;font-variant-numeric:tabular-nums;}
+.wa-cell-input{width:100%;height:100%;border:none;background:transparent;text-align:right;font-variant-numeric:tabular-nums;padding:0 10px;font-size:12.5px;font-family:inherit;color:#1e2633;outline:none;}
+.wa-cell-input:hover{background:#fafbfd;}
+.wa-cell-input:focus{background:#fffbeb;outline:2px solid #f59e0b;outline-offset:-2px;}
+.wa-table-footer{background:#f3f6fa;border-top:1px solid #d4dce5;padding:8px 14px;font-size:11.5px;color:#6b7280;display:flex;justify-content:space-between;}
+@media(max-width:768px){
+  .wa-filter-grid{grid-template-columns:90px 1fr;}
+  .wa-action-bar{flex-direction:column;align-items:stretch;}
+}
+
 /* ── TC에코온 탭 ── */
 #tab-ecoon{padding:0!important;}
 @media(max-width:768px){
@@ -1301,9 +1353,84 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   </div>
 </div>
 
-<!-- 연간 배출량 탭 (Phase 4에서 구현) -->
+<!-- 연간 배출량 탭 -->
 <div id="tab-waste-annual" class="content hidden">
-  <div class="loading">연간 배출량 페이지 준비 중...</div>
+  <!-- 브레드크럼 -->
+  <div style="background:white;border:1px solid #d4dce5;border-radius:4px;padding:10px 16px;display:flex;align-items:center;margin-bottom:10px;">
+    <div style="font-size:12px;color:#6b7280;">HOME <span style="margin:0 6px;color:#cbd5e1;">›</span> 폐기물 <span style="margin:0 6px;color:#cbd5e1;">›</span> <span style="color:#0f2744;font-weight:500;">연간 배출량</span></div>
+  </div>
+  <div class="wa-page-title">
+    <span class="wa-page-title-icon"></span>
+    <span id="wa-title-year">2026</span>년 연간 폐기물 배출량
+    <span class="unit-note">단위: 톤(t) · 위탁업체 인수 확정 기준</span>
+  </div>
+
+  <!-- 필터 -->
+  <div class="wa-filter-section">
+    <div class="wa-filter-grid">
+      <div class="wa-filter-label">연도</div>
+      <div class="wa-filter-input"><select id="wa-year"></select></div>
+      <div class="wa-filter-label">폐기물 구분</div>
+      <div class="wa-filter-input">
+        <select id="wa-filter-group">
+          <option value="">전체</option><option value="지정폐기물">지정폐기물</option><option value="일반폐기물">일반폐기물</option>
+        </select>
+      </div>
+      <div class="wa-filter-label">발생 구역</div>
+      <div class="wa-filter-input">
+        <select id="wa-filter-area">
+          <option value="">전체</option><option value="조립">조립</option><option value="제작">제작</option><option value="-">-</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="wa-action-bar">
+    <div class="wa-action-left">
+      <button class="wa-btn wa-btn-primary" onclick="waLoad()">조회</button>
+      <button class="wa-btn wa-btn-sec" onclick="waCopyPrevYear()">전년도 양식 복사</button>
+    </div>
+    <div class="wa-action-right">
+      <button class="wa-btn wa-btn-primary" onclick="waSave()">저장</button>
+      <button class="wa-btn" onclick="waExcel()">엑셀 내보내기</button>
+    </div>
+  </div>
+
+  <!-- 요약 칩 -->
+  <div class="wa-summary-bar">
+    <div class="wa-chip"><div class="wa-chip-label">연간 총 배출량</div><div class="wa-chip-value" id="wa-sum-total">-<span class="unit">t</span></div></div>
+    <div class="wa-chip"><div class="wa-chip-label">지정폐기물 합계</div><div class="wa-chip-value danger" id="wa-sum-designated">-<span class="unit">t</span></div></div>
+    <div class="wa-chip"><div class="wa-chip-label">일반폐기물 합계</div><div class="wa-chip-value" id="wa-sum-general">-<span class="unit">t</span></div></div>
+    <div class="wa-chip"><div class="wa-chip-label">입력 완료 월</div><div class="wa-chip-value" id="wa-sum-months">-<span class="unit">개월</span></div></div>
+  </div>
+
+  <!-- 테이블 -->
+  <div class="wa-section">
+    <div class="wa-section-hdr">
+      <div class="wa-section-title">월별 배출량 (톤)</div>
+      <div class="wa-section-hint">셀 클릭 후 직접 입력 · 합계 자동 계산</div>
+    </div>
+    <div class="wa-annual-wrap">
+      <table class="wa-annual">
+        <thead>
+          <tr>
+            <th style="width:60px;">구분</th>
+            <th style="width:60px;">구역</th>
+            <th style="width:140px;">종류</th>
+            <th class="wa-month">1월</th><th class="wa-month">2월</th><th class="wa-month">3월</th>
+            <th class="wa-month">4월</th><th class="wa-month">5월</th><th class="wa-month">6월</th>
+            <th class="wa-month">7월</th><th class="wa-month">8월</th><th class="wa-month">9월</th>
+            <th class="wa-month">10월</th><th class="wa-month">11월</th><th class="wa-month">12월</th>
+            <th class="wa-total">합계</th>
+          </tr>
+        </thead>
+        <tbody id="wa-tbody"><tr><td colspan="16" style="text-align:center;padding:2rem;color:#9ca3af;">불러오는 중...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="wa-table-footer">
+      <span id="wa-footer-saved">-</span>
+      <span>7개 종류 × 12개월</span>
+    </div>
+  </div>
 </div>
 
 <!-- 배출업체 스케줄 탭 -->
@@ -3113,8 +3240,288 @@ function wsDisposalExcel(){
 
 function ws_esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ── 연간 배출량 (Phase 4에서 구현) ──
-function loadWasteAnnual(){ /* Phase 4에서 구현 */ }
+// ══════════════════════════════════════
+// 연간 폐기물 배출량 (Phase 4)
+// ══════════════════════════════════════
+var WA_TYPES=[
+  {group:'지정폐기물',area:'조립',name:'폐합성수지'},
+  {group:'지정폐기물',area:'조립',name:'폐목재'},
+  {group:'지정폐기물',area:'제작',name:'폐유고상'},
+  {group:'지정폐기물',area:'제작',name:'폐유액상'},
+  {group:'지정폐기물',area:'제작',name:'폐페인트(고상)'},
+  {group:'지정폐기물',area:'제작',name:'분진'},
+  {group:'일반폐기물',area:'-',   name:'일반쓰레기'}
+];
+
+// 편집 중인 데이터: waData[rowIdx][monthIdx] = value (number)
+var _waData=WA_TYPES.map(function(){return Array(12).fill(0);});
+var _waLastSaved='';
+
+function loadWasteAnnual(){
+  // 연도 셀렉트 초기화 (최초 1회)
+  var yearSel=document.getElementById('wa-year');
+  if(yearSel&&!yearSel.options.length){
+    var thisYear=new Date().getFullYear();
+    for(var y=thisYear;y>=thisYear-4;y--){
+      var opt=document.createElement('option');
+      opt.value=y;opt.textContent=y+'년';
+      yearSel.appendChild(opt);
+    }
+  }
+  waLoad();
+}
+
+async function waLoad(){
+  var yearSel=document.getElementById('wa-year');
+  var year=yearSel?parseInt(yearSel.value):new Date().getFullYear();
+  var titleEl=document.getElementById('wa-title-year');
+  if(titleEl)titleEl.textContent=year;
+
+  // 필터 값
+  var groupF=document.getElementById('wa-filter-group')?document.getElementById('wa-filter-group').value:'';
+  var areaF=document.getElementById('wa-filter-area')?document.getElementById('wa-filter-area').value:'';
+
+  // DB에서 해당 연도 데이터 로드
+  try{
+    var records=await sb('waste_annual_record','?year=eq.'+year+'&select=*');
+    // _waData 초기화 후 DB 값 채우기
+    _waData=WA_TYPES.map(function(){return Array(12).fill(0);});
+    (records||[]).forEach(function(r){
+      var idx=WA_TYPES.findIndex(function(t){return t.name===r.waste_type;});
+      if(idx>=0&&r.month>=1&&r.month<=12){
+        _waData[idx][r.month-1]=parseFloat(r.amount_ton)||0;
+      }
+    });
+    // 마지막 저장 정보
+    if(records&&records.length){
+      var latest=records.sort(function(a,b){return (b.updated_at||'').localeCompare(a.updated_at||'');})[ 0];
+      _waLastSaved='마지막 저장: '+(latest.updated_at?latest.updated_at.slice(0,16).replace('T',' '):'?')+' · 작성자: '+(latest.updated_by||'-');
+    } else {
+      _waLastSaved='저장된 데이터 없음';
+    }
+  }catch(e){
+    _waData=WA_TYPES.map(function(){return Array(12).fill(0);});
+    _waLastSaved='로드 오류';
+    console.error('연간 배출량 로드 오류:',e);
+  }
+
+  // 표시할 타입 필터링 (rowspan 계산을 위해 원본 WA_TYPES 순서 유지)
+  var visibleIdx=WA_TYPES.map(function(t,i){return {t:t,i:i};}).filter(function(o){
+    if(groupF&&o.t.group!==groupF)return false;
+    if(areaF&&o.t.area!==areaF)return false;
+    return true;
+  });
+
+  waRenderTable(visibleIdx);
+  waUpdateSummary();
+}
+
+function waRenderTable(visibleIdx){
+  var tbody=document.getElementById('wa-tbody');
+  if(!tbody)return;
+  if(!visibleIdx||!visibleIdx.length){
+    tbody.innerHTML='<tr><td colspan="16" style="text-align:center;padding:2rem;color:#9ca3af;">필터 조건에 맞는 종류 없음</td></tr>';
+    return;
+  }
+
+  // rowspan 계산
+  var groupCount={},areaCount={};
+  visibleIdx.forEach(function(o){
+    groupCount[o.t.group]=(groupCount[o.t.group]||0)+1;
+    var ak=o.t.group+'|'+o.t.area;
+    areaCount[ak]=(areaCount[ak]||0)+1;
+  });
+  var seenGroup={},seenArea={};
+
+  var html=visibleIdx.map(function(o){
+    var t=o.t,idx=o.i;
+    var row='<tr>';
+    if(!seenGroup[t.group]){
+      row+='<td class="wa-group" rowspan="'+groupCount[t.group]+'">'+wa_esc(t.group)+'</td>';
+      seenGroup[t.group]=true;
+    }
+    var ak=t.group+'|'+t.area;
+    if(!seenArea[ak]){
+      row+='<td class="wa-area" rowspan="'+areaCount[ak]+'">'+wa_esc(t.area)+'</td>';
+      seenArea[ak]=true;
+    }
+    row+='<td class="wa-type">'+wa_esc(t.name)+'</td>';
+    _waData[idx].forEach(function(v,mi){
+      var display=v===0?'':v.toFixed(2);
+      row+='<td><input type="number" class="wa-cell-input" step="0.01" min="0"'
+        +' data-row="'+idx+'" data-month="'+mi+'"'
+        +' value="'+display+'" placeholder="0.00"'
+        +' oninput="waOnInput(this)"></td>';
+    });
+    var total=_waData[idx].reduce(function(s,v){return s+(v||0);},0);
+    row+='<td class="wa-total-cell" id="wa-row-total-'+idx+'">'+(total>0?total.toFixed(2):'-')+'</td>';
+    return row+'</tr>';
+  }).join('');
+
+  // 월별 합계 행
+  var monthTotals=Array(12).fill(0);
+  visibleIdx.forEach(function(o){
+    _waData[o.i].forEach(function(v,mi){monthTotals[mi]+=(v||0);});
+  });
+  var grand=monthTotals.reduce(function(s,v){return s+v;},0);
+  html+='<tr class="wa-row-total">'
+    +'<td colspan="3" style="text-align:center;">월별 총 배출량</td>'
+    +monthTotals.map(function(m,i){
+      return '<td class="wa-month-total" id="wa-month-total-'+i+'" style="text-align:right;padding:0 10px;">'+(m>0?m.toFixed(2):'-')+'</td>';
+    }).join('')
+    +'<td class="wa-total-cell" id="wa-grand-total">'+(grand>0?grand.toFixed(2):'-')+'</td>'
+    +'</tr>';
+
+  tbody.innerHTML=html;
+  var footerEl=document.getElementById('wa-footer-saved');
+  if(footerEl)footerEl.textContent=_waLastSaved;
+}
+
+function waOnInput(inp){
+  var rowIdx=parseInt(inp.dataset.row,10);
+  var monthIdx=parseInt(inp.dataset.month,10);
+  _waData[rowIdx][monthIdx]=parseFloat(inp.value)||0;
+  waUpdateTotals(rowIdx);
+}
+
+function waUpdateTotals(changedRow){
+  // 행 합계
+  if(changedRow!==undefined){
+    var rowTotal=_waData[changedRow].reduce(function(s,v){return s+(v||0);},0);
+    var rowEl=document.getElementById('wa-row-total-'+changedRow);
+    if(rowEl)rowEl.textContent=rowTotal>0?rowTotal.toFixed(2):'-';
+  }
+  // 월별 합계
+  var monthTotals=Array(12).fill(0);
+  _waData.forEach(function(row){row.forEach(function(v,i){monthTotals[i]+=(v||0);});});
+  monthTotals.forEach(function(m,i){
+    var el=document.getElementById('wa-month-total-'+i);
+    if(el)el.textContent=m>0?m.toFixed(2):'-';
+  });
+  // 연간 총합
+  var grand=monthTotals.reduce(function(s,v){return s+v;},0);
+  var grandEl=document.getElementById('wa-grand-total');
+  if(grandEl)grandEl.textContent=grand>0?grand.toFixed(2):'-';
+  waUpdateSummary();
+}
+
+function waUpdateSummary(){
+  var des=0,gen=0;
+  WA_TYPES.forEach(function(t,i){
+    var rowTotal=_waData[i].reduce(function(s,v){return s+(v||0);},0);
+    if(t.group==='지정폐기물')des+=rowTotal;
+    else gen+=rowTotal;
+  });
+  var grand=des+gen;
+  // 입력 완료 월: 모든 종류의 합이 0이 아닌 월
+  var completedMonths=0;
+  for(var m=0;m<12;m++){
+    var hasData=_waData.some(function(row){return (row[m]||0)>0;});
+    if(hasData)completedMonths++;
+  }
+  var sumTotal=document.getElementById('wa-sum-total');
+  var sumDes=document.getElementById('wa-sum-designated');
+  var sumGen=document.getElementById('wa-sum-general');
+  var sumMon=document.getElementById('wa-sum-months');
+  if(sumTotal)sumTotal.innerHTML=(grand>0?grand.toFixed(2):'-')+'<span class="unit">t</span>';
+  if(sumDes)sumDes.innerHTML=(des>0?des.toFixed(2):'-')+'<span class="unit">t</span>';
+  if(sumGen)sumGen.innerHTML=(gen>0?gen.toFixed(2):'-')+'<span class="unit">t</span>';
+  if(sumMon)sumMon.innerHTML=completedMonths+'<span class="unit">개월</span>';
+}
+
+async function waSave(){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  var yearSel=document.getElementById('wa-year');
+  var year=yearSel?parseInt(yearSel.value):new Date().getFullYear();
+  var updatedBy=currentUser?(currentUser.name||currentUser.username):'';
+  var now=new Date().toISOString();
+
+  // 모든 셀을 UPSERT 배열로 구성
+  var rows=[];
+  WA_TYPES.forEach(function(t,rowIdx){
+    for(var m=0;m<12;m++){
+      rows.push({
+        year:year,
+        month:m+1,
+        waste_group:t.group,
+        area:t.area,
+        waste_type:t.name,
+        amount_ton:_waData[rowIdx][m]||0,
+        updated_at:now,
+        updated_by:updatedBy
+      });
+    }
+  });
+
+  try{
+    var res=await fetch(SB_URL+'/rest/v1/waste_annual_record',{
+      method:'POST',
+      headers:{
+        'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,
+        'Content-Type':'application/json',
+        'Prefer':'resolution=merge-duplicates,return=minimal'
+      },
+      body:JSON.stringify(rows)
+    });
+    if(!res.ok){var t=await res.text();throw new Error(t);}
+    _waLastSaved='마지막 저장: '+now.slice(0,16).replace('T',' ')+' · 작성자: '+updatedBy;
+    var footerEl=document.getElementById('wa-footer-saved');
+    if(footerEl)footerEl.textContent=_waLastSaved;
+    alert('저장되었습니다.');
+  }catch(e){alert('저장 실패: '+e.message);}
+}
+
+function waCopyPrevYear(){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  if(!confirm('전년도 데이터를 현재 표에 복사합니다. (기존 입력값이 초기화됩니다) 계속하시겠습니까?'))return;
+  var yearSel=document.getElementById('wa-year');
+  var year=yearSel?parseInt(yearSel.value):new Date().getFullYear();
+  var prevYear=year-1;
+  sb('waste_annual_record','?year=eq.'+prevYear+'&select=*').then(function(records){
+    _waData=WA_TYPES.map(function(){return Array(12).fill(0);});
+    (records||[]).forEach(function(r){
+      var idx=WA_TYPES.findIndex(function(t){return t.name===r.waste_type;});
+      if(idx>=0&&r.month>=1&&r.month<=12) _waData[idx][r.month-1]=parseFloat(r.amount_ton)||0;
+    });
+    var groupF=document.getElementById('wa-filter-group')?document.getElementById('wa-filter-group').value:'';
+    var areaF=document.getElementById('wa-filter-area')?document.getElementById('wa-filter-area').value:'';
+    var visibleIdx=WA_TYPES.map(function(t,i){return {t:t,i:i};}).filter(function(o){
+      if(groupF&&o.t.group!==groupF)return false;
+      if(areaF&&o.t.area!==areaF)return false;
+      return true;
+    });
+    waRenderTable(visibleIdx);
+    waUpdateSummary();
+    alert(prevYear+'년 데이터를 복사했습니다. 저장 버튼을 눌러야 반영됩니다.');
+  }).catch(function(e){alert('복사 실패: '+e.message);});
+}
+
+function waExcel(){
+  if(typeof XLSX==='undefined'){alert('엑셀 라이브러리 로딩 중입니다. 잠시 후 다시 시도하세요.');return;}
+  var yearSel=document.getElementById('wa-year');
+  var year=yearSel?parseInt(yearSel.value):new Date().getFullYear();
+  var header=['구분','구역','종류','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월','합계'];
+  var data=[header];
+  WA_TYPES.forEach(function(t,i){
+    var row=[t.group,t.area,t.name];
+    var total=0;
+    _waData[i].forEach(function(v){row.push(v||0);total+=v||0;});
+    row.push(total);
+    data.push(row);
+  });
+  // 월별 합계 행
+  var monthTotals=Array(12).fill(0);
+  _waData.forEach(function(row){row.forEach(function(v,i){monthTotals[i]+=(v||0);});});
+  var grand=monthTotals.reduce(function(s,v){return s+v;},0);
+  data.push(['','','월별 총 배출량'].concat(monthTotals).concat([grand]));
+
+  var ws=XLSX.utils.aoa_to_sheet(data);
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'연간배출량');
+  XLSX.writeFile(wb,'연간폐기물배출량_'+year+'년.xlsx');
+}
+
+function wa_esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 var wasteMonthlyChart=null;
 var selectedSchedLines=[];
