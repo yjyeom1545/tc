@@ -1454,37 +1454,111 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   </div>
 </div>
 
-<!-- 배출업체 스케줄 탭 -->
+<!-- 배출 일정 탭 -->
 <div id="tab-waste-schedule" class="content hidden">
-  <div class="layout-split-wide">
-    <div>
-      <div class="card">
-        <div class="table-header"><span class="table-title">스케줄 이력</span></div>
-        <div id="wo-schedule-table"><div class="loading">불러오는 중...</div></div>
+  <!-- 브레드크럼 -->
+  <div style="background:white;border:1px solid #d4dce5;border-radius:4px;padding:10px 16px;display:flex;align-items:center;margin-bottom:10px;">
+    <div style="font-size:12px;color:#6b7280;">HOME <span style="margin:0 6px;color:#cbd5e1;">›</span> 폐기물 <span style="margin:0 6px;color:#cbd5e1;">›</span> <span style="color:#0f2744;font-weight:500;">배출 일정</span></div>
+  </div>
+  <div class="ws-page-title"><span class="ws-page-title-icon"></span>폐기물 배출 일정</div>
+
+  <!-- 필터 -->
+  <div class="ws-filter-section">
+    <div class="ws-filter-grid">
+      <div class="ws-filter-label">조회 기간</div>
+      <div class="ws-filter-input">
+        <input type="date" id="wsch-from"><span class="ws-dash">~</span><input type="date" id="wsch-to">
+      </div>
+      <div class="ws-filter-label">위탁업체</div>
+      <div class="ws-filter-input"><input type="text" id="wsch-filter-vendor" placeholder="전체" style="width:120px;"></div>
+      <div class="ws-filter-label">상태</div>
+      <div class="ws-filter-input">
+        <select id="wsch-filter-status">
+          <option value="">전체</option>
+          <option value="scheduled">예정</option>
+          <option value="completed">완료</option>
+          <option value="cancelled">취소</option>
+        </select>
       </div>
     </div>
-    <div>
-      <div class="card">
-        <div class="table-header"><span class="table-title">배출 일정 등록</span></div>
-        <div style="padding:14px 16px;">
-          <div class="form-row">
-            <div class="form-group"><label>배출 예정일</label><input type="date" id="ws-date"></div>
-            <div class="form-group"><label>배출업체</label><input type="text" id="ws-company" value="가람환경" readonly style="background:#f9fafb;color:#374151;cursor:default;"></div>
-          </div>
-          <div class="form-group" style="margin-bottom:12px;">
-            <label>폐기물 종류 (복수 선택)</label>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;" id="ws-type-tags">
-              <div class="ws-ltag" onclick="toggleSchedLine(this,'폐유고상')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">폐유고상</div>
-              <div class="ws-ltag" onclick="toggleSchedLine(this,'폐유액상')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">폐유액상</div>
-              <div class="ws-ltag" onclick="toggleSchedLine(this,'폐페인트')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">폐페인트</div>
-              <div class="ws-ltag" onclick="toggleSchedLine(this,'분진')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">분진</div>
-              <div class="ws-ltag" onclick="toggleSchedLine(this,'목재')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">목재</div>
-              <div class="ws-ltag" onclick="toggleSchedLine(this,'폐합성수지')" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:white;color:#6b7280;">폐합성수지</div>
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom:12px;"><label>특이사항</label><input type="text" id="ws-notes" placeholder="메모 (선택)" style="border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;width:100%;"></div>
-          <button class="add-btn" style="width:100%;" onclick="addWasteSchedule()">일정 추가</button>
-        </div>
+    <div class="ws-filter-grid">
+      <div class="ws-filter-label">폐기물 종류</div>
+      <div class="ws-filter-input"><input type="text" id="wsch-filter-type" placeholder="전체" style="width:140px;"></div>
+      <div class="ws-filter-label">정렬</div>
+      <div class="ws-filter-input">
+        <select id="wsch-filter-sort">
+          <option value="scheduled_date.desc">예정일 최신순</option>
+          <option value="scheduled_date.asc">예정일 오래된순</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="ws-action-bar">
+    <button class="ws-btn ws-btn-primary" onclick="wschLoad()">조회</button>
+    <button class="ws-btn" onclick="wschExcel()">엑셀</button>
+    <button class="ws-btn ws-btn-primary" onclick="wschOpenModal()">+ 일정 등록</button>
+  </div>
+
+  <!-- 요약 칩 -->
+  <div class="ws-summary-bar">
+    <div class="ws-chip"><div class="ws-chip-dot" style="background:#dc2626;"></div><div class="ws-chip-label">오늘 인수</div><div class="ws-chip-value" id="wsch-cnt-today">-<span class="unit"> 건</span></div></div>
+    <div class="ws-chip"><div class="ws-chip-dot warning"></div><div class="ws-chip-label">예정 (~30일)</div><div class="ws-chip-value" id="wsch-cnt-sched">-<span class="unit"> 건</span></div></div>
+    <div class="ws-chip"><div class="ws-chip-dot success"></div><div class="ws-chip-label">이번달 완료</div><div class="ws-chip-value" id="wsch-cnt-done">-<span class="unit"> 건</span></div></div>
+  </div>
+
+  <!-- 데이터 테이블 -->
+  <div class="ws-section">
+    <div class="ws-section-hdr">
+      <div class="ws-section-title">배출 일정 목록</div>
+      <span id="wsch-count" style="font-size:11.5px;color:#6b7280;"></span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="ws-table" style="min-width:820px;">
+        <thead>
+          <tr>
+            <th style="width:38px;">No.</th>
+            <th style="width:100px;">인수 예정일</th>
+            <th style="width:120px;">위탁업체</th>
+            <th style="min-width:120px;">폐기물 종류</th>
+            <th style="width:70px;">예상량</th>
+            <th style="width:50px;">단위</th>
+            <th style="width:90px;">차량번호</th>
+            <th style="width:80px;">운전자</th>
+            <th style="width:90px;">상태</th>
+            <th style="width:90px;">관리</th>
+          </tr>
+        </thead>
+        <tbody id="wsch-tbody"><tr><td colspan="10" style="text-align:center;padding:2rem;color:#9ca3af;">불러오는 중...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="ws-table-footer"><span id="wsch-footer">-</span><span></span></div>
+  </div>
+
+  <!-- 일정 등록 모달 -->
+  <div class="modal-bg" id="wsch-modal">
+    <div class="modal" style="max-width:480px;">
+      <div class="modal-title">배출 일정 등록</div>
+      <div class="form-row">
+        <div class="form-group"><label>인수 예정일 *</label><input type="date" id="wsch-m-date"></div>
+        <div class="form-group"><label>위탁업체 *</label><input type="text" id="wsch-m-vendor" value="가람환경"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>허가번호</label><input type="text" id="wsch-m-license" placeholder="예: 제-2024-00001호"></div>
+        <div class="form-group"><label>폐기물 종류 *</label><input type="text" id="wsch-m-type" placeholder="예: 폐유고상, 분진"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>예상량</label><input type="number" id="wsch-m-amount" placeholder="수량" min="0"></div>
+        <div class="form-group"><label>단위</label><input type="text" id="wsch-m-unit" placeholder="예: 드럼, 개, ton"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>차량번호</label><input type="text" id="wsch-m-vehicle" placeholder="예: 12가 1234"></div>
+        <div class="form-group"><label>운전자</label><input type="text" id="wsch-m-driver" placeholder="운전자 이름"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:8px;"><label>연락처</label><input type="text" id="wsch-m-phone" placeholder="010-0000-0000"></div>
+      <div class="form-group" style="margin-bottom:8px;"><label>비고</label><input type="text" id="wsch-m-notes" placeholder="특이사항 (선택)"></div>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="wschCloseModal()">취소</button>
+        <button class="ws-btn ws-btn-primary" style="height:36px;padding:0 18px;" onclick="wschSave()">등록</button>
       </div>
     </div>
   </div>
@@ -2302,6 +2376,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-air_schedule_write"> 대기일정작성</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_storage_write"> 보관현황쓰기</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_annual_write"> 연간배출량쓰기</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_schedule_write"> 배출일정쓰기</label>
       </div>
       <button class="add-btn" onclick="addUser()">사용자 추가</button>
       <div style="font-size:11px;color:#9ca3af;margin-top:8px;">※ 비밀번호 없이 등록됩니다. 해당 사용자가 최초 로그인 시 비밀번호를 직접 설정합니다.</div>
@@ -2397,8 +2472,8 @@ function getAirLogPrNos(){
 }
 function logout(){localStorage.removeItem('tc_user');window.location.href='login.html';}
 
-var PERM_LABELS={filter_write:'필터기록',waste_confirm:'폐유고상확인',waste_complete:'폐유고상배출완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',ss_input:'3정5S',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정',waste_storage_write:'보관현황쓰기',waste_annual_write:'연간배출량쓰기'};
-var PERM_KEYS=['filter_write','waste_confirm','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','ss_input','airlog_1to8','airlog_9','air_schedule_write','waste_storage_write','waste_annual_write'];
+var PERM_LABELS={filter_write:'필터기록',waste_confirm:'폐유고상확인',waste_complete:'폐유고상배출완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',ss_input:'3정5S',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정',waste_storage_write:'보관현황쓰기',waste_annual_write:'연간배출량쓰기',waste_schedule_write:'배출일정쓰기'};
+var PERM_KEYS=['filter_write','waste_confirm','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','ss_input','airlog_1to8','airlog_9','air_schedule_write','waste_storage_write','waste_annual_write','waste_schedule_write'];
 
 async function sb(table,query,opts){
   opts=opts||{};
@@ -3661,7 +3736,7 @@ async function loadWasteData(){
 
 // 배출업체 스케줄 탭 전용 로드
 async function loadWasteScheduleTab(){
-  await loadWasteSchedule();
+  await wschLoad();
 }
 
 async function loadWasteStorage(allData){
@@ -3709,41 +3784,149 @@ async function completeWasteOil(id,lineName,bagCount){
   loadWasteData();
 }
 
-async function loadWasteSchedule(){
-  var data=await sb('waste_oil_schedule','?select=*&order=scheduled_date.desc');
-  if(!data)data=[];
+// ── 배출 일정 (waste_schedule) ──────────────────────────────
+var _wschData=[];
+
+async function wschLoad(){
+  var tbody=document.getElementById('wsch-tbody');
+  if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:2rem;color:#9ca3af;">불러오는 중...</td></tr>';
+  var from=document.getElementById('wsch-from')?document.getElementById('wsch-from').value:'';
+  var to=document.getElementById('wsch-to')?document.getElementById('wsch-to').value:'';
+  var vendor=document.getElementById('wsch-filter-vendor')?document.getElementById('wsch-filter-vendor').value:'';
+  var statusFilter=document.getElementById('wsch-filter-status')?document.getElementById('wsch-filter-status').value:'';
+  var typeFilter=document.getElementById('wsch-filter-type')?document.getElementById('wsch-filter-type').value:'';
+  var sort=document.getElementById('wsch-filter-sort')?document.getElementById('wsch-filter-sort').value:'scheduled_date.desc';
+  var q='?select=*&order='+sort;
+  if(from)q+='&scheduled_date=gte.'+from;
+  if(to)q+='&scheduled_date=lte.'+to;
+  if(statusFilter)q+='&status=eq.'+statusFilter;
+  _wschData=await sb('waste_schedule',q);
+  if(!_wschData)_wschData=[];
+  if(vendor){var vl=vendor.toLowerCase();_wschData=_wschData.filter(function(r){return(r.vendor_name||'').toLowerCase().indexOf(vl)>=0;});}
+  if(typeFilter){var tl=typeFilter.toLowerCase();_wschData=_wschData.filter(function(r){return(r.waste_type||'').toLowerCase().indexOf(tl)>=0;});}
   var today=new Date().toISOString().split('T')[0];
-  if(!data.length){document.getElementById('wo-schedule-table').innerHTML='<div class="empty" style="padding:1.5rem;">등록된 스케줄이 없습니다.</div>';return;}
-  var rows=data.map(function(r){
-    var isOverdue=r.status==='예정'&&r.scheduled_date<today;
-    var rowBg=isOverdue?'background:#fff5f5;':r.status==='예정'?'background:#fffbeb;':'';
-    var statusBadge=r.status==='완료'?'<span class="badge" style="background:#d1fae5;color:#065f46;">완료</span>':isOverdue?'<span class="badge" style="background:#fee2e2;color:#991b1b;">미처리</span>':'<span class="badge" style="background:#fef3c7;color:#92400e;">예정</span>';
-    var types=r.line_names?r.line_names.split(',').map(function(l){return'<span class="badge" style="background:#f0f2f5;color:#374151;margin:1px;">'+l.trim()+'</span>';}).join(''):'';
-    var actionBtn=hasPerm('schedule_write')&&r.status!=='완료'?'<button onclick="completeSchedule(\''+r.id+'\')" style="padding:4px 10px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;margin-right:4px;">완료</button>':'';
-    var delBtn=hasPerm('schedule_write')?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_schedule\',\''+r.id+'\',loadWasteScheduleTab)">✕</button>':'';
-    return'<tr style="'+rowBg+'"><td>'+r.scheduled_date+'</td><td style="font-size:12px;color:#6b7280;">가람환경</td><td>'+types+'</td><td>'+(r.notes&&r.notes.indexOf(' / ')>=0?r.notes.split(' / ').slice(1).join(' / '):(r.notes&&r.notes!=='가람환경'?r.notes:'<span style="color:#d1d5db;">-</span>'))+'</td><td>'+statusBadge+'</td><td>'+actionBtn+delBtn+'</td></tr>';
+  wschRenderSummary(_wschData,today);
+  wschRenderTable(_wschData,today);
+}
+
+function wschGetStatusBadge(r,today){
+  if(r.status==='completed')return'<span class="ws-badge-ok">완료</span>';
+  if(r.status==='cancelled')return'<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:3px;font-size:11.5px;font-weight:700;">취소</span>';
+  if(r.scheduled_date===today||r.status==='today')return'<span class="ws-badge-crit">오늘 인수</span>';
+  if(r.scheduled_date<today)return'<span class="ws-badge-crit">미처리</span>';
+  return'<span class="ws-badge-warn">예정</span>';
+}
+
+function wschRenderSummary(data,today){
+  var now30=new Date();now30.setDate(now30.getDate()+30);
+  var d30=now30.toISOString().split('T')[0];
+  var thisMonth=today.substring(0,7);
+  var cntToday=data.filter(function(r){return r.scheduled_date===today&&r.status!=='cancelled';}).length;
+  var cntSched=data.filter(function(r){return r.status==='scheduled'&&r.scheduled_date>=today&&r.scheduled_date<=d30;}).length;
+  var cntDone=data.filter(function(r){return r.status==='completed'&&r.scheduled_date&&r.scheduled_date.substring(0,7)===thisMonth;}).length;
+  var el=function(id){return document.getElementById(id);};
+  if(el('wsch-cnt-today'))el('wsch-cnt-today').innerHTML=cntToday+'<span class="unit"> 건</span>';
+  if(el('wsch-cnt-sched'))el('wsch-cnt-sched').innerHTML=cntSched+'<span class="unit"> 건</span>';
+  if(el('wsch-cnt-done'))el('wsch-cnt-done').innerHTML=cntDone+'<span class="unit"> 건</span>';
+}
+
+function wschRenderTable(data,today){
+  var tbody=document.getElementById('wsch-tbody');
+  var footer=document.getElementById('wsch-footer');
+  var countEl=document.getElementById('wsch-count');
+  if(!data.length){
+    tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:2rem;color:#9ca3af;">조건에 맞는 일정이 없습니다.</td></tr>';
+    if(footer)footer.textContent='0건';
+    if(countEl)countEl.textContent='';
+    return;
+  }
+  var canWrite=hasPerm('waste_schedule_write')||isAdmin();
+  var rows=data.map(function(r,i){
+    var statusBadge=wschGetStatusBadge(r,today);
+    var actionBtn=canWrite&&r.status!=='completed'&&r.status!=='cancelled'
+      ?'<button onclick="wschComplete(\''+r.id+'\')" style="height:26px;padding:0 10px;background:#16a34a;color:white;border:none;border-radius:3px;font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit;margin-right:4px;">완료</button>':'';
+    var delBtn=canWrite?'<button class="del-btn" onclick="wschDelete(\''+r.id+'\')">✕</button>':'';
+    var amtText=r.expected_amount!=null?r.expected_amount:'<span style="color:#d1d5db;">-</span>';
+    return'<tr>'+
+      '<td>'+(i+1)+'</td>'+
+      '<td>'+(r.scheduled_date||'-')+'</td>'+
+      '<td style="font-weight:500;">'+(r.vendor_name||'-')+'</td>'+
+      '<td style="text-align:left;">'+(r.waste_type||'-')+'</td>'+
+      '<td>'+amtText+'</td>'+
+      '<td>'+(r.expected_unit||'<span style="color:#d1d5db;">-</span>')+'</td>'+
+      '<td>'+(r.vehicle_no||'<span style="color:#d1d5db;">-</span>')+'</td>'+
+      '<td>'+(r.driver_name||'<span style="color:#d1d5db;">-</span>')+'</td>'+
+      '<td>'+statusBadge+'</td>'+
+      '<td>'+actionBtn+delBtn+'</td>'+
+      '</tr>';
   }).join('');
-  document.getElementById('wo-schedule-table').innerHTML='<div style="overflow-x:auto;"><table style="min-width:550px;"><thead><tr><th>예정일</th><th>배출업체</th><th>폐기물 종류</th><th>특이사항</th><th>상태</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  tbody.innerHTML=rows;
+  if(footer)footer.textContent=data.length+'건';
+  if(countEl)countEl.textContent='총 '+data.length+'건';
 }
 
-async function addWasteSchedule(){
-  if(isReadOnly()){showReadOnlyToast();return;}
-  var date=document.getElementById('ws-date').value;
-  if(!date){alert('예정일을 입력해주세요.');return;}
-  if(!selectedSchedLines.length){alert('폐기물 종류를 선택해주세요.');return;}
-  var company=document.getElementById('ws-company').value||'가람환경';
-  var notes=document.getElementById('ws-notes').value||null;
-  await sb('waste_oil_schedule','',{method:'POST',body:{scheduled_date:date,line_names:selectedSchedLines.join(','),notes:notes?company+' / '+notes:company,status:'예정'}});
-  document.getElementById('ws-date').value='';
-  document.getElementById('ws-notes').value='';
-  selectedSchedLines=[];
-  document.querySelectorAll('.ws-ltag').forEach(function(el){el.style.borderColor='#e5e7eb';el.style.background='white';el.style.color='#6b7280';});
-  loadWasteScheduleTab();
+function wschOpenModal(){
+  if(!hasPerm('waste_schedule_write')&&!isAdmin()){alert('배출 일정 등록 권한이 없습니다.');return;}
+  document.getElementById('wsch-modal').classList.add('show');
 }
 
-async function completeSchedule(id){
-  await sb('waste_oil_schedule','?id=eq.'+id,{method:'PATCH',body:{status:'완료',completed_at:new Date().toISOString()}});
-  loadWasteScheduleTab();
+function wschCloseModal(){
+  document.getElementById('wsch-modal').classList.remove('show');
+  ['wsch-m-date','wsch-m-license','wsch-m-type','wsch-m-amount','wsch-m-unit','wsch-m-vehicle','wsch-m-driver','wsch-m-phone','wsch-m-notes'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  var v=document.getElementById('wsch-m-vendor');if(v)v.value='가람환경';
+}
+
+async function wschSave(){
+  if(!hasPerm('waste_schedule_write')&&!isAdmin()){alert('배출 일정 등록 권한이 없습니다.');return;}
+  var date=document.getElementById('wsch-m-date').value;
+  var vendor=document.getElementById('wsch-m-vendor').value.trim();
+  var type=document.getElementById('wsch-m-type').value.trim();
+  if(!date){alert('인수 예정일을 입력해주세요.');return;}
+  if(!vendor){alert('위탁업체를 입력해주세요.');return;}
+  if(!type){alert('폐기물 종류를 입력해주세요.');return;}
+  var amtVal=document.getElementById('wsch-m-amount').value;
+  var body={
+    scheduled_date:date,vendor_name:vendor,
+    vendor_license_no:document.getElementById('wsch-m-license').value.trim()||null,
+    waste_type:type,
+    expected_amount:amtVal!==''?parseFloat(amtVal):null,
+    expected_unit:document.getElementById('wsch-m-unit').value.trim()||null,
+    vehicle_no:document.getElementById('wsch-m-vehicle').value.trim()||null,
+    driver_name:document.getElementById('wsch-m-driver').value.trim()||null,
+    driver_phone:document.getElementById('wsch-m-phone').value.trim()||null,
+    notes:document.getElementById('wsch-m-notes').value.trim()||null,
+    status:'scheduled',
+    created_by:currentUser?(currentUser.name||currentUser.username):''
+  };
+  await sb('waste_schedule','',{method:'POST',body:body});
+  wschCloseModal();
+  wschLoad();
+}
+
+async function wschComplete(id){
+  if(!confirm('배출 완료 처리하시겠습니까?'))return;
+  await sb('waste_schedule','?id=eq.'+id,{method:'PATCH',body:{status:'completed',completed_at:new Date().toISOString()}});
+  wschLoad();
+}
+
+async function wschDelete(id){
+  if(!confirm('이 일정을 삭제하시겠습니까?'))return;
+  await sb('waste_schedule','?id=eq.'+id,{method:'DELETE'});
+  wschLoad();
+}
+
+function wschExcel(){
+  if(!_wschData.length){alert('내보낼 데이터가 없습니다.');return;}
+  var rows=_wschData.map(function(r){
+    return{'인수예정일':r.scheduled_date,'위탁업체':r.vendor_name,'허가번호':r.vendor_license_no||'','폐기물종류':r.waste_type,'예상량':r.expected_amount||'','단위':r.expected_unit||'','차량번호':r.vehicle_no||'','운전자':r.driver_name||'','연락처':r.driver_phone||'','상태':r.status,'비고':r.notes||''};
+  });
+  var ws=XLSX.utils.json_to_sheet(rows);
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'배출일정');
+  XLSX.writeFile(wb,'폐기물배출일정_'+new Date().toISOString().split('T')[0]+'.xlsx');
 }
 
 function renderWasteMonthlyChart(data){
