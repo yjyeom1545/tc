@@ -536,13 +536,17 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
       필터 교체
     </div>
     <div class="nav-section">폐기물</div>
-    <div class="nav-item" id="nav-waste-oil" onclick="showTab('waste-oil')">
+    <div class="nav-item" id="nav-waste-storage" onclick="showTab('waste-storage')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
-      폐유고상
+      보관 현황
+    </div>
+    <div class="nav-item" id="nav-waste-annual" onclick="showTab('waste-annual')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      연간 배출량
     </div>
     <div class="nav-item" id="nav-waste-schedule" onclick="showTab('waste-schedule')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-      배출업체 스케줄
+      배출 일정
     </div>
     <div class="nav-section">대기</div>
     <div class="nav-item" id="nav-airlog" onclick="showTab('airlog')">
@@ -1088,6 +1092,16 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
       </div>
     </div>
   </div>
+</div>
+
+<!-- 보관 현황 탭 (Phase 3에서 구현) -->
+<div id="tab-waste-storage" class="content hidden">
+  <div class="loading">보관 현황 페이지 준비 중...</div>
+</div>
+
+<!-- 연간 배출량 탭 (Phase 4에서 구현) -->
+<div id="tab-waste-annual" class="content hidden">
+  <div class="loading">연간 배출량 페이지 준비 중...</div>
 </div>
 
 <!-- 배출업체 스케줄 탭 -->
@@ -2056,7 +2070,7 @@ function showTab(tab){
   if(navEl)navEl.classList.add('active');
   // 하단 탭 바 활성화 (웹 전용, PWA에서는 없음)
   document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('active');});
-  var btabMap={'home':'home','inspect':'inspect','3s5s':'inspect','airlog':'airlog','air':'airlog','waste-oil':'waste-oil','waste-schedule':'waste-oil','filter':'more','users':'more'};
+  var btabMap={'home':'home','inspect':'inspect','3s5s':'inspect','airlog':'airlog','air':'airlog','waste-storage':'waste-storage','waste-annual':'waste-storage','waste-schedule':'waste-storage','filter':'more','users':'more'};
   var btabEl=document.getElementById('btab-'+(btabMap[tab]||tab));
   if(btabEl)btabEl.classList.add('active');
   // 3정5S 사이드바 아코디언 동기화
@@ -2066,7 +2080,7 @@ function showTab(tab){
     if(p3&&c3&&c3.style.display==='none'){p3.classList.add('open');c3.style.display='block';}
   }
   // topbar 타이틀
-  var titles={home:'홈',filter:'필터 교체','waste-oil':'폐유고상','waste-schedule':'배출업체 스케줄',airlog:'대기운영기록',air:'대기측정 일정',inspect:'환경점검','3s5s':'3정5S',users:'사용자 관리'};
+  var titles={home:'홈',filter:'필터 교체','waste-storage':'폐기물 보관 현황','waste-annual':'연간 폐기물 배출량','waste-schedule':'배출 일정',airlog:'대기운영기록',air:'대기측정 일정',inspect:'환경점검','3s5s':'3정5S',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
   if(titleEl)titleEl.textContent=titles[tab]||tab;
   currentTab=tab;
@@ -2081,7 +2095,8 @@ function loadCurrentTab(){
   try{
     if(currentTab==='home'){loadDashboard();loadNotices();}
     else if(currentTab==='filter')loadFilterData();
-    else if(currentTab==='waste-oil')loadWasteData();
+    else if(currentTab==='waste-storage')loadWasteStorage();
+    else if(currentTab==='waste-annual')loadWasteAnnual();
     else if(currentTab==='waste-schedule')loadWasteScheduleTab();
     else if(currentTab==='airlog')loadAirLog();
     else if(currentTab==='air')loadAirMeasures();
@@ -2587,6 +2602,10 @@ async function batchSave(){
     loadFilterData();
   }catch(e){alert('저장 중 오류가 발생했습니다.');console.error(e);}
 }
+
+// ── 보관 현황 / 연간 배출량 (Phase 3 & 4에서 구현) ──
+function loadWasteStorage(){ /* Phase 3에서 구현 */ }
+function loadWasteAnnual(){ /* Phase 4에서 구현 */ }
 
 var wasteMonthlyChart=null;
 var selectedSchedLines=[];
