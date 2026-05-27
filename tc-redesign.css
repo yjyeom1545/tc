@@ -1,0 +1,931 @@
+/* ============================================================
+   TC 환경관리 v2.0 — Redesign CSS Layer
+   적용 방식: admin.html 기존 CSS 위에 덮어쓰기 (cascade override)
+   JS 로직 변경 없음 — CSS 레이어 추가만
+   ============================================================ */
+
+/* ── 0. 디자인 토큰 (tc-tokens.css 내용 인라인 포함) ────────── */
+:root {
+  /* Surfaces */
+  --bg-app: #f3f5f8;
+  --bg-card: #ffffff;
+  --bg-filter: #f7f8fa;
+  --bg-row-alt: #fafbfc;
+  --bg-table-head: #f5f6f9;
+
+  /* Borders */
+  --bd-1: #e3e6eb;
+  --bd-2: #dde1e7;
+  --bd-3: #eef0f3;
+
+  /* Text */
+  --t-1: #0a1626;
+  --t-2: #1f2a3a;
+  --t-3: #4a5566;
+  --t-4: #7c8696;
+  --t-5: #a0a8b5;
+
+  /* Brand navy */
+  --navy-900: #0b1f3a;
+  --navy-800: #16304f;
+  --navy-700: #1e3a5f;
+  --navy-600: #274a73;
+  --navy-500: #34608f;
+
+  /* Accent / status */
+  --orange-600: #d97706;
+  --orange-500: #ea8a14;
+  --orange-100: #fdf2e2;
+  --red-600: #dc2626;
+  --red-100: #fde8e8;
+  --green-600: #16a34a;
+  --green-500: #22c55e;
+  --green-100: #e7f6ec;
+  --amber-600: #ca8a04;
+  --amber-500: #f59e0b;
+  --amber-100: #fef9c3;
+  --blue-600: #1d4ed8;
+  --gray-dot: #94a3b8;
+
+  /* Layout */
+  --sidebar-w: 212px;
+  --topbar-h: 48px;
+  --radius: 3px;
+  --radius-lg: 4px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 14px -4px rgba(15, 23, 42, 0.08);
+}
+
+/* ── 1. 기반 (Base) ─────────────────────────────────────────── */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+
+html, body {
+  background: var(--bg-app);
+  color: var(--t-2);
+  font-family: 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', -apple-system, 'Apple SD Gothic Neo', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+
+/* 숫자 tabular-nums */
+.num,
+.stat-value,
+td,
+.record-count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 2. 사이드바 (Sidebar) ──────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--navy-700);
+}
+
+.main-area {
+  margin-left: var(--sidebar-w);
+}
+
+@media (max-width: 768px) {
+  .main-area {
+    margin-left: 0;
+  }
+}
+
+.sidebar-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-logo {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.sidebar-logo-mark {
+  background: var(--navy-500);
+  border-radius: var(--radius-lg);
+}
+
+.sidebar-user {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-user-icon {
+  background: var(--navy-600);
+  border-radius: var(--radius-lg);
+}
+
+/* ── 2-1. 내비 섹션 & 아이템 ────────────────────────────────── */
+.nav-section {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.9px;
+}
+
+.nav-item {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 12.5px;
+  font-weight: 500;
+  border-left: 2px solid transparent;
+  border-radius: 0;
+  padding: 9px 20px;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.nav-item.active {
+  background: rgba(245, 158, 11, 0.1);
+  color: #ffffff;
+  border-left-color: #f59e0b;
+}
+
+.nav-item.active svg {
+  opacity: 1;
+}
+
+/* 아코디언 자식 메뉴 */
+.nav-children {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.nav-child.active {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-left-color: #f59e0b !important;
+  color: white !important;
+}
+
+/* ── 2-2. 사이드바 푸터 로그아웃 버튼 ──────────────────────── */
+.sidebar-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-footer-btn {
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+
+/* ── 3. 상단바 (Topbar) ─────────────────────────────────────── */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--bd-1);
+  box-shadow: var(--shadow-sm);
+  padding: 0 24px;
+}
+
+.topbar-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--t-1);
+  letter-spacing: 0;
+}
+
+/* ── 4. 콘텐츠 영역 ─────────────────────────────────────────── */
+.content {
+  padding: 18px 24px 32px;
+  background: var(--bg-app);
+}
+
+/* ── 5. 카드 (Card) ─────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--bd-1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+}
+
+.card-body {
+  padding: 16px 18px;
+}
+
+.card-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--t-1);
+  margin-bottom: 14px;
+  letter-spacing: 0;
+}
+
+/* ── 6. KPI / 통계 카드 ─────────────────────────────────────── */
+.stats-grid {
+  margin-bottom: 12px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--bd-1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+}
+
+.stat-label {
+  font-size: 11.5px;
+  color: var(--t-4);
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--t-1);
+  line-height: 1.15;
+}
+
+.stat-unit {
+  font-size: 12px;
+  color: var(--t-5);
+  font-weight: 400;
+  margin-left: 3px;
+}
+
+/* KPI 좌측 컬러 바 (::before pseudo) */
+.stat-card.kpi-crit { border-left: 3px solid var(--red-600); }
+.stat-card.kpi-ok   { border-left: 3px solid var(--green-600); }
+.stat-card.kpi-warn { border-left: 3px solid var(--orange-600); }
+
+/* ── 7. 필터 바 (Filter bar) ────────────────────────────────── */
+.filter-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--bd-1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+  padding: 10px 14px;
+}
+
+.filter-bar select,
+.filter-bar input[type="month"],
+.filter-bar input[type="date"],
+.filter-bar input[type="text"] {
+  border: 1px solid var(--bd-2);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--t-2);
+  background: var(--bg-card);
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.12s;
+}
+
+.filter-bar select:focus,
+.filter-bar input:focus {
+  border-color: var(--navy-600);
+}
+
+.filter-label {
+  font-size: 12.5px;
+  color: var(--t-4);
+  font-weight: 500;
+}
+
+/* ── 8. 버튼 ────────────────────────────────────────────────── */
+
+/* Primary (네이비 채움) — 조회 등 */
+.add-btn {
+  background: var(--navy-700);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background 0.12s;
+}
+
+.add-btn:hover {
+  background: var(--navy-800);
+}
+
+/* Save (네이비 채움 전폭) */
+.save-btn {
+  background: var(--navy-700);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 700;
+  transition: background 0.12s;
+}
+
+.save-btn:hover {
+  background: var(--navy-800);
+}
+
+/* Top bar action buttons — 회색 outlined */
+.top-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--bd-2);
+  color: var(--t-3);
+  border-radius: var(--radius);
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.top-btn:hover {
+  background: var(--bg-filter);
+  border-color: var(--bd-1);
+}
+
+/* Clear / 초기화 버튼 — 회색 outlined */
+.clear-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--bd-2);
+  color: var(--t-4);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  font-size: 12.5px;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.clear-btn:hover {
+  background: var(--bg-filter);
+  border-color: var(--bd-1);
+}
+
+/* Delete 버튼 */
+.del-btn {
+  background: transparent;
+  border: none;
+  color: var(--t-5);
+  border-radius: var(--radius);
+  padding: 3px 7px;
+  font-size: 13px;
+  transition: background 0.12s, color 0.12s;
+}
+
+.del-btn:hover {
+  background: var(--red-100);
+  color: var(--red-600);
+}
+
+/* ── 9. 테이블 ──────────────────────────────────────────────── */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+th {
+  background: var(--bg-table-head);
+  color: var(--t-4);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--bd-2);
+  letter-spacing: 0.1px;
+  text-align: left;
+}
+
+td {
+  color: var(--t-2);
+  font-size: 13px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--bd-3);
+  vertical-align: middle;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background: #f5f7fb;
+}
+
+/* data-table 클래스 (3정5S 등) */
+.data-table th {
+  background: var(--bg-table-head);
+  color: var(--t-4);
+  font-size: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--bd-2);
+}
+
+.data-table td {
+  color: var(--t-2);
+  font-size: 13px;
+  border-bottom: 1px solid var(--bd-3);
+}
+
+.data-table tbody tr:hover {
+  background: #f5f7fb;
+}
+
+/* 테이블 헤더 영역 */
+.table-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--bd-1);
+}
+
+.table-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--t-1);
+}
+
+.record-count {
+  font-size: 11.5px;
+  color: var(--t-5);
+}
+
+/* name-link */
+.name-link {
+  color: var(--blue-600);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.name-link:hover {
+  text-decoration: underline;
+}
+
+/* ── 10. 배지 (Badge) ───────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* 상태 배지 */
+.status-miss,
+.badge-crit {
+  background: var(--red-100);
+  color: var(--red-600);
+  border: 1px solid #fca5a5;
+  padding: 3px 9px;
+  border-radius: var(--radius);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.status-hold,
+.badge-warn {
+  background: var(--orange-100);
+  color: var(--orange-600);
+  border: 1px solid #fcd34d;
+  padding: 3px 9px;
+  border-radius: var(--radius);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.status-done,
+.badge-ok {
+  background: var(--green-100);
+  color: var(--green-600);
+  border: 1px solid #86efac;
+  padding: 3px 9px;
+  border-radius: var(--radius);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* 사업장 배지 */
+.badge-sangdo {
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: var(--radius);
+}
+
+.badge-ha1 {
+  background: var(--green-100);
+  color: #166534;
+  border-radius: var(--radius);
+}
+
+.badge-ha2 {
+  background: var(--amber-100);
+  color: #854d0e;
+  border-radius: var(--radius);
+}
+
+.qty-badge {
+  background: #ede9fe;
+  color: #5b21b6;
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* 새 배지 / 완료 배지 */
+.new-badge {
+  background: var(--red-100);
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius);
+}
+
+.done-badge {
+  background: var(--green-100);
+  color: #166534;
+  border: 1px solid #86efac;
+  border-radius: var(--radius);
+}
+
+/* ext 배지 (외부기관) */
+.ext-badge {
+  background: #ede9fe;
+  color: #5b21b6;
+  border-radius: var(--radius);
+}
+
+/* ── 11. 점검 필터 버튼 (세그먼트) ─────────────────────────── */
+.insp-fbtn,
+.ss-line-btn,
+.ss-imp-ltab {
+  border: 1px solid var(--bd-2);
+  background: var(--bg-card);
+  color: var(--t-3);
+  font-size: 12.5px;
+  border-radius: 20px;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.insp-fbtn:hover,
+.ss-line-btn:hover,
+.ss-imp-ltab:hover {
+  background: var(--bg-filter);
+}
+
+.insp-fbtn.active,
+.ss-line-btn.active,
+.ss-imp-ltab.active {
+  background: var(--navy-700);
+  color: white;
+  border-color: var(--navy-700);
+}
+
+/* 세그먼트 바 (현황/수정 토글) */
+.ss-seg-bar {
+  border: 1px solid var(--bd-2);
+  border-radius: var(--radius-lg);
+}
+
+.ss-seg-btn {
+  color: var(--t-3);
+  font-size: 13px;
+  background: var(--bg-card);
+  border-color: var(--bd-2);
+}
+
+.ss-seg-btn+.ss-seg-btn {
+  border-left-color: var(--bd-2);
+}
+
+.ss-seg-btn.active {
+  background: var(--navy-700);
+  color: white;
+}
+
+/* ── 12. 폼 요소 ────────────────────────────────────────────── */
+.form-group label {
+  font-size: 12px;
+  color: var(--t-4);
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  border: 1px solid var(--bd-2);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--t-2);
+  background: var(--bg-card);
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--navy-600);
+  box-shadow: 0 0 0 2px rgba(39, 74, 115, 0.1);
+}
+
+/* ── 13. 모달 ───────────────────────────────────────────────── */
+.modal {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--t-1);
+}
+
+.modal-cancel {
+  border: 1px solid var(--bd-2);
+  border-radius: var(--radius);
+  color: var(--t-3);
+}
+
+.modal-confirm {
+  background: var(--red-600);
+  border-radius: var(--radius);
+  font-weight: 700;
+}
+
+/* ── 14. 대기운영기록 상태 토글 ─────────────────────────────── */
+.al-sbtn {
+  border: 1px solid var(--bd-2);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--t-5);
+  font-size: 11.5px;
+}
+
+.al-normal {
+  border-color: var(--navy-600);
+  background: #eff6ff;
+  color: var(--blue-600);
+}
+
+.al-abnormal {
+  border-color: var(--red-600);
+  background: var(--red-100);
+  color: var(--red-600);
+}
+
+/* ── 15. 점검 행 스타일 ─────────────────────────────────────── */
+tr.inspect-row td {
+  font-size: 13px;
+}
+
+tr.inspect-row:hover td {
+  background: #f5f7fb !important;
+}
+
+tr.inspect-row.selected td {
+  background: #eef3f9;
+}
+
+/* ── 16. 페이지 타이틀 (공통) ───────────────────────────────── */
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.page-title-accent {
+  width: 3px;
+  height: 18px;
+  background: var(--navy-700);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.page-title-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--t-1);
+  line-height: 1.3;
+}
+
+.page-title-meta {
+  font-size: 12px;
+  color: var(--t-5);
+  margin-left: auto;
+}
+
+/* ── 17. PWA 모바일 최적화 ──────────────────────────────────── */
+
+/* PWA 점검 필터 버튼 */
+.insp-pwa-fbtn {
+  border: 1px solid var(--bd-2);
+  background: var(--bg-card);
+  color: var(--t-3);
+  font-size: 13px;
+  border-radius: 20px;
+  transition: background 0.12s, color 0.12s;
+}
+
+.insp-pwa-fbtn.active {
+  background: var(--navy-700);
+  color: white;
+  border-color: var(--navy-700);
+}
+
+/* PWA 점검 카드 */
+.insp-card {
+  border: 1px solid var(--bd-1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.insp-card-issue {
+  color: var(--t-1);
+  font-weight: 700;
+}
+
+/* PWA 점검 추가 버튼 */
+.insp-pwa-add-btn {
+  background: var(--navy-700);
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* PWA KPI 카드 */
+.insp-pwa-kpi-card {
+  border: 1px solid var(--bd-1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.insp-pwa-kpi-val {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--t-1);
+}
+
+/* PWA 3정5S */
+.ss-pwa-subtab-btn.active {
+  background: var(--navy-700);
+  color: white;
+}
+
+.ss-pwa-hdr {
+  background: var(--navy-900);
+}
+
+.ss-pwa-seg.active {
+  background: var(--navy-700);
+  color: white;
+  border-color: var(--navy-700);
+}
+
+.ss-pwa-ltab.active {
+  background: var(--navy-700);
+  color: white;
+  border-color: var(--navy-700);
+}
+
+.ss-pwa-score-hdr-line {
+  color: var(--t-1);
+}
+
+/* PWA 저장 버튼 (인라인 형태들) */
+.insp-card-save {
+  background: var(--navy-700);
+  border-radius: var(--radius);
+}
+
+/* ── 18. 3정5S 결과 탭 ──────────────────────────────────────── */
+.ss-res-tabs {
+  border: 1px solid var(--bd-2);
+  border-radius: var(--radius-lg);
+}
+
+.ss-res-tab {
+  background: var(--bg-card);
+  color: var(--t-3);
+}
+
+.ss-res-tab+.ss-res-tab {
+  border-left-color: var(--bd-2);
+}
+
+.ss-res-tab.active {
+  background: var(--navy-700);
+  color: white;
+}
+
+/* ── 19. 폐기물 보관 현황 (ws-) 신규 스타일 조화 ────────────── */
+.ws-badge-ok   { background: var(--green-100); color: var(--green-600); border: 1px solid #86efac; border-radius: var(--radius); font-size: 11.5px; font-weight: 700; padding: 2px 8px; }
+.ws-badge-warn { background: var(--orange-100); color: var(--orange-600); border: 1px solid #fcd34d; border-radius: var(--radius); font-size: 11.5px; font-weight: 700; padding: 2px 8px; }
+.ws-badge-crit { background: var(--red-100); color: var(--red-600); border: 1px solid #fca5a5; border-radius: var(--radius); font-size: 11.5px; font-weight: 700; padding: 2px 8px; }
+
+.ws-pbar-bg { height: 9px; background: #eef1f4; border-radius: 2px; overflow: hidden; }
+.ws-pbar-fill-ok   { height: 100%; background: linear-gradient(90deg, var(--green-500), var(--green-600)); border-radius: 2px; }
+.ws-pbar-fill-warn { height: 100%; background: linear-gradient(90deg, #fbbf24, var(--orange-600)); border-radius: 2px; }
+.ws-pbar-fill-crit { height: 100%; background: linear-gradient(90deg, #f87171, var(--red-600)); border-radius: 2px; }
+
+/* ── 20. 연간 배출량 (wa-) 신규 스타일 조화 ────────────────── */
+.wa-footer-row {
+  background: var(--navy-900);
+  color: white;
+  font-weight: 700;
+}
+
+.wa-footer-total {
+  color: var(--amber-500);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 21. 빈/로딩 상태 ───────────────────────────────────────── */
+.empty {
+  color: var(--t-5);
+  font-size: 13px;
+}
+
+.loading {
+  color: var(--t-4);
+  font-size: 13px;
+}
+
+/* note-cell */
+.note-cell {
+  color: var(--t-5);
+  font-size: 12px;
+}
+
+/* ── 22. 입력 오류 상태 ─────────────────────────────────────── */
+.input-error {
+  border-color: var(--red-600) !important;
+  background: #fff8f8 !important;
+}
+
+.val-msg {
+  font-size: 11px;
+  color: var(--red-600);
+}
+
+/* ── 23. 차트 영역 ──────────────────────────────────────────── */
+.chart-wrap {
+  position: relative;
+  height: 220px;
+}
+
+/* ── 24. 반응형 보완 ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .content {
+    padding: 14px 14px 28px;
+  }
+
+  .card-body {
+    padding: 12px 14px;
+  }
+
+  .table-header {
+    padding: 10px 14px;
+  }
+
+  th {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .stat-card {
+    padding: 12px 14px;
+  }
+
+  .add-btn,
+  .save-btn {
+    min-height: 44px;
+  }
+
+  .clear-btn {
+    min-height: 40px;
+  }
+
+  .filter-bar select,
+  .filter-bar input {
+    font-size: 13px;
+    min-height: 40px;
+  }
+
+  .topbar {
+    padding: 0 14px;
+  }
+}
+
+/* ── 25. PWA 홈 메뉴 카드 조화 ─────────────────────────────── */
+.pwa-menu-card {
+  border: 1px solid var(--bd-1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── 26. meta-color 업데이트: theme-color 반영용 ────────────── */
+/* (meta tag는 JS/HTML에서 처리, 여기선 CSS 변수만 유지) */
