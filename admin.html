@@ -1506,6 +1506,9 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     <div class="ws-chip"><div class="ws-chip-dot success"></div><div class="ws-chip-label">이번달 완료</div><div class="ws-chip-value" id="wsch-cnt-done">-<span class="unit"> 건</span></div></div>
   </div>
 
+  <!-- PWA 모바일 카드 리스트 (desktop에서는 숨김) -->
+  <div id="wsch-card-list" style="display:none;"></div>
+
   <!-- 데이터 테이블 -->
   <div class="ws-section">
     <div class="ws-section-hdr">
@@ -3835,8 +3838,10 @@ function wschRenderTable(data,today){
   var tbody=document.getElementById('wsch-tbody');
   var footer=document.getElementById('wsch-footer');
   var countEl=document.getElementById('wsch-count');
+  var cardList=document.getElementById('wsch-card-list');
   if(!data.length){
     tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:2rem;color:#9ca3af;">조건에 맞는 일정이 없습니다.</td></tr>';
+    if(cardList)cardList.innerHTML='<div style="text-align:center;padding:2rem;color:#9ca3af;font-size:13px;">조건에 맞는 일정이 없습니다.</div>';
     if(footer)footer.textContent='0건';
     if(countEl)countEl.textContent='';
     return;
@@ -3864,9 +3869,33 @@ function wschRenderTable(data,today){
   tbody.innerHTML=rows;
   if(footer)footer.textContent=data.length+'건';
   if(countEl)countEl.textContent='총 '+data.length+'건';
+  // PWA 카드 리스트 렌더링
+  if(cardList){
+    var cards=data.map(function(r){
+      var statusBadge=wschGetStatusBadge(r,today);
+      var actionBtn=canWrite&&r.status!=='completed'&&r.status!=='cancelled'
+        ?'<button onclick="wschComplete(\''+r.id+'\')" style="flex:1;height:36px;background:#16a34a;color:white;border:none;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">완료 처리</button>':'';
+      var delBtn=canWrite
+        ?'<button onclick="wschDelete(\''+r.id+'\')" style="height:36px;padding:0 12px;background:white;color:#dc2626;border:1px solid #fca5a5;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">삭제</button>':'';
+      var amtStr=r.expected_amount!=null?(r.expected_amount+(r.expected_unit?' '+r.expected_unit:'')):'';
+      return'<div style="background:white;border:1px solid #e3e6eb;border-radius:4px;padding:14px 16px;margin-bottom:10px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'+
+          '<span style="font-size:14px;font-weight:700;color:#0a1626;">'+(r.scheduled_date||'-')+'</span>'+
+          statusBadge+
+        '</div>'+
+        '<div style="font-size:13px;color:#4a5566;margin-bottom:4px;"><span style="color:#7c8696;font-weight:500;margin-right:6px;">업체</span>'+(r.vendor_name||'-')+'</div>'+
+        '<div style="font-size:13px;color:#4a5566;margin-bottom:4px;"><span style="color:#7c8696;font-weight:500;margin-right:6px;">종류</span>'+(r.waste_type||'-')+'</div>'+
+        (amtStr?'<div style="font-size:13px;color:#4a5566;margin-bottom:4px;"><span style="color:#7c8696;font-weight:500;margin-right:6px;">예상량</span>'+amtStr+'</div>':'')+
+        (r.driver_name?'<div style="font-size:13px;color:#4a5566;margin-bottom:4px;"><span style="color:#7c8696;font-weight:500;margin-right:6px;">운전자</span>'+r.driver_name+(r.vehicle_no?' / '+r.vehicle_no:'')+'</div>':'')+
+        ((actionBtn||delBtn)?'<div style="display:flex;gap:8px;margin-top:12px;">'+actionBtn+delBtn+'</div>':'')+
+      '</div>';
+    }).join('');
+    cardList.innerHTML=cards;
+  }
 }
 
 function wschOpenModal(){
+  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_schedule_write')&&!isAdmin()){alert('배출 일정 등록 권한이 없습니다.');return;}
   document.getElementById('wsch-modal').classList.add('show');
 }
@@ -3880,6 +3909,7 @@ function wschCloseModal(){
 }
 
 async function wschSave(){
+  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_schedule_write')&&!isAdmin()){alert('배출 일정 등록 권한이 없습니다.');return;}
   var date=document.getElementById('wsch-m-date').value;
   var vendor=document.getElementById('wsch-m-vendor').value.trim();
@@ -3907,12 +3937,14 @@ async function wschSave(){
 }
 
 async function wschComplete(id){
+  if(isReadOnly()){showReadOnlyToast();return;}
   if(!confirm('배출 완료 처리하시겠습니까?'))return;
   await sb('waste_schedule','?id=eq.'+id,{method:'PATCH',body:{status:'completed',completed_at:new Date().toISOString()}});
   wschLoad();
 }
 
 async function wschDelete(id){
+  if(isReadOnly()){showReadOnlyToast();return;}
   if(!confirm('이 일정을 삭제하시겠습니까?'))return;
   await sb('waste_schedule','?id=eq.'+id,{method:'DELETE'});
   wschLoad();

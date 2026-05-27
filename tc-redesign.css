@@ -950,5 +950,18 @@ tr.inspect-row.selected td {
   box-shadow: var(--shadow-sm);
 }
 
-/* ── 26. meta-color 업데이트: theme-color 반영용 ────────────── */
-/* (meta tag는 JS/HTML에서 처리, 여기선 CSS 변수만 유지) */
+/* ── 26. PWA 배출 일정 — 테이블 → 카드 전환 ─────────────────── */
+@media (max-width: 768px) {
+  body.is-pwa #tab-waste-schedule .ws-section {
+    display: none;
+  }
+  body.is-pwa #wsch-card-list {
+    display: block !important;
+  }
+  /* 보관 현황 · 연간 배출량: 가로 스크롤 보장 */
+  body.is-pwa .wa-annual-wrap,
+  body.is-pwa #tab-waste-storage .ws-section > div {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
