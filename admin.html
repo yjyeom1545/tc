@@ -920,6 +920,78 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 }
 .pwa-nav-title{font-size:16px;font-weight:700;color:white;flex:1;}
 
+/* ── 폐기물 보관 현황 탭 ── */
+.ws-page-title{font-size:17px;font-weight:500;color:#0f2744;padding:0 4px 12px;border-bottom:2px solid #0f2744;display:flex;align-items:center;gap:8px;margin-bottom:0;}
+.ws-page-title-icon{width:4px;height:16px;background:#0f2744;flex-shrink:0;}
+.ws-filter-section{background:white;border:1px solid #d4dce5;border-top:none;}
+.ws-filter-grid{display:grid;grid-template-columns:110px 1fr 110px 1fr 110px 1fr;align-items:stretch;border-bottom:1px solid #e2e8f0;}
+.ws-filter-grid:last-child{border-bottom:none;}
+.ws-filter-label{background:#f3f6fa;padding:9px 12px;font-size:12px;font-weight:500;color:#374151;display:flex;align-items:center;border-right:1px solid #e2e8f0;}
+.ws-filter-input{padding:7px 10px;display:flex;align-items:center;gap:6px;border-right:1px solid #e2e8f0;}
+.ws-filter-input:last-child{border-right:none;}
+.ws-filter-input input,.ws-filter-input select{height:28px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:12.5px;background:white;color:#1e2633;font-family:inherit;min-width:0;}
+.ws-filter-input input[type="date"]{width:130px;}
+.ws-filter-input select{min-width:140px;}
+.ws-filter-input .ws-dash{color:#94a3b8;padding:0 2px;}
+.ws-filter-input .ws-hint{font-size:11.5px;color:#6b7280;margin-left:6px;}
+.ws-action-bar{background:white;border:1px solid #d4dce5;border-top:none;padding:10px 12px;display:flex;justify-content:flex-end;gap:6px;margin-bottom:16px;}
+.ws-btn{display:inline-flex;align-items:center;height:30px;padding:0 14px;font-size:12.5px;font-weight:500;background:white;border:1px solid #f59e0b;color:#b45309;border-radius:3px;cursor:pointer;font-family:inherit;}
+.ws-btn:hover{background:#fffbeb;}
+.ws-btn-primary{background:#0f2744;border-color:#0f2744;color:white;}
+.ws-btn-primary:hover{background:#1e3a5f;}
+.ws-btn-sm{height:24px;padding:0 8px;font-size:11.5px;border:1px solid #cbd5e1;color:#475569;background:white;border-radius:3px;cursor:pointer;font-family:inherit;}
+.ws-btn-sm:hover{background:#f8fafc;border-color:#94a3b8;}
+.ws-summary-bar{background:white;border:1px solid #d4dce5;border-radius:4px;padding:12px 16px;margin-bottom:10px;display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
+.ws-chip{display:flex;align-items:center;gap:8px;padding-right:22px;border-right:1px solid #e2e8f0;}
+.ws-chip:last-child{border-right:none;padding-right:0;}
+.ws-chip-dot{width:8px;height:8px;border-radius:50%;}
+.ws-chip-dot.warning{background:#d97706;}
+.ws-chip-dot.success{background:#16a34a;}
+.ws-chip-dot.neutral{background:#64748b;}
+.ws-chip-label{font-size:12px;color:#475569;}
+.ws-chip-value{font-size:15px;font-weight:500;color:#0f2744;font-variant-numeric:tabular-nums;}
+.ws-chip-value .unit{font-size:11px;font-weight:400;color:#6b7280;margin-left:3px;}
+.ws-section{background:white;border:1px solid #d4dce5;border-radius:4px;margin-bottom:16px;overflow:hidden;}
+.ws-section-hdr{background:#f3f6fa;border-bottom:1px solid #d4dce5;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;}
+.ws-section-title{font-size:12.5px;font-weight:500;color:#0f2744;display:flex;align-items:center;gap:6px;}
+.ws-section-title::before{content:'';width:3px;height:12px;background:#0f2744;flex-shrink:0;}
+.ws-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.ws-table thead th{background:#eaf0f6;color:#1e2633;font-weight:500;font-size:12px;padding:8px 10px;border-bottom:1px solid #c5d0dc;border-right:1px solid #d4dce5;text-align:center;white-space:nowrap;}
+.ws-table thead th:last-child{border-right:none;}
+.ws-table tbody td{padding:7px 10px;border-bottom:1px solid #eef2f6;border-right:1px solid #eef2f6;vertical-align:middle;text-align:center;}
+.ws-table tbody td:last-child{border-right:none;}
+.ws-table tbody tr:last-child td{border-bottom:none;}
+.ws-table tbody tr:hover td{background:#fafbfd;}
+.ws-td-num{font-variant-numeric:tabular-nums;}
+.ws-td-name{text-align:left;font-weight:500;color:#1e2633;}
+.ws-td-muted{color:#6b7280;}
+.ws-td-date{color:#475569;font-variant-numeric:tabular-nums;}
+.ws-progress-wrap{display:flex;align-items:center;gap:8px;}
+.ws-progress{flex:1;height:8px;background:#eef2f6;border-radius:2px;overflow:hidden;min-width:80px;}
+.ws-progress-fill{height:100%;}
+.ws-progress-pct{font-size:11.5px;color:#475569;min-width:38px;text-align:right;font-variant-numeric:tabular-nums;font-weight:500;}
+.ws-fill-success{background:#16a34a;}
+.ws-fill-warning{background:#d97706;}
+.ws-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:500;white-space:nowrap;border:1px solid transparent;}
+.ws-badge-success{background:#f0fdf4;color:#166534;border-color:#bbf7d0;}
+.ws-badge-warning{background:#fffbeb;color:#92400e;border-color:#fde68a;}
+.ws-table-footer{background:#f3f6fa;border-top:1px solid #d4dce5;padding:6px 14px;font-size:11.5px;color:#6b7280;display:flex;justify-content:space-between;}
+.ws-update-form{padding:12px 14px;display:grid;grid-template-columns:220px 1fr 100px;gap:10px;align-items:end;background:#fafbfd;}
+.ws-form-label{display:block;font-size:11.5px;color:#475569;margin-bottom:4px;font-weight:500;}
+.ws-form-input,select.ws-form-input{width:100%;height:30px;border:1px solid #cbd5e1;border-radius:3px;padding:0 10px;font-size:12.5px;background:white;color:#1e2633;font-family:inherit;}
+.ws-form-input:focus{outline:none;border-color:#0f2744;}
+.ws-slider-row{display:flex;align-items:center;gap:10px;height:30px;}
+.ws-slider-row input[type="range"]{flex:1;height:6px;-webkit-appearance:none;appearance:none;background:#e2e8f0;border-radius:3px;outline:none;}
+.ws-slider-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;background:#0f2744;border-radius:50%;cursor:pointer;}
+.ws-slider-row input[type="range"]::-moz-range-thumb{width:16px;height:16px;background:#0f2744;border:none;border-radius:50%;cursor:pointer;}
+.ws-slider-val{font-size:12.5px;font-weight:500;color:#0f2744;min-width:42px;text-align:right;font-variant-numeric:tabular-nums;}
+.ws-record-form{padding:10px 12px;display:grid;grid-template-columns:130px 1fr 110px 1fr 100px;gap:8px;align-items:end;background:#fafbfd;border-bottom:1px solid #e2e8f0;}
+@media(max-width:768px){
+  .ws-filter-grid{grid-template-columns:90px 1fr;}
+  .ws-update-form{grid-template-columns:1fr;}
+  .ws-record-form{grid-template-columns:1fr 1fr;}
+}
+
 /* ── TC에코온 탭 ── */
 #tab-ecoon{padding:0!important;}
 @media(max-width:768px){
@@ -1094,9 +1166,139 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   </div>
 </div>
 
-<!-- 보관 현황 탭 (Phase 3에서 구현) -->
+<!-- 보관 현황 탭 -->
 <div id="tab-waste-storage" class="content hidden">
-  <div class="loading">보관 현황 페이지 준비 중...</div>
+  <!-- 브레드크럼 -->
+  <div style="background:white;border:1px solid #d4dce5;border-radius:4px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div style="font-size:12px;color:#6b7280;">HOME <span style="margin:0 6px;color:#cbd5e1;">›</span> 폐기물 <span style="margin:0 6px;color:#cbd5e1;">›</span> <span style="color:#0f2744;font-weight:500;">보관 현황</span></div>
+  </div>
+  <div class="ws-page-title"><span class="ws-page-title-icon"></span>폐기물 보관 현황 조회</div>
+
+  <!-- 필터 -->
+  <div class="ws-filter-section">
+    <div class="ws-filter-grid">
+      <div class="ws-filter-label">조회 기간</div>
+      <div class="ws-filter-input">
+        <input type="date" id="ws-from"><span class="ws-dash">~</span><input type="date" id="ws-to">
+        <span class="ws-hint">최대 365일</span>
+      </div>
+      <div class="ws-filter-label">폐기물 종류</div>
+      <div class="ws-filter-input"><select id="ws-filter-type"></select></div>
+      <div class="ws-filter-label">상태 구분</div>
+      <div class="ws-filter-input">
+        <select id="ws-filter-status">
+          <option value="">전체</option><option value="normal">정상</option><option value="warning">배출 요청 필요</option>
+        </select>
+      </div>
+    </div>
+    <div class="ws-filter-grid">
+      <div class="ws-filter-label">관리 단위</div>
+      <div class="ws-filter-input">
+        <select id="ws-filter-unit">
+          <option value="">전체</option><option value="count">개수 관리</option><option value="percent">비율(%) 관리</option>
+        </select>
+      </div>
+      <div class="ws-filter-label">정렬</div>
+      <div class="ws-filter-input">
+        <select id="ws-sort">
+          <option value="pct_desc">보관률 높은순</option><option value="pct_asc">보관률 낮은순</option>
+          <option value="date">마지막 배출일순</option><option value="name">종류명순</option>
+        </select>
+      </div>
+      <div class="ws-filter-label">표시</div>
+      <div class="ws-filter-input">
+        <select id="ws-filter-display">
+          <option value="all">전체 보관 종류</option><option value="month">이번달 배출분만</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="ws-action-bar">
+    <button class="ws-btn ws-btn-primary" onclick="wsQuery()">조회</button>
+    <button class="ws-btn" onclick="wsExcel()">엑셀</button>
+    <button class="ws-btn" onclick="document.getElementById('ws-update-section').scrollIntoView({behavior:'smooth'})">보관량 업데이트</button>
+    <button class="ws-btn" onclick="document.getElementById('ws-record-section').scrollIntoView({behavior:'smooth'})">배출 기록 추가</button>
+  </div>
+
+  <!-- 요약 칩 -->
+  <div class="ws-summary-bar">
+    <div class="ws-chip"><div class="ws-chip-dot warning"></div><div class="ws-chip-label">배출 요청 필요</div><div class="ws-chip-value" id="ws-cnt-warning">-<span class="unit">건</span></div></div>
+    <div class="ws-chip"><div class="ws-chip-dot success"></div><div class="ws-chip-label">정상</div><div class="ws-chip-value" id="ws-cnt-success">-<span class="unit">건</span></div></div>
+    <div class="ws-chip"><div class="ws-chip-dot neutral"></div><div class="ws-chip-label">이번달 배출</div><div class="ws-chip-value" id="ws-cnt-month">-<span class="unit">건</span></div></div>
+  </div>
+
+  <!-- 보관 현황 테이블 -->
+  <div class="ws-section">
+    <div class="ws-section-hdr"><div class="ws-section-title">현재 보관 현황</div></div>
+    <div style="overflow-x:auto;">
+      <table class="ws-table" style="min-width:920px;">
+        <thead>
+          <tr>
+            <th style="width:38px;">No.</th>
+            <th style="width:160px;">폐기물 종류</th>
+            <th style="width:52px;">단위</th>
+            <th style="width:80px;">현재 보관량</th>
+            <th style="width:64px;">최대 보관</th>
+            <th style="min-width:140px;">보관률</th>
+            <th style="width:106px;">상태</th>
+            <th style="width:110px;">마지막 배출일</th>
+            <th style="width:72px;">보관 일수</th>
+            <th style="width:120px;">관리</th>
+          </tr>
+        </thead>
+        <tbody id="ws-tbody"><tr><td colspan="10" style="text-align:center;padding:2rem;color:#9ca3af;">불러오는 중...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="ws-table-footer"><span id="ws-table-footer-text">-</span><span></span></div>
+  </div>
+
+  <!-- 보관량 업데이트 -->
+  <div class="ws-section" id="ws-update-section">
+    <div class="ws-section-hdr"><div class="ws-section-title">보관량 업데이트</div></div>
+    <div class="ws-update-form">
+      <div>
+        <label class="ws-form-label">폐기물 종류 선택</label>
+        <select class="ws-form-input" id="ws-update-type" onchange="wsRenderUpdateInput()"></select>
+      </div>
+      <div>
+        <label class="ws-form-label" id="ws-update-input-label">입력값</label>
+        <div id="ws-update-input-area"></div>
+      </div>
+      <button class="ws-btn ws-btn-primary" style="margin-top:18px;" onclick="wsDoUpdate()">업데이트</button>
+    </div>
+  </div>
+
+  <!-- 배출 기록 (당월) -->
+  <div class="ws-section" id="ws-record-section">
+    <div class="ws-section-hdr">
+      <div class="ws-section-title">배출 기록 (당월)</div>
+      <button class="ws-btn-sm" onclick="wsDisposalExcel()">엑셀</button>
+    </div>
+    <div class="ws-record-form">
+      <div><label class="ws-form-label">배출일 *</label><input type="date" class="ws-form-input" id="ws-rec-date"></div>
+      <div><label class="ws-form-label">폐기물 종류 *</label><select class="ws-form-input" id="ws-rec-type"></select></div>
+      <div><label class="ws-form-label">배출 수량</label><input type="text" class="ws-form-input" id="ws-rec-amount" placeholder="예: 4 또는 90"></div>
+      <div><label class="ws-form-label">위탁 업체명</label><input type="text" class="ws-form-input" id="ws-rec-company" placeholder="예: 영남환경"></div>
+      <button class="ws-btn ws-btn-primary" style="margin-top:18px;" onclick="wsAddDisposal()">기록 추가</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="ws-table" style="min-width:680px;">
+        <thead>
+          <tr>
+            <th style="width:38px;">No.</th>
+            <th style="width:110px;">배출일</th>
+            <th style="width:170px;">폐기물 종류</th>
+            <th style="width:80px;">배출 수량</th>
+            <th style="width:52px;">단위</th>
+            <th>위탁 업체명</th>
+            <th style="width:80px;">관리</th>
+          </tr>
+        </thead>
+        <tbody id="ws-disposal-tbody"><tr><td colspan="7" style="text-align:center;padding:2rem;color:#9ca3af;">불러오는 중...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="ws-table-footer"><span id="ws-disposal-footer">-</span><span></span></div>
+  </div>
 </div>
 
 <!-- 연간 배출량 탭 (Phase 4에서 구현) -->
@@ -2603,8 +2805,315 @@ async function batchSave(){
   }catch(e){alert('저장 중 오류가 발생했습니다.');console.error(e);}
 }
 
-// ── 보관 현황 / 연간 배출량 (Phase 3 & 4에서 구현) ──
-function loadWasteStorage(){ /* Phase 3에서 구현 */ }
+// ══════════════════════════════════════
+// 폐기물 보관 현황 (Phase 3)
+// ══════════════════════════════════════
+var _wsData=[];          // waste_storage 전체 (캐시)
+var _wsDisposal=[];      // 당월 배출 기록 (캐시)
+var _wsMonthDisposed=[]; // 이번달 배출된 waste_type 목록
+
+async function loadWasteStorage(){
+  // 날짜 초기값 설정 (당월 1일 ~ 말일)
+  var now=new Date();
+  var y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0');
+  var lastDay=new Date(y,now.getMonth()+1,0).getDate();
+  var fromEl=document.getElementById('ws-from');
+  var toEl=document.getElementById('ws-to');
+  if(fromEl&&!fromEl.value) fromEl.value=y+'-'+m+'-01';
+  if(toEl&&!toEl.value) toEl.value=y+'-'+m+'-'+String(lastDay).padStart(2,'0');
+
+  // 날짜 기본값 (배출일)
+  var recDate=document.getElementById('ws-rec-date');
+  if(recDate&&!recDate.value) recDate.value=now.toISOString().slice(0,10);
+
+  try{
+    // waste_storage 전체 로드
+    _wsData=await sb('waste_storage','?select=*&order=display_order.asc');
+    // 당월 배출 기록 로드
+    var mFrom=y+'-'+m+'-01';
+    var mTo=y+'-'+m+'-'+String(lastDay).padStart(2,'0');
+    _wsDisposal=await sb('waste_disposal','?disposal_date=gte.'+mFrom+'&disposal_date=lte.'+mTo+'&order=disposal_date.desc,created_at.desc');
+    _wsMonthDisposed=[...(new Set((_wsDisposal||[]).map(function(d){return d.waste_type;})))];
+  }catch(e){
+    _wsData=[];_wsDisposal=[];_wsMonthDisposed=[];
+    console.error('보관 현황 로드 오류:',e);
+  }
+  wsRenderAll();
+}
+
+function wsPct(w){
+  return w.unit_type==='count'
+    ? (w.max_amount?Math.round((parseFloat(w.current_amount)||0)/parseFloat(w.max_amount)*100):0)
+    : (parseFloat(w.current_amount)||0);
+}
+function wsStatus(pct){ return pct>=75?{label:'배출 요청 필요',cls:'warning'}:{label:'정상',cls:'success'}; }
+
+function wsGetFiltered(){
+  var typeF=document.getElementById('ws-filter-type')?document.getElementById('ws-filter-type').value:'';
+  var statusF=document.getElementById('ws-filter-status')?document.getElementById('ws-filter-status').value:'';
+  var unitF=document.getElementById('ws-filter-unit')?document.getElementById('ws-filter-unit').value:'';
+  var displayF=document.getElementById('ws-filter-display')?document.getElementById('ws-filter-display').value:'all';
+  var sortF=document.getElementById('ws-sort')?document.getElementById('ws-sort').value:'pct_desc';
+
+  var rows=(_wsData||[]).filter(function(w){
+    if(typeF&&w.waste_type!==typeF)return false;
+    if(unitF&&w.unit_type!==unitF)return false;
+    if(displayF==='month'&&!_wsMonthDisposed.includes(w.waste_type))return false;
+    if(statusF){
+      var pct=wsPct(w);
+      var s=wsStatus(pct);
+      if(statusF==='normal'&&s.cls!=='success')return false;
+      if(statusF==='warning'&&s.cls!=='warning')return false;
+    }
+    return true;
+  });
+
+  rows.sort(function(a,b){
+    if(sortF==='pct_desc')return wsPct(b)-wsPct(a);
+    if(sortF==='pct_asc')return wsPct(a)-wsPct(b);
+    if(sortF==='date'){
+      var da=a.last_disposal_date||'';var db=b.last_disposal_date||'';
+      return da<db?-1:da>db?1:0;
+    }
+    if(sortF==='name')return (a.waste_type||'').localeCompare(b.waste_type||'','ko');
+    return 0;
+  });
+  return rows;
+}
+
+function wsDaysSince(dateStr){
+  if(!dateStr)return null;
+  return Math.floor((new Date()-new Date(dateStr))/(1000*60*60*24));
+}
+
+function wsRenderTable(rows){
+  var tbody=document.getElementById('ws-tbody');
+  if(!tbody)return;
+  if(!rows||!rows.length){
+    tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:2rem;color:#9ca3af;">조회 결과 없음</td></tr>';
+    return;
+  }
+  var today=new Date().toISOString().slice(0,10);
+  tbody.innerHTML=rows.map(function(w,i){
+    var pct=wsPct(w);
+    var s=wsStatus(pct);
+    var maxDisp=w.unit_type==='count'?(w.max_amount||'-'):'-';
+    var days=wsDaysSince(w.last_disposal_date);
+    var daysStr=days!==null?days+'일':'-';
+    return '<tr>'
+      +'<td class="ws-td-num">'+(i+1)+'</td>'
+      +'<td class="ws-td-name">'+ws_esc(w.waste_type)+'</td>'
+      +'<td class="ws-td-muted">'+ws_esc(w.unit)+'</td>'
+      +'<td class="ws-td-num">'+(parseFloat(w.current_amount)||0)+'</td>'
+      +'<td class="ws-td-num ws-td-muted">'+maxDisp+'</td>'
+      +'<td><div class="ws-progress-wrap"><div class="ws-progress"><div class="ws-progress-fill ws-fill-'+s.cls+'" style="width:'+Math.min(pct,100)+'%"></div></div><span class="ws-progress-pct">'+pct+'%</span></div></td>'
+      +'<td><span class="ws-badge ws-badge-'+s.cls+'">'+s.label+'</span></td>'
+      +'<td class="ws-td-date">'+(w.last_disposal_date||'-')+'</td>'
+      +'<td class="ws-td-num ws-td-muted">'+daysStr+'</td>'
+      +'<td><button class="ws-btn-sm" onclick="wsQuickUpdate('+i+',this)">수정</button></td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('ws-table-footer-text').textContent='총 '+rows.length+'건';
+}
+
+function wsRenderSummary(){
+  var data=_wsData||[];
+  var warn=data.filter(function(w){return wsStatus(wsPct(w)).cls==='warning';}).length;
+  var succ=data.length-warn;
+  var mnth=(_wsDisposal||[]).length;
+  var wEl=document.getElementById('ws-cnt-warning');
+  var sEl=document.getElementById('ws-cnt-success');
+  var mEl=document.getElementById('ws-cnt-month');
+  if(wEl)wEl.innerHTML=warn+'<span class="unit">건</span>';
+  if(sEl)sEl.innerHTML=succ+'<span class="unit">건</span>';
+  if(mEl)mEl.innerHTML=mnth+'<span class="unit">건</span>';
+}
+
+function wsFillTypeSelects(){
+  var types=(_wsData||[]).map(function(w){return w.waste_type;});
+  var opts='<option value="">전체</option>'+types.map(function(t){return '<option value="'+ws_esc(t)+'">'+ws_esc(t)+'</option>';}).join('');
+  var fType=document.getElementById('ws-filter-type');
+  if(fType)fType.innerHTML=opts;
+
+  var rowOpts=types.map(function(t){return '<option value="'+ws_esc(t)+'">'+ws_esc(t)+'</option>';}).join('');
+  var uType=document.getElementById('ws-update-type');
+  if(uType){uType.innerHTML=rowOpts;wsRenderUpdateInput();}
+  var rType=document.getElementById('ws-rec-type');
+  if(rType)rType.innerHTML=rowOpts;
+}
+
+function wsRenderUpdateInput(){
+  var sel=document.getElementById('ws-update-type');
+  if(!sel||!_wsData.length)return;
+  var typeName=sel.value;
+  var w=_wsData.find(function(x){return x.waste_type===typeName;})||_wsData[0];
+  if(!w)return;
+  var label=document.getElementById('ws-update-input-label');
+  var area=document.getElementById('ws-update-input-area');
+  if(!label||!area)return;
+  if(w.unit_type==='count'){
+    label.textContent='보관 개수 (최대 '+(w.max_amount||'?')+' '+w.unit+')';
+    area.innerHTML='<input type="number" class="ws-form-input" id="ws-update-val" min="0" max="'+(w.max_amount||999)+'" step="1" value="'+(parseFloat(w.current_amount)||0)+'">';
+  } else {
+    label.textContent='보관률 (%)';
+    var cur=parseFloat(w.current_amount)||0;
+    area.innerHTML='<div class="ws-slider-row"><input type="range" min="0" max="100" step="1" value="'+cur+'" id="ws-slider" oninput="document.getElementById(\'ws-slider-val\').textContent=this.value+\'%\'"><span class="ws-slider-val" id="ws-slider-val">'+cur+'%</span></div>';
+  }
+}
+
+function wsRenderDisposal(){
+  var tbody=document.getElementById('ws-disposal-tbody');
+  if(!tbody)return;
+  var rows=_wsDisposal||[];
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:#9ca3af;">이번달 배출 기록 없음</td></tr>';
+    document.getElementById('ws-disposal-footer').textContent='총 0건';
+    return;
+  }
+  tbody.innerHTML=rows.map(function(r,i){
+    var canDel=hasPerm('waste_storage_write')||isAdmin();
+    var delBtn=canDel?'<button class="ws-btn-sm" style="border-color:#dc2626;color:#dc2626;" onclick="wsDeleteDisposal(\''+r.id+'\')">삭제</button>':'';
+    return '<tr>'
+      +'<td class="ws-td-num">'+(i+1)+'</td>'
+      +'<td class="ws-td-date">'+(r.disposal_date||'-')+'</td>'
+      +'<td class="ws-td-name">'+ws_esc(r.waste_type)+'</td>'
+      +'<td class="ws-td-num">'+(r.amount||'-')+'</td>'
+      +'<td class="ws-td-muted">'+ws_esc(r.unit||'')+'</td>'
+      +'<td style="text-align:left;">'+ws_esc(r.notes||'')+'</td>'
+      +'<td>'+delBtn+'</td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('ws-disposal-footer').textContent='총 '+rows.length+'건';
+}
+
+function wsRenderAll(){
+  var filtered=wsGetFiltered();
+  wsRenderTable(filtered);
+  wsRenderSummary();
+  wsFillTypeSelects();
+  wsRenderDisposal();
+}
+
+function wsQuery(){
+  var filtered=wsGetFiltered();
+  wsRenderTable(filtered);
+}
+
+async function wsDoUpdate(){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  var sel=document.getElementById('ws-update-type');
+  if(!sel||!_wsData.length)return;
+  var typeName=sel.value;
+  var w=_wsData.find(function(x){return x.waste_type===typeName;});
+  if(!w){alert('종류를 선택하세요.');return;}
+  var val;
+  if(w.unit_type==='count'){
+    var inp=document.getElementById('ws-update-val');
+    val=inp?parseFloat(inp.value)||0:0;
+  } else {
+    var sld=document.getElementById('ws-slider');
+    val=sld?parseFloat(sld.value)||0:0;
+  }
+  try{
+    await sb('waste_storage','?id=eq.'+w.id,{method:'PATCH',body:{current_amount:val,updated_at:new Date().toISOString(),updated_by:currentUser?(currentUser.name||currentUser.username):''}});
+    w.current_amount=val;
+    wsRenderAll();
+    alert('업데이트 완료!');
+  }catch(e){alert('저장 실패: '+e.message);}
+}
+
+async function wsAddDisposal(){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  var dateEl=document.getElementById('ws-rec-date');
+  var typeEl=document.getElementById('ws-rec-type');
+  var amtEl=document.getElementById('ws-rec-amount');
+  var compEl=document.getElementById('ws-rec-company');
+  if(!dateEl||!typeEl)return;
+  if(!dateEl.value){alert('배출일을 입력하세요.');return;}
+  if(!typeEl.value){alert('폐기물 종류를 선택하세요.');return;}
+  var typeName=typeEl.value;
+  var w=_wsData.find(function(x){return x.waste_type===typeName;});
+  var payload={
+    disposal_date:dateEl.value,
+    waste_type:typeName,
+    amount:parseFloat(amtEl.value)||0,
+    unit:w?w.unit:'',
+    notes:compEl?compEl.value.trim():'',
+    created_by:currentUser?(currentUser.name||currentUser.username):''
+  };
+  try{
+    await sb('waste_disposal','',{method:'POST',headers:{'Prefer':'return=minimal'},body:payload});
+    // 보관량 0으로 리셋 + 마지막 배출일 업데이트
+    if(w){
+      await sb('waste_storage','?id=eq.'+w.id,{method:'PATCH',body:{current_amount:0,last_disposal_date:dateEl.value,updated_at:new Date().toISOString(),updated_by:currentUser?(currentUser.name||currentUser.username):''}});
+      w.current_amount=0;
+      w.last_disposal_date=dateEl.value;
+    }
+    // 폼 초기화
+    if(amtEl)amtEl.value='';
+    if(compEl)compEl.value='';
+    // 배출 기록 재로드
+    var now=new Date();
+    var y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
+    var lastDay=new Date(y,now.getMonth()+1,0).getDate();
+    _wsDisposal=await sb('waste_disposal','?disposal_date=gte.'+y+'-'+m+'-01&disposal_date=lte.'+y+'-'+m+'-'+String(lastDay).padStart(2,'0')+'&order=disposal_date.desc,created_at.desc');
+    _wsMonthDisposed=[...(new Set((_wsDisposal||[]).map(function(d){return d.waste_type;})))];
+    wsRenderAll();
+    alert('배출 기록이 추가되었습니다. 보관량이 0으로 초기화되었습니다.');
+  }catch(e){alert('저장 실패: '+e.message);}
+}
+
+async function wsDeleteDisposal(id){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  if(!confirm('이 배출 기록을 삭제하시겠습니까?'))return;
+  try{
+    await sb('waste_disposal','?id=eq.'+id,{method:'DELETE'});
+    _wsDisposal=_wsDisposal.filter(function(r){return r.id!==id;});
+    wsRenderDisposal();
+  }catch(e){alert('삭제 실패: '+e.message);}
+}
+
+function wsQuickUpdate(rowIdx,btn){
+  // 보관량 업데이트 섹션으로 이동 후 해당 종류 선택
+  var filtered=wsGetFiltered();
+  if(!filtered[rowIdx])return;
+  var typeName=filtered[rowIdx].waste_type;
+  var sel=document.getElementById('ws-update-type');
+  if(sel){sel.value=typeName;wsRenderUpdateInput();}
+  document.getElementById('ws-update-section').scrollIntoView({behavior:'smooth'});
+}
+
+function wsExcel(){
+  if(typeof XLSX==='undefined'){alert('엑셀 라이브러리 로딩 중입니다. 잠시 후 다시 시도하세요.');return;}
+  var rows=wsGetFiltered();
+  var data=[['No.','폐기물 종류','단위','현재 보관량','최대 보관','보관률(%)','상태','마지막 배출일','보관 일수']];
+  rows.forEach(function(w,i){
+    var pct=wsPct(w);
+    var s=wsStatus(pct);
+    var days=wsDaysSince(w.last_disposal_date);
+    data.push([i+1,w.waste_type,w.unit,parseFloat(w.current_amount)||0,w.max_amount||'-',pct,s.label,w.last_disposal_date||'-',days!==null?days+' 일':'-']);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(data);
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'보관현황');
+  XLSX.writeFile(wb,'폐기물보관현황_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function wsDisposalExcel(){
+  if(typeof XLSX==='undefined'){alert('엑셀 라이브러리 로딩 중입니다.');return;}
+  var rows=_wsDisposal||[];
+  var data=[['No.','배출일','폐기물 종류','배출 수량','단위','위탁 업체명']];
+  rows.forEach(function(r,i){data.push([i+1,r.disposal_date,r.waste_type,r.amount,r.unit,r.notes||'']);});
+  var ws=XLSX.utils.aoa_to_sheet(data);
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'배출기록');
+  var now=new Date();
+  XLSX.writeFile(wb,'배출기록_'+now.getFullYear()+'년'+String(now.getMonth()+1).padStart(2,'0')+'월.xlsx');
+}
+
+function ws_esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── 연간 배출량 (Phase 4에서 구현) ──
 function loadWasteAnnual(){ /* Phase 4에서 구현 */ }
 
 var wasteMonthlyChart=null;
