@@ -2279,6 +2279,8 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-airlog_1to8"> 대기운영 1~8번</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-airlog_9"> 대기운영 9번</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-air_schedule_write"> 대기일정작성</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_storage_write"> 보관현황쓰기</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_annual_write"> 연간배출량쓰기</label>
       </div>
       <button class="add-btn" onclick="addUser()">사용자 추가</button>
       <div style="font-size:11px;color:#9ca3af;margin-top:8px;">※ 비밀번호 없이 등록됩니다. 해당 사용자가 최초 로그인 시 비밀번호를 직접 설정합니다.</div>
@@ -2374,8 +2376,8 @@ function getAirLogPrNos(){
 }
 function logout(){localStorage.removeItem('tc_user');window.location.href='login.html';}
 
-var PERM_LABELS={filter_write:'필터기록',waste_confirm:'폐유고상확인',waste_complete:'폐유고상배출완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',ss_input:'3정5S',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정'};
-var PERM_KEYS=['filter_write','waste_confirm','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','ss_input','airlog_1to8','airlog_9','air_schedule_write'];
+var PERM_LABELS={filter_write:'필터기록',waste_confirm:'폐유고상확인',waste_complete:'폐유고상배출완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',ss_input:'3정5S',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정',waste_storage_write:'보관현황쓰기',waste_annual_write:'연간배출량쓰기'};
+var PERM_KEYS=['filter_write','waste_confirm','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','ss_input','airlog_1to8','airlog_9','air_schedule_write','waste_storage_write','waste_annual_write'];
 
 async function sb(table,query,opts){
   opts=opts||{};
@@ -3128,6 +3130,7 @@ function wsQuery(){
 
 async function wsDoUpdate(){
   if(isReadOnly()){showReadOnlyToast();return;}
+  if(!hasPerm('waste_storage_write')){alert('보관 현황 쓰기 권한이 없습니다.');return;}
   var sel=document.getElementById('ws-update-type');
   if(!sel||!_wsData.length)return;
   var typeName=sel.value;
@@ -3151,6 +3154,7 @@ async function wsDoUpdate(){
 
 async function wsAddDisposal(){
   if(isReadOnly()){showReadOnlyToast();return;}
+  if(!hasPerm('waste_storage_write')){alert('보관 현황 쓰기 권한이 없습니다.');return;}
   var dateEl=document.getElementById('ws-rec-date');
   var typeEl=document.getElementById('ws-rec-type');
   var amtEl=document.getElementById('ws-rec-amount');
@@ -3192,6 +3196,7 @@ async function wsAddDisposal(){
 
 async function wsDeleteDisposal(id){
   if(isReadOnly()){showReadOnlyToast();return;}
+  if(!hasPerm('waste_storage_write')){alert('보관 현황 쓰기 권한이 없습니다.');return;}
   if(!confirm('이 배출 기록을 삭제하시겠습니까?'))return;
   try{
     await sb('waste_disposal','?id=eq.'+id,{method:'DELETE'});
@@ -3431,6 +3436,7 @@ function waUpdateSummary(){
 
 async function waSave(){
   if(isReadOnly()){showReadOnlyToast();return;}
+  if(!hasPerm('waste_annual_write')){alert('연간 배출량 쓰기 권한이 없습니다.');return;}
   var yearSel=document.getElementById('wa-year');
   var year=yearSel?parseInt(yearSel.value):new Date().getFullYear();
   var updatedBy=currentUser?(currentUser.name||currentUser.username):'';
@@ -3473,6 +3479,7 @@ async function waSave(){
 
 function waCopyPrevYear(){
   if(isReadOnly()){showReadOnlyToast();return;}
+  if(!hasPerm('waste_annual_write')){alert('연간 배출량 쓰기 권한이 없습니다.');return;}
   if(!confirm('전년도 데이터를 현재 표에 복사합니다. (기존 입력값이 초기화됩니다) 계속하시겠습니까?'))return;
   var yearSel=document.getElementById('wa-year');
   var year=yearSel?parseInt(yearSel.value):new Date().getFullYear();
