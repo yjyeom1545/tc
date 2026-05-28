@@ -624,146 +624,140 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 <!-- 홈 대시보드 탭 -->
 <div id="tab-home" class="content">
 
-  <!-- 상단 인사바 -->
-  <div style="margin-bottom:1.1rem;">
-    <div style="font-size:18px;font-weight:700;color:#0f2744;" id="dash-greeting">안녕하세요!</div>
-    <div style="font-size:12px;color:#9ca3af;margin-top:3px;" id="dash-date">-</div>
-  </div>
-
-  <!-- 위젯 1: 대기운영기록 월별 입력 현황 (맨 위) -->
-  <div class="card">
-    <div class="table-header">
-      <span class="table-title">대기운영기록 월별 입력 현황</span>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:11px;color:#6b7280;" id="dash-airlog-year">-</span>
-        <button onclick="showTab('airlog')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button>
-      </div>
+  <!-- Hello 헤더 -->
+  <div class="dh-hello">
+    <div>
+      <h1 class="dh-hello-h">안녕하세요, <em id="dh-user-name">-</em> 님</h1>
+      <div class="dh-hello-sub" id="dh-date-str">-</div>
     </div>
-    <div style="overflow-x:auto;">
-      <table style="min-width:700px;width:100%;">
-        <thead>
-          <tr>
-            <th style="text-align:left;padding:8px 16px;font-size:11px;color:#6b7280;font-weight:500;background:#f9fafb;border-bottom:1px solid #f3f4f6;">구분</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">1월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">2월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">3월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">4월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">5월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">6월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">7월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">8월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">9월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">10월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">11월</th>
-            <th style="text-align:center;padding:8px 4px;font-size:11px;color:#6b7280;background:#f9fafb;border-bottom:1px solid #f3f4f6;">12월</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="padding:10px 16px;font-size:12px;font-weight:500;color:#374151;border-bottom:1px solid #f9fafb;">배출구 가동시간</td>
-            <td id="dah-em1"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em2"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em3"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em4"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em5"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em6"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em7"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em8"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em9"  style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em10" style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em11" style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-            <td id="dah-em12" style="text-align:center;padding:8px 4px;border-bottom:1px solid #f9fafb;"></td>
-          </tr>
-          <tr>
-            <td style="padding:10px 16px;font-size:12px;font-weight:500;color:#374151;">방지시설 전력사용량</td>
-            <td id="dah-pr1"  style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr2"  style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr3"  style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr4"  style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr5"  style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr6"  style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr7"  style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr8"  style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr9"  style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr10" style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr11" style="text-align:center;padding:8px 4px;"></td>
-            <td id="dah-pr12" style="text-align:center;padding:8px 4px;"></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="display:flex;gap:14px;padding:9px 16px;border-top:1px solid #f3f4f6;font-size:11px;color:#6b7280;flex-wrap:wrap;">
-      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#d1fae5;color:#065f46;font-weight:700;font-size:11px;">✓</span> 입력 완료</span>
-      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;background:#fef9c3;color:#854d0e;border:1px solid #fde047;">입력 중</span> 현재 월 진행 중</span>
-      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span> 미입력</span>
-      <span style="display:flex;align-items:center;gap:5px;"><span style="color:#d1d5db;font-size:13px;">-</span> 해당 없음</span>
+    <div class="dh-hello-meta">
+      <span class="dh-hello-dot"></span>
+      <span>실시간 동기화</span>
     </div>
   </div>
 
-  <!-- 2분할: 점검이력 / 폐유고상 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" class="dash-2col-grid" id="dash-2col-grid">
+  <!-- KPI 4개 -->
+  <div class="dh-kpi-row">
+    <div class="dh-kpi">
+      <div class="dh-kpi-lbl">미개선 점검<span class="dh-kpi-lbl-tag" id="kpi1-tag" style="background:#fde8e8;color:#b91c1c;">주의</span></div>
+      <div class="dh-kpi-val"><span id="kpi-insp-miss">-</span><span class="u">건</span></div>
+      <div class="dh-kpi-tr up" id="kpi-insp-trend">-</div>
+    </div>
+    <div class="dh-kpi">
+      <div class="dh-kpi-lbl">월간 점검 개선율</div>
+      <div class="dh-kpi-val"><span id="kpi-insp-rate">-</span><span class="u">%</span></div>
+      <div class="dh-kpi-tr neu" id="kpi-insp-rate-sub">-</div>
+    </div>
+    <div class="dh-kpi">
+      <div class="dh-kpi-lbl">대기운영기록 미입력<span class="dh-kpi-lbl-tag" id="kpi3-tag" style="background:#fdf2e2;color:#b45309;">-</span></div>
+      <div class="dh-kpi-val"><span id="kpi-air-miss">-</span><span class="u">일</span></div>
+      <div class="dh-kpi-tr neu" id="kpi-air-miss-sub">-</div>
+    </div>
+    <div class="dh-kpi">
+      <div class="dh-kpi-lbl">배출 요청 필요<span class="dh-kpi-lbl-tag" id="kpi4-tag" style="background:#fdf2e2;color:#b45309;">-</span></div>
+      <div class="dh-kpi-val"><span id="kpi-waste-req">-</span><span class="u">건</span></div>
+      <div class="dh-kpi-tr neu" id="kpi-waste-req-sub">-</div>
+    </div>
+  </div>
 
-    <!-- 점검이력 요약 -->
-    <div class="card" style="border-radius:10px;border-width:0.5px;">
-      <div class="table-header"><span class="table-title">점검이력 요약</span><button onclick="showTab('inspect')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 보기 →</button></div>
-      <div style="padding:12px 16px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-          <div style="background:#fef2f2;border:0.5px solid #fecaca;border-radius:10px;padding:12px 14px;">
-            <div style="font-size:26px;font-weight:700;color:#dc2626;line-height:1;" id="dash-insp-miss">-</div>
-            <div style="font-size:10px;color:#9ca3af;margin-top:4px;">미개선 건수</div>
-          </div>
-          <div style="background:#f8fafc;border:0.5px solid #e8ecf0;border-radius:10px;padding:12px 14px;">
-            <div style="font-size:26px;font-weight:700;color:#0f2744;line-height:1;" id="dash-insp-rate">-</div>
-            <div style="font-size:10px;color:#9ca3af;margin-top:4px;">개선율</div>
-          </div>
+  <!-- Main grid: 대기운영기록 + 환경점검 요약 -->
+  <div class="dh-g-main">
+    <div class="dh-card">
+      <div class="dh-card-h">
+        <div class="dh-card-h-t">대기운영기록 입력 현황</div>
+        <div class="dh-card-h-s" id="dh-airlog-year">-</div>
+        <div class="dh-card-h-r">
+          <button class="dh-card-link" onclick="showTab('airlog')">입력 페이지로 →</button>
         </div>
-        <div style="font-size:10px;font-weight:600;color:#9ca3af;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;">최신 미개선</div>
-        <div id="dash-insp-list"><div style="font-size:12px;color:#d1d5db;padding:8px 0;">-</div></div>
+      </div>
+      <div class="dh-al">
+        <div class="dh-al-row">
+          <div class="dh-al-head label">항목</div>
+          <div class="dh-al-head">1월</div><div class="dh-al-head">2월</div><div class="dh-al-head">3월</div>
+          <div class="dh-al-head">4월</div><div class="dh-al-head">5월</div><div class="dh-al-head">6월</div>
+          <div class="dh-al-head">7월</div><div class="dh-al-head">8월</div><div class="dh-al-head">9월</div>
+          <div class="dh-al-head">10월</div><div class="dh-al-head">11월</div><div class="dh-al-head">12월</div>
+        </div>
+        <div class="dh-al-row" id="dh-al-em-row">
+          <div class="dh-al-cell label">배출구 가동시간</div>
+        </div>
+        <div class="dh-al-row" id="dh-al-pr-row">
+          <div class="dh-al-cell label">방지시설 전력사용량</div>
+        </div>
+        <div class="dh-al-row" id="dh-al-sems-row">
+          <div class="dh-al-cell label">SEMS 등록</div>
+        </div>
+      </div>
+      <div class="dh-al-legend">
+        <div class="dh-lg"><span class="dh-dot done"></span> 입력 완료</div>
+        <div class="dh-lg"><span class="dh-dot progress"></span> 진행 중</div>
+        <div class="dh-lg"><span class="dh-dot none"></span> 미입력</div>
       </div>
     </div>
 
-    <!-- 폐유고상 보관량 -->
-    <div id="dash-waste-oil-widget" class="card" style="border-radius:10px;border-width:0.5px;">
-      <div class="table-header">
-        <span class="table-title">폐유고상 보관량<span id="dash-waste-unconfirmed" style="display:none;margin-left:7px;background:#dc2626;color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;vertical-align:middle;"></span></span>
-        <button onclick="showTab('waste-oil')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button>
+    <div class="dh-card">
+      <div class="dh-card-h">
+        <div class="dh-card-h-t">환경점검 요약</div>
+        <div class="dh-card-h-r">
+          <button class="dh-card-link" onclick="showTab('inspect')">상세 →</button>
+        </div>
       </div>
-      <div style="padding:10px 14px;" id="dash-waste-lines"></div>
+      <div class="dh-insp-mini">
+        <div class="dh-insp-box alert">
+          <div class="dh-insp-n alert" id="dh-insp-miss">-</div>
+          <div class="dh-insp-lbl">미개선 건수</div>
+        </div>
+        <div class="dh-insp-box">
+          <div class="dh-insp-n" id="dh-insp-rate">-</div>
+          <div class="dh-insp-lbl">월간 개선율</div>
+        </div>
+      </div>
+      <div class="dh-insp-eyebrow">최신 미개선</div>
+      <div id="dh-insp-list">
+        <div class="dh-insp-row"><span style="font-size:12px;color:#d1d5db;">로딩 중…</span></div>
+      </div>
     </div>
-
   </div>
 
-  <!-- 3줄: 3분할 (배출업체 스케줄 / 대기측정 일정 / 메모) -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;" class="dash-3col-grid">
-
-    <!-- 배출업체 스케줄 -->
-    <div class="card" style="border-radius:10px;border-width:0.5px;">
-      <div class="table-header"><span class="table-title">배출업체 스케줄</span><button onclick="showTab('waste-schedule')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button></div>
-      <div id="dash-waste-schedule"></div>
-    </div>
-
-    <!-- 대기측정 일정 -->
-    <div class="card" style="border-radius:10px;border-width:0.5px;">
-      <div class="table-header"><span class="table-title">대기측정 일정</span><button onclick="showTab('air')" style="font-size:11px;color:#0f2744;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;">상세 →</button></div>
-      <div id="dash-air-schedule"></div>
-    </div>
-
-    <!-- 공지판 -->
-    <div class="card" id="notice-widget" style="border-radius:10px;border-width:0.5px;">
-      <div class="table-header">
-        <span class="table-title">공지판</span>
-        <button id="notice-add-btn" onclick="openNoticeForm()" style="display:none;padding:5px 12px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">+ 작성</button>
+  <!-- Bottom 3-col -->
+  <div class="dh-g-bot">
+    <div class="dh-card">
+      <div class="dh-card-h">
+        <div class="dh-card-h-t">폐기물 보관 현황</div>
+        <div class="dh-card-h-s">보관률 높은 순</div>
+        <div class="dh-card-h-r"><button class="dh-card-link" onclick="showTab('waste-storage')">전체 보기 →</button></div>
       </div>
-      <div id="notice-form" style="display:none;padding:12px 14px;border-bottom:1px solid #f1f5f9;background:#f8fafc;">
-        <textarea id="notice-input" placeholder="공지 내용 입력..." style="width:100%;height:100px;border:1px solid #e2e8f0;border-radius:6px;padding:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif;resize:none;outline:none;box-sizing:border-box;color:#374151;line-height:1.6;"></textarea>
+      <div id="dh-waste-bars">
+        <div class="dh-oil-row"><span style="font-size:12px;color:#d1d5db;">로딩 중…</span></div>
+      </div>
+    </div>
+
+    <div class="dh-card">
+      <div class="dh-card-h">
+        <div class="dh-card-h-t">배출 일정</div>
+        <div class="dh-card-h-r"><button class="dh-card-link" onclick="showTab('waste-schedule')">전체 일정 →</button></div>
+      </div>
+      <div id="dh-sch-list">
+        <div class="dh-sch-row"><span style="font-size:12px;color:#d1d5db;">로딩 중…</span></div>
+      </div>
+    </div>
+
+    <div class="dh-card" id="notice-widget">
+      <div class="dh-card-h">
+        <div class="dh-card-h-t">공지</div>
+        <div class="dh-card-h-r">
+          <button id="notice-add-btn" onclick="openNoticeForm()" style="display:none;" class="dh-not-add">+ 작성</button>
+        </div>
+      </div>
+      <div id="notice-form" style="display:none;padding:12px 14px;border-bottom:1px solid var(--bd-1);background:#f8fafc;">
+        <textarea id="notice-input" placeholder="공지 내용 입력..." style="width:100%;height:100px;border:1px solid var(--bd-1);border-radius:6px;padding:8px;font-size:13px;font-family:inherit;resize:none;outline:none;box-sizing:border-box;color:var(--t-1);line-height:1.6;"></textarea>
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end;">
-          <button onclick="saveNotice()" style="padding:6px 16px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">저장</button>
-          <button onclick="closeNoticeForm()" style="padding:6px 14px;background:white;color:#6b7280;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">취소</button>
+          <button onclick="saveNotice()" style="padding:6px 16px;background:var(--navy-700);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">저장</button>
+          <button onclick="closeNoticeForm()" style="padding:6px 14px;background:white;color:var(--t-4);border:1px solid var(--bd-1);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">취소</button>
         </div>
       </div>
       <div id="notice-list" style="padding:0;">로딩 중...</div>
     </div>
-
   </div>
 
 </div>
@@ -2566,207 +2560,176 @@ function loadCurrentTab(){
 
 async function loadDashboard(){
   try{
-  // 날짜/인사
   var now=new Date();
   var days=['일','월','화','수','목','금','토'];
-  var dateStr=now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 ('+days[now.getDay()]+')';
-  var h=now.getHours();
-  var greeting=h<12?'좋은 아침입니다':h<18?'안녕하세요':h<22?'수고하셨습니다':'안녕하세요';
-  document.getElementById('dash-greeting').textContent=greeting+', '+(currentUser?(currentUser.name||currentUser.username):'')+'님!';
-  document.getElementById('dash-date').textContent=dateStr;
+  var year=now.getFullYear();
+  var curMonth=now.getMonth()+1;
+  var today=now.toISOString().split('T')[0];
+  var ym=year+'-'+String(curMonth).padStart(2,'0');
+  var el=function(id){return document.getElementById(id);};
 
-  var now2=new Date();
-  var ym=now2.getFullYear()+'-'+String(now2.getMonth()+1).padStart(2,'0');
-  var today=now2.toISOString().split('T')[0];
-  // 이번 주 월~일
-  var dow=now2.getDay()||7;
-  var weekStart=new Date(now2); weekStart.setDate(now2.getDate()-dow+1);
-  var weekEnd=new Date(now2); weekEnd.setDate(now2.getDate()+(7-dow));
-  var weekStartStr=weekStart.toISOString().split('T')[0];
-  var weekEndStr=weekEnd.toISOString().split('T')[0];
+  // Hello 헤더
+  var displayName=currentUser?(currentUser.name||currentUser.username||'사용자'):'사용자';
+  var h=now.getHours();var mn=now.getMinutes();
+  var ampm=h<12?'오전':'오후';var h12=h===0?12:h>12?h-12:h;
+  if(el('dh-user-name'))el('dh-user-name').textContent=displayName;
+  if(el('dh-date-str'))el('dh-date-str').textContent=year+'년 '+curMonth+'월 '+now.getDate()+'일 ('+days[now.getDay()]+') · '+ampm+' '+h12+':'+String(mn).padStart(2,'0');
+  if(el('dh-airlog-year'))el('dh-airlog-year').textContent=year+'년';
 
   // 병렬 로드
   var results=await Promise.all([
-    sb('waste_oil_storage','?select=*&order=line_name.asc'),
-    sb('air_operation_log','?log_date=gte.'+ym+'-01&facility_type=eq.배출구&select=log_date,submitted_by&order=log_date.asc'),
-    sb('air_operation_log','?log_date=gte.'+weekStartStr+'&log_date=lte.'+weekEndStr+'&facility_type=eq.배출구&select=log_date,submitted_by'),
-    sb('waste_oil_schedule','?status=eq.예정&select=*&order=scheduled_date.asc&limit=5'),
-    sb('air_measurement','?status=eq.예정&measure_date=gte.'+today+'&select=*&order=measure_date.asc&limit=5'),
-    sb('air_operation_log','?log_date=gte.'+now2.getFullYear()+'-01-01&select=log_date,facility_type,facility_no,submitted_by&order=log_date.asc'),
-    sb('waste_oil_requests','?select=line_name,pack_type,bag_count,status,checked&order=request_date.desc'),
-    sb('inspection_records','?select=id,inspect_date,issue,status&order=inspect_date.desc')
+    sb('air_operation_log','?log_date=gte.'+ym+'-01&facility_type=eq.배출구&select=log_date&order=log_date.asc'),
+    sb('air_operation_log','?log_date=gte.'+year+'-01-01&select=log_date,facility_type&order=log_date.asc'),
+    sb('inspection_records','?select=id,inspect_date,issue,status,category&order=inspect_date.desc'),
+    sb('waste_storage','?select=*&order=display_order.asc'),
+    sb('waste_schedule','?status=eq.scheduled&scheduled_date=gte.'+today+'&select=*&order=scheduled_date.asc&limit=5')
   ]);
-  var storageData=results[0]||[];
-  var airlogMonth=results[1]||[];
-  var airlogWeek=results[2]||[];
-  var wasteSchedule=results[3]||[];
-  var airSchedule=results[4]||[];
-  var airlogYear=results[5]||[];
-  var wasteRequests=results[6]||[];
-  var inspectAll=results[7]||[];
+  var airlogMonth=results[0]||[];
+  var airlogYear=results[1]||[];
+  var inspectAll=results[2]||[];
+  var storageData=results[3]||[];
+  var wasteSchedule=results[4]||[];
 
-  // ── 알림칩 ──
+  // ── KPI 1 & 2: 점검 ──
   var inspectMiss=inspectAll.filter(function(r){return r.status==='miss';});
-  var chipInspect=document.getElementById('dash-chip-inspect');
-  var chipDday=document.getElementById('dash-chip-dday');
-  if(chipInspect){
-    if(inspectMiss.length>0){chipInspect.style.display='';document.getElementById('dash-chip-inspect-cnt').textContent=inspectMiss.length;}
-    else{chipInspect.style.display='none';}
-  }
-  if(chipDday&&wasteSchedule.length>0){
-    var dday0=Math.ceil((new Date(wasteSchedule[0].scheduled_date)-new Date(today))/(1000*60*60*24));
-    var ddayTxt=dday0===0?'오늘':dday0>0?'D-'+dday0:'D+'+Math.abs(dday0);
-    document.getElementById('dash-chip-dday-txt').textContent=ddayTxt;
-    chipDday.style.display='';
-  }else if(chipDday){chipDday.style.display='none';}
-
-  // ── 점검이력 요약 ──
   var inspHold=inspectAll.filter(function(r){return r.status==='hold';}).length;
   var inspDone=inspectAll.filter(function(r){return r.status==='done';}).length;
   var inspDenom=inspectAll.length-inspHold;
   var inspRate=inspDenom>0?Math.round(inspDone/inspDenom*100):0;
-  var missEl=document.getElementById('dash-insp-miss');
-  var rateEl=document.getElementById('dash-insp-rate');
-  if(missEl)missEl.textContent=inspectMiss.length;
-  if(rateEl)rateEl.textContent=inspRate+'%';
-  var listEl=document.getElementById('dash-insp-list');
-  if(listEl){
-    var top3=inspectMiss.slice(0,4);
-    if(!top3.length){listEl.innerHTML='<div style="font-size:12px;color:#d1d5db;padding:4px 0;">미개선 없음</div>';}
-    else{listEl.innerHTML=top3.map(function(r){
-      return '<div style="padding:7px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:flex-start;gap:8px;">'+
-        '<div style="flex:1;font-size:12px;color:#374151;line-height:1.4;">'+r.issue+'</div>'+
-        '<div style="font-size:10px;color:#9ca3af;white-space:nowrap;flex-shrink:0;">'+r.inspect_date+'</div>'+
-      '</div>';
-    }).join('');}
+  if(el('kpi-insp-miss'))el('kpi-insp-miss').textContent=inspectMiss.length;
+  if(el('kpi-insp-trend'))el('kpi-insp-trend').textContent=inspectMiss.length>0?'미개선 항목 확인 필요':'모두 처리됨';
+  if(el('kpi1-tag'))el('kpi1-tag').style.display=inspectMiss.length>0?'':'none';
+  if(el('kpi-insp-rate'))el('kpi-insp-rate').textContent=inspRate;
+  if(el('kpi-insp-rate-sub'))el('kpi-insp-rate-sub').textContent='전체 '+inspDenom+'건 기준';
+
+  // ── KPI 3: 대기운영기록 미입력 (평일 기준) ──
+  var weekdayCount=0;
+  var d=new Date(year,curMonth-1,1);var todayD=new Date(today);
+  while(d<=todayD){var dow=d.getDay();if(dow!==0&&dow!==6)weekdayCount++;d.setDate(d.getDate()+1);}
+  var logDates=new Set(airlogMonth.map(function(r){return r.log_date;}));
+  var airMiss=Math.max(0,weekdayCount-logDates.size);
+  if(el('kpi-air-miss'))el('kpi-air-miss').textContent=airMiss;
+  if(el('kpi3-tag'))el('kpi3-tag').textContent=curMonth+'월';
+  if(el('kpi-air-miss-sub'))el('kpi-air-miss-sub').textContent='평일 기준 · 오늘까지 '+logDates.size+'일 입력';
+
+  // ── KPI 4: 배출 요청 필요 ──
+  var reqItems=storageData.filter(function(w){return wsPct(w)>=75;});
+  var urgItems=reqItems.filter(function(w){return wsPct(w)>=90;});
+  if(el('kpi-waste-req'))el('kpi-waste-req').textContent=reqItems.length;
+  if(el('kpi4-tag'))el('kpi4-tag').textContent=reqItems.length+'건';
+  if(el('kpi-waste-req-sub'))el('kpi-waste-req-sub').textContent=urgItems.length>0?urgItems.slice(0,2).map(function(w){return w.waste_type;}).join(' · '):reqItems.length===0?'모두 정상':'주의 항목 있음';
+
+  // 알림칩 (topbar용)
+  var chipInspect=el('dash-chip-inspect');
+  if(chipInspect){
+    if(inspectMiss.length>0){chipInspect.style.display='';var ci=el('dash-chip-inspect-cnt');if(ci)ci.textContent=inspectMiss.length;}
+    else{chipInspect.style.display='none';}
   }
 
-  // ── 위젯3: 라인별 보관량 (톤백/링팩 구분) ──
-  var dashUnconfirmedEl=document.getElementById('dash-waste-unconfirmed');
-  if(dashUnconfirmedEl){
-    var dashUnconfirmedCnt=wasteRequests.filter(function(r){return r.status==='unconfirmed'||(!r.status&&!r.checked);}).length;
-    if(dashUnconfirmedCnt>0){dashUnconfirmedEl.textContent='미확인 '+dashUnconfirmedCnt;dashUnconfirmedEl.style.display='';}
-    else{dashUnconfirmedEl.style.display='none';}
-  }
-  var linesEl=document.getElementById('dash-waste-lines');
-  if(linesEl){
-    if(!storageData.length){
-      linesEl.innerHTML='<div style="font-size:12px;color:#d1d5db;padding:8px 0;">데이터 없음</div>';
-    }else{
-      var linePackMap={};
-      wasteRequests.forEach(function(r){
-        if(!linePackMap[r.line_name])linePackMap[r.line_name]={tonbag:0,ringpack:0};
-        if(r.pack_type==='링팩')linePackMap[r.line_name].ringpack+=(r.bag_count||0);
-        else linePackMap[r.line_name].tonbag+=(r.bag_count||0);
-      });
-      linesEl.innerHTML=storageData.map(function(r,i){
-        var total=r.bag_count||0;
-        var lp=linePackMap[r.line_name]||{tonbag:0,ringpack:0};
-        var warn=total>=6?'<span style="color:#dc2626;font-size:13px;margin-left:3px;">⚠</span>':'';
-        var totalColor=total>=6?'#dc2626':'#374151';
-        var border=i<storageData.length-1?'border-bottom:1px solid #f3f4f6;':'';
-        return'<div style="display:flex;align-items:center;gap:6px;padding:7px 0;'+border+'">'+
-          '<span style="font-size:12px;font-weight:600;color:#1e2633;min-width:52px;flex-shrink:0;">'+r.line_name+'</span>'+
-          '<span style="font-size:11px;color:#6b7280;flex:1;">톤백 <b style="color:#0f2744;">'+lp.tonbag+'</b> · 링팩 <b style="color:#3b82f6;">'+lp.ringpack+'</b></span>'+
-          '<span style="font-size:12px;font-weight:700;color:'+totalColor+';">'+total+'개</span>'+
-          warn+
-        '</div>';
-      }).join('');
-    }
-  } // end if(linesEl)
-
-  // ── 위젯4: 배출업체 스케줄 ──
-  var wasteSchedEl=document.getElementById('dash-waste-schedule');
-  if(!wasteSchedule.length){
-    wasteSchedEl.innerHTML='<div class="empty" style="padding:1.2rem;">예정된 배출 일정 없음</div>';
-  }else{
-    wasteSchedEl.innerHTML=wasteSchedule.map(function(r){
-      var dday=Math.ceil((new Date(r.scheduled_date)-new Date(today))/(1000*60*60*24));
-      var ddayStr=dday===0?'오늘':dday>0?'D-'+dday:'D+'+Math.abs(dday);
-      var ddayColor=dday<0?'#dc2626':dday<=3?'#d97706':'#6b7280';
-      // 폐기물 종류 (line_names) 큰 글씨
-      var typeNames=r.line_names?r.line_names.split(',').map(function(t){return t.trim();}).filter(Boolean):[];
-      var typeMain=typeNames.length>0?typeNames.join(', '):'미지정';
-      // 업체명 (notes에서 추출)
-      var company=r.notes?(r.notes.split(' / ')[0]):'가람환경';
-      return'<div style="padding:10px 14px;border-bottom:1px solid #f9fafb;display:flex;align-items:center;gap:10px;">'+
-        '<div style="flex:1;">'+
-          '<div style="font-size:13px;font-weight:700;color:#1e2633;margin-bottom:2px;">'+typeMain+'</div>'+
-          '<div style="font-size:11px;color:#9ca3af;">'+company+' · '+r.scheduled_date+'</div>'+
-        '</div>'+
-        '<span style="font-size:12px;font-weight:700;color:'+ddayColor+';white-space:nowrap;">'+ddayStr+'</span>'+
-      '</div>';
-    }).join('');
-  }
-
-  // ── 위젯5: 대기측정 일정 ──
-  var airSchedEl=document.getElementById('dash-air-schedule');
-  if(!airSchedule.length){
-    airSchedEl.innerHTML='<div class="empty" style="padding:1.2rem;">예정된 측정 일정 없음</div>';
-  }else{
-    airSchedEl.innerHTML=airSchedule.map(function(r){
-      var dday=Math.ceil((new Date(r.measure_date)-new Date(today))/(1000*60*60*24));
-      var ddayStr=dday===0?'오늘':dday>0?'D-'+dday:'D+'+Math.abs(dday);
-      var ddayColor=dday<0?'#dc2626':dday<=7?'#d97706':'#6b7280';
-      // 측정시설 (facilities) 큰 글씨
-      var facilMain=r.facilities?r.facilities.split(',').slice(0,2).map(function(f){return f.trim();}).join(', '):'전체';
-      return'<div style="padding:10px 14px;border-bottom:1px solid #f9fafb;display:flex;align-items:center;gap:10px;">'+
-        '<div style="flex:1;">'+
-          '<div style="font-size:13px;font-weight:700;color:#1e2633;margin-bottom:2px;">'+facilMain+'</div>'+
-          '<div style="font-size:11px;color:#9ca3af;">'+(r.company||'-')+' · '+r.measure_date+'</div>'+
-          (r.special_notes?'<div style="font-size:10px;color:#9ca3af;margin-top:2px;">'+r.special_notes+'</div>':'')+
-        '</div>'+
-        '<span style="font-size:12px;font-weight:700;color:'+ddayColor+';white-space:nowrap;">'+ddayStr+'</span>'+
-      '</div>';
-    }).join('');
-  }
-
-  // ── 월별 입력 현황 ──
-  var year=now2.getFullYear();
-  var curMonth=now2.getMonth()+1; // 1~12
-  var yearEl=document.getElementById('dash-airlog-year');
-  if(yearEl)yearEl.textContent=year+'년';
-
-  // 1~3월: 완료 고정 (시스템 도입 전 기존 데이터 입력 완료)
+  // ── 대기운영기록 매트릭스 ──
   var LEGACY_MONTHS=3;
-
-  // 4월~: DB 기록 기준
-  var emMonths={};
-  var prMonths={};
+  var emMonths={};var prMonths={};
   airlogYear.forEach(function(r){
     var m=parseInt(r.log_date.substring(5,7));
     if(r.facility_type==='배출구')emMonths[m]=true;
     else if(r.facility_type==='방지시설')prMonths[m]=true;
   });
+  function alDot(st){return '<span class="dh-dot '+st+'"></span>';}
+  function alStatus(m,dataMap,curMon){
+    if(m>curMon)return alDot('none');
+    if(m<=LEGACY_MONTHS)return alDot('done');
+    if(m===curMon)return alDot('progress');
+    return dataMap[m]?alDot('done'):alDot('none');
+  }
+  function semsStatus(m,emMap,curMon){
+    if(m>=curMon)return alDot('none');
+    if(m<=LEGACY_MONTHS)return alDot('done');
+    if(m===curMon-1)return emMap[m]?alDot('progress'):alDot('none');
+    return emMap[m]?alDot('done'):alDot('none');
+  }
+  var emCells='',prCells='',semsCells='';
+  for(var mi=1;mi<=12;mi++){
+    emCells+='<div class="dh-al-cell">'+alStatus(mi,emMonths,curMonth)+'</div>';
+    prCells+='<div class="dh-al-cell">'+alStatus(mi,prMonths,curMonth)+'</div>';
+    semsCells+='<div class="dh-al-cell">'+semsStatus(mi,emMonths,curMonth)+'</div>';
+  }
+  var emRow=el('dh-al-em-row');var prRow=el('dh-al-pr-row');var semsRow=el('dh-al-sems-row');
+  if(emRow){var lbl=emRow.querySelector('.dh-al-cell.label');emRow.innerHTML=(lbl?lbl.outerHTML:'<div class="dh-al-cell label">배출구 가동시간</div>')+emCells;}
+  if(prRow){var lbl2=prRow.querySelector('.dh-al-cell.label');prRow.innerHTML=(lbl2?lbl2.outerHTML:'<div class="dh-al-cell label">방지시설 전력사용량</div>')+prCells;}
+  if(semsRow){var lbl3=semsRow.querySelector('.dh-al-cell.label');semsRow.innerHTML=(lbl3?lbl3.outerHTML:'<div class="dh-al-cell label">SEMS 등록</div>')+semsCells;}
 
-  var okBadge='<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#d1fae5;color:#065f46;font-weight:700;font-size:12px;">✓</span>';
-  var okLegacyBadge=okBadge;
-  var missBadge='<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;">미입력</span>';
-  var ongoingBadge='<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:#fef9c3;color:#854d0e;border:1px solid #fde047;">입력 중</span>';
-  var naBadge='<span style="color:#d1d5db;font-size:13px;">-</span>';
-
-  for(var m=1;m<=12;m++){
-    var emEl=document.getElementById('dah-em'+m);
-    var prEl=document.getElementById('dah-pr'+m);
-    if(!emEl||!prEl)continue;
-    if(m>curMonth){
-      // 미래 월
-      emEl.innerHTML=naBadge;
-      prEl.innerHTML=naBadge;
-    }else if(m<=LEGACY_MONTHS){
-      // 1~3월 완료 고정
-      emEl.innerHTML=okLegacyBadge;
-      prEl.innerHTML=okLegacyBadge;
-    }else if(m===curMonth){
-      // 현재 진행 중인 달 → 항상 입력 중
-      emEl.innerHTML=ongoingBadge;
-      prEl.innerHTML=ongoingBadge;
+  // ── 환경점검 요약 ──
+  if(el('dh-insp-miss'))el('dh-insp-miss').textContent=inspectMiss.length;
+  if(el('dh-insp-rate'))el('dh-insp-rate').textContent=inspRate+'%';
+  var listEl=el('dh-insp-list');
+  if(listEl){
+    var top3=inspectMiss.slice(0,3);
+    if(!top3.length){
+      listEl.innerHTML='<div class="dh-insp-row"><span style="font-size:12px;color:#d1d5db;">미개선 없음</span></div>';
     }else{
-      // 지난달 이전 → DB 기록 기준
-      emEl.innerHTML=emMonths[m]?okBadge:missBadge;
-      prEl.innerHTML=prMonths[m]?okBadge:missBadge;
+      var todayMs=new Date(today).getTime();
+      listEl.innerHTML=top3.map(function(r){
+        var tag=escHtml(r.category||'미분류');
+        var dPlus=r.inspect_date?Math.ceil((todayMs-new Date(r.inspect_date).getTime())/(1000*60*60*24)):0;
+        var dateShort=r.inspect_date?(r.inspect_date.substring(5).replace('-','.')):'';
+        return '<div class="dh-insp-row">'+
+          '<span class="dh-insp-tag">'+tag+'</span>'+
+          '<span class="dh-insp-issue">'+escHtml(r.issue||'-')+'</span>'+
+          '<span class="dh-insp-d">'+dateShort+' · D+'+dPlus+'</span>'+
+        '</div>';
+      }).join('');
     }
   }
+
+  // ── 폐기물 보관 현황 (보관률 상위 5건) ──
+  var barsEl=el('dh-waste-bars');
+  if(barsEl){
+    if(!storageData.length){
+      barsEl.innerHTML='<div class="dh-oil-row"><span style="font-size:12px;color:#d1d5db;">데이터 없음</span></div>';
+    }else{
+      var sorted=[].concat(storageData).sort(function(a,b){return wsPct(b)-wsPct(a);});
+      barsEl.innerHTML=sorted.slice(0,5).map(function(w){
+        var pct=Math.min(wsPct(w),100);
+        var cls=pct>=90?'crit':pct>=75?'warn':'ok';
+        var color=pct>=90?'var(--red-600)':pct>=75?'var(--orange-600)':'var(--t-2)';
+        return '<div class="dh-oil-row">'+
+          '<div class="dh-oil-n">'+escHtml(w.waste_type||'-')+'</div>'+
+          '<div class="dh-oil-bar"><div class="dh-oil-bar-f '+cls+'" style="width:'+pct+'%"></div></div>'+
+          '<div style="width:44px;text-align:right;font-size:13px;font-weight:800;color:'+color+';font-variant-numeric:tabular-nums;">'+pct+'%</div>'+
+        '</div>';
+      }).join('');
+    }
+  }
+
+  // ── 배출 일정 ──
+  var schEl=el('dh-sch-list');
+  if(schEl){
+    if(!wasteSchedule.length){
+      schEl.innerHTML='<div class="dh-sch-row"><span style="font-size:12px;color:#d1d5db;">예정된 일정 없음</span></div>';
+    }else{
+      schEl.innerHTML=wasteSchedule.map(function(r){
+        var dday=Math.ceil((new Date(r.scheduled_date)-new Date(today))/(1000*60*60*24));
+        var ddayStr=dday===0?'오늘':dday>0?'D-'+dday:'D+'+Math.abs(dday);
+        var ddayCls=dday<=0?'crit':dday<=3?'warn':'info';
+        var parts=r.scheduled_date.split('-');
+        var dayNum=parseInt(parts[2]);var monNum=parseInt(parts[1]);
+        var dayName=days[new Date(r.scheduled_date+'T00:00:00').getDay()];
+        var isToday=r.scheduled_date===today;
+        return '<div class="dh-sch-row">'+
+          '<div class="dh-sch-d'+(isToday?' today':'')+'">'+
+            '<div class="dh-sch-d-day">'+String(dayNum).padStart(2,'0')+'</div>'+
+            '<div class="dh-sch-d-mon">'+monNum+'월 '+dayName+'</div>'+
+          '</div>'+
+          '<div class="dh-sch-body">'+
+            '<div class="dh-sch-t">'+escHtml(r.vendor_name||'미지정')+' · '+escHtml(r.waste_type||'')+'</div>'+
+            '<div class="dh-sch-s">'+(r.expected_amount?'예상 '+r.expected_amount+(r.expected_unit||'t'):'')+'</div>'+
+          '</div>'+
+          '<span class="tc-badge '+ddayCls+'">'+ddayStr+'</span>'+
+        '</div>';
+      }).join('');
+    }
+  }
+
   }catch(e){console.error('[loadDashboard] 오류:',e);}
 }
 
