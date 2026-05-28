@@ -1295,7 +1295,6 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     <button class="ws-btn ws-btn-primary" onclick="wsQuery()">조회</button>
     <button class="ws-btn" onclick="wsExcel()">엑셀</button>
     <button class="ws-btn" onclick="document.getElementById('ws-update-section').scrollIntoView({behavior:'smooth'})">보관량 업데이트</button>
-    <button class="ws-btn" onclick="document.getElementById('ws-record-section').scrollIntoView({behavior:'smooth'})">배출 기록 추가</button>
   </div>
 
   <!-- 요약 칩 -->
@@ -1346,37 +1345,6 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     </div>
   </div>
 
-  <!-- 배출 기록 (당월) -->
-  <div class="ws-section" id="ws-record-section">
-    <div class="ws-section-hdr">
-      <div class="ws-section-title">배출 기록 (당월)</div>
-      <button class="ws-btn-sm" onclick="wsDisposalExcel()">엑셀</button>
-    </div>
-    <div class="ws-record-form">
-      <div><label class="ws-form-label">배출일 *</label><input type="date" class="ws-form-input" id="ws-rec-date"></div>
-      <div><label class="ws-form-label">폐기물 종류 *</label><select class="ws-form-input" id="ws-rec-type"></select></div>
-      <div><label class="ws-form-label">배출 수량</label><input type="text" class="ws-form-input" id="ws-rec-amount" placeholder="예: 4 또는 90"></div>
-      <div><label class="ws-form-label">위탁 업체명</label><input type="text" class="ws-form-input" id="ws-rec-company" placeholder="예: 영남환경"></div>
-      <button class="ws-btn ws-btn-primary" style="margin-top:18px;" onclick="wsAddDisposal()">기록 추가</button>
-    </div>
-    <div style="overflow-x:auto;">
-      <table class="ws-table" style="min-width:680px;">
-        <thead>
-          <tr>
-            <th style="width:38px;">No.</th>
-            <th style="width:110px;">배출일</th>
-            <th style="width:170px;">폐기물 종류</th>
-            <th style="width:80px;">배출 수량</th>
-            <th style="width:52px;">단위</th>
-            <th>위탁 업체명</th>
-            <th style="width:80px;">관리</th>
-          </tr>
-        </thead>
-        <tbody id="ws-disposal-tbody"><tr><td colspan="7" style="text-align:center;padding:2rem;color:#9ca3af;">불러오는 중...</td></tr></tbody>
-      </table>
-    </div>
-    <div class="ws-table-footer"><span id="ws-disposal-footer">-</span><span></span></div>
-  </div>
 </div>
 
 <!-- 연간 배출량 탭 -->
@@ -3724,7 +3692,7 @@ async function loadWasteData(){
       '<tbody>'+rows+'</tbody></table></div>';
   }
 
-  loadWasteStorage(allData);
+  loadWasteOilStorage(allData);
   renderWasteMonthlyChart(allData);
 }
 
@@ -3733,7 +3701,7 @@ async function loadWasteScheduleTab(){
   await wschLoad();
 }
 
-async function loadWasteStorage(allData){
+async function loadWasteOilStorage(allData){
   var data=await sb('waste_oil_storage','?select=*&order=line_name.asc');
   if(!data)data=[];
   var lineBadgeColors={'G16동':'#1e40af','현대라인':'#166534','강건재라인':'#854d0e','패킹라인':'#6b21a8','도장라인':'#9d174d'};
