@@ -604,9 +604,20 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <span class="topbar-title" id="topbar-title">홈</span>
+      <nav class="tc-bc">
+        <span class="tc-bc-home" onclick="showTab('home')">TC 환경관리</span>
+        <span class="tc-bc-sep" id="bc-sep1" style="display:none">›</span>
+        <span class="tc-bc-section" id="bc-section"></span>
+        <span class="tc-bc-sep" id="bc-sep2" style="display:none">›</span>
+        <span class="tc-bc-cur" id="bc-cur">홈</span>
+      </nav>
     </div>
     <div class="topbar-right">
       <button class="top-btn" onclick="location.reload()">새로고침</button>
+      <div class="tc-sync">
+        <span class="tc-sync-dot"></span>
+        <span id="tc-sync-time">동기화 중…</span>
+      </div>
     </div>
   </div>
 
@@ -2426,7 +2437,7 @@ function checkAuth(){
   var nameEl=document.getElementById('sb-user-name');
   if(nameEl)nameEl.textContent=displayUser;
   var roleEl=document.getElementById('sb-user-role');
-  if(roleEl)roleEl.textContent=roleText;
+  if(roleEl)roleEl.textContent='('+(currentUser.username||displayUser)+')';
   // 관리자가 아니면 사용자 관리 메뉴 숨김
   var usersNav=document.getElementById('nav-users');
   var adminSection=document.getElementById('nav-section-admin');
@@ -2509,10 +2520,18 @@ function showTab(tab){
     var c3=document.getElementById('nav-3s5s-children');
     if(p3&&c3&&c3.style.display==='none'){p3.classList.add('open');c3.style.display='block';}
   }
-  // topbar 타이틀
+  // topbar 타이틀 + 브레드크럼
   var titles={home:'홈',filter:'필터 교체','waste-storage':'폐기물 보관 현황','waste-annual':'연간 폐기물 배출량','waste-schedule':'배출 일정',airlog:'대기운영기록',air:'대기측정 일정',inspect:'환경점검','3s5s':'3정5S',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
   if(titleEl)titleEl.textContent=titles[tab]||tab;
+  var bcMap={home:{section:'',cur:'홈'},filter:{section:'집진설비',cur:'필터 교체'},'waste-storage':{section:'폐기물',cur:'보관 현황'},'waste-annual':{section:'폐기물',cur:'연간 배출량'},'waste-schedule':{section:'폐기물',cur:'배출 일정'},airlog:{section:'대기',cur:'대기운영기록'},air:{section:'대기',cur:'대기측정 일정'},inspect:{section:'점검 관리',cur:'환경점검'},'3s5s':{section:'점검 관리',cur:'3정5S'},users:{section:'관리',cur:'사용자 관리'}};
+  var bc=bcMap[tab]||{section:'',cur:titles[tab]||tab};
+  var secEl=document.getElementById('bc-section'),curEl=document.getElementById('bc-cur');
+  var sep1El=document.getElementById('bc-sep1'),sep2El=document.getElementById('bc-sep2');
+  if(secEl)secEl.textContent=bc.section;
+  if(curEl)curEl.textContent=bc.cur;
+  if(sep1El)sep1El.style.display=bc.section?'':'none';
+  if(sep2El)sep2El.style.display=bc.section?'':'none';
   currentTab=tab;
   loadCurrentTab();
   if(tab==='airlog')applyAirlogScrollFix();
@@ -2520,6 +2539,14 @@ function showTab(tab){
 
 function openMoreDrawer(){}
 function closeMoreDrawer(){}
+
+function updateSyncTime(){
+  var el=document.getElementById('tc-sync-time');
+  if(!el)return;
+  var now=new Date();
+  var h=String(now.getHours()).padStart(2,'0'),m=String(now.getMinutes()).padStart(2,'0'),s=String(now.getSeconds()).padStart(2,'0');
+  el.textContent=h+':'+m+':'+s+' 동기화';
+}
 
 function loadCurrentTab(){
   try{
@@ -2534,6 +2561,7 @@ function loadCurrentTab(){
     else if(currentTab==='3s5s')init3s5sTab(window._ss3panel||'input');
     else if(currentTab==='users')loadUsers();
   }catch(e){console.error('탭 로딩 오류:',e);}
+  updateSyncTime();
 }
 
 async function loadDashboard(){
