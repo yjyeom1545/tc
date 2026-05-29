@@ -4172,10 +4172,12 @@ async function loadAirLog(){
 
 async function loadPrevPower(date){
   alPrevPower={};
-  // readonly 전일검침 초기화
+  // 전일검침·당일검침·당일사용량 초기화
   for(var i=1;i<=9;i++){
     var el=document.getElementById('pr'+i+'-prev');
     if(el)el.value='';
+    var todayEl=document.getElementById('pr'+i+'-today');
+    if(todayEl&&!todayEl.disabled)todayEl.value='';
     var dailyEl=document.getElementById('pr'+i+'-daily');
     if(dailyEl){dailyEl.textContent='-';dailyEl.style.color='#d1d5db';}
   }
@@ -4191,8 +4193,11 @@ async function loadPrevPower(date){
       data.forEach(function(r){
         if(r.power_today!=null){
           alPrevPower[r.facility_no]=r.power_today;
-          var el=document.getElementById('pr'+r.facility_no+'-prev');
-          if(el)el.value=r.power_today;
+          var prevEl=document.getElementById('pr'+r.facility_no+'-prev');
+          if(prevEl)prevEl.value=r.power_today;
+          // 당일검침란에도 전일값 표시 (흐름 파악용 참조값)
+          var todayEl2=document.getElementById('pr'+r.facility_no+'-today');
+          if(todayEl2&&!todayEl2.disabled)todayEl2.value=r.power_today;
         }
       });
       break;
