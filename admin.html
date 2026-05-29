@@ -2591,51 +2591,89 @@ async function loadDashboard(){
     else{chipInspect.style.display='none';}
   }
 
-  // ── 대기운영기록 매트릭스 ──
+  // ── 대기운영기록 매트릭스 (평일 기준) ──
   var LEGACY_MONTHS=3;
-  var emMonths={};var prMonths={};
+
+  // 날짜 문자열("YYYY-MM-DD") → 로컬 Date (UTC 오프셋 영향 제거)
+  function parseDateL(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+  function dowL(s){return parseDateL(s).getDay();}
+
+  // 해당 월의 평일 분모 (미래 날짜·토일 제외)
+  function wdDenom(m){
+    if(m>curMonth)return 0;
+    var start=new Date(year,m-1,1);
+    var end=(m===curMonth)?parseDateL(today):new Date(year,m,0);
+    var cnt=0;
+    for(var d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+      var dw=d.getDay();if(dw!==0&&dw!==6)cnt++;
+    }
+    return cnt;
+  }
+
+  // 월별 평일 입력 날짜 집계 (토일 제외)
+  var emWdDates={};var prWdDates={};
   airlogYear.forEach(function(r){
+    if(dowL(r.log_date)===0||dowL(r.log_date)===6)return;
     var m=parseInt(r.log_date.substring(5,7));
-    if(r.facility_type==='배출구')emMonths[m]=true;
-    else if(r.facility_type==='방지시설')prMonths[m]=true;
-  });
-  // SEMS 등록 현황: 날짜별 OR 집계 (한 rows라도 true면 해당 날짜 등록됨)
-  var semsDateMap={};
-  airlogYear.forEach(function(r){
-    if(!Object.prototype.hasOwnProperty.call(semsDateMap,r.log_date)){
-      semsDateMap[r.log_date]=r.sems_registered||false;
-    } else if(r.sems_registered){
-      semsDateMap[r.log_date]=true;
+    if(r.facility_type==='배출구'){
+      if(!emWdDates[m])emWdDates[m]=new Set();emWdDates[m].add(r.log_date);
+    } else if(r.facility_type==='방지시설'){
+      if(!prWdDates[m])prWdDates[m]=new Set();prWdDates[m].add(r.log_date);
     }
   });
-  var semsMonths={};
-  Object.keys(semsDateMap).forEach(function(date){
-    var m=parseInt(date.substring(5,7));
-    if(!semsMonths[m])semsMonths[m]={total:0,reg:0};
-    semsMonths[m].total++;
-    if(semsDateMap[date])semsMonths[m].reg++;
+
+  // SEMS: 평일 날짜별 OR 집계
+  var semsWdMap={};
+  airlogYear.forEach(function(r){
+    if(dowL(r.log_date)===0||dowL(r.log_date)===6)return;
+    if(!Object.prototype.hasOwnProperty.call(semsWdMap,r.log_date)){
+      semsWdMap[r.log_date]=r.sems_registered||false;
+    } else if(r.sems_registered){semsWdMap[r.log_date]=true;}
   });
+  var semsWdReg={};
+  Object.keys(semsWdMap).forEach(function(date){
+    var m=parseInt(date.substring(5,7));
+    if(!semsWdReg[m])semsWdReg[m]=0;
+    if(semsWdMap[date])semsWdReg[m]++;
+  });
+
   function alDot(st){return '<span class="dh-dot '+st+'"></span>';}
-  function alStatus(m,dataMap,curMon){
-    if(m>curMon)return alDot('none');
+
+  function alStatusWd(m,wdDates){
     if(m<=LEGACY_MONTHS)return alDot('done');
-    if(m===curMon)return alDot('progress');
-    return dataMap[m]?alDot('done'):alDot('none');
-  }
-  function semsStatus(m,semsMap,curMon){
-    if(m>curMon)return alDot('none');
-    if(m<=LEGACY_MONTHS)return alDot('done');
-    if(m===curMon)return alDot('progress');
-    var s=semsMap[m];
-    if(!s||s.total===0)return alDot('none');
-    if(s.reg===s.total)return alDot('done');
+    var denom=wdDenom(m);
+    if(denom===0)return alDot('none');
+    var filled=wdDates[m]?wdDates[m].size:0;
+    if(filled===0)return alDot('none');
+    if(filled>=denom)return alDot('done');
     return alDot('progress');
   }
+
+  function semsStatusWd(m){
+    if(m<=LEGACY_MONTHS)return alDot('done');
+    var denom=wdDenom(m);
+    if(denom===0)return alDot('none');
+    var reg=semsWdReg[m]||0;
+    if(reg===0)return alDot('none');
+    if(reg>=denom)return alDot('done');
+    return alDot('progress');
+  }
+
+  function wdTooltip(m){
+    if(m<=LEGACY_MONTHS)return m+'월: 시스템 도입 이전';
+    var denom=wdDenom(m);
+    if(denom===0)return m+'월: 해당 없음 (미래)';
+    var emF=emWdDates[m]?emWdDates[m].size:0;
+    var sReg=semsWdReg[m]||0;
+    return m+'월 평일 '+denom+'일 중 '+emF+'일 입력, SEMS 등록 '+sReg+'일';
+  }
+
   var emCells='',prCells='',semsCells='';
   for(var mi=1;mi<=12;mi++){
-    emCells+='<div class="dh-al-cell">'+alStatus(mi,emMonths,curMonth)+'</div>';
-    prCells+='<div class="dh-al-cell">'+alStatus(mi,prMonths,curMonth)+'</div>';
-    semsCells+='<div class="dh-al-cell">'+semsStatus(mi,semsMonths,curMonth)+'</div>';
+    var tip=wdTooltip(mi);
+    emCells+='<div class="dh-al-cell" title="'+tip+'">'+alStatusWd(mi,emWdDates)+'</div>';
+    prCells+='<div class="dh-al-cell" title="'+tip+'">'+alStatusWd(mi,prWdDates)+'</div>';
+    semsCells+='<div class="dh-al-cell" title="'+tip+'">'+semsStatusWd(mi)+'</div>';
   }
   var emRow=el('dh-al-em-row');var prRow=el('dh-al-pr-row');var semsRow=el('dh-al-sems-row');
   if(emRow){var lbl=emRow.querySelector('.dh-al-cell.label');emRow.innerHTML=(lbl?lbl.outerHTML:'<div class="dh-al-cell label">배출구 가동시간</div>')+emCells;}
