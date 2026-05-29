@@ -2451,7 +2451,7 @@ var PERM_KEYS=['filter_write','waste_confirm','waste_complete','schedule_write',
 async function sb(table,query,opts){
   opts=opts||{};
   var url=SB_URL+'/rest/v1/'+table+(query||'');
-  var res=await fetch(url,{method:opts.method||'GET',headers:Object.assign({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},opts.headers||{}),body:opts.body?JSON.stringify(opts.body):undefined});
+  var res=await fetch(url,{method:opts.method||'GET',headers:Object.assign({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal','Cache-Control':'no-cache'},opts.headers||{}),body:opts.body?JSON.stringify(opts.body):undefined});
   if(opts.method&&opts.method!=='GET')return res;
   return res.json();
 }
@@ -2599,10 +2599,14 @@ async function loadDashboard(){
     if(r.facility_type==='배출구')emMonths[m]=true;
     else if(r.facility_type==='방지시설')prMonths[m]=true;
   });
-  // SEMS 등록 현황: 날짜별 dedup 후 월별 집계
+  // SEMS 등록 현황: 날짜별 OR 집계 (한 rows라도 true면 해당 날짜 등록됨)
   var semsDateMap={};
   airlogYear.forEach(function(r){
-    if(!semsDateMap[r.log_date])semsDateMap[r.log_date]=r.sems_registered||false;
+    if(!Object.prototype.hasOwnProperty.call(semsDateMap,r.log_date)){
+      semsDateMap[r.log_date]=r.sems_registered||false;
+    } else if(r.sems_registered){
+      semsDateMap[r.log_date]=true;
+    }
   });
   var semsMonths={};
   Object.keys(semsDateMap).forEach(function(date){
