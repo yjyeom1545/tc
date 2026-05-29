@@ -1248,8 +1248,8 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 <!-- 보관 현황 탭 -->
 <div id="tab-waste-storage" class="content hidden">
   <!-- 브레드크럼 -->
-  <div style="background:white;border:1px solid #d4dce5;border-radius:4px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-    <div style="font-size:12px;color:#6b7280;">HOME <span style="margin:0 6px;color:#cbd5e1;">›</span> 폐기물 <span style="margin:0 6px;color:#cbd5e1;">›</span> <span style="color:#0f2744;font-weight:500;">보관 현황</span></div>
+  <div style="margin-bottom:6px;">
+    <div style="font-size:12px;color:#9ca3af;">HOME <span style="margin:0 4px;">›</span> 폐기물 <span style="margin:0 4px;">›</span> <span style="color:#374151;font-weight:500;">보관 현황</span></div>
   </div>
   <div class="ws-page-title"><span class="ws-page-title-icon"></span>폐기물 보관 현황 조회</div>
 
@@ -1351,8 +1351,8 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 <!-- 연간 배출량 탭 -->
 <div id="tab-waste-annual" class="content hidden">
   <!-- 브레드크럼 -->
-  <div style="background:white;border:1px solid #d4dce5;border-radius:4px;padding:10px 16px;display:flex;align-items:center;margin-bottom:10px;">
-    <div style="font-size:12px;color:#6b7280;">HOME <span style="margin:0 6px;color:#cbd5e1;">›</span> 폐기물 <span style="margin:0 6px;color:#cbd5e1;">›</span> <span style="color:#0f2744;font-weight:500;">연간 배출량</span></div>
+  <div style="margin-bottom:6px;">
+    <div style="font-size:12px;color:#9ca3af;">HOME <span style="margin:0 4px;">›</span> 폐기물 <span style="margin:0 4px;">›</span> <span style="color:#374151;font-weight:500;">연간 배출량</span></div>
   </div>
   <div class="wa-page-title">
     <span class="wa-page-title-icon"></span>
@@ -1360,29 +1360,11 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     <span class="unit-note">단위: 톤(t) · 위탁업체 인수 확정 기준</span>
   </div>
 
-  <!-- 필터 -->
-  <div class="wa-filter-section">
-    <div class="wa-filter-grid">
-      <div class="wa-filter-label">연도</div>
-      <div class="wa-filter-input"><select id="wa-year"></select></div>
-      <div class="wa-filter-label">폐기물 구분</div>
-      <div class="wa-filter-input">
-        <select id="wa-filter-group">
-          <option value="">전체</option><option value="지정폐기물">지정폐기물</option><option value="일반폐기물">일반폐기물</option>
-        </select>
-      </div>
-      <div class="wa-filter-label">발생 구역</div>
-      <div class="wa-filter-input">
-        <select id="wa-filter-area">
-          <option value="">전체</option><option value="조립">조립</option><option value="제작">제작</option><option value="-">-</option>
-        </select>
-      </div>
-    </div>
-  </div>
-  <div class="wa-action-bar">
-    <div class="wa-action-left">
+  <div class="wa-action-bar" style="border-top:1px solid #d4dce5;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label style="font-size:13px;color:#374151;font-weight:500;white-space:nowrap;">연도</label>
+      <select id="wa-year" style="height:28px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:12.5px;background:white;color:#1e2633;font-family:inherit;"></select>
       <button class="wa-btn wa-btn-primary" onclick="waLoad()">조회</button>
-      <button class="wa-btn wa-btn-sec" onclick="waCopyPrevYear()">전년도 양식 복사</button>
     </div>
     <div class="wa-action-right">
       <button class="wa-btn wa-btn-primary" onclick="waSave()">저장</button>
@@ -1431,8 +1413,8 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 <!-- 배출 일정 탭 -->
 <div id="tab-waste-schedule" class="content hidden">
   <!-- 브레드크럼 -->
-  <div style="background:white;border:1px solid #d4dce5;border-radius:4px;padding:10px 16px;display:flex;align-items:center;margin-bottom:10px;">
-    <div style="font-size:12px;color:#6b7280;">HOME <span style="margin:0 6px;color:#cbd5e1;">›</span> 폐기물 <span style="margin:0 6px;color:#cbd5e1;">›</span> <span style="color:#0f2744;font-weight:500;">배출 일정</span></div>
+  <div style="margin-bottom:6px;">
+    <div style="font-size:12px;color:#9ca3af;">HOME <span style="margin:0 4px;">›</span> 폐기물 <span style="margin:0 4px;">›</span> <span style="color:#374151;font-weight:500;">배출 일정</span></div>
   </div>
   <div class="ws-page-title"><span class="ws-page-title-icon"></span>폐기물 배출 일정</div>
 
@@ -3572,7 +3554,7 @@ async function waSave(){
   });
 
   try{
-    var res=await fetch(SB_URL+'/rest/v1/waste_annual_record',{
+    var res=await fetch(SB_URL+'/rest/v1/waste_annual_record?on_conflict=year,waste_type,month',{
       method:'POST',
       headers:{
         'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,
