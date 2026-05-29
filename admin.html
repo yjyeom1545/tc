@@ -1668,18 +1668,31 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     </div>
   </div>
 
-  <div class="layout-2col">
-
-    <!-- 왼쪽: 운영기록 입력 -->
-    <div>
-      <div class="card">
-        <div class="table-header">
-          <span class="table-title">운영기록 입력</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;">
-          <span class="filter-label">운전일자</span>
-          <input type="date" id="al-input-date" onchange="loadPrevPower(this.value)" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
-        </div>
+  <div class="card">
+    <!-- 헤더: 세그먼트 토글 + 운전일자 -->
+    <div class="table-header" style="flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;align-items:center;gap:4px;padding:3px;background:#f1f3f5;border-radius:5px;">
+        <button id="al-btn-new" onclick="setAirlogMode('new')" style="padding:5px 14px;font-size:12px;font-weight:700;background:white;color:#0f2744;border:none;border-radius:4px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;box-shadow:0 1px 2px rgba(0,0,0,0.08);">신규 입력</button>
+        <button id="al-btn-edit" onclick="setAirlogMode('edit')" style="padding:5px 14px;font-size:12px;font-weight:400;background:none;color:#6b7280;border:none;border-radius:4px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회 · 수정</button>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <span class="filter-label">운전일자</span>
+        <input type="date" id="al-input-date" onchange="onAirlogDateChange(this.value)" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+        <button id="al-query-btn" onclick="queryAirLog()" style="display:none;padding:7px 14px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회</button>
+      </div>
+    </div>
+    <!-- 수정 모드 노란 배너 -->
+    <div id="al-edit-banner" style="display:none;padding:10px 16px;background:#fffbeb;border-bottom:1px solid #fde68a;font-size:12px;color:#92400e;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="font-weight:700;">수정 모드</span>
+      <span>· <b id="al-banner-date"></b> 자료를 불러왔습니다. 값을 고친 뒤 <b>수정 저장</b>을 눌러주세요.</span>
+      <span id="al-banner-submitter" style="margin-left:auto;font-size:11px;color:#78350f;"></span>
+    </div>
+    <!-- SEMS 등록 상태 행 (Phase 3) -->
+    <div id="al-sems-row" style="display:none;"></div>
+    <!-- 데이터 없음 -->
+    <div id="al-no-data-msg" style="display:none;padding:28px 16px;text-align:center;color:#9ca3af;font-size:13px;border-bottom:1px solid #f3f4f6;">
+      해당 일자 기록이 없습니다. <b>신규 입력</b> 탭에서 작성해 주세요.
+    </div>
 
     <div style="padding:10px 14px 6px;font-size:13px;font-weight:700;color:#0f2744;">1. 배출구별 가동시간</div>
     <div class="al-scroll-hint" id="al-sh-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>← 좌우로 밀어서 확인</div>
@@ -1736,28 +1749,8 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
       </table>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;padding:12px 14px;border-top:1px solid #f3f4f6;">
-          <button onclick="queryAirLog()" style="padding:8px 18px;background:white;color:#0f2744;border:1.5px solid #0f2744;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">날짜 조회/수정</button>
-          <button onclick="saveAirLog()" id="al-save-btn" style="padding:8px 18px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">저장</button>
-        </div>
-      </div>
+      <button onclick="saveAirLog()" id="al-save-btn" style="padding:8px 18px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">저장</button>
     </div>
-
-    <!-- 오른쪽: 일자별 조회 -->
-    <div>
-      <div class="card">
-        <div class="table-header">
-          <span class="table-title">일자별 조회</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f3f4f6;">
-          <span class="filter-label">날짜 선택</span>
-          <input type="date" id="al-view-date" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
-          <button onclick="loadAirLogView()" style="padding:7px 16px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회</button>
-        </div>
-        <div id="al-view-emission" style="overflow-x:auto;"></div>
-        <div id="al-view-prevention" style="overflow-x:auto;"></div>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -2547,7 +2540,7 @@ async function loadDashboard(){
   // 병렬 로드
   var results=await Promise.all([
     sb('air_operation_log','?log_date=gte.'+ym+'-01&facility_type=eq.배출구&select=log_date&order=log_date.asc'),
-    sb('air_operation_log','?log_date=gte.'+year+'-01-01&select=log_date,facility_type&order=log_date.asc'),
+    sb('air_operation_log','?log_date=gte.'+year+'-01-01&select=log_date,facility_type,sems_registered&order=log_date.asc'),
     sb('inspection_records','?select=id,inspect_date,issue,status,category&order=inspect_date.desc'),
     sb('waste_storage','?select=*&order=display_order.asc'),
     sb('waste_schedule','?status=eq.scheduled&scheduled_date=gte.'+today+'&select=*&order=scheduled_date.asc&limit=5')
@@ -2602,6 +2595,18 @@ async function loadDashboard(){
     if(r.facility_type==='배출구')emMonths[m]=true;
     else if(r.facility_type==='방지시설')prMonths[m]=true;
   });
+  // SEMS 등록 현황: 날짜별 dedup 후 월별 집계
+  var semsDateMap={};
+  airlogYear.forEach(function(r){
+    if(!semsDateMap[r.log_date])semsDateMap[r.log_date]=r.sems_registered||false;
+  });
+  var semsMonths={};
+  Object.keys(semsDateMap).forEach(function(date){
+    var m=parseInt(date.substring(5,7));
+    if(!semsMonths[m])semsMonths[m]={total:0,reg:0};
+    semsMonths[m].total++;
+    if(semsDateMap[date])semsMonths[m].reg++;
+  });
   function alDot(st){return '<span class="dh-dot '+st+'"></span>';}
   function alStatus(m,dataMap,curMon){
     if(m>curMon)return alDot('none');
@@ -2609,17 +2614,20 @@ async function loadDashboard(){
     if(m===curMon)return alDot('progress');
     return dataMap[m]?alDot('done'):alDot('none');
   }
-  function semsStatus(m,emMap,curMon){
-    if(m>=curMon)return alDot('none');
+  function semsStatus(m,semsMap,curMon){
+    if(m>curMon)return alDot('none');
     if(m<=LEGACY_MONTHS)return alDot('done');
-    if(m===curMon-1)return emMap[m]?alDot('progress'):alDot('none');
-    return emMap[m]?alDot('done'):alDot('none');
+    if(m===curMon)return alDot('progress');
+    var s=semsMap[m];
+    if(!s||s.total===0)return alDot('none');
+    if(s.reg===s.total)return alDot('done');
+    return alDot('progress');
   }
   var emCells='',prCells='',semsCells='';
   for(var mi=1;mi<=12;mi++){
     emCells+='<div class="dh-al-cell">'+alStatus(mi,emMonths,curMonth)+'</div>';
     prCells+='<div class="dh-al-cell">'+alStatus(mi,prMonths,curMonth)+'</div>';
-    semsCells+='<div class="dh-al-cell">'+semsStatus(mi,emMonths,curMonth)+'</div>';
+    semsCells+='<div class="dh-al-cell">'+semsStatus(mi,semsMonths,curMonth)+'</div>';
   }
   var emRow=el('dh-al-em-row');var prRow=el('dh-al-pr-row');var semsRow=el('dh-al-sems-row');
   if(emRow){var lbl=emRow.querySelector('.dh-al-cell.label');emRow.innerHTML=(lbl?lbl.outerHTML:'<div class="dh-al-cell label">배출구 가동시간</div>')+emCells;}
@@ -4072,6 +4080,8 @@ function sanitizeNum(el){el.value=el.value.replace(/[^0-9]/g,'').slice(0,2);}
 
 var alStatusMap={};
 var alPrevPower={};
+var alMode='new';
+var alEditSemsState={registered:false,at:null,by:null};
 
 function autoCalcHours(n){
   var sh=document.getElementById('em'+n+'-sh').value;
@@ -4140,8 +4150,7 @@ function validatePowerInputs(){
 }
 
 async function loadAirLog(){
-  var today=new Date().toISOString().split('T')[0];
-  document.getElementById('al-input-date').value=today;
+  setAirlogMode('new');
   // 권한 없는 배출구/방지시설 행 비활성화
   var allowEm=getAirLogEmNos();
   [1,2,3,4,5,6,7,9].forEach(function(n){
@@ -4157,7 +4166,6 @@ async function loadAirLog(){
       if(inp){inp.disabled=true;inp.closest('tr').style.opacity='0.4';}
     }
   });
-  await loadPrevPower(today);
 }
 
 async function loadPrevPower(date){
@@ -4192,11 +4200,75 @@ async function loadPrevPower(date){
   [1,2,3,4,5,6,7,9].forEach(function(n){setStatus('em'+n,'정상');});
 }
 
+function setAirlogMode(mode){
+  alMode=mode;
+  var btnNew=document.getElementById('al-btn-new');
+  var btnEdit=document.getElementById('al-btn-edit');
+  var queryBtn=document.getElementById('al-query-btn');
+  var saveBtn=document.getElementById('al-save-btn');
+  var editBanner=document.getElementById('al-edit-banner');
+  var semsRow=document.getElementById('al-sems-row');
+  var noDataMsg=document.getElementById('al-no-data-msg');
+  var activeStyle='padding:5px 14px;font-size:12px;font-weight:700;background:white;color:#0f2744;border:none;border-radius:4px;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;box-shadow:0 1px 2px rgba(0,0,0,0.08);';
+  var inactiveStyle='padding:5px 14px;font-size:12px;font-weight:400;background:none;color:#6b7280;border:none;border-radius:4px;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;';
+  if(mode==='new'){
+    if(btnNew)btnNew.style.cssText=activeStyle;
+    if(btnEdit)btnEdit.style.cssText=inactiveStyle;
+    if(queryBtn)queryBtn.style.display='none';
+    if(editBanner)editBanner.style.display='none';
+    if(semsRow)semsRow.style.display='none';
+    if(noDataMsg)noDataMsg.style.display='none';
+    if(saveBtn)saveBtn.textContent='저장';
+    var today=new Date().toISOString().split('T')[0];
+    var dateEl=document.getElementById('al-input-date');
+    if(dateEl)dateEl.value=today;
+    loadPrevPower(today);
+  } else {
+    if(btnEdit)btnEdit.style.cssText=activeStyle;
+    if(btnNew)btnNew.style.cssText=inactiveStyle;
+    if(queryBtn)queryBtn.style.display='';
+    if(editBanner)editBanner.style.display='none';
+    if(semsRow)semsRow.style.display='none';
+    if(noDataMsg)noDataMsg.style.display='none';
+    if(saveBtn)saveBtn.textContent='수정 저장';
+  }
+}
+
+function onAirlogDateChange(date){
+  if(alMode==='new')loadPrevPower(date);
+}
+
 async function queryAirLog(){
   var date=document.getElementById('al-input-date').value;
-  if(!date){alert('날짜를 선택해주세요.');return;}
+  if(!date)return;
   var data=await sb('air_operation_log','?log_date=eq.'+date+'&select=*&order=facility_type.asc,facility_no.asc');
-  if(!data||!data.length){alert('해당 날짜의 기록이 없습니다.');return;}
+  var editBanner=document.getElementById('al-edit-banner');
+  var noDataMsg=document.getElementById('al-no-data-msg');
+  var semsRow=document.getElementById('al-sems-row');
+  if(!data||!data.length){
+    if(editBanner)editBanner.style.display='none';
+    if(semsRow)semsRow.style.display='none';
+    if(noDataMsg)noDataMsg.style.display='';
+    return;
+  }
+  if(noDataMsg)noDataMsg.style.display='none';
+  // SEMS 상태 보존
+  alEditSemsState={
+    registered:data[0].sems_registered||false,
+    at:data[0].sems_registered_at||null,
+    by:data[0].sems_registered_by||null
+  };
+  // 노란 배너
+  if(editBanner){
+    var bannerDate=document.getElementById('al-banner-date');
+    if(bannerDate)bannerDate.textContent=date;
+    var submitters=[...new Set(data.filter(function(r){return r.submitted_by;}).map(function(r){return displayName(r.submitted_by);}))];
+    var bannerSub=document.getElementById('al-banner-submitter');
+    if(bannerSub)bannerSub.textContent=submitters.length?'최종 제출: '+submitters.join(', '):'';
+    editBanner.style.display='flex';
+  }
+  // SEMS 상태 행
+  renderSemsRow(date,alEditSemsState);
   // 입력칸 채우기
   data.forEach(function(r){
     if(r.facility_type==='배출구'&&r.facility_no!==8){
@@ -4210,15 +4282,72 @@ async function queryAirLog(){
       var n=r.facility_no;
       var prevEl=document.getElementById('pr'+n+'-prev');
       var inp=document.getElementById('pr'+n+'-today');
-      if(r.power_prev!=null&&prevEl){
-        prevEl.value=r.power_prev;
-        alPrevPower[n]=r.power_prev;
-      }
+      if(r.power_prev!=null&&prevEl){prevEl.value=r.power_prev;alPrevPower[n]=r.power_prev;}
       if(inp&&!inp.disabled&&r.power_today!=null)inp.value=r.power_today;
       calcPower(n);
     }
   });
-  alert('기록을 불러왔습니다. 수정 후 저장해주세요.');
+}
+
+function formatSemsAt(isoStr){
+  if(!isoStr)return '';
+  var d=new Date(isoStr);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+
+function renderSemsRow(date,state){
+  var row=document.getElementById('al-sems-row');
+  if(!row)return;
+  if(state.registered){
+    var timeStr=formatSemsAt(state.at);
+    var byStr=state.by?displayName(state.by)+' 님이 등록 확인':'';
+    var desc=(timeStr?timeStr:'')+(byStr?' · '+byStr:'');
+    row.style.cssText='display:flex;padding:10px 16px;background:#f0fdf4;border-bottom:1px solid #bbf7d0;align-items:center;gap:10px;flex-wrap:wrap;';
+    row.innerHTML=
+      '<span style="font-size:11.5px;font-weight:700;color:#6b7280;letter-spacing:0.3px;flex-shrink:0;">SEMS</span>'+
+      '<span style="display:inline-block;background:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;border:1px solid #6ee7b7;flex-shrink:0;">등록 완료</span>'+
+      '<span style="font-size:11.5px;color:#374151;">'+desc+'</span>'+
+      '<button onclick="cancelSemsRegister(\''+date+'\')" style="margin-left:auto;padding:4px 10px;font-size:11px;font-weight:600;background:white;color:#6b7280;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;flex-shrink:0;">등록 취소</button>';
+  } else {
+    row.style.cssText='display:flex;padding:10px 16px;background:#f8fafc;border-bottom:1px solid #e5e7eb;align-items:center;gap:10px;flex-wrap:wrap;';
+    row.innerHTML=
+      '<span style="font-size:11.5px;font-weight:700;color:#6b7280;letter-spacing:0.3px;flex-shrink:0;">SEMS</span>'+
+      '<span style="display:inline-block;background:#fed7aa;color:#c2410c;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;border:1px solid #fb923c;flex-shrink:0;">미등록</span>'+
+      '<span style="font-size:11.5px;color:#6b7280;">이 날짜 데이터를 SEMS에 등록해 주세요.</span>'+
+      '<button onclick="confirmSemsRegister(\''+date+'\')" style="margin-left:auto;padding:6px 14px;font-size:12px;font-weight:700;background:#0f2744;color:white;border:none;border-radius:5px;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;flex-shrink:0;">SEMS 등록 확인</button>';
+  }
+}
+
+async function confirmSemsRegister(date){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  if(!confirm('이 일자('+date+') 데이터를 SEMS에 등록 완료한 것으로 처리할까요?'))return;
+  var now=new Date().toISOString();
+  var by=currentUser.name||currentUser.username;
+  try{
+    var res=await fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+date,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
+      body:JSON.stringify({sems_registered:true,sems_registered_at:now,sems_registered_by:by})
+    });
+    if(!res.ok){var t=await res.text();throw new Error(t);}
+    alEditSemsState={registered:true,at:now,by:by};
+    renderSemsRow(date,alEditSemsState);
+  }catch(e){alert('SEMS 등록 처리 실패: '+e.message);}
+}
+
+async function cancelSemsRegister(date){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  if(!confirm('SEMS 등록 완료를 취소하시겠습니까? (실수로 누른 경우)'))return;
+  try{
+    var res=await fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+date,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
+      body:JSON.stringify({sems_registered:false,sems_registered_at:null,sems_registered_by:null})
+    });
+    if(!res.ok){var t=await res.text();throw new Error(t);}
+    alEditSemsState={registered:false,at:null,by:null};
+    renderSemsRow(date,alEditSemsState);
+  }catch(e){alert('SEMS 등록 취소 실패: '+e.message);}
 }
 
 async function loadAirLogView(){
@@ -4335,7 +4464,10 @@ async function saveAirLog(){
       start_time:startTime,end_time:endTime,
       operation_hours:hr?parseFloat(hr):null,
       status:alStatusMap['em'+n]||'정상',
-      power_prev:null,power_today:null,power_daily:null
+      power_prev:null,power_today:null,power_daily:null,
+      sems_registered:alMode==='edit'?alEditSemsState.registered:false,
+      sems_registered_at:alMode==='edit'?alEditSemsState.at:null,
+      sems_registered_by:alMode==='edit'?alEditSemsState.by:null
     });
   });
   // 방지시설: 담당자별 담당 범위만 저장
@@ -4350,7 +4482,10 @@ async function saveAirLog(){
       log_date:date,submitted_by:currentUser.name||currentUser.username,
       facility_no:no,facility_name:prNames[no],facility_type:'방지시설',
       start_time:null,end_time:null,operation_hours:null,status:null,
-      power_prev:prevVal,power_today:todayVal,power_daily:daily
+      power_prev:prevVal,power_today:todayVal,power_daily:daily,
+      sems_registered:alMode==='edit'?alEditSemsState.registered:false,
+      sems_registered_at:alMode==='edit'?alEditSemsState.at:null,
+      sems_registered_by:alMode==='edit'?alEditSemsState.by:null
     });
   }
 
