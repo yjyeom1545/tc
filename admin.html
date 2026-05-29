@@ -991,6 +991,7 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 .ws-table tbody tr:hover td{background:#fafbfd;}
 .ws-td-num{font-variant-numeric:tabular-nums;}
 .ws-td-name{text-align:left;font-weight:500;color:#1e2633;}
+.ws-td-code{text-align:center;font-family:'JetBrains Mono','Consolas',monospace;font-size:12px;color:#64748b;letter-spacing:0.02em;}
 .ws-td-muted{color:#6b7280;}
 .ws-td-date{color:#475569;font-variant-numeric:tabular-nums;}
 .ws-progress-wrap{display:flex;align-items:center;gap:8px;}
@@ -1308,22 +1309,23 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   <div class="ws-section">
     <div class="ws-section-hdr"><div class="ws-section-title">현재 보관 현황</div></div>
     <div style="overflow-x:auto;">
-      <table class="ws-table" style="min-width:920px;">
+      <table class="ws-table" style="min-width:1010px;">
         <thead>
           <tr>
             <th style="width:38px;">No.</th>
             <th style="width:160px;">폐기물 종류</th>
+            <th style="width:90px;">분류번호</th>
             <th style="width:52px;">단위</th>
             <th style="width:80px;">현재 보관량</th>
             <th style="width:64px;">최대 보관</th>
-            <th style="min-width:140px;">보관률</th>
+            <th style="min-width:100px;">보관률</th>
             <th style="width:106px;">상태</th>
             <th style="width:110px;">마지막 배출일</th>
             <th style="width:72px;">보관 일수</th>
             <th style="width:120px;">관리</th>
           </tr>
         </thead>
-        <tbody id="ws-tbody"><tr><td colspan="10" style="text-align:center;padding:2rem;color:#9ca3af;">불러오는 중...</td></tr></tbody>
+        <tbody id="ws-tbody"><tr><td colspan="11" style="text-align:center;padding:2rem;color:#9ca3af;">불러오는 중...</td></tr></tbody>
       </table>
     </div>
     <div class="ws-table-footer"><span id="ws-table-footer-text">-</span><span></span></div>
@@ -3149,7 +3151,7 @@ function wsRenderTable(rows){
   var tbody=document.getElementById('ws-tbody');
   if(!tbody)return;
   if(!rows||!rows.length){
-    tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:2rem;color:#9ca3af;">조회 결과 없음</td></tr>';
+    tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:2rem;color:#9ca3af;">조회 결과 없음</td></tr>';
     return;
   }
   tbody.innerHTML=rows.map(function(w,i){
@@ -3181,9 +3183,13 @@ function wsRenderRow(w,i,editing){
   var rowStyle=editing?'background:#eff6ff;':'cursor:pointer;';
   var rowClick=editing?'':'onclick="wsRowClick('+i+')"';
   var progressId=editing?'id="ws-edit-progress-'+i+'"':'';
+  var codeDisp=w.classification_code
+    ?ws_esc(w.classification_code)
+    :'<span style="color:#d1d5db;">-</span>';
   return '<tr style="'+rowStyle+'" '+rowClick+'>'
     +'<td class="ws-td-num">'+(i+1)+'</td>'
     +'<td class="ws-td-name">'+ws_esc(w.waste_type)+'</td>'
+    +'<td class="ws-td-code">'+codeDisp+'</td>'
     +'<td class="ws-td-muted">'+ws_esc(w.unit)+'</td>'
     +'<td class="ws-td-num" id="ws-amt-cell-'+i+'">'+amtCell+'</td>'
     +'<td class="ws-td-num ws-td-muted">'+maxDisp+'</td>'
