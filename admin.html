@@ -1694,6 +1694,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
       해당 일자 기록이 없습니다. <b>신규 입력</b> 탭에서 작성해 주세요.
     </div>
 
+    <div id="al-form-area">
     <div style="padding:10px 14px 6px;font-size:13px;font-weight:700;color:#0f2744;">1. 배출구별 가동시간</div>
     <div class="al-scroll-hint" id="al-sh-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>← 좌우로 밀어서 확인</div>
     <div class="table-scroll-wrap" style="overflow-x:auto;">
@@ -1748,7 +1749,8 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         </tbody>
       </table>
     </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;padding:12px 14px;border-top:1px solid #f3f4f6;">
+    </div>
+    <div id="al-footer" style="display:flex;gap:8px;justify-content:flex-end;padding:12px 14px;border-top:1px solid #f3f4f6;">
       <button onclick="saveAirLog()" id="al-save-btn" style="padding:8px 18px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">저장</button>
     </div>
   </div>
@@ -4222,6 +4224,8 @@ function setAirlogMode(mode){
     var today=new Date().toISOString().split('T')[0];
     var dateEl=document.getElementById('al-input-date');
     if(dateEl)dateEl.value=today;
+    clearFormNoData();
+    fillFormDefaults();
     loadPrevPower(today);
   } else {
     if(btnEdit)btnEdit.style.cssText=activeStyle;
@@ -4238,6 +4242,52 @@ function onAirlogDateChange(date){
   if(alMode==='new')loadPrevPower(date);
 }
 
+function setFormNoData(){
+  var area=document.getElementById('al-form-area');
+  if(!area)return;
+  area.style.opacity='0.55';
+  area.querySelectorAll('input').forEach(function(el){
+    el.value='';
+    if(!el.disabled){el.disabled=true;el.setAttribute('data-nd','1');}
+  });
+  area.querySelectorAll('button.al-sbtn').forEach(function(el){
+    if(!el.disabled){el.disabled=true;el.setAttribute('data-nd','1');}
+    el.className='al-sbtn';
+  });
+  [1,2,3,4,5,6,7,8,9].forEach(function(n){
+    var d=document.getElementById('pr'+n+'-daily');
+    if(d){d.textContent='-';d.style.color='#d1d5db';}
+  });
+  var footer=document.getElementById('al-footer');
+  if(footer)footer.style.display='none';
+}
+
+function clearFormNoData(){
+  var area=document.getElementById('al-form-area');
+  if(!area)return;
+  area.style.opacity='';
+  area.querySelectorAll('[data-nd]').forEach(function(el){
+    el.disabled=false;
+    el.removeAttribute('data-nd');
+  });
+  var footer=document.getElementById('al-footer');
+  if(footer)footer.style.display='';
+}
+
+function fillFormDefaults(){
+  var defs={1:{sh:'08',sm:'00',eh:'13',em:'00',hr:'5.0'},
+             2:{sh:'08',sm:'00',eh:'17',em:'00',hr:'9.0'}};
+  [1,2,3,4,5,6,7,9].forEach(function(n){
+    var d=defs[n]||defs[2];
+    ['sh','sm','eh','em'].forEach(function(f){
+      var el=document.getElementById('em'+n+'-'+f);
+      if(el&&!el.disabled)el.value=d[f];
+    });
+    var hr=document.getElementById('em'+n+'-hr');
+    if(hr&&!hr.disabled)hr.value=d.hr;
+  });
+}
+
 async function queryAirLog(){
   var date=document.getElementById('al-input-date').value;
   if(!date)return;
@@ -4249,9 +4299,11 @@ async function queryAirLog(){
     if(editBanner)editBanner.style.display='none';
     if(semsRow)semsRow.style.display='none';
     if(noDataMsg)noDataMsg.style.display='';
+    setFormNoData();
     return;
   }
   if(noDataMsg)noDataMsg.style.display='none';
+  clearFormNoData();
   // SEMS 상태 보존
   alEditSemsState={
     registered:data[0].sems_registered||false,
