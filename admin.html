@@ -216,6 +216,7 @@ tr:hover td{background:#fafbfd;}
 .al-sbtn{padding:3px 10px;border-radius:4px;font-size:11px;font-weight:500;border:1px solid #e8ecf0;cursor:pointer;background:white;color:#9ca3af;font-family:'Noto Sans KR',sans-serif;transition:all 0.12s;}
 .al-normal{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;}
 .al-abnormal{border-color:#dc2626;background:#fef2f2;color:#dc2626;}
+.al-auto{color:#b0b7c3!important;}
 .input-error{border-color:#dc2626 !important;background:#fff5f5 !important;}
 .val-msg{font-size:11px;color:#dc2626;margin-top:3px;display:none;}
 .val-msg.show{display:block;}
@@ -4132,7 +4133,8 @@ function calcPower(no){
       dailyEl.style.color='#ef4444';
     }else{
       dailyEl.textContent=daily.toFixed(0);
-      dailyEl.style.color='#0f2744';
+      var isAutoToday=todayEl&&todayEl.classList.contains('al-auto');
+      dailyEl.style.color=isAutoToday?'#b0b7c3':'#0f2744';
       dailyEl.style.fontWeight='700';
     }
   }
@@ -4198,7 +4200,7 @@ async function loadPrevPower(date){
           if(prevEl)prevEl.value=r.power_today;
           // 당일검침란에도 전일값 표시 (흐름 파악용 참조값)
           var todayEl2=document.getElementById('pr'+r.facility_no+'-today');
-          if(todayEl2&&!todayEl2.disabled)todayEl2.value=r.power_today;
+          if(todayEl2&&!todayEl2.disabled){todayEl2.value=r.power_today;todayEl2.classList.add('al-auto');}
         }
       });
       break;
@@ -4231,9 +4233,7 @@ function setAirlogMode(mode){
     var dateEl=document.getElementById('al-input-date');
     if(dateEl)dateEl.value=today;
     clearFormNoData();
-    fillFormDefaults();
-    loadPrevPower(today);
-    updateAirlogStatusChip(today);
+    initNewAirlogMode(today);
   } else {
     if(btnEdit)btnEdit.style.cssText=activeStyle;
     if(btnNew)btnNew.style.cssText=inactiveStyle;
@@ -4248,11 +4248,51 @@ function setAirlogMode(mode){
 }
 
 function onAirlogDateChange(date){
-  if(alMode==='new'){
-    loadPrevPower(date);
-    updateAirlogStatusChip(date);
-  }
+  if(alMode==='new') initNewAirlogMode(date);
 }
+
+async function initNewAirlogMode(date){
+  fillFormDefaults();
+  await loadPrevPower(date);
+  await updateAirlogStatusChip(date);
+}
+
+function clearAutoFill(){
+  var area=document.getElementById('al-form-area');
+  if(!area)return;
+  area.querySelectorAll('.al-auto').forEach(function(el){el.classList.remove('al-auto');});
+  [1,2,3,4,5,6,7,8,9].forEach(function(n){
+    var d=document.getElementById('pr'+n+'-daily');
+    if(d&&d.textContent!=='-'&&d.textContent!=='')d.style.color='#0f2744';
+  });
+}
+
+function loadFormFromDB(data){
+  data.forEach(function(r){
+    if(r.facility_type==='배출구'&&r.facility_no!==8){
+      var n=r.facility_no;
+      if(r.start_time){var p=r.start_time.split(':');var sh=document.getElementById('em'+n+'-sh');var sm=document.getElementById('em'+n+'-sm');if(sh&&!sh.disabled)sh.value=p[0]||'';if(sm&&!sm.disabled)sm.value=p[1]||'';}
+      if(r.end_time){var p=r.end_time.split(':');var eh=document.getElementById('em'+n+'-eh');var em_=document.getElementById('em'+n+'-em');if(eh&&!eh.disabled)eh.value=p[0]||'';if(em_&&!em_.disabled)em_.value=p[1]||'';}
+      if(r.operation_hours!=null){var hr=document.getElementById('em'+n+'-hr');if(hr&&!hr.disabled)hr.value=r.operation_hours;}
+      setStatus('em'+n,r.status||'정상');
+    }
+    if(r.facility_type==='방지시설'){
+      var n=r.facility_no;
+      var prevEl=document.getElementById('pr'+n+'-prev');
+      var inp=document.getElementById('pr'+n+'-today');
+      if(r.power_prev!=null&&prevEl){prevEl.value=r.power_prev;alPrevPower[n]=r.power_prev;}
+      if(inp&&!inp.disabled&&r.power_today!=null)inp.value=r.power_today;
+      calcPower(n);
+    }
+  });
+}
+
+// 자동값 입력칸 포커스 시 진한 글씨로 전환
+document.addEventListener('focus',function(e){
+  if(e.target.tagName==='INPUT'&&e.target.classList.contains('al-auto')){
+    e.target.classList.remove('al-auto');
+  }
+},true);
 
 async function updateAirlogStatusChip(date){
   var chip=document.getElementById('al-new-status-chip');
@@ -4267,6 +4307,9 @@ async function updateAirlogStatusChip(date){
     chip.style.cssText=neutral;
     chip.textContent='신규 작성';
   } else {
+    // 실제 DB 데이터를 폼에 채워 진한 글씨로 표시
+    var fullData=await sb('air_operation_log','?log_date=eq.'+date+'&select=*&order=facility_type.asc,facility_no.asc');
+    if(fullData&&fullData.length){clearAutoFill();loadFormFromDB(fullData);}
     var r=data[0];
     var timeStr='';
     if(r.created_at){var d=new Date(r.created_at);timeStr=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
@@ -4316,10 +4359,10 @@ function fillFormDefaults(){
     var d=defs[n]||defs[2];
     ['sh','sm','eh','em'].forEach(function(f){
       var el=document.getElementById('em'+n+'-'+f);
-      if(el&&!el.disabled)el.value=d[f];
+      if(el&&!el.disabled){el.value=d[f];el.classList.add('al-auto');}
     });
     var hr=document.getElementById('em'+n+'-hr');
-    if(hr&&!hr.disabled)hr.value=d.hr;
+    if(hr&&!hr.disabled){hr.value=d.hr;hr.classList.add('al-auto');}
   });
 }
 
