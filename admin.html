@@ -1295,7 +1295,6 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   <div class="ws-action-bar">
     <button class="ws-btn ws-btn-primary" onclick="wsQuery()">조회</button>
     <button class="ws-btn" onclick="wsExcel()">엑셀</button>
-    <button class="ws-btn" onclick="document.getElementById('ws-update-section').scrollIntoView({behavior:'smooth'})">보관량 업데이트</button>
   </div>
 
   <!-- 요약 칩 -->
@@ -1330,19 +1329,27 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     <div class="ws-table-footer"><span id="ws-table-footer-text">-</span><span></span></div>
   </div>
 
-  <!-- 보관량 업데이트 -->
-  <div class="ws-section" id="ws-update-section">
-    <div class="ws-section-hdr"><div class="ws-section-title">보관량 업데이트</div></div>
-    <div class="ws-update-form">
-      <div>
-        <label class="ws-form-label">폐기물 종류 선택</label>
-        <select class="ws-form-input" id="ws-update-type" onchange="wsRenderUpdateInput()"></select>
+
+  <!-- 배출 일정 등록 모달 (보관 현황 → 배출 버튼) -->
+  <div class="modal-bg" id="ws-schedule-modal">
+    <div class="modal" style="max-width:440px;">
+      <div class="modal-title">배출 일정 등록</div>
+      <div class="form-row">
+        <div class="form-group"><label>폐기물 종류</label><input type="text" id="wsm-type" readonly style="background:#f3f6fa;color:#374151;"></div>
+        <div class="form-group"><label>배출 예정일 *</label><input type="date" id="wsm-date"></div>
       </div>
-      <div>
-        <label class="ws-form-label" id="ws-update-input-label">입력값</label>
-        <div id="ws-update-input-area"></div>
+      <div class="form-row">
+        <div class="form-group"><label>위탁업체 *</label><input type="text" id="wsm-vendor" value="가람환경"></div>
+        <div class="form-group"><label>예상 수량</label><input type="number" id="wsm-amount" min="0" placeholder="현재 보관량"></div>
       </div>
-      <button class="ws-btn ws-btn-primary" style="margin-top:18px;" onclick="wsDoUpdate()">업데이트</button>
+      <div class="form-row">
+        <div class="form-group"><label>단위</label><input type="text" id="wsm-unit" placeholder="개, 드럼, ton"></div>
+        <div class="form-group"><label>비고</label><input type="text" id="wsm-notes" placeholder="선택"></div>
+      </div>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="wsCloseScheduleModal()">취소</button>
+        <button class="ws-btn ws-btn-primary" style="height:36px;padding:0 18px;" onclick="wsSaveSchedule()">등록</button>
+      </div>
     </div>
   </div>
 
@@ -1518,6 +1525,30 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
       <div class="modal-btns">
         <button class="modal-cancel" onclick="wschCloseModal()">취소</button>
         <button class="ws-btn ws-btn-primary" style="height:36px;padding:0 18px;" onclick="wschSave()">등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 완료 처리 모달 -->
+  <div class="modal-bg" id="wsch-complete-modal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-title">배출 완료 처리</div>
+      <div class="form-row">
+        <div class="form-group"><label>폐기물 종류</label><input type="text" id="wscm-type" readonly style="background:#f3f6fa;color:#374151;"></div>
+        <div class="form-group"><label>위탁업체</label><input type="text" id="wscm-vendor" readonly style="background:#f3f6fa;color:#374151;"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>실제 수량</label><input type="number" id="wscm-amount" min="0" step="any"></div>
+        <div class="form-group"><label>단위</label><input type="text" id="wscm-unit" readonly style="background:#f3f6fa;color:#374151;"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>실제 무게 (kg)</label><input type="number" id="wscm-weight" min="0" step="any" placeholder="선택"></div>
+        <div class="form-group"><label>인계번호</label><input type="text" id="wscm-invoice" placeholder="올바로 인계번호 (선택)"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:8px;"><label>비고</label><input type="text" id="wscm-notes" placeholder="선택"></div>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="wschCloseCompleteModal()">취소</button>
+        <button class="ws-btn ws-btn-primary" style="height:36px;padding:0 18px;background:#16a34a;border-color:#16a34a;" onclick="wschConfirmComplete()">완료 확정</button>
       </div>
     </div>
   </div>
@@ -3109,34 +3140,118 @@ function wsDaysSince(dateStr){
   return Math.floor((new Date()-new Date(dateStr))/(1000*60*60*24));
 }
 
+var _wsEditIdx=null; // 현재 인라인 편집 중인 filtered 인덱스
+var _wsFilteredCache=[]; // wsRenderTable에 전달된 rows 캐시 (저장용)
+
 function wsRenderTable(rows){
+  _wsFilteredCache=rows||[];
+  _wsEditIdx=null;
   var tbody=document.getElementById('ws-tbody');
   if(!tbody)return;
   if(!rows||!rows.length){
     tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:2rem;color:#9ca3af;">조회 결과 없음</td></tr>';
     return;
   }
-  var today=new Date().toISOString().slice(0,10);
   tbody.innerHTML=rows.map(function(w,i){
-    var pct=wsPct(w);
-    var s=wsStatus(pct);
-    var maxDisp=w.unit_type==='count'?(w.max_amount||'-'):'-';
-    var days=wsDaysSince(w.last_disposal_date);
-    var daysStr=days!==null?days+'일':'-';
-    return '<tr>'
-      +'<td class="ws-td-num">'+(i+1)+'</td>'
-      +'<td class="ws-td-name">'+ws_esc(w.waste_type)+'</td>'
-      +'<td class="ws-td-muted">'+ws_esc(w.unit)+'</td>'
-      +'<td class="ws-td-num">'+(parseFloat(w.current_amount)||0)+'</td>'
-      +'<td class="ws-td-num ws-td-muted">'+maxDisp+'</td>'
-      +'<td><div class="ws-progress-wrap"><div class="ws-progress"><div class="ws-progress-fill ws-fill-'+s.cls+'" style="width:'+Math.min(pct,100)+'%"></div></div><span class="ws-progress-pct">'+pct+'%</span></div></td>'
-      +'<td><span class="ws-badge ws-badge-'+s.cls+'">'+s.label+'</span></td>'
-      +'<td class="ws-td-date">'+(w.last_disposal_date||'-')+'</td>'
-      +'<td class="ws-td-num ws-td-muted">'+daysStr+'</td>'
-      +'<td><button class="ws-btn-sm" onclick="wsQuickUpdate('+i+',this)">수정</button></td>'
-      +'</tr>';
+    return wsRenderRow(w,i,false);
   }).join('');
   document.getElementById('ws-table-footer-text').textContent='총 '+rows.length+'건';
+}
+
+function wsRenderRow(w,i,editing){
+  var pct=wsPct(w);
+  var s=wsStatus(pct);
+  var maxDisp=w.unit_type==='count'?(w.max_amount||'-'):'-';
+  var days=wsDaysSince(w.last_disposal_date);
+  var daysStr=days!==null?days+'일':'-';
+  var amtCell,mgmtCell;
+  if(editing){
+    var maxAttr=w.unit_type==='count'&&w.max_amount?' max="'+w.max_amount+'"':'';
+    var stepAttr=w.unit_type==='percent'?' step="1"':' step="any"';
+    amtCell='<input type="number" id="ws-edit-input" min="0"'+maxAttr+stepAttr+' value="'+(parseFloat(w.current_amount)||0)+'" style="width:68px;height:26px;border:1px solid #2563eb;border-radius:3px;padding:0 6px;font-size:12.5px;text-align:right;" oninput="wsEditPreview('+i+')">';
+    mgmtCell='<button class="ws-btn-sm" style="background:#0f2744;color:white;border-color:#0f2744;" onclick="wsSaveRow('+i+')">✓ 저장</button>'
+      +' <button class="ws-btn-sm" onclick="wsCancelEdit()">취소</button>';
+  } else {
+    amtCell=parseFloat(w.current_amount)||0;
+    var canWrite=hasPerm('waste_storage_write')||isAdmin();
+    mgmtCell=canWrite
+      ?'<button class="ws-btn-sm" style="background:#0f6adb;color:white;border-color:#0f6adb;" onclick="wsOpenScheduleModal('+i+',event)">배출</button>'
+      :'<span style="color:#d1d5db;font-size:11px;">-</span>';
+  }
+  var rowStyle=editing?'background:#eff6ff;':'cursor:pointer;';
+  var rowClick=editing?'':'onclick="wsRowClick('+i+')"';
+  var progressId=editing?'id="ws-edit-progress-'+i+'"':'';
+  return '<tr style="'+rowStyle+'" '+rowClick+'>'
+    +'<td class="ws-td-num">'+(i+1)+'</td>'
+    +'<td class="ws-td-name">'+ws_esc(w.waste_type)+'</td>'
+    +'<td class="ws-td-muted">'+ws_esc(w.unit)+'</td>'
+    +'<td class="ws-td-num" id="ws-amt-cell-'+i+'">'+amtCell+'</td>'
+    +'<td class="ws-td-num ws-td-muted">'+maxDisp+'</td>'
+    +'<td '+progressId+'><div class="ws-progress-wrap"><div class="ws-progress"><div class="ws-progress-fill ws-fill-'+s.cls+'" style="width:'+Math.min(pct,100)+'%"></div></div><span class="ws-progress-pct">'+pct+'%</span></div></td>'
+    +'<td><span class="ws-badge ws-badge-'+s.cls+'" id="ws-badge-'+i+'">'+s.label+'</span></td>'
+    +'<td class="ws-td-date">'+(w.last_disposal_date||'-')+'</td>'
+    +'<td class="ws-td-num ws-td-muted">'+daysStr+'</td>'
+    +'<td>'+mgmtCell+'</td>'
+    +'</tr>';
+}
+
+function wsRowClick(i){
+  if(_wsEditIdx===i)return;
+  if(_wsEditIdx!==null)wsCancelEdit();
+  _wsEditIdx=i;
+  var tbody=document.getElementById('ws-tbody');
+  var tr=tbody.querySelectorAll('tr')[i];
+  if(!tr)return;
+  tr.outerHTML=wsRenderRow(_wsFilteredCache[i],i,true);
+  var inp=document.getElementById('ws-edit-input');
+  if(inp)inp.focus();
+}
+
+function wsEditPreview(i){
+  var inp=document.getElementById('ws-edit-input');
+  if(!inp)return;
+  var val=parseFloat(inp.value)||0;
+  var w=_wsFilteredCache[i];
+  var pct=w.unit_type==='count'?(w.max_amount?Math.round(val/parseFloat(w.max_amount)*100):0):val;
+  var s=wsStatus(pct);
+  var progEl=document.getElementById('ws-edit-progress-'+i);
+  if(progEl)progEl.innerHTML='<div class="ws-progress-wrap"><div class="ws-progress"><div class="ws-progress-fill ws-fill-'+s.cls+'" style="width:'+Math.min(pct,100)+'%"></div></div><span class="ws-progress-pct">'+pct+'%</span></div>';
+  var bdgEl=document.getElementById('ws-badge-'+i);
+  if(bdgEl){bdgEl.className='ws-badge ws-badge-'+s.cls;bdgEl.textContent=s.label;}
+}
+
+function wsCancelEdit(){
+  if(_wsEditIdx===null)return;
+  var tbody=document.getElementById('ws-tbody');
+  var tr=tbody.querySelectorAll('tr')[_wsEditIdx];
+  if(tr)tr.outerHTML=wsRenderRow(_wsFilteredCache[_wsEditIdx],_wsEditIdx,false);
+  _wsEditIdx=null;
+}
+
+async function wsSaveRow(i){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  if(!hasPerm('waste_storage_write')&&!isAdmin()){showToast('보관 현황 쓰기 권한이 없습니다.');return;}
+  var inp=document.getElementById('ws-edit-input');
+  if(!inp)return;
+  var val=parseFloat(inp.value);
+  if(isNaN(val)||val<0){showToast('올바른 값을 입력하세요.');return;}
+  var w=_wsFilteredCache[i];
+  if(w.unit_type==='count'){
+    if(!Number.isInteger(val)){showToast('개수 단위는 정수만 입력 가능합니다.');return;}
+    if(w.max_amount&&val>parseFloat(w.max_amount)){showToast('최대 '+w.max_amount+w.unit+'까지 가능합니다.');return;}
+  }
+  if(w.unit_type==='percent'&&(val<0||val>100)){showToast('0~100 사이 값을 입력하세요.');return;}
+  var oldVal=parseFloat(w.current_amount)||0;
+  try{
+    await sb('waste_storage','?id=eq.'+w.id,{method:'PATCH',body:{current_amount:val,updated_at:new Date().toISOString(),updated_by:currentUser?(currentUser.name||currentUser.username):''}});
+    w.current_amount=val;
+    _wsEditIdx=null;
+    var tbody=document.getElementById('ws-tbody');
+    var tr=tbody.querySelectorAll('tr')[i];
+    if(tr)tr.outerHTML=wsRenderRow(w,i,false);
+    wsRenderSummary();
+    showToast(ws_esc(w.waste_type)+' 보관량 '+oldVal+' → '+val+' 업데이트 완료');
+  }catch(e){showToast('저장 실패: '+e.message);}
 }
 
 function wsRenderSummary(){
@@ -3157,31 +3272,6 @@ function wsFillTypeSelects(){
   var opts='<option value="">전체</option>'+types.map(function(t){return '<option value="'+ws_esc(t)+'">'+ws_esc(t)+'</option>';}).join('');
   var fType=document.getElementById('ws-filter-type');
   if(fType)fType.innerHTML=opts;
-
-  var rowOpts=types.map(function(t){return '<option value="'+ws_esc(t)+'">'+ws_esc(t)+'</option>';}).join('');
-  var uType=document.getElementById('ws-update-type');
-  if(uType){uType.innerHTML=rowOpts;wsRenderUpdateInput();}
-  var rType=document.getElementById('ws-rec-type');
-  if(rType)rType.innerHTML=rowOpts;
-}
-
-function wsRenderUpdateInput(){
-  var sel=document.getElementById('ws-update-type');
-  if(!sel||!_wsData.length)return;
-  var typeName=sel.value;
-  var w=_wsData.find(function(x){return x.waste_type===typeName;})||_wsData[0];
-  if(!w)return;
-  var label=document.getElementById('ws-update-input-label');
-  var area=document.getElementById('ws-update-input-area');
-  if(!label||!area)return;
-  if(w.unit_type==='count'){
-    label.textContent='보관 개수 (최대 '+(w.max_amount||'?')+' '+w.unit+')';
-    area.innerHTML='<input type="number" class="ws-form-input" id="ws-update-val" min="0" max="'+(w.max_amount||999)+'" step="1" value="'+(parseFloat(w.current_amount)||0)+'">';
-  } else {
-    label.textContent='보관률 (%)';
-    var cur=parseFloat(w.current_amount)||0;
-    area.innerHTML='<div class="ws-slider-row"><input type="range" min="0" max="100" step="1" value="'+cur+'" id="ws-slider" oninput="document.getElementById(\'ws-slider-val\').textContent=this.value+\'%\'"><span class="ws-slider-val" id="ws-slider-val">'+cur+'%</span></div>';
-  }
 }
 
 function wsRenderDisposal(){
@@ -3214,7 +3304,6 @@ function wsRenderAll(){
   wsRenderTable(filtered);
   wsRenderSummary();
   wsFillTypeSelects();
-  wsRenderDisposal();
 }
 
 function wsQuery(){
@@ -3222,29 +3311,6 @@ function wsQuery(){
   wsRenderTable(filtered);
 }
 
-async function wsDoUpdate(){
-  if(isReadOnly()){showReadOnlyToast();return;}
-  if(!hasPerm('waste_storage_write')){alert('보관 현황 쓰기 권한이 없습니다.');return;}
-  var sel=document.getElementById('ws-update-type');
-  if(!sel||!_wsData.length)return;
-  var typeName=sel.value;
-  var w=_wsData.find(function(x){return x.waste_type===typeName;});
-  if(!w){alert('종류를 선택하세요.');return;}
-  var val;
-  if(w.unit_type==='count'){
-    var inp=document.getElementById('ws-update-val');
-    val=inp?parseFloat(inp.value)||0:0;
-  } else {
-    var sld=document.getElementById('ws-slider');
-    val=sld?parseFloat(sld.value)||0:0;
-  }
-  try{
-    await sb('waste_storage','?id=eq.'+w.id,{method:'PATCH',body:{current_amount:val,updated_at:new Date().toISOString(),updated_by:currentUser?(currentUser.name||currentUser.username):''}});
-    w.current_amount=val;
-    wsRenderAll();
-    alert('업데이트 완료!');
-  }catch(e){alert('저장 실패: '+e.message);}
-}
 
 async function wsAddDisposal(){
   if(isReadOnly()){showReadOnlyToast();return;}
@@ -3299,14 +3365,60 @@ async function wsDeleteDisposal(id){
   }catch(e){alert('삭제 실패: '+e.message);}
 }
 
-function wsQuickUpdate(rowIdx,btn){
-  // 보관량 업데이트 섹션으로 이동 후 해당 종류 선택
-  var filtered=wsGetFiltered();
-  if(!filtered[rowIdx])return;
-  var typeName=filtered[rowIdx].waste_type;
-  var sel=document.getElementById('ws-update-type');
-  if(sel){sel.value=typeName;wsRenderUpdateInput();}
-  document.getElementById('ws-update-section').scrollIntoView({behavior:'smooth'});
+// ── 공통 토스트 ──
+function showToast(msg,duration){
+  var t=document.getElementById('ws-toast');
+  if(!t){
+    t=document.createElement('div');t.id='ws-toast';
+    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(15,39,68,0.92);color:white;padding:10px 22px;border-radius:8px;font-size:13px;font-family:"Noto Sans KR",sans-serif;z-index:10000;pointer-events:none;opacity:0;transition:opacity 0.2s;white-space:nowrap;';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._timer);t._timer=setTimeout(function(){t.style.opacity='0';},duration||2800);
+}
+
+// ── Phase 3: 보관 현황 → 배출 일정 등록 모달 ──
+function wsOpenScheduleModal(i,e){
+  if(e)e.stopPropagation();
+  if(isReadOnly()){showReadOnlyToast();return;}
+  if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 등록 권한이 없습니다.');return;}
+  var w=_wsFilteredCache[i];
+  if(!w)return;
+  var d=new Date();d.setDate(d.getDate()+3);
+  var dd=d.toISOString().slice(0,10);
+  document.getElementById('wsm-type').value=w.waste_type||'';
+  document.getElementById('wsm-date').value=dd;
+  document.getElementById('wsm-vendor').value='가람환경';
+  document.getElementById('wsm-amount').value=parseFloat(w.current_amount)||0;
+  document.getElementById('wsm-unit').value=w.unit||'';
+  document.getElementById('wsm-notes').value='';
+  document.getElementById('ws-schedule-modal').classList.add('show');
+}
+
+function wsCloseScheduleModal(){
+  document.getElementById('ws-schedule-modal').classList.remove('show');
+}
+
+async function wsSaveSchedule(){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  var date=document.getElementById('wsm-date').value;
+  var vendor=document.getElementById('wsm-vendor').value.trim();
+  var type=document.getElementById('wsm-type').value.trim();
+  if(!date||!vendor||!type){showToast('필수 항목을 입력해 주세요.');return;}
+  var amtVal=document.getElementById('wsm-amount').value;
+  var body={
+    scheduled_date:date,vendor_name:vendor,waste_type:type,
+    expected_amount:amtVal!==''?parseFloat(amtVal):null,
+    expected_unit:document.getElementById('wsm-unit').value.trim()||null,
+    notes:document.getElementById('wsm-notes').value.trim()||null,
+    status:'scheduled',
+    created_by:currentUser?(currentUser.name||currentUser.username):''
+  };
+  try{
+    await sb('waste_schedule','',{method:'POST',body:body});
+    wsCloseScheduleModal();
+    showToast('배출 일정 등록 완료 — 배출 일정 페이지에서 확인');
+  }catch(e){showToast('등록 실패: '+e.message);}
 }
 
 function wsExcel(){
@@ -3354,6 +3466,7 @@ var WA_TYPES=[
 
 // 편집 중인 데이터: waData[rowIdx][monthIdx] = value (number)
 var _waData=WA_TYPES.map(function(){return Array(12).fill(0);});
+var _waAutoData=WA_TYPES.map(function(){return Array(12).fill(0);}); // 자동 집계 (참고용)
 var _waLastSaved='';
 
 function loadWasteAnnual(){
@@ -3376,14 +3489,9 @@ async function waLoad(){
   var titleEl=document.getElementById('wa-title-year');
   if(titleEl)titleEl.textContent=year;
 
-  // 필터 값
-  var groupF=document.getElementById('wa-filter-group')?document.getElementById('wa-filter-group').value:'';
-  var areaF=document.getElementById('wa-filter-area')?document.getElementById('wa-filter-area').value:'';
-
-  // DB에서 해당 연도 데이터 로드
+  // DB에서 해당 연도 수기 입력 데이터 로드
   try{
     var records=await sb('waste_annual_record','?year=eq.'+year+'&select=*');
-    // _waData 초기화 후 DB 값 채우기
     _waData=WA_TYPES.map(function(){return Array(12).fill(0);});
     (records||[]).forEach(function(r){
       var idx=WA_TYPES.findIndex(function(t){return t.name===r.waste_type;});
@@ -3391,7 +3499,6 @@ async function waLoad(){
         _waData[idx][r.month-1]=parseFloat(r.amount_ton)||0;
       }
     });
-    // 마지막 저장 정보
     if(records&&records.length){
       var latest=records.sort(function(a,b){return (b.updated_at||'').localeCompare(a.updated_at||'');})[ 0];
       _waLastSaved='마지막 저장: '+(latest.updated_at?latest.updated_at.slice(0,16).replace('T',' '):'?')+' · 작성자: '+(latest.updated_by||'-');
@@ -3404,13 +3511,21 @@ async function waLoad(){
     console.error('연간 배출량 로드 오류:',e);
   }
 
-  // 표시할 타입 필터링 (rowspan 계산을 위해 원본 WA_TYPES 순서 유지)
-  var visibleIdx=WA_TYPES.map(function(t,i){return {t:t,i:i};}).filter(function(o){
-    if(groupF&&o.t.group!==groupF)return false;
-    if(areaF&&o.t.area!==areaF)return false;
-    return true;
-  });
+  // waste_disposal에서 자동 집계 (weight_kg 기준 톤 환산)
+  _waAutoData=WA_TYPES.map(function(){return Array(12).fill(0);});
+  try{
+    var disposals=await sb('waste_disposal','?disposal_date=gte.'+year+'-01-01&disposal_date=lte.'+year+'-12-31&select=waste_type,disposal_date,weight_kg');
+    (disposals||[]).forEach(function(d){
+      if(!d.weight_kg||!d.disposal_date)return;
+      var idx=WA_TYPES.findIndex(function(t){return t.name===d.waste_type;});
+      if(idx<0)return;
+      var m=parseInt(d.disposal_date.slice(5,7))-1;
+      if(m<0||m>11)return;
+      _waAutoData[idx][m]+=parseFloat(d.weight_kg)/1000;
+    });
+  }catch(e){/* weight_kg 컬럼 없으면 무시 */}
 
+  var visibleIdx=WA_TYPES.map(function(t,i){return {t:t,i:i};});
   waRenderTable(visibleIdx);
   waUpdateSummary();
 }
@@ -3447,10 +3562,16 @@ function waRenderTable(visibleIdx){
     row+='<td class="wa-type">'+wa_esc(t.name)+'</td>';
     _waData[idx].forEach(function(v,mi){
       var display=v===0?'':v.toFixed(2);
-      row+='<td><input type="number" class="wa-cell-input" step="0.01" min="0"'
+      var autoV=_waAutoData[idx][mi];
+      var tip='';
+      if(autoV>0){
+        var tipText=(v>0?'수기: '+v.toFixed(2)+' / ':'')+('자동: '+autoV.toFixed(3)+'t');
+        tip='<div style="font-size:9.5px;color:#6b7280;text-align:center;line-height:1.2;margin-top:1px;" title="'+tipText+'">≈'+autoV.toFixed(2)+'</div>';
+      }
+      row+='<td style="padding:2px 3px;"><input type="number" class="wa-cell-input" step="0.01" min="0"'
         +' data-row="'+idx+'" data-month="'+mi+'"'
         +' value="'+display+'" placeholder="0.00"'
-        +' oninput="waOnInput(this)"></td>';
+        +' oninput="waOnInput(this)">'+tip+'</td>';
     });
     var total=_waData[idx].reduce(function(s,v){return s+(v||0);},0);
     row+='<td class="wa-total-cell" id="wa-row-total-'+idx+'">'+(total>0?total.toFixed(2):'-')+'</td>';
@@ -3931,11 +4052,72 @@ async function wschSave(){
   wschLoad();
 }
 
-async function wschComplete(id){
+var _wschCompleteId=null;
+
+function wschComplete(id){
   if(isReadOnly()){showReadOnlyToast();return;}
-  if(!confirm('배출 완료 처리하시겠습니까?'))return;
-  await sb('waste_schedule','?id=eq.'+id,{method:'PATCH',body:{status:'completed',completed_at:new Date().toISOString()}});
-  wschLoad();
+  if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 쓰기 권한이 없습니다.');return;}
+  var r=(_wschData||[]).find(function(x){return x.id===id;});
+  if(!r)return;
+  _wschCompleteId=id;
+  document.getElementById('wscm-type').value=r.waste_type||'';
+  document.getElementById('wscm-vendor').value=r.vendor_name||'';
+  document.getElementById('wscm-amount').value=r.expected_amount!=null?r.expected_amount:'';
+  document.getElementById('wscm-unit').value=r.expected_unit||'';
+  document.getElementById('wscm-weight').value='';
+  document.getElementById('wscm-invoice').value='';
+  document.getElementById('wscm-notes').value='';
+  document.getElementById('wsch-complete-modal').classList.add('show');
+}
+
+function wschCloseCompleteModal(){
+  document.getElementById('wsch-complete-modal').classList.remove('show');
+  _wschCompleteId=null;
+}
+
+async function wschConfirmComplete(){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  if(!_wschCompleteId)return;
+  var r=(_wschData||[]).find(function(x){return x.id===_wschCompleteId;});
+  if(!r)return;
+  var amtVal=document.getElementById('wscm-amount').value;
+  var weightVal=document.getElementById('wscm-weight').value;
+  var invoice=document.getElementById('wscm-invoice').value.trim();
+  var notes=document.getElementById('wscm-notes').value.trim();
+  var now=new Date().toISOString();
+  var by=currentUser?(currentUser.name||currentUser.username):'';
+  try{
+    // 1) waste_schedule 완료 처리
+    await sb('waste_schedule','?id=eq.'+_wschCompleteId,{method:'PATCH',body:{status:'completed',completed_at:now}});
+    // 2) waste_disposal INSERT (weight_kg/invoice_number 컬럼 없으면 fallback)
+    var dispPayload={
+      disposal_date:r.scheduled_date||now.slice(0,10),
+      vendor_name:r.vendor_name||'',
+      waste_type:r.waste_type||'',
+      amount:amtVal!==''?parseFloat(amtVal):null,
+      unit:r.expected_unit||'',
+      weight_kg:weightVal!==''?parseFloat(weightVal):null,
+      invoice_number:invoice||null,
+      notes:notes||null,
+      created_by:by
+    };
+    var dispRes=await sb('waste_disposal','',{method:'POST',headers:{'Prefer':'return=minimal'},body:dispPayload});
+    if(dispRes&&dispRes.status&&dispRes.status>=400){
+      // 신규 컬럼 없는 경우 재시도
+      var fallback={disposal_date:dispPayload.disposal_date,waste_type:dispPayload.waste_type,amount:dispPayload.amount,unit:dispPayload.unit,notes:dispPayload.notes,created_by:dispPayload.created_by};
+      if(dispPayload.vendor_name)fallback.vendor_name=dispPayload.vendor_name;
+      await sb('waste_disposal','',{method:'POST',headers:{'Prefer':'return=minimal'},body:fallback});
+    }
+    // 3) waste_storage 보관량 0 초기화 + 마지막 배출일 갱신
+    var ws=(_wsData||[]).find(function(x){return x.waste_type===r.waste_type;});
+    if(ws){
+      await sb('waste_storage','?id=eq.'+ws.id,{method:'PATCH',body:{current_amount:0,last_disposal_date:r.scheduled_date||now.slice(0,10),updated_at:now,updated_by:by}});
+      ws.current_amount=0;ws.last_disposal_date=r.scheduled_date||now.slice(0,10);
+    }
+    wschCloseCompleteModal();
+    showToast('배출 완료 — '+(r.waste_type||'')+'  보관량 0으로 초기화');
+    wschLoad();
+  }catch(e){showToast('처리 실패: '+e.message);}
 }
 
 async function wschDelete(id){
