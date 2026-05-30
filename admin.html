@@ -1111,6 +1111,9 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 <!-- 필터 교체 탭 -->
 <div id="tab-filter" class="content hidden">
 
+  <!-- 페이지 타이틀 -->
+  <div class="ws-page-title" style="margin-bottom:14px;"><span class="ws-page-title-icon"></span>필터 교체 기록 관리</div>
+
   <!-- 1) KPI 4개 (최상단) -->
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">전체 교체 기록</div><div class="stat-value" id="stat-total">-<span class="stat-unit">건</span></div></div>
@@ -1156,7 +1159,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
       <button onclick="batchAddRow()" style="width:100%;padding:9px;border:1.5px dashed #d1d5db;border-radius:6px;background:white;color:#6b7280;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">+ 날짜 추가</button>
     </div>
     <div style="padding:10px 16px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <span style="font-size:12px;color:#6b7280;">총 <b id="batch-total" style="color:#0f2744;font-size:14px;">0</b>매</span>
+      <span style="font-size:12px;color:#6b7280;">이번 달 총 <b id="batch-total" style="color:#0f2744;font-size:14px;">0</b>매 입력</span>
       <button onclick="batchSave()" style="padding:8px 22px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">전체 저장</button>
     </div>
   </div>
@@ -2505,7 +2508,7 @@ function checkAuth(){
     var smEl=document.getElementById('sems-month');
     if(smEl&&!smEl.value){var _dn=new Date();smEl.value=_dn.getFullYear()+'-'+String(_dn.getMonth()+1).padStart(2,'0');}
   }
-  if(isAdmin()){initBatchWidget();}
+  if(isAdmin()||hasPerm('filter_write')){initBatchWidget();}
   return true;
 }
 
@@ -2924,6 +2927,7 @@ async function loadFilterData(){
   allData=await sb('filter_records','?select=*&order=record_date.desc,created_at.desc');
   updateStats(allData);
   frUpdatePersonFilter(allData);
+  loadBatchWorkers(allData);
   renderMonthlyChart(allData);
   frLoad();
 }
@@ -3115,6 +3119,12 @@ function frExcel(){
 }
 // ─────────────────────────────────────────────────────────────
 
+var _batchWorkersCache=null; // 작업자 목록 캐시
+function loadBatchWorkers(data){
+  // allData(filter_records)에서 distinct technician 추출 후 캐시
+  _batchWorkersCache=[...new Set((data||[]).map(function(r){return r.technician;}).filter(Boolean))].sort();
+}
+
 var batchYr=new Date().getFullYear(),batchMo=new Date().getMonth()+1;
 
 function initBatchWidget(){
@@ -3156,36 +3166,97 @@ function batchSyncDates(){
 function batchAddRow(){
   var tbody=document.getElementById('batch-tbody');
   var defDate=batchYr+'-'+String(batchMo).padStart(2,'0')+'-01';
-  var inp='border:1px solid #e8ecf0;border-radius:5px;outline:none;font-family:\'Noto Sans KR\',sans-serif;';
+  var inpSt='border:1px solid #e8ecf0;border-radius:5px;outline:none;font-family:\'Noto Sans KR\',sans-serif;';
   var defWorker=currentUser?(currentUser.name||currentUser.username):'';
-  // 담당자 옵션: allData에서 추출한 목록 활용
-  var persons=[...new Set((allData||[]).map(function(r){return r.technician;}).filter(Boolean))].sort();
-  var workerOpts='<option value="">-- 선택 --</option>';
-  persons.forEach(function(p){workerOpts+='<option value="'+p+'"'+(p===defWorker?' selected':'')+'>'+p+'</option>';});
-  // 목록에 현재 사용자가 없으면 맨 앞에 추가
-  if(defWorker&&persons.indexOf(defWorker)<0){workerOpts='<option value="">-- 선택 --</option><option value="'+defWorker+'" selected>'+defWorker+'</option>'+workerOpts.slice('<option value="">-- 선택 --</option>'.length);}
   var tr=document.createElement('tr');
   tr.style.borderBottom='1px solid #f3f4f6';
-  tr.innerHTML=
-    '<td style="padding:8px 14px;">'+
-      '<input type="date" value="'+defDate+'" oninput="batchCalcTotal()" style="'+inp+'padding:7px 10px;font-size:13px;width:100%;min-width:150px;">'+
-    '</td>'+
-    '<td style="padding:8px 10px;">'+
-      '<select class="batch-worker-sel" style="'+inp+'padding:6px 8px;font-size:12px;width:110px;height:34px;color:#374151;background:white;">'+workerOpts+'</select>'+
-    '</td>'+
-    ['상도룸','하도룸 #1','하도룸 #2'].map(function(){
-      return '<td style="padding:8px 10px;text-align:center;">'+
-        '<span style="display:inline-flex;align-items:center;gap:4px;">'+
-          '<input type="number" min="0" placeholder="-" oninput="batchCalcTotal()" style="'+inp+'padding:7px 8px;font-size:13px;width:64px;text-align:center;">'+
-          '<span style="font-size:11px;color:#9ca3af;">매</span>'+
-        '</span>'+
-      '</td>';
-    }).join('')+
-    '<td style="padding:8px;text-align:center;">'+
-      '<button onclick="batchDelRow(this)" style="width:24px;height:24px;border:none;border-radius:4px;background:#f3f4f6;color:#9ca3af;font-size:13px;cursor:pointer;line-height:1;">✕</button>'+
-    '</td>';
+
+  // 날짜 TD
+  var tdDate=document.createElement('td');
+  tdDate.style.padding='8px 14px';
+  var dateInp=document.createElement('input');
+  dateInp.type='date';dateInp.value=defDate;
+  dateInp.style.cssText=inpSt+'padding:7px 10px;font-size:13px;width:100%;min-width:150px;';
+  dateInp.addEventListener('input',batchCalcTotal);
+  tdDate.appendChild(dateInp);
+
+  // 작업자 콤보박스 TD
+  var tdWorker=document.createElement('td');
+  tdWorker.style.padding='8px 10px';
+  batchMountWorkerCombo(tdWorker, defWorker);
+
+  // 수량 TD × 3
+  var qtyTds=['상도룸','하도룸 #1','하도룸 #2'].map(function(){
+    var td=document.createElement('td');
+    td.style.cssText='padding:8px 10px;text-align:center;';
+    var span=document.createElement('span');
+    span.style.cssText='display:inline-flex;align-items:center;gap:4px;';
+    var ni=document.createElement('input');
+    ni.type='number';ni.min='0';ni.placeholder='-';
+    ni.style.cssText=inpSt+'padding:7px 8px;font-size:13px;width:64px;text-align:center;';
+    ni.addEventListener('input',batchCalcTotal);
+    var unit=document.createElement('span');
+    unit.style.cssText='font-size:11px;color:#9ca3af;';unit.textContent='매';
+    span.appendChild(ni);span.appendChild(unit);
+    td.appendChild(span);return td;
+  });
+
+  // 삭제 TD
+  var tdDel=document.createElement('td');
+  tdDel.style.cssText='padding:8px;text-align:center;';
+  var delBtn=document.createElement('button');
+  delBtn.style.cssText='width:24px;height:24px;border:none;border-radius:4px;background:#f3f4f6;color:#9ca3af;font-size:13px;cursor:pointer;line-height:1;';
+  delBtn.textContent='✕';
+  delBtn.addEventListener('click',function(){batchDelRow(delBtn);});
+  tdDel.appendChild(delBtn);
+
+  tr.appendChild(tdDate);
+  tr.appendChild(tdWorker);
+  qtyTds.forEach(function(td){tr.appendChild(td);});
+  tr.appendChild(tdDel);
   tbody.appendChild(tr);
   batchCalcTotal();
+}
+
+// 작업자 자유입력 콤보박스 마운트
+function batchMountWorkerCombo(container, initial){
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:relative;display:inline-block;';
+
+  var inp=document.createElement('input');
+  inp.type='text';
+  inp.className='batch-worker-inp';
+  inp.value=initial||'';
+  inp.placeholder='작업자 이름';
+  inp.autocomplete='off';
+  inp.style.cssText='width:120px;height:34px;border:1px solid #e8ecf0;border-radius:5px;padding:0 8px;font-size:12px;font-family:\'Noto Sans KR\',sans-serif;box-sizing:border-box;outline:none;';
+
+  var drop=document.createElement('div');
+  drop.style.cssText='position:absolute;top:100%;left:0;min-width:140px;max-height:160px;overflow-y:auto;background:white;border:1px solid #cbd5e1;border-radius:4px;z-index:9000;display:none;box-shadow:0 4px 10px rgba(0,0,0,0.1);margin-top:2px;';
+
+  wrap.appendChild(inp);wrap.appendChild(drop);container.appendChild(wrap);
+
+  function getList(){return _batchWorkersCache||[];}
+  function renderDrop(){
+    var q=(inp.value||'').trim();
+    var list=getList();
+    var filtered=q?list.filter(function(w){return w.indexOf(q)>=0;}):list;
+    drop.innerHTML='';
+    filtered.forEach(function(w){
+      var d=document.createElement('div');
+      d.textContent=w;
+      d.style.cssText='padding:6px 10px;font-size:12.5px;cursor:pointer;color:#374151;white-space:nowrap;';
+      d.addEventListener('mousedown',function(e){e.preventDefault();inp.value=w;drop.style.display='none';});
+      d.addEventListener('mouseenter',function(){d.style.background='#f0f7ff';});
+      d.addEventListener('mouseleave',function(){d.style.background='';});
+      drop.appendChild(d);
+    });
+    drop.style.display=filtered.length?'block':'none';
+  }
+  inp.addEventListener('focus',renderDrop);
+  inp.addEventListener('input',renderDrop);
+  inp.addEventListener('blur',function(){setTimeout(function(){drop.style.display='none';},160);});
+  inp.addEventListener('keydown',function(e){if(e.key==='Escape')drop.style.display='none';});
 }
 
 function batchDelRow(btn){
@@ -3205,17 +3276,17 @@ function batchCalcTotal(){
 }
 
 async function batchSave(){
-  if(!isAdmin())return;
+  if(!isAdmin()&&!hasPerm('filter_write'))return;
   if(isReadOnly()){showReadOnlyToast();return;}
   var rows=[];
   var valid=true;
   var noWorkerTr=null;
   document.querySelectorAll('#batch-tbody tr').forEach(function(tr){
     var dateInp=tr.querySelector('input[type=date]');
-    var workerSel=tr.querySelector('.batch-worker-sel');
+    var workerInp=tr.querySelector('.batch-worker-inp');
     var numInps=tr.querySelectorAll('input[type=number]');
     if(!dateInp||!dateInp.value){valid=false;return;}
-    var workerName=workerSel?workerSel.value.trim():(currentUser?(currentUser.name||currentUser.username):'');
+    var workerName=(workerInp?workerInp.value.trim():'') || (currentUser?(currentUser.name||currentUser.username):'');
     if(!workerName){noWorkerTr=tr;tr.style.outline='2px solid #dc2626';return;}else{tr.style.outline='';}
     var rooms=['상도룸','하도룸 #1','하도룸 #2'];
     numInps.forEach(function(inp,i){
@@ -3225,18 +3296,18 @@ async function batchSave(){
       }
     });
   });
-  if(noWorkerTr){showToast('담당자를 선택해주세요.');return;}
+  if(noWorkerTr){showToast('작업자를 입력해주세요.');return;}
   if(!valid){alert('날짜가 비어 있는 행이 있습니다.');return;}
   if(!rows.length){alert('저장할 수량을 입력해주세요.');return;}
   if(!confirm(rows.length+'건을 저장하시겠습니까?'))return;
   try{
     for(var i=0;i<rows.length;i++){await sb('filter_records','',{method:'POST',body:rows[i]});}
-    alert(rows.length+'건 저장 완료');
+    showToast(rows.length+'건 저장 완료');
     document.getElementById('batch-tbody').innerHTML='';
     batchAddRow();
     batchCalcTotal();
     loadFilterData();
-  }catch(e){alert('저장 중 오류가 발생했습니다.');console.error(e);}
+  }catch(e){showToast('저장 중 오류가 발생했습니다.');console.error(e);}
 }
 
 // ══════════════════════════════════════
