@@ -1016,6 +1016,15 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 .wsch-process-code{font-size:11px;color:#9ca3af;font-family:'JetBrains Mono','Consolas',monospace;margin-top:2px;}
 .wsch-action-cell{white-space:nowrap;display:flex;gap:4px;justify-content:center;align-items:center;flex-wrap:nowrap;}
 .wsch-act-btn{height:26px;padding:0 9px;border:none;border-radius:3px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.vehicle-combo-wrap{position:relative;width:100%;}
+.vehicle-combo-inp{width:100%;height:28px;border:1px solid #0f2744;border-radius:3px;padding:0 6px;font-size:12px;background:white;color:#1e2633;font-family:inherit;box-sizing:border-box;}
+.vehicle-combo-inp-modal{width:100%;height:32px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:12.5px;background:white;color:#1e2633;font-family:inherit;box-sizing:border-box;}
+.vehicle-combo-inp-modal:focus,.vehicle-combo-inp:focus{outline:none;border-color:#0f2744;}
+.vehicle-dropdown{position:absolute;top:100%;left:0;right:0;max-height:180px;overflow-y:auto;background:white;border:1px solid #cbd5e1;border-radius:4px;z-index:9999;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.14);margin-top:2px;}
+.vehicle-option{padding:5px 10px;font-size:12.5px;cursor:pointer;white-space:nowrap;color:#1e2633;}
+.vehicle-option:hover,.vehicle-option.vhl{background:#f0f7ff;}
+.vehicle-add-new{padding:5px 10px;font-size:12.5px;cursor:pointer;color:#0f2744;font-weight:700;border-top:1px solid #e2e8f0;white-space:nowrap;}
+.vehicle-add-new:hover,.vehicle-add-new.vhl{background:#f0f7ff;}
 .ws-table-footer{background:#f3f6fa;border-top:1px solid #d4dce5;padding:6px 14px;font-size:11.5px;color:#6b7280;display:flex;justify-content:space-between;}
 .ws-update-form{padding:12px 14px;display:grid;grid-template-columns:220px 1fr 100px;gap:10px;align-items:end;background:#fafbfd;}
 .ws-form-label{display:block;font-size:11.5px;color:#475569;margin-bottom:4px;font-weight:500;}
@@ -1567,7 +1576,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         <div class="form-group"><label>실제 위탁량 * <span style="font-size:11px;color:#6b7280;">(톤)</span></label><input type="number" id="wscm-amount" min="0" step="any" placeholder="예: 1.5"></div>
         <div class="form-group"><label>인계번호</label><input type="text" id="wscm-invoice" placeholder="올바로 인계번호 (선택)"></div>
       </div>
-      <div class="form-group" style="margin-bottom:8px;"><label>차량번호</label><input type="text" id="wscm-vehicle" placeholder="예: 12가3456"></div>
+      <div class="form-group" style="margin-bottom:8px;"><label>차량번호</label><div id="wscm-vehicle-wrap" style="position:relative;"></div></div>
       <div class="form-group" style="margin-bottom:12px;"><label>비고</label><textarea id="wscm-notes" rows="2" placeholder="선택" style="width:100%;border:1px solid #cbd5e1;border-radius:3px;padding:6px 8px;font-size:12.5px;font-family:inherit;resize:vertical;"></textarea></div>
       <!-- 보관량 차감 섹션 -->
       <div id="wscm-deduct-section" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px 14px;margin-bottom:12px;">
@@ -3891,6 +3900,7 @@ async function loadWasteData(){
 
 // 배출업체 스케줄 탭 전용 로드
 async function loadWasteScheduleTab(){
+  loadVehicles(); // 백그라운드 선제 로드 (await 없이)
   await wschLoad();
 }
 
@@ -3961,6 +3971,130 @@ var SCHEDULE_TO_STORAGE_MAP={
   '폐목재':     ['폐목재'],
   '일반쓰레기': ['일반쓰레기']
 };
+
+// ── 차량번호 콤보박스 ──────────────────────────────────────
+var _vehiclesCache=null; // null=미로드, []=로드완료
+
+async function loadVehicles(){
+  if(_vehiclesCache!==null)return _vehiclesCache;
+  var data=await sb('vehicles','?is_active=eq.true&order=plate_number.asc&select=plate_number');
+  _vehiclesCache=(data||[]).map(function(r){return r.plate_number;});
+  return _vehiclesCache;
+}
+
+// container: DOM element to mount into
+// initial: string initial value
+// onSelect(val): called when value is committed (selected or blur)
+// onCancel(): called when Escape pressed
+// modalMode: boolean — wider input style for modal use
+function createVehicleCombo(container,initial,onSelect,onCancel,modalMode){
+  var wrap=document.createElement('div');
+  wrap.className='vehicle-combo-wrap';
+
+  var inp=document.createElement('input');
+  inp.type='text';
+  inp.className=modalMode?'vehicle-combo-inp-modal':'vehicle-combo-inp';
+  inp.value=initial||'';
+  inp.placeholder='차량번호 선택 또는 입력';
+  inp.autocomplete='off';
+
+  var drop=document.createElement('div');
+  drop.className='vehicle-dropdown';
+
+  wrap.appendChild(inp);
+  wrap.appendChild(drop);
+  container.appendChild(wrap);
+
+  var selected=false,cancelled=false,curHighlight=-1;
+
+  function getItems(){
+    var q=(inp.value||'').trim();
+    var cache=_vehiclesCache||[];
+    return q?cache.filter(function(p){return p.indexOf(q)>=0;}):cache.slice();
+  }
+
+  function renderDrop(){
+    var q=(inp.value||'').trim();
+    var items=getItems();
+    var hasNew=q&&items.indexOf(q)<0;
+    drop.innerHTML='';
+    curHighlight=-1;
+    items.forEach(function(p,i){
+      var d=document.createElement('div');
+      d.className='vehicle-option';
+      d.textContent=p;
+      d.addEventListener('mousedown',function(e){e.preventDefault();commit(p);});
+      d.addEventListener('mouseenter',function(){setHL(i);});
+      drop.appendChild(d);
+    });
+    if(hasNew){
+      var nd=document.createElement('div');
+      nd.className='vehicle-add-new';
+      nd.textContent='+ 새 차량번호 등록: '+q;
+      nd.addEventListener('mousedown',function(e){e.preventDefault();addNew(q);});
+      nd.addEventListener('mouseenter',function(){setHL(items.length);});
+      drop.appendChild(nd);
+    }
+    drop.style.display=(items.length||hasNew)?'block':'none';
+  }
+
+  function allDivs(){return drop.querySelectorAll('.vehicle-option,.vehicle-add-new');}
+
+  function setHL(idx){
+    allDivs().forEach(function(d,i){
+      d.classList.toggle('vhl',i===idx);
+    });
+    curHighlight=idx;
+  }
+
+  function commit(val){
+    if(selected)return;
+    selected=true;
+    inp.value=val;
+    drop.style.display='none';
+    onSelect&&onSelect(val);
+  }
+
+  async function addNew(plate){
+    if(isReadOnly()){showReadOnlyToast();return;}
+    if(!confirm('['+plate+']을(를) 차량번호 목록에 추가하시겠습니까?\n다음 배출 시에도 선택 가능합니다.'))return;
+    try{
+      await sb('vehicles','',{method:'POST',headers:{'Prefer':'return=minimal'},body:{plate_number:plate,created_by:currentUser?(currentUser.name||currentUser.username):''}});
+      if(_vehiclesCache){_vehiclesCache.push(plate);_vehiclesCache.sort();}
+      commit(plate);
+    }catch(e){showToast('차량번호 등록 실패: '+e.message);}
+  }
+
+  inp.addEventListener('focus',function(){renderDrop();});
+  inp.addEventListener('input',function(){selected=false;renderDrop();});
+  inp.addEventListener('blur',function(){
+    setTimeout(function(){
+      drop.style.display='none';
+      if(!selected&&!cancelled)commit(inp.value);
+    },180);
+  });
+  inp.addEventListener('keydown',function(e){
+    var divs=allDivs();
+    if(e.key==='ArrowDown'){e.preventDefault();setHL(Math.min(curHighlight+1,divs.length-1));}
+    else if(e.key==='ArrowUp'){e.preventDefault();setHL(Math.max(curHighlight-1,0));}
+    else if(e.key==='Enter'){
+      e.preventDefault();
+      if(curHighlight>=0&&curHighlight<divs.length){divs[curHighlight].dispatchEvent(new MouseEvent('mousedown',{bubbles:true}));}
+      else{commit(inp.value);}
+    }
+    else if(e.key==='Escape'){
+      cancelled=true;
+      drop.style.display='none';
+      onCancel&&onCancel();
+    }
+  });
+
+  // 초기 로드
+  loadVehicles().then(function(){renderDrop();});
+  inp.focus();inp.select();
+  return inp;
+}
+// ─────────────────────────────────────────────────────────────
 
 var _wschData=[];
 
@@ -4173,6 +4307,7 @@ async function wschSave(){
 }
 
 var _wschCompleteId=null;
+var _wscmVehicleVal='';
 
 async function wschComplete(id){
   if(isReadOnly()){showReadOnlyToast();return;}
@@ -4180,6 +4315,7 @@ async function wschComplete(id){
   var r=(_wschData||[]).find(function(x){return x.id===id;});
   if(!r)return;
   _wschCompleteId=id;
+  _wscmVehicleVal=r.vehicle_no||'';
   var setVal=function(eid,v){var el=document.getElementById(eid);if(el)el.value=v||'';};
   setVal('wscm-date',r.scheduled_date||'');
   setVal('wscm-vendor',r.vendor_name||'');
@@ -4187,9 +4323,15 @@ async function wschComplete(id){
   var pmStr=r.process_method_name?(r.process_method_name+' ('+r.process_method_code+')'):'(미지정)';
   setVal('wscm-process',pmStr);
   setVal('wscm-amount',r.expected_amount!=null?r.expected_amount:'');
-  setVal('wscm-vehicle',r.vehicle_no||'');
   setVal('wscm-invoice','');
   setVal('wscm-notes',r.notes||'');
+
+  // 차량번호 콤보박스 마운트
+  var vwrap=document.getElementById('wscm-vehicle-wrap');
+  if(vwrap){
+    vwrap.innerHTML='';
+    createVehicleCombo(vwrap,r.vehicle_no||'',function(val){_wscmVehicleVal=(val||'').trim();},null,true);
+  }
 
   // 보관량 차감 섹션
   var candidates=(SCHEDULE_TO_STORAGE_MAP[r.waste_type])||[];
@@ -4248,6 +4390,9 @@ function wschDeductToggle(chk){
 function wschCloseCompleteModal(){
   document.getElementById('wsch-complete-modal').classList.remove('show');
   _wschCompleteId=null;
+  _wscmVehicleVal='';
+  var vwrap=document.getElementById('wscm-vehicle-wrap');
+  if(vwrap)vwrap.innerHTML='';
 }
 
 async function wschConfirmComplete(){
@@ -4259,7 +4404,7 @@ async function wschConfirmComplete(){
   var amtVal=amtStr!==''?parseFloat(amtStr):null;
   if(amtVal===null||isNaN(amtVal)){alert('실제 위탁량을 입력해주세요.');return;}
   var invoice=(document.getElementById('wscm-invoice').value||'').trim();
-  var vehicle=(document.getElementById('wscm-vehicle').value||'').trim();
+  var vehicle=(_wscmVehicleVal||'').trim();
   var notes=(document.getElementById('wscm-notes').value||'').trim();
   var now=new Date().toISOString();
   var by=currentUser?(currentUser.name||currentUser.username):'';
@@ -4322,13 +4467,30 @@ async function wschConfirmComplete(){
 function wschInlineEdit(td,id,field,current){
   if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 쓰기 권한이 없습니다.');return;}
-  var isAmount=field==='amount';
+  var today=function(){return new Date().toISOString().split('T')[0];};
+  var rerender=function(){wschRenderTable(_wschData,today());};
+
+  if(field==='vehicle'){
+    // 차량번호: 콤보박스
+    td.innerHTML='';
+    td.style.padding='0 2px';
+    createVehicleCombo(td,current,async function(val){
+      val=(val||'').trim();
+      await sb('waste_schedule','?id=eq.'+id,{method:'PATCH',body:{vehicle_no:val||null}});
+      showToast('차량번호 '+(val||'삭제'));
+      var rec=(_wschData||[]).find(function(x){return x.id===id;});
+      if(rec)rec.vehicle_no=val||null;
+      rerender();
+    },function(){rerender();},false);
+    return;
+  }
+
+  // 위탁량: 일반 number input
   var inp=document.createElement('input');
   inp.className='wsch-inline-input';
-  inp.type=isAmount?'number':'text';
-  if(isAmount){inp.step='any';inp.min='0';}
+  inp.type='number';inp.step='any';inp.min='0';
   inp.value=current;
-  inp.style.textAlign=isAmount?'right':'center';
+  inp.style.textAlign='right';
   td.innerHTML='';
   td.appendChild(inp);
   inp.focus();inp.select();
@@ -4336,25 +4498,19 @@ function wschInlineEdit(td,id,field,current){
   var save=async function(){
     if(saving)return;saving=true;
     var val=inp.value.trim();
-    var patch={};
-    if(isAmount){
-      var n=val===''?null:parseFloat(val);
-      if(n!==null&&isNaN(n)){wschLoad();return;}
-      patch.expected_amount=n;
-    } else {
-      patch.vehicle_no=val||null;
-    }
-    await sb('waste_schedule','?id=eq.'+id,{method:'PATCH',body:patch});
-    var label=isAmount?'위탁량 '+(patch.expected_amount!=null?patch.expected_amount+'톤 저장':'삭제'):'차량번호 '+(patch.vehicle_no||'삭제');
-    showToast(label);
-    // 로컬 데이터 갱신
+    var n=val===''?null:parseFloat(val);
+    if(n!==null&&isNaN(n)){rerender();return;}
+    await sb('waste_schedule','?id=eq.'+id,{method:'PATCH',body:{expected_amount:n}});
+    showToast('위탁량 '+(n!=null?n+'톤 저장':'삭제'));
     var rec=(_wschData||[]).find(function(x){return x.id===id;});
-    if(rec){if(isAmount)rec.expected_amount=patch.expected_amount;else rec.vehicle_no=patch.vehicle_no;}
-    var today=new Date().toISOString().split('T')[0];
-    wschRenderTable(_wschData,today);
+    if(rec)rec.expected_amount=n;
+    rerender();
   };
   inp.addEventListener('blur',save);
-  inp.addEventListener('keydown',function(e){if(e.key==='Enter'){inp.blur();}else if(e.key==='Escape'){saving=true;var today=new Date().toISOString().split('T')[0];wschRenderTable(_wschData,today);}});
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){inp.blur();}
+    else if(e.key==='Escape'){saving=true;rerender();}
+  });
 }
 
 function wschShowDetail(id){
