@@ -1003,6 +1003,19 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 .ws-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:500;white-space:nowrap;border:1px solid transparent;}
 .ws-badge-success{background:#f0fdf4;color:#166534;border-color:#bbf7d0;}
 .ws-badge-warning{background:#fffbeb;color:#92400e;border-color:#fde68a;}
+.ws-badge-ok{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;white-space:nowrap;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
+.ws-badge-warn{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;white-space:nowrap;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;}
+.ws-badge-crit{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;white-space:nowrap;background:#fff7ed;color:#c2410c;border:1px solid #fdba74;}
+.ws-badge-overdue{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;white-space:nowrap;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;}
+.ws-badge-cancel{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;white-space:nowrap;background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db;}
+.ws-table tbody tr{height:56px;}
+.wsch-inline-cell{cursor:pointer;}
+.wsch-inline-cell:hover{background:#f0f7ff !important;}
+.wsch-inline-input{width:100%;height:28px;border:1px solid #0f2744;border-radius:3px;padding:0 6px;font-size:12.5px;background:white;color:#1e2633;font-family:inherit;}
+.wsch-process-name{font-size:12.5px;font-weight:600;color:#1e2633;line-height:1.3;}
+.wsch-process-code{font-size:11px;color:#9ca3af;font-family:'JetBrains Mono','Consolas',monospace;margin-top:2px;}
+.wsch-action-cell{white-space:nowrap;display:flex;gap:4px;justify-content:center;align-items:center;flex-wrap:nowrap;}
+.wsch-act-btn{height:26px;padding:0 9px;border:none;border-radius:3px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
 .ws-table-footer{background:#f3f6fa;border-top:1px solid #d4dce5;padding:6px 14px;font-size:11.5px;color:#6b7280;display:flex;justify-content:space-between;}
 .ws-update-form{padding:12px 14px;display:grid;grid-template-columns:220px 1fr 100px;gap:10px;align-items:end;background:#fafbfd;}
 .ws-form-label{display:block;font-size:11.5px;color:#475569;margin-bottom:4px;font-weight:500;}
@@ -1481,19 +1494,19 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
       <span id="wsch-count" style="font-size:11.5px;color:#6b7280;"></span>
     </div>
     <div style="overflow-x:auto;">
-      <table class="ws-table" style="min-width:820px;">
+      <table class="ws-table" style="min-width:1000px;">
         <thead>
           <tr>
-            <th style="width:38px;">No.</th>
-            <th style="width:100px;">인수 예정일</th>
-            <th style="width:120px;">위탁업체</th>
-            <th style="min-width:120px;">폐기물 종류</th>
-            <th style="width:70px;">예상량</th>
+            <th style="width:40px;">No.</th>
+            <th style="width:110px;">인수 예정일</th>
+            <th style="width:140px;text-align:left;">위탁업체</th>
+            <th style="width:130px;text-align:left;">폐기물 종류</th>
+            <th style="width:140px;text-align:left;">처리방법</th>
+            <th style="width:80px;">위탁량</th>
             <th style="width:50px;">단위</th>
-            <th style="width:90px;">차량번호</th>
-            <th style="width:80px;">운전자</th>
+            <th style="width:110px;">차량번호</th>
             <th style="width:90px;">상태</th>
-            <th style="width:90px;">관리</th>
+            <th style="width:160px;">관리</th>
           </tr>
         </thead>
         <tbody id="wsch-tbody"><tr><td colspan="10" style="text-align:center;padding:2rem;color:#9ca3af;">불러오는 중...</td></tr></tbody>
@@ -1504,26 +1517,35 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 
   <!-- 일정 등록 모달 -->
   <div class="modal-bg" id="wsch-modal">
-    <div class="modal" style="max-width:480px;">
+    <div class="modal" style="max-width:440px;">
       <div class="modal-title">배출 일정 등록</div>
       <div class="form-row">
         <div class="form-group"><label>인수 예정일 *</label><input type="date" id="wsch-m-date"></div>
         <div class="form-group"><label>위탁업체 *</label><input type="text" id="wsch-m-vendor" value="가람환경"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>허가번호</label><input type="text" id="wsch-m-license" placeholder="예: 제-2024-00001호"></div>
-        <div class="form-group"><label>폐기물 종류 *</label><input type="text" id="wsch-m-type" placeholder="예: 폐유고상, 분진"></div>
+      <div class="form-group" style="margin-bottom:8px;">
+        <label>폐기물 종류 *</label>
+        <select id="wsch-m-type" onchange="wschUpdateProcessMethod()" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;background:white;color:#1e2633;font-family:inherit;">
+          <option value="">-- 선택 --</option>
+          <option>폐유액상</option>
+          <option>폐유고상(톤백)</option>
+          <option>폐유고상(링팩)</option>
+          <option>폐페인트(톤백)</option>
+          <option>폐페인트(캔)</option>
+          <option>분진(톤백)</option>
+          <option>폐목재</option>
+          <option>폐합성수지</option>
+          <option>스크랩</option>
+          <option>일반쓰레기</option>
+        </select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>예상량</label><input type="number" id="wsch-m-amount" placeholder="수량" min="0"></div>
-        <div class="form-group"><label>단위</label><input type="text" id="wsch-m-unit" placeholder="예: 드럼, 개, ton"></div>
+      <div class="form-group" style="margin-bottom:8px;">
+        <label>처리방법</label>
+        <div id="wsch-m-process-preview" style="height:34px;border:1px solid #e2e8f0;border-radius:3px;padding:0 10px;font-size:12.5px;background:#f8fafc;color:#374151;display:flex;align-items:center;gap:6px;">
+          <span style="color:#9ca3af;">폐기물 종류 선택 시 자동 입력</span>
+        </div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>차량번호</label><input type="text" id="wsch-m-vehicle" placeholder="예: 12가 1234"></div>
-        <div class="form-group"><label>운전자</label><input type="text" id="wsch-m-driver" placeholder="운전자 이름"></div>
-      </div>
-      <div class="form-group" style="margin-bottom:8px;"><label>연락처</label><input type="text" id="wsch-m-phone" placeholder="010-0000-0000"></div>
-      <div class="form-group" style="margin-bottom:8px;"><label>비고</label><input type="text" id="wsch-m-notes" placeholder="특이사항 (선택)"></div>
+      <div class="form-group" style="margin-bottom:8px;"><label>비고</label><textarea id="wsch-m-notes" rows="2" placeholder="특이사항 (선택)" style="width:100%;border:1px solid #cbd5e1;border-radius:3px;padding:6px 8px;font-size:12.5px;font-family:inherit;resize:vertical;"></textarea></div>
       <div class="modal-btns">
         <button class="modal-cancel" onclick="wschCloseModal()">취소</button>
         <button class="ws-btn ws-btn-primary" style="height:36px;padding:0 18px;" onclick="wschSave()">등록</button>
@@ -1533,21 +1555,25 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 
   <!-- 완료 처리 모달 -->
   <div class="modal-bg" id="wsch-complete-modal">
-    <div class="modal" style="max-width:420px;">
+    <div class="modal" style="max-width:460px;">
       <div class="modal-title">배출 완료 처리</div>
       <div class="form-row">
-        <div class="form-group"><label>폐기물 종류</label><input type="text" id="wscm-type" readonly style="background:#f3f6fa;color:#374151;"></div>
+        <div class="form-group"><label>인수 예정일</label><input type="text" id="wscm-date" readonly style="background:#f3f6fa;color:#374151;"></div>
         <div class="form-group"><label>위탁업체</label><input type="text" id="wscm-vendor" readonly style="background:#f3f6fa;color:#374151;"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>실제 수량</label><input type="number" id="wscm-amount" min="0" step="any"></div>
-        <div class="form-group"><label>단위</label><input type="text" id="wscm-unit" readonly style="background:#f3f6fa;color:#374151;"></div>
+        <div class="form-group"><label>폐기물 종류</label><input type="text" id="wscm-type" readonly style="background:#f3f6fa;color:#374151;"></div>
+        <div class="form-group"><label>처리방법</label><input type="text" id="wscm-process" readonly style="background:#f3f6fa;color:#374151;"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>실제 무게 (kg)</label><input type="number" id="wscm-weight" min="0" step="any" placeholder="선택"></div>
+        <div class="form-group"><label>실제 위탁량 * <span style="font-size:11px;color:#6b7280;">(톤)</span></label><input type="number" id="wscm-amount" min="0" step="any" placeholder="예: 1.5"></div>
         <div class="form-group"><label>인계번호</label><input type="text" id="wscm-invoice" placeholder="올바로 인계번호 (선택)"></div>
       </div>
-      <div class="form-group" style="margin-bottom:8px;"><label>비고</label><input type="text" id="wscm-notes" placeholder="선택"></div>
+      <div class="form-row">
+        <div class="form-group"><label>차량번호</label><input type="text" id="wscm-vehicle" placeholder="예: 12가3456"></div>
+        <div class="form-group"><label>운전자</label><input type="text" id="wscm-driver" placeholder="이름 (선택)"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:8px;"><label>비고</label><textarea id="wscm-notes" rows="2" placeholder="선택" style="width:100%;border:1px solid #cbd5e1;border-radius:3px;padding:6px 8px;font-size:12.5px;font-family:inherit;resize:vertical;"></textarea></div>
       <div class="modal-btns">
         <button class="modal-cancel" onclick="wschCloseCompleteModal()">취소</button>
         <button class="ws-btn ws-btn-primary" style="height:36px;padding:0 18px;background:#16a34a;border-color:#16a34a;" onclick="wschConfirmComplete()">완료 확정</button>
@@ -3411,11 +3437,14 @@ async function wsSaveSchedule(){
   var vendor=document.getElementById('wsm-vendor').value.trim();
   var type=document.getElementById('wsm-type').value.trim();
   if(!date||!vendor||!type){showToast('필수 항목을 입력해 주세요.');return;}
+  var pm=(typeof PROCESS_METHOD_MAP!=='undefined'&&PROCESS_METHOD_MAP[type])||null;
   var amtVal=document.getElementById('wsm-amount').value;
   var body={
     scheduled_date:date,vendor_name:vendor,waste_type:type,
     expected_amount:amtVal!==''?parseFloat(amtVal):null,
-    expected_unit:document.getElementById('wsm-unit').value.trim()||null,
+    expected_unit:'톤',
+    process_method_name:pm?pm.name:null,
+    process_method_code:pm?pm.code:null,
     notes:document.getElementById('wsm-notes').value.trim()||null,
     status:'scheduled',
     created_by:currentUser?(currentUser.name||currentUser.username):''
@@ -3910,6 +3939,19 @@ async function completeWasteOil(id,lineName,bagCount){
 }
 
 // ── 배출 일정 (waste_schedule) ──────────────────────────────
+var PROCESS_METHOD_MAP={
+  '폐유액상':       {name:'연료,고형연료품제조',code:'2009'},
+  '폐유고상(톤백)':  {name:'고온소각',          code:'2102'},
+  '폐유고상(링팩)':  {name:'고온소각',          code:'2102'},
+  '폐페인트(톤백)':  {name:'고온소각',          code:'2102'},
+  '폐페인트(캔)':    {name:'고온소각',          code:'2102'},
+  '분진(톤백)':     {name:'매립',              code:'2201'},
+  '폐목재':         {name:'중간가공폐기물제조', code:'2010'},
+  '폐합성수지':      {name:'중간가공폐기물제조', code:'2010'},
+  '스크랩':         null,
+  '일반쓰레기':     null
+};
+
 var _wschData=[];
 
 async function wschLoad(){
@@ -3937,9 +3979,9 @@ async function wschLoad(){
 
 function wschGetStatusBadge(r,today){
   if(r.status==='completed')return'<span class="ws-badge-ok">완료</span>';
-  if(r.status==='cancelled')return'<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:3px;font-size:11.5px;font-weight:700;">취소</span>';
+  if(r.status==='cancelled')return'<span class="ws-badge-cancel">취소</span>';
   if(r.scheduled_date===today||r.status==='today')return'<span class="ws-badge-crit">오늘 인수</span>';
-  if(r.scheduled_date<today)return'<span class="ws-badge-crit">미처리</span>';
+  if(r.scheduled_date<today)return'<span class="ws-badge-overdue">미처리</span>';
   return'<span class="ws-badge-warn">예정</span>';
 }
 
@@ -3971,35 +4013,81 @@ function wschRenderTable(data,today){
   var canWrite=hasPerm('waste_schedule_write')||isAdmin();
   var rows=data.map(function(r,i){
     var statusBadge=wschGetStatusBadge(r,today);
-    var actionBtn=canWrite&&r.status!=='completed'&&r.status!=='cancelled'
-      ?'<button onclick="wschComplete(\''+r.id+'\')" style="height:26px;padding:0 10px;background:#16a34a;color:white;border:none;border-radius:3px;font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit;margin-right:4px;">완료</button>':'';
-    var delBtn=canWrite?'<button class="del-btn" onclick="wschDelete(\''+r.id+'\')">✕</button>':'';
-    var amtText=r.expected_amount!=null?r.expected_amount:'<span style="color:#d1d5db;">-</span>';
+    var isDone=r.status==='completed'||r.status==='cancelled';
+    // 처리방법 셀
+    var processCell=r.process_method_name
+      ?'<div class="wsch-process-name">'+r.process_method_name+'</div><div class="wsch-process-code">('+r.process_method_code+')</div>'
+      :'<span style="color:#9ca3af;font-size:12px;">(미지정)</span>';
+    var rid=r.id;
+    // 위탁량 인라인 편집 셀
+    var amtCell=isDone
+      ?(r.expected_amount!=null?'<span style="font-variant-numeric:tabular-nums;">'+r.expected_amount+'</span>':'<span style="color:#d1d5db;">—</span>')
+      :'<td class="wsch-inline-cell" onclick="wschInlineEdit(this,'+rid+',\'amount\','+(r.expected_amount!=null?r.expected_amount:'\'\'')+')">'+
+        (r.expected_amount!=null?'<span style="font-variant-numeric:tabular-nums;">'+r.expected_amount+'</span>':'<span style="color:#bbb;font-size:12px;">미입력</span>')+'</td>';
+    // 차량번호 인라인 편집 셀
+    var vehCell=isDone
+      ?(r.vehicle_no||'<span style="color:#d1d5db;">—</span>')
+      :'<td class="wsch-inline-cell" onclick="wschInlineEdit(this,'+rid+',\'vehicle\',\''+ws_esc(r.vehicle_no||'')+'\')">'+
+        (r.vehicle_no||'<span style="color:#bbb;font-size:12px;">미입력</span>')+'</td>';
+    // 관리 버튼
+    var actCell='';
+    if(canWrite){
+      if(!isDone){
+        actCell='<div class="wsch-action-cell">'+
+          '<button class="wsch-act-btn" style="background:#16a34a;color:white;" onclick="wschComplete('+rid+')">완료 처리</button>'+
+          '<button class="wsch-act-btn" style="background:white;color:#dc2626;border:1px solid #fca5a5;" onclick="wschDelete('+rid+')">삭제</button>'+
+        '</div>';
+      } else if(r.status==='completed'){
+        actCell='<div class="wsch-action-cell">'+
+          '<button class="wsch-act-btn" style="background:white;color:#374151;border:1px solid #d1d5db;" onclick="wschShowDetail('+rid+')">상세</button>'+
+          '<button class="wsch-act-btn" style="background:white;color:#6b7280;border:1px solid #d1d5db;" onclick="wschCancel('+rid+')">취소</button>'+
+        '</div>';
+      } else {
+        actCell='<div class="wsch-action-cell"><button class="wsch-act-btn" style="background:white;color:#dc2626;border:1px solid #fca5a5;" onclick="wschDelete('+rid+')">삭제</button></div>';
+      }
+    }
+    if(isDone){
+      return'<tr>'+
+        '<td>'+(i+1)+'</td>'+
+        '<td style="white-space:nowrap;">'+(r.scheduled_date||'-')+'</td>'+
+        '<td style="text-align:left;white-space:nowrap;font-weight:500;">'+(r.vendor_name||'-')+'</td>'+
+        '<td style="text-align:left;white-space:nowrap;">'+(r.waste_type||'-')+'</td>'+
+        '<td style="text-align:left;">'+processCell+'</td>'+
+        '<td style="text-align:right;">'+amtCell+'</td>'+
+        '<td>톤</td>'+
+        '<td>'+vehCell+'</td>'+
+        '<td>'+statusBadge+'</td>'+
+        '<td>'+actCell+'</td>'+
+        '</tr>';
+    }
     return'<tr>'+
       '<td>'+(i+1)+'</td>'+
-      '<td>'+(r.scheduled_date||'-')+'</td>'+
-      '<td style="font-weight:500;">'+(r.vendor_name||'-')+'</td>'+
-      '<td style="text-align:left;">'+(r.waste_type||'-')+'</td>'+
-      '<td>'+amtText+'</td>'+
-      '<td>'+(r.expected_unit||'<span style="color:#d1d5db;">-</span>')+'</td>'+
-      '<td>'+(r.vehicle_no||'<span style="color:#d1d5db;">-</span>')+'</td>'+
-      '<td>'+(r.driver_name||'<span style="color:#d1d5db;">-</span>')+'</td>'+
+      '<td style="white-space:nowrap;">'+(r.scheduled_date||'-')+'</td>'+
+      '<td style="text-align:left;white-space:nowrap;font-weight:500;">'+(r.vendor_name||'-')+'</td>'+
+      '<td style="text-align:left;white-space:nowrap;">'+(r.waste_type||'-')+'</td>'+
+      '<td style="text-align:left;">'+processCell+'</td>'+
+      amtCell+
+      '<td>톤</td>'+
+      vehCell+
       '<td>'+statusBadge+'</td>'+
-      '<td>'+actionBtn+delBtn+'</td>'+
+      '<td>'+actCell+'</td>'+
       '</tr>';
   }).join('');
   tbody.innerHTML=rows;
   if(footer)footer.textContent=data.length+'건';
   if(countEl)countEl.textContent='총 '+data.length+'건';
-  // PWA 카드 리스트 렌더링
+  // PWA 카드 리스트
   if(cardList){
     var cards=data.map(function(r){
       var statusBadge=wschGetStatusBadge(r,today);
-      var actionBtn=canWrite&&r.status!=='completed'&&r.status!=='cancelled'
-        ?'<button onclick="wschComplete(\''+r.id+'\')" style="flex:1;height:36px;background:#16a34a;color:white;border:none;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">완료 처리</button>':'';
-      var delBtn=canWrite
-        ?'<button onclick="wschDelete(\''+r.id+'\')" style="height:36px;padding:0 12px;background:white;color:#dc2626;border:1px solid #fca5a5;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">삭제</button>':'';
-      var amtStr=r.expected_amount!=null?(r.expected_amount+(r.expected_unit?' '+r.expected_unit:'')):'';
+      var isDone=r.status==='completed'||r.status==='cancelled';
+      var crid=r.id;
+      var actionBtn=canWrite&&!isDone
+        ?'<button onclick="wschComplete('+crid+')" style="flex:1;height:36px;background:#16a34a;color:white;border:none;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">완료 처리</button>':'';
+      var delBtn=canWrite&&!isDone
+        ?'<button onclick="wschDelete('+crid+')" style="height:36px;padding:0 12px;background:white;color:#dc2626;border:1px solid #fca5a5;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">삭제</button>':'';
+      var amtStr=r.expected_amount!=null?(r.expected_amount+'톤'):'';
+      var pmStr=r.process_method_name?(r.process_method_name+' ('+r.process_method_code+')'):'';
       return'<div style="background:white;border:1px solid #e3e6eb;border-radius:4px;padding:14px 16px;margin-bottom:10px;">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'+
           '<span style="font-size:14px;font-weight:700;color:#0a1626;">'+(r.scheduled_date||'-')+'</span>'+
@@ -4007,12 +4095,27 @@ function wschRenderTable(data,today){
         '</div>'+
         '<div style="font-size:13px;color:#4a5566;margin-bottom:4px;"><span style="color:#7c8696;font-weight:500;margin-right:6px;">업체</span>'+(r.vendor_name||'-')+'</div>'+
         '<div style="font-size:13px;color:#4a5566;margin-bottom:4px;"><span style="color:#7c8696;font-weight:500;margin-right:6px;">종류</span>'+(r.waste_type||'-')+'</div>'+
-        (amtStr?'<div style="font-size:13px;color:#4a5566;margin-bottom:4px;"><span style="color:#7c8696;font-weight:500;margin-right:6px;">예상량</span>'+amtStr+'</div>':'')+
-        (r.driver_name?'<div style="font-size:13px;color:#4a5566;margin-bottom:4px;"><span style="color:#7c8696;font-weight:500;margin-right:6px;">운전자</span>'+r.driver_name+(r.vehicle_no?' / '+r.vehicle_no:'')+'</div>':'')+
+        (pmStr?'<div style="font-size:13px;color:#4a5566;margin-bottom:4px;"><span style="color:#7c8696;font-weight:500;margin-right:6px;">처리방법</span>'+pmStr+'</div>':'')+
+        (amtStr?'<div style="font-size:13px;color:#4a5566;margin-bottom:4px;"><span style="color:#7c8696;font-weight:500;margin-right:6px;">위탁량</span>'+amtStr+'</div>':'')+
         ((actionBtn||delBtn)?'<div style="display:flex;gap:8px;margin-top:12px;">'+actionBtn+delBtn+'</div>':'')+
       '</div>';
     }).join('');
     cardList.innerHTML=cards;
+  }
+}
+
+function wschUpdateProcessMethod(){
+  var typeEl=document.getElementById('wsch-m-type');
+  var preview=document.getElementById('wsch-m-process-preview');
+  if(!typeEl||!preview)return;
+  var t=typeEl.value;
+  var pm=PROCESS_METHOD_MAP[t];
+  if(!t){
+    preview.innerHTML='<span style="color:#9ca3af;">폐기물 종류 선택 시 자동 입력</span>';
+  } else if(pm){
+    preview.innerHTML='<span style="font-weight:600;color:#1e2633;">'+pm.name+'</span><span style="margin-left:6px;font-size:11px;color:#9ca3af;font-family:monospace;">('+pm.code+')</span>';
+  } else {
+    preview.innerHTML='<span style="color:#9ca3af;">(미지정)</span>';
   }
 }
 
@@ -4024,10 +4127,11 @@ function wschOpenModal(){
 
 function wschCloseModal(){
   document.getElementById('wsch-modal').classList.remove('show');
-  ['wsch-m-date','wsch-m-license','wsch-m-type','wsch-m-amount','wsch-m-unit','wsch-m-vehicle','wsch-m-driver','wsch-m-phone','wsch-m-notes'].forEach(function(id){
-    var el=document.getElementById(id);if(el)el.value='';
-  });
+  var typeEl=document.getElementById('wsch-m-type');if(typeEl)typeEl.value='';
+  var notesEl=document.getElementById('wsch-m-notes');if(notesEl)notesEl.value='';
+  var dateEl=document.getElementById('wsch-m-date');if(dateEl)dateEl.value='';
   var v=document.getElementById('wsch-m-vendor');if(v)v.value='가람환경';
+  wschUpdateProcessMethod();
 }
 
 async function wschSave(){
@@ -4035,20 +4139,20 @@ async function wschSave(){
   if(!hasPerm('waste_schedule_write')&&!isAdmin()){alert('배출 일정 등록 권한이 없습니다.');return;}
   var date=document.getElementById('wsch-m-date').value;
   var vendor=document.getElementById('wsch-m-vendor').value.trim();
-  var type=document.getElementById('wsch-m-type').value.trim();
+  var type=document.getElementById('wsch-m-type').value;
   if(!date){alert('인수 예정일을 입력해주세요.');return;}
   if(!vendor){alert('위탁업체를 입력해주세요.');return;}
-  if(!type){alert('폐기물 종류를 입력해주세요.');return;}
-  var amtVal=document.getElementById('wsch-m-amount').value;
+  if(!type){alert('폐기물 종류를 선택해주세요.');return;}
+  var pm=PROCESS_METHOD_MAP[type]||null;
   var body={
-    scheduled_date:date,vendor_name:vendor,
-    vendor_license_no:document.getElementById('wsch-m-license').value.trim()||null,
+    scheduled_date:date,
+    vendor_name:vendor,
     waste_type:type,
-    expected_amount:amtVal!==''?parseFloat(amtVal):null,
-    expected_unit:document.getElementById('wsch-m-unit').value.trim()||null,
-    vehicle_no:document.getElementById('wsch-m-vehicle').value.trim()||null,
-    driver_name:document.getElementById('wsch-m-driver').value.trim()||null,
-    driver_phone:document.getElementById('wsch-m-phone').value.trim()||null,
+    expected_amount:null,
+    expected_unit:'톤',
+    vehicle_no:null,
+    process_method_name:pm?pm.name:null,
+    process_method_code:pm?pm.code:null,
     notes:document.getElementById('wsch-m-notes').value.trim()||null,
     status:'scheduled',
     created_by:currentUser?(currentUser.name||currentUser.username):''
@@ -4066,13 +4170,17 @@ function wschComplete(id){
   var r=(_wschData||[]).find(function(x){return x.id===id;});
   if(!r)return;
   _wschCompleteId=id;
-  document.getElementById('wscm-type').value=r.waste_type||'';
-  document.getElementById('wscm-vendor').value=r.vendor_name||'';
-  document.getElementById('wscm-amount').value=r.expected_amount!=null?r.expected_amount:'';
-  document.getElementById('wscm-unit').value=r.expected_unit||'';
-  document.getElementById('wscm-weight').value='';
-  document.getElementById('wscm-invoice').value='';
-  document.getElementById('wscm-notes').value='';
+  var setVal=function(eid,v){var el=document.getElementById(eid);if(el)el.value=v||'';};
+  setVal('wscm-date',r.scheduled_date||'');
+  setVal('wscm-vendor',r.vendor_name||'');
+  setVal('wscm-type',r.waste_type||'');
+  var pmStr=r.process_method_name?(r.process_method_name+' ('+r.process_method_code+')'):'(미지정)';
+  setVal('wscm-process',pmStr);
+  setVal('wscm-amount',r.expected_amount!=null?r.expected_amount:'');
+  setVal('wscm-vehicle',r.vehicle_no||'');
+  setVal('wscm-driver',r.driver_name||'');
+  setVal('wscm-invoice','');
+  setVal('wscm-notes',r.notes||'');
   document.getElementById('wsch-complete-modal').classList.add('show');
 }
 
@@ -4086,44 +4194,107 @@ async function wschConfirmComplete(){
   if(!_wschCompleteId)return;
   var r=(_wschData||[]).find(function(x){return x.id===_wschCompleteId;});
   if(!r)return;
-  var amtVal=document.getElementById('wscm-amount').value;
-  var weightVal=document.getElementById('wscm-weight').value;
-  var invoice=document.getElementById('wscm-invoice').value.trim();
-  var notes=document.getElementById('wscm-notes').value.trim();
+  var amtStr=document.getElementById('wscm-amount').value;
+  var amtVal=amtStr!==''?parseFloat(amtStr):null;
+  if(amtVal===null||isNaN(amtVal)){alert('실제 위탁량을 입력해주세요.');return;}
+  var invoice=(document.getElementById('wscm-invoice').value||'').trim();
+  var vehicle=(document.getElementById('wscm-vehicle').value||'').trim();
+  var driver=(document.getElementById('wscm-driver').value||'').trim();
+  var notes=(document.getElementById('wscm-notes').value||'').trim();
   var now=new Date().toISOString();
   var by=currentUser?(currentUser.name||currentUser.username):'';
   try{
-    // 1) waste_schedule 완료 처리
-    await sb('waste_schedule','?id=eq.'+_wschCompleteId,{method:'PATCH',body:{status:'completed',completed_at:now}});
-    // 2) waste_disposal INSERT (weight_kg/invoice_number 컬럼 없으면 fallback)
+    // 1) waste_schedule 완료 처리 + 실측값 반영
+    await sb('waste_schedule','?id=eq.'+_wschCompleteId,{method:'PATCH',body:{
+      status:'completed',completed_at:now,
+      expected_amount:amtVal,expected_unit:'톤',
+      vehicle_no:vehicle||null,
+      driver_name:driver||null,
+      notes:notes||null
+    }});
+    // 2) waste_disposal INSERT
     var dispPayload={
       disposal_date:r.scheduled_date||now.slice(0,10),
       vendor_name:r.vendor_name||'',
       waste_type:r.waste_type||'',
-      amount:amtVal!==''?parseFloat(amtVal):null,
-      unit:r.expected_unit||'',
-      weight_kg:weightVal!==''?parseFloat(weightVal):null,
+      amount:amtVal,
+      unit:'톤',
       invoice_number:invoice||null,
       notes:notes||null,
       created_by:by
     };
-    var dispRes=await sb('waste_disposal','',{method:'POST',headers:{'Prefer':'return=minimal'},body:dispPayload});
-    if(dispRes&&dispRes.status&&dispRes.status>=400){
-      // 신규 컬럼 없는 경우 재시도
-      var fallback={disposal_date:dispPayload.disposal_date,waste_type:dispPayload.waste_type,amount:dispPayload.amount,unit:dispPayload.unit,notes:dispPayload.notes,created_by:dispPayload.created_by};
-      if(dispPayload.vendor_name)fallback.vendor_name=dispPayload.vendor_name;
-      await sb('waste_disposal','',{method:'POST',headers:{'Prefer':'return=minimal'},body:fallback});
-    }
-    // 3) waste_storage 보관량 0 초기화 + 마지막 배출일 갱신
+    await sb('waste_disposal','',{method:'POST',headers:{'Prefer':'return=minimal'},body:dispPayload});
+    // 3) waste_storage 보관량 0 + 마지막 배출일
     var ws=(_wsData||[]).find(function(x){return x.waste_type===r.waste_type;});
     if(ws){
       await sb('waste_storage','?id=eq.'+ws.id,{method:'PATCH',body:{current_amount:0,last_disposal_date:r.scheduled_date||now.slice(0,10),updated_at:now,updated_by:by}});
       ws.current_amount=0;ws.last_disposal_date=r.scheduled_date||now.slice(0,10);
     }
     wschCloseCompleteModal();
-    showToast('배출 완료 — '+(r.waste_type||'')+'  보관량 0으로 초기화');
+    showToast('배출 완료 — '+(r.waste_type||'')+' 보관량 0으로 초기화');
     wschLoad();
   }catch(e){showToast('처리 실패: '+e.message);}
+}
+
+function wschInlineEdit(td,id,field,current){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 쓰기 권한이 없습니다.');return;}
+  var isAmount=field==='amount';
+  var inp=document.createElement('input');
+  inp.className='wsch-inline-input';
+  inp.type=isAmount?'number':'text';
+  if(isAmount){inp.step='any';inp.min='0';}
+  inp.value=current;
+  inp.style.textAlign=isAmount?'right':'center';
+  td.innerHTML='';
+  td.appendChild(inp);
+  inp.focus();inp.select();
+  var saving=false;
+  var save=async function(){
+    if(saving)return;saving=true;
+    var val=inp.value.trim();
+    var patch={};
+    if(isAmount){
+      var n=val===''?null:parseFloat(val);
+      if(n!==null&&isNaN(n)){wschLoad();return;}
+      patch.expected_amount=n;
+    } else {
+      patch.vehicle_no=val||null;
+    }
+    await sb('waste_schedule','?id=eq.'+id,{method:'PATCH',body:patch});
+    var label=isAmount?'위탁량 '+(patch.expected_amount!=null?patch.expected_amount+'톤 저장':'삭제'):'차량번호 '+(patch.vehicle_no||'삭제');
+    showToast(label);
+    // 로컬 데이터 갱신
+    var rec=(_wschData||[]).find(function(x){return x.id===id;});
+    if(rec){if(isAmount)rec.expected_amount=patch.expected_amount;else rec.vehicle_no=patch.vehicle_no;}
+    var today=new Date().toISOString().split('T')[0];
+    wschRenderTable(_wschData,today);
+  };
+  inp.addEventListener('blur',save);
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter'){inp.blur();}else if(e.key==='Escape'){saving=true;var today=new Date().toISOString().split('T')[0];wschRenderTable(_wschData,today);}});
+}
+
+function wschShowDetail(id){
+  var r=(_wschData||[]).find(function(x){return x.id===id;});
+  if(!r)return;
+  var lines=['■ 배출 완료 상세\n'];
+  lines.push('인수일: '+(r.scheduled_date||'-'));
+  lines.push('위탁업체: '+(r.vendor_name||'-'));
+  lines.push('폐기물 종류: '+(r.waste_type||'-'));
+  lines.push('처리방법: '+(r.process_method_name||'-')+(r.process_method_code?' ('+r.process_method_code+')':''));
+  lines.push('실제 위탁량: '+(r.expected_amount!=null?r.expected_amount+'톤':'-'));
+  lines.push('차량번호: '+(r.vehicle_no||'-'));
+  lines.push('운전자: '+(r.driver_name||'-'));
+  lines.push('비고: '+(r.notes||'-'));
+  alert(lines.join('\n'));
+}
+
+async function wschCancel(id){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  if(!confirm('완료 상태를 취소(예정으로 되돌림)하시겠습니까?'))return;
+  await sb('waste_schedule','?id=eq.'+id,{method:'PATCH',body:{status:'scheduled',completed_at:null}});
+  showToast('상태를 예정으로 되돌렸습니다.');
+  wschLoad();
 }
 
 async function wschDelete(id){
@@ -4136,7 +4307,7 @@ async function wschDelete(id){
 function wschExcel(){
   if(!_wschData.length){alert('내보낼 데이터가 없습니다.');return;}
   var rows=_wschData.map(function(r){
-    return{'인수예정일':r.scheduled_date,'위탁업체':r.vendor_name,'허가번호':r.vendor_license_no||'','폐기물종류':r.waste_type,'예상량':r.expected_amount||'','단위':r.expected_unit||'','차량번호':r.vehicle_no||'','운전자':r.driver_name||'','연락처':r.driver_phone||'','상태':r.status,'비고':r.notes||''};
+    return{'인수예정일':r.scheduled_date,'위탁업체':r.vendor_name,'폐기물종류':r.waste_type,'처리방법':r.process_method_name||'','처리코드':r.process_method_code||'','위탁량(톤)':r.expected_amount!=null?r.expected_amount:'','차량번호':r.vehicle_no||'','운전자':r.driver_name||'','상태':r.status,'비고':r.notes||''};
   });
   var ws=XLSX.utils.json_to_sheet(rows);
   var wb=XLSX.utils.book_new();
