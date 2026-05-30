@@ -1111,7 +1111,23 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 <!-- 필터 교체 탭 -->
 <div id="tab-filter" class="content hidden">
 
-  <!-- 월별 일괄 입력 (관리자 전용) -->
+  <!-- 1) KPI 4개 (최상단) -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">전체 교체 기록</div><div class="stat-value" id="stat-total">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 교체</div><div class="stat-value" id="stat-month">-<span class="stat-unit">건</span></div></div>
+    <div class="stat-card"><div class="stat-label">이번 달 수량</div><div class="stat-value" id="stat-qty">-<span class="stat-unit">매</span></div></div>
+    <div class="stat-card"><div class="stat-label">최근 교체일</div><div class="stat-value" style="font-size:15px;padding-top:4px;" id="stat-last">-</div></div>
+  </div>
+
+  <!-- 2) 당해 연도 월별 교체 현황 -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-body">
+      <div class="card-title">당해 연도 월별 교체 현황</div>
+      <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 3) 월별 일괄 입력 (관리자 전용) -->
   <div id="bulk-filter-widget" class="card" style="display:none;margin-bottom:14px;">
     <div class="table-header">
       <span class="table-title">월별 일괄 입력</span>
@@ -1125,7 +1141,8 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead>
           <tr style="background:#f8fafc;">
-            <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;border-bottom:1px solid #e8ecf0;white-space:nowrap;min-width:160px;">날짜</th>
+            <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;border-bottom:1px solid #e8ecf0;white-space:nowrap;min-width:150px;">날짜</th>
+            <th style="padding:10px 10px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;border-bottom:1px solid #e8ecf0;white-space:nowrap;min-width:110px;">담당자</th>
             <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:600;color:#6b7280;border-bottom:1px solid #e8ecf0;white-space:nowrap;">상도룸</th>
             <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:600;color:#6b7280;border-bottom:1px solid #e8ecf0;white-space:nowrap;">하도룸 #1</th>
             <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:600;color:#6b7280;border-bottom:1px solid #e8ecf0;white-space:nowrap;">하도룸 #2</th>
@@ -1144,41 +1161,66 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     </div>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card"><div class="stat-label">전체 교체 기록</div><div class="stat-value" id="stat-total">-<span class="stat-unit">건</span></div></div>
-    <div class="stat-card"><div class="stat-label">이번 달 교체</div><div class="stat-value" id="stat-month">-<span class="stat-unit">건</span></div></div>
-    <div class="stat-card"><div class="stat-label">이번 달 수량</div><div class="stat-value" id="stat-qty">-<span class="stat-unit">개</span></div></div>
-    <div class="stat-card"><div class="stat-label">최근 교체일</div><div class="stat-value" style="font-size:15px;padding-top:4px;" id="stat-last">-</div></div>
-  </div>
-
-  <div>
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title">당해 연도 월별 교체 현황</div>
-        <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
-      </div>
+  <!-- 4) 교체 기록 조회 -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="table-header">
+      <span class="table-title">교체 기록 조회</span>
+      <span class="record-count" id="fr-count"></span>
     </div>
-    <div class="filter-bar">
-      <span class="filter-label">필터</span>
-      <select id="filter-room" onchange="applyFilter()">
+    <div style="padding:10px 14px;border-bottom:1px solid #e8ecf0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <select id="fr-room" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;">
         <option value="">전체 시설</option>
         <option value="상도룸">상도룸</option>
         <option value="하도룸 #1">하도룸 #1</option>
         <option value="하도룸 #2">하도룸 #2</option>
       </select>
-      <select id="filter-person" onchange="applyFilter()"><option value="">전체 담당자</option></select>
-      <input type="month" id="filter-month" onchange="applyFilter()">
-      <button class="clear-btn" onclick="clearFilter()">초기화</button>
-    </div>
-    <div class="card">
-      <div class="table-header">
-        <span class="table-title">교체 기록</span>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span class="record-count" id="record-count"></span>
-          <button id="filter-excel-btn" onclick="exportExcel()" style="padding:5px 12px;background:#217346;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">엑셀</button>
-        </div>
+      <select id="fr-person" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;"><option value="">전체 담당자</option></select>
+      <input type="month" id="fr-month" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;">
+      <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:nowrap;">
+        <button id="fr-bulk-del-btn" onclick="frBulkDelete()" disabled style="padding:5px 12px;border:1px solid #fca5a5;background:white;color:#dc2626;border-radius:5px;font-size:12px;font-weight:600;cursor:default;font-family:'Noto Sans KR',sans-serif;opacity:0.5;">삭제</button>
+        <button onclick="frLoad()" style="padding:5px 14px;background:#0f2744;color:white;border:none;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회</button>
+        <button onclick="frExcel()" style="padding:5px 12px;background:white;color:#b45309;border:1px solid #f59e0b;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">엑셀</button>
       </div>
-      <div id="table-body"><div class="loading">불러오는 중...</div></div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+        <thead>
+          <tr style="background:#eaf0f6;">
+            <th style="width:36px;padding:8px 10px;text-align:center;border-bottom:1px solid #c5d0dc;border-right:1px solid #d4dce5;"><input type="checkbox" id="fr-chk-all" onchange="frToggleAll(this)" style="cursor:pointer;"></th>
+            <th style="width:44px;padding:8px 10px;font-weight:500;font-size:12px;color:#1e2633;border-bottom:1px solid #c5d0dc;border-right:1px solid #d4dce5;text-align:center;">No.</th>
+            <th style="width:100px;padding:8px 10px;font-weight:500;font-size:12px;color:#1e2633;border-bottom:1px solid #c5d0dc;border-right:1px solid #d4dce5;text-align:center;">교체일</th>
+            <th style="width:120px;padding:8px 10px;font-weight:500;font-size:12px;color:#1e2633;border-bottom:1px solid #c5d0dc;border-right:1px solid #d4dce5;text-align:center;">시설명</th>
+            <th style="width:90px;padding:8px 10px;font-weight:500;font-size:12px;color:#1e2633;border-bottom:1px solid #c5d0dc;border-right:1px solid #d4dce5;text-align:center;">교체 수량</th>
+            <th style="padding:8px 10px;font-weight:500;font-size:12px;color:#1e2633;border-bottom:1px solid #c5d0dc;border-right:1px solid #d4dce5;text-align:left;">담당자</th>
+            <th style="width:130px;padding:8px 10px;font-weight:500;font-size:12px;color:#1e2633;border-bottom:1px solid #c5d0dc;text-align:center;">관리</th>
+          </tr>
+        </thead>
+        <tbody id="fr-tbody"><tr><td colspan="7" style="text-align:center;padding:2rem;color:#9ca3af;">조회 버튼을 눌러주세요.</td></tr></tbody>
+      </table>
+    </div>
+    <div style="background:#f3f6fa;border-top:1px solid #d4dce5;padding:6px 14px;font-size:11.5px;color:#6b7280;"><span id="fr-footer">-</span></div>
+  </div>
+
+  <!-- 수정 모달 -->
+  <div class="modal-bg" id="fr-edit-modal">
+    <div class="modal" style="max-width:360px;">
+      <div class="modal-title">교체 기록 수정</div>
+      <div class="form-group" style="margin-bottom:10px;"><label>교체일</label><input type="date" id="fr-m-date" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
+      <div class="form-group" style="margin-bottom:10px;"><label>시설명</label>
+        <select id="fr-m-room" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;background:white;">
+          <option value="상도룸">상도룸</option>
+          <option value="하도룸 #1">하도룸 #1</option>
+          <option value="하도룸 #2">하도룸 #2</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;"><label>교체 수량</label><input type="number" id="fr-m-qty" min="1" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
+      <div class="form-group" style="margin-bottom:14px;"><label>담당자</label>
+        <select id="fr-m-worker" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;background:white;"><option value="">-- 선택 --</option></select>
+      </div>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="frCloseEditModal()">취소</button>
+        <button class="ws-btn ws-btn-primary" style="height:36px;padding:0 18px;" onclick="frSaveEdit()">저장</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2879,12 +2921,11 @@ async function deleteNotice(id){
 }
 
 async function loadFilterData(){
-  document.getElementById('table-body').innerHTML='<div class="loading">불러오는 중...</div>';
   allData=await sb('filter_records','?select=*&order=record_date.desc,created_at.desc');
   updateStats(allData);
-  updatePersonFilter(allData);
+  frUpdatePersonFilter(allData);
   renderMonthlyChart(allData);
-  applyFilter();
+  frLoad();
 }
 
 function updateStats(data){
@@ -2921,32 +2962,14 @@ function renderMonthlyChart(data){
   });
 }
 
-function updatePersonFilter(data){
-  var persons=[...new Set(data.map(function(r){return r.technician;}).filter(Boolean))].sort();
-  var sel=document.getElementById('filter-person');
-  var cur=sel.value;
-  sel.innerHTML='<option value="">전체 담당자</option>';
-  persons.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;if(p===cur)o.selected=true;sel.appendChild(o);});
-}
-
-function applyFilter(){
-  var room=document.getElementById('filter-room').value;
-  var person=document.getElementById('filter-person').value;
-  var month=document.getElementById('filter-month').value;
-  var f=allData.filter(function(r){
-    if(room&&r.room_name!==room)return false;
-    if(person&&r.technician!==person)return false;
-    if(month&&r.record_date&&!r.record_date.startsWith(month))return false;
-    return true;
-  });
-  renderTable(f);
-}
-
-function clearFilter(){
-  document.getElementById('filter-room').value='';
-  document.getElementById('filter-person').value='';
-  document.getElementById('filter-month').value='';
-  applyFilter();
+function frUpdatePersonFilter(data){
+  var persons=[...new Set((data||[]).map(function(r){return r.technician;}).filter(Boolean))].sort();
+  // 조회 섹션 담당자 필터
+  var sel=document.getElementById('fr-person');
+  if(sel){var cur=sel.value;sel.innerHTML='<option value="">전체 담당자</option>';persons.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;if(p===cur)o.selected=true;sel.appendChild(o);});}
+  // 수정 모달 담당자 드롭다운
+  var msel=document.getElementById('fr-m-worker');
+  if(msel){var mcur=msel.value;msel.innerHTML='<option value="">-- 선택 --</option>';persons.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;if(p===mcur)o.selected=true;msel.appendChild(o);});}
 }
 
 function getRoomBadge(room){
@@ -2956,36 +2979,141 @@ function getRoomBadge(room){
   return '<span class="badge">'+room+'</span>';
 }
 
-function renderTable(data){
-  document.getElementById('record-count').textContent='총 '+data.length+'건';
-  if(!data.length){document.getElementById('table-body').innerHTML='<div class="empty">기록이 없습니다.</div>';return;}
-  var rows=data.map(function(r){
-    var note=r.notes?'<span class="note-cell" title="'+r.notes+'">'+r.notes+'</span>':'<span style="color:#d1d5db;">-</span>';
-    var dt=r.created_at?new Date(r.created_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
-    var delBtn=hasPerm('filter_write')?'<button class="del-btn" onclick="confirmDelete(\'filter_records\',\''+r.id+'\',loadFilterData)">✕</button>':'';
-    return'<tr><td>'+r.record_date+'</td><td>'+getRoomBadge(r.room_name)+'</td><td>'+r.technician+'</td><td><span class="qty-badge">'+r.quantity+'개</span></td><td>'+note+'</td><td style="font-size:11px;color:#9ca3af;">'+dt+'</td><td>'+delBtn+'</td></tr>';
-  }).join('');
-  document.getElementById('table-body').innerHTML='<table><thead><tr><th>교체일</th><th>시설</th><th>담당자</th><th>수량</th><th>특이사항</th><th>제출시각</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+// ── 교체 기록 조회 섹션 (fr*) ────────────────────────────────
+var _frData=[];
+var _frEditId=null;
+
+async function frLoad(){
+  var tbody=document.getElementById('fr-tbody');
+  if(tbody)tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:#9ca3af;">불러오는 중...</td></tr>';
+  var room=(document.getElementById('fr-room')||{}).value||'';
+  var person=(document.getElementById('fr-person')||{}).value||'';
+  var month=(document.getElementById('fr-month')||{}).value||'';
+  var q='?select=*&order=record_date.desc,created_at.desc';
+  if(room)q+='&room_name=eq.'+encodeURIComponent(room);
+  if(person)q+='&technician=eq.'+encodeURIComponent(person);
+  if(month){var ym=month;q+='&record_date=gte.'+ym+'-01&record_date=lte.'+ym+'-31';}
+  _frData=await sb('filter_records',q)||[];
+  frRenderTable(_frData);
 }
 
-function exportExcel(){
-  if(!allData.length){alert('내보낼 데이터가 없습니다.');return;}
-  var room=document.getElementById('filter-room').value;
-  var person=document.getElementById('filter-person').value;
-  var month=document.getElementById('filter-month').value;
-  var f=allData.filter(function(r){
-    if(room&&r.room_name!==room)return false;
-    if(person&&r.technician!==person)return false;
-    if(month&&r.record_date&&!r.record_date.startsWith(month))return false;
-    return true;
-  });
-  var ws=XLSX.utils.aoa_to_sheet([['교체일','시설','담당자','수량','특이사항','제출시각']].concat(f.map(function(r){return[r.record_date,r.room_name,r.technician,r.quantity,r.notes||'',r.created_at?new Date(r.created_at).toLocaleString('ko-KR'):''];})));
-  ws['!cols']=[{wch:12},{wch:12},{wch:10},{wch:6},{wch:24},{wch:18}];
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'필터교체이력');
-  var n=new Date();
-  XLSX.writeFile(wb,'TC필터교체이력_'+n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0')+'.xlsx');
+function frRenderTable(data){
+  var tbody=document.getElementById('fr-tbody');
+  var footer=document.getElementById('fr-footer');
+  var count=document.getElementById('fr-count');
+  var chkAll=document.getElementById('fr-chk-all');
+  if(chkAll)chkAll.checked=false;
+  frUpdateBulkDeleteBtn();
+  if(!data.length){
+    if(tbody)tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:#9ca3af;">조건에 맞는 기록이 없습니다.</td></tr>';
+    if(footer)footer.textContent='0건';
+    if(count)count.textContent='';
+    return;
+  }
+  var canWrite=hasPerm('filter_write')||isAdmin();
+  var tdSt='padding:7px 10px;border-bottom:1px solid #eef2f6;border-right:1px solid #eef2f6;vertical-align:middle;';
+  var rows=data.map(function(r,i){
+    var editBtn=canWrite?'<button onclick="frEdit(\''+r.id+'\')" style="height:24px;padding:0 8px;border:1px solid #cbd5e1;background:white;color:#374151;border-radius:3px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;margin-right:3px;">수정</button>':'';
+    var delBtn=canWrite?'<button onclick="frDelete(\''+r.id+'\')" style="height:24px;padding:0 8px;border:1px solid #fca5a5;background:white;color:#dc2626;border-radius:3px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;">삭제</button>':'';
+    return'<tr>'+
+      '<td style="'+tdSt+'text-align:center;border-right:1px solid #eef2f6;"><input type="checkbox" class="fr-chk" data-id="'+r.id+'" onchange="frUpdateBulkDeleteBtn()" style="cursor:pointer;"></td>'+
+      '<td style="'+tdSt+'text-align:center;color:#6b7280;">'+(i+1)+'</td>'+
+      '<td style="'+tdSt+'text-align:center;font-weight:600;white-space:nowrap;">'+r.record_date+'</td>'+
+      '<td style="'+tdSt+'text-align:center;">'+getRoomBadge(r.room_name)+'</td>'+
+      '<td style="'+tdSt+'text-align:center;"><span class="qty-badge">'+r.quantity+'매</span></td>'+
+      '<td style="'+tdSt+'">'+(r.technician||'<span style="color:#d1d5db;">-</span>')+'</td>'+
+      '<td style="'+tdSt.replace('border-right:1px solid #eef2f6;','')+'text-align:center;white-space:nowrap;">'+editBtn+delBtn+'</td>'+
+      '</tr>';
+  }).join('');
+  if(tbody)tbody.innerHTML=rows;
+  if(footer)footer.textContent=data.length+'건';
+  if(count)count.textContent='총 '+data.length+'건 조회';
 }
+
+function frToggleAll(chk){
+  document.querySelectorAll('#fr-tbody .fr-chk').forEach(function(c){c.checked=chk.checked;});
+  frUpdateBulkDeleteBtn();
+}
+
+function frUpdateBulkDeleteBtn(){
+  var btn=document.getElementById('fr-bulk-del-btn');
+  if(!btn)return;
+  var n=document.querySelectorAll('#fr-tbody .fr-chk:checked').length;
+  btn.disabled=!n;
+  btn.style.opacity=n?'1':'0.5';
+  btn.style.cursor=n?'pointer':'default';
+}
+
+async function frBulkDelete(){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  var checked=document.querySelectorAll('#fr-tbody .fr-chk:checked');
+  if(!checked.length)return;
+  if(!confirm('선택한 '+checked.length+'건을 삭제하시겠습니까? 되돌릴 수 없습니다.'))return;
+  try{
+    for(var i=0;i<checked.length;i++){await sb('filter_records','?id=eq.'+checked[i].dataset.id,{method:'DELETE'});}
+    showToast(checked.length+'건 삭제 완료');
+    loadFilterData();
+  }catch(e){showToast('삭제 중 오류: '+e.message);}
+}
+
+async function frDelete(id){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  var r=_frData.find(function(x){return x.id===id;});
+  var label=r?(r.record_date+' '+r.room_name+' '+r.quantity+'매'):id;
+  if(!confirm('['+label+'] 기록을 삭제하시겠습니까?'))return;
+  try{
+    await sb('filter_records','?id=eq.'+id,{method:'DELETE'});
+    showToast('삭제 완료');
+    loadFilterData();
+  }catch(e){showToast('삭제 실패: '+e.message);}
+}
+
+function frEdit(id){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  var r=_frData.find(function(x){return x.id===id;});
+  if(!r)return;
+  _frEditId=id;
+  var setVal=function(eid,v){var el=document.getElementById(eid);if(el)el.value=v||'';};
+  setVal('fr-m-date',r.record_date||'');
+  setVal('fr-m-room',r.room_name||'');
+  setVal('fr-m-qty',r.quantity||'');
+  frUpdatePersonFilter(allData);
+  var msel=document.getElementById('fr-m-worker');
+  if(msel)msel.value=r.technician||'';
+  document.getElementById('fr-edit-modal').classList.add('show');
+}
+
+function frCloseEditModal(){
+  document.getElementById('fr-edit-modal').classList.remove('show');
+  _frEditId=null;
+}
+
+async function frSaveEdit(){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  if(!_frEditId)return;
+  var date=document.getElementById('fr-m-date').value;
+  var room=document.getElementById('fr-m-room').value;
+  var qty=parseInt(document.getElementById('fr-m-qty').value);
+  var worker=document.getElementById('fr-m-worker').value;
+  if(!date||!room||isNaN(qty)||qty<1){alert('모든 필드를 올바르게 입력해주세요.');return;}
+  try{
+    await sb('filter_records','?id=eq.'+_frEditId,{method:'PATCH',body:{record_date:date,room_name:room,quantity:qty,technician:worker||null}});
+    showToast('수정 완료');
+    frCloseEditModal();
+    loadFilterData();
+  }catch(e){showToast('수정 실패: '+e.message);}
+}
+
+function frExcel(){
+  if(!_frData.length){alert('내보낼 데이터가 없습니다. 먼저 [조회]를 눌러주세요.');return;}
+  var month=(document.getElementById('fr-month')||{}).value||new Date().toISOString().slice(0,7);
+  var ws=XLSX.utils.aoa_to_sheet([['교체일','시설명','교체수량','담당자']].concat(_frData.map(function(r){return[r.record_date,r.room_name,r.quantity,r.technician||''];})));
+  ws['!cols']=[{wch:12},{wch:12},{wch:8},{wch:12}];
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'필터교체기록');
+  XLSX.writeFile(wb,'필터교체기록_'+month+'.xlsx');
+}
+// ─────────────────────────────────────────────────────────────
 
 var batchYr=new Date().getFullYear(),batchMo=new Date().getMonth()+1;
 
@@ -3029,11 +3157,21 @@ function batchAddRow(){
   var tbody=document.getElementById('batch-tbody');
   var defDate=batchYr+'-'+String(batchMo).padStart(2,'0')+'-01';
   var inp='border:1px solid #e8ecf0;border-radius:5px;outline:none;font-family:\'Noto Sans KR\',sans-serif;';
+  var defWorker=currentUser?(currentUser.name||currentUser.username):'';
+  // 담당자 옵션: allData에서 추출한 목록 활용
+  var persons=[...new Set((allData||[]).map(function(r){return r.technician;}).filter(Boolean))].sort();
+  var workerOpts='<option value="">-- 선택 --</option>';
+  persons.forEach(function(p){workerOpts+='<option value="'+p+'"'+(p===defWorker?' selected':'')+'>'+p+'</option>';});
+  // 목록에 현재 사용자가 없으면 맨 앞에 추가
+  if(defWorker&&persons.indexOf(defWorker)<0){workerOpts='<option value="">-- 선택 --</option><option value="'+defWorker+'" selected>'+defWorker+'</option>'+workerOpts.slice('<option value="">-- 선택 --</option>'.length);}
   var tr=document.createElement('tr');
   tr.style.borderBottom='1px solid #f3f4f6';
   tr.innerHTML=
     '<td style="padding:8px 14px;">'+
       '<input type="date" value="'+defDate+'" oninput="batchCalcTotal()" style="'+inp+'padding:7px 10px;font-size:13px;width:100%;min-width:150px;">'+
+    '</td>'+
+    '<td style="padding:8px 10px;">'+
+      '<select class="batch-worker-sel" style="'+inp+'padding:6px 8px;font-size:12px;width:110px;height:34px;color:#374151;background:white;">'+workerOpts+'</select>'+
     '</td>'+
     ['상도룸','하도룸 #1','하도룸 #2'].map(function(){
       return '<td style="padding:8px 10px;text-align:center;">'+
@@ -3068,27 +3206,31 @@ function batchCalcTotal(){
 
 async function batchSave(){
   if(!isAdmin())return;
+  if(isReadOnly()){showReadOnlyToast();return;}
   var rows=[];
   var valid=true;
+  var noWorkerTr=null;
   document.querySelectorAll('#batch-tbody tr').forEach(function(tr){
     var dateInp=tr.querySelector('input[type=date]');
+    var workerSel=tr.querySelector('.batch-worker-sel');
     var numInps=tr.querySelectorAll('input[type=number]');
     if(!dateInp||!dateInp.value){valid=false;return;}
+    var workerName=workerSel?workerSel.value.trim():(currentUser?(currentUser.name||currentUser.username):'');
+    if(!workerName){noWorkerTr=tr;tr.style.outline='2px solid #dc2626';return;}else{tr.style.outline='';}
     var rooms=['상도룸','하도룸 #1','하도룸 #2'];
     numInps.forEach(function(inp,i){
       var qty=parseInt(inp.value);
       if(!isNaN(qty)&&qty>0){
-        rows.push({record_date:dateInp.value,room_name:rooms[i],quantity:qty,technician:currentUser.name||currentUser.username});
+        rows.push({record_date:dateInp.value,room_name:rooms[i],quantity:qty,technician:workerName});
       }
     });
   });
+  if(noWorkerTr){showToast('담당자를 선택해주세요.');return;}
   if(!valid){alert('날짜가 비어 있는 행이 있습니다.');return;}
   if(!rows.length){alert('저장할 수량을 입력해주세요.');return;}
   if(!confirm(rows.length+'건을 저장하시겠습니까?'))return;
   try{
-    for(var i=0;i<rows.length;i++){
-      await sb('filter_records','',{method:'POST',body:rows[i]});
-    }
+    for(var i=0;i<rows.length;i++){await sb('filter_records','',{method:'POST',body:rows[i]});}
     alert(rows.length+'건 저장 완료');
     document.getElementById('batch-tbody').innerHTML='';
     batchAddRow();
