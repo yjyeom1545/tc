@@ -1528,11 +1528,9 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         <select id="wsch-m-type" onchange="wschUpdateProcessMethod()" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;background:white;color:#1e2633;font-family:inherit;">
           <option value="">-- 선택 --</option>
           <option>폐유액상</option>
-          <option>폐유고상(톤백)</option>
-          <option>폐유고상(링팩)</option>
-          <option>폐페인트(톤백)</option>
-          <option>폐페인트(캔)</option>
-          <option>분진(톤백)</option>
+          <option>폐유고상</option>
+          <option>폐페인트</option>
+          <option>분진</option>
           <option>폐목재</option>
           <option>폐합성수지</option>
           <option>스크랩</option>
@@ -1569,11 +1567,14 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         <div class="form-group"><label>실제 위탁량 * <span style="font-size:11px;color:#6b7280;">(톤)</span></label><input type="number" id="wscm-amount" min="0" step="any" placeholder="예: 1.5"></div>
         <div class="form-group"><label>인계번호</label><input type="text" id="wscm-invoice" placeholder="올바로 인계번호 (선택)"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>차량번호</label><input type="text" id="wscm-vehicle" placeholder="예: 12가3456"></div>
-        <div class="form-group"><label>운전자</label><input type="text" id="wscm-driver" placeholder="이름 (선택)"></div>
+      <div class="form-group" style="margin-bottom:8px;"><label>차량번호</label><input type="text" id="wscm-vehicle" placeholder="예: 12가3456"></div>
+      <div class="form-group" style="margin-bottom:12px;"><label>비고</label><textarea id="wscm-notes" rows="2" placeholder="선택" style="width:100%;border:1px solid #cbd5e1;border-radius:3px;padding:6px 8px;font-size:12.5px;font-family:inherit;resize:vertical;"></textarea></div>
+      <!-- 보관량 차감 섹션 -->
+      <div id="wscm-deduct-section" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px 14px;margin-bottom:12px;">
+        <div style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:5px;">보관량 차감</div>
+        <div id="wscm-deduct-desc" style="font-size:12px;color:#6b7280;margin-bottom:10px;"></div>
+        <div id="wscm-deduct-rows"></div>
       </div>
-      <div class="form-group" style="margin-bottom:8px;"><label>비고</label><textarea id="wscm-notes" rows="2" placeholder="선택" style="width:100%;border:1px solid #cbd5e1;border-radius:3px;padding:6px 8px;font-size:12.5px;font-family:inherit;resize:vertical;"></textarea></div>
       <div class="modal-btns">
         <button class="modal-cancel" onclick="wschCloseCompleteModal()">취소</button>
         <button class="ws-btn ws-btn-primary" style="height:36px;padding:0 18px;background:#16a34a;border-color:#16a34a;" onclick="wschConfirmComplete()">완료 확정</button>
@@ -3940,16 +3941,25 @@ async function completeWasteOil(id,lineName,bagCount){
 
 // ── 배출 일정 (waste_schedule) ──────────────────────────────
 var PROCESS_METHOD_MAP={
-  '폐유액상':       {name:'연료,고형연료품제조',code:'2009'},
-  '폐유고상(톤백)':  {name:'고온소각',          code:'2102'},
-  '폐유고상(링팩)':  {name:'고온소각',          code:'2102'},
-  '폐페인트(톤백)':  {name:'고온소각',          code:'2102'},
-  '폐페인트(캔)':    {name:'고온소각',          code:'2102'},
-  '분진(톤백)':     {name:'매립',              code:'2201'},
-  '폐목재':         {name:'중간가공폐기물제조', code:'2010'},
-  '폐합성수지':      {name:'중간가공폐기물제조', code:'2010'},
-  '스크랩':         null,
-  '일반쓰레기':     null
+  '폐유액상':   {name:'연료,고형연료품제조', code:'2009'},
+  '폐유고상':   {name:'고온소각',           code:'2102'},
+  '폐페인트':   {name:'고온소각',           code:'2102'},
+  '분진':       {name:'매립',               code:'2201'},
+  '폐목재':     {name:'중간가공폐기물제조',  code:'2010'},
+  '폐합성수지': {name:'중간가공폐기물제조',  code:'2010'},
+  '스크랩':     null,
+  '일반쓰레기': null
+};
+
+var SCHEDULE_TO_STORAGE_MAP={
+  '폐유액상':   ['폐유액상'],
+  '폐유고상':   ['폐유고상(톤백)','폐유고상(링팩)'],
+  '폐페인트':   ['폐페인트(톤백)','폐페인트(캔)'],
+  '분진':       ['분진(톤백)'],
+  '스크랩':     ['스크랩'],
+  '폐합성수지': ['폐합성수지'],
+  '폐목재':     ['폐목재'],
+  '일반쓰레기': ['일반쓰레기']
 };
 
 var _wschData=[];
@@ -4164,7 +4174,7 @@ async function wschSave(){
 
 var _wschCompleteId=null;
 
-function wschComplete(id){
+async function wschComplete(id){
   if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 쓰기 권한이 없습니다.');return;}
   var r=(_wschData||[]).find(function(x){return x.id===id;});
@@ -4178,10 +4188,61 @@ function wschComplete(id){
   setVal('wscm-process',pmStr);
   setVal('wscm-amount',r.expected_amount!=null?r.expected_amount:'');
   setVal('wscm-vehicle',r.vehicle_no||'');
-  setVal('wscm-driver',r.driver_name||'');
   setVal('wscm-invoice','');
   setVal('wscm-notes',r.notes||'');
+
+  // 보관량 차감 섹션
+  var candidates=(SCHEDULE_TO_STORAGE_MAP[r.waste_type])||[];
+  var descEl=document.getElementById('wscm-deduct-desc');
+  var rowsEl=document.getElementById('wscm-deduct-rows');
+  if(!candidates.length){
+    if(descEl)descEl.textContent='이 폐기물 종류는 보관 현황과 연동되지 않습니다.';
+    if(rowsEl)rowsEl.innerHTML='';
+  } else {
+    var storData=await sb('waste_storage','?select=*');
+    if(!storData)storData=[];
+    var isSingle=candidates.length===1;
+    if(descEl){
+      descEl.textContent=isSingle
+        ?(r.waste_type+' 보관량을 차감합니다.')
+        :(r.waste_type+'은(는) 보관 형태가 두 가지입니다. 실제 배출한 형태를 선택해 주세요.');
+    }
+    var rows=candidates.map(function(typeName,i){
+      var s=storData.find(function(x){return x.waste_type===typeName;})||{id:null,current_amount:0,unit:'개'};
+      var cur=Math.max(0,parseFloat(s.current_amount)||0);
+      var disabledAttr=isSingle?'disabled':'';
+      return'<div class="wscm-deduct-row" style="margin-bottom:10px;">'+
+        '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;">'+
+          '<input type="checkbox" class="wscm-deduct-chk" '+disabledAttr+' checked onchange="wschDeductToggle(this)">'+
+          '<span style="font-size:12.5px;font-weight:600;color:#1e2633;">'+ws_esc(typeName)+'</span>'+
+          '<span style="font-size:12px;color:#6b7280;">현재 '+cur+' '+ws_esc(s.unit||'개')+'</span>'+
+        '</label>'+
+        '<div style="display:flex;align-items:center;gap:6px;margin-left:22px;margin-top:4px;">'+
+          '<span style="font-size:12px;color:#6b7280;">차감</span>'+
+          '<input type="number" class="wscm-deduct-amt"'+
+            ' data-storid="'+(s.id||'')+'"'+
+            ' data-max="'+cur+'"'+
+            ' data-unit="'+ws_esc(s.unit||'개')+'"'+
+            ' data-label="'+ws_esc(typeName)+'"'+
+            ' value="'+cur+'" min="0" max="'+cur+'" step="1"'+
+            ' style="width:70px;height:26px;border:1px solid #cbd5e1;border-radius:3px;padding:0 6px;font-size:12.5px;font-family:inherit;text-align:right;"'+
+          '>'+
+          '<span style="font-size:12px;color:#374151;">'+ws_esc(s.unit||'개')+'</span>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    if(rowsEl)rowsEl.innerHTML=rows;
+  }
   document.getElementById('wsch-complete-modal').classList.add('show');
+}
+
+function wschDeductToggle(chk){
+  var row=chk.closest('.wscm-deduct-row');
+  var amtInp=row?row.querySelector('.wscm-deduct-amt'):null;
+  if(!amtInp)return;
+  amtInp.disabled=!chk.checked;
+  amtInp.style.background=chk.checked?'white':'#f3f4f6';
+  amtInp.style.color=chk.checked?'#1e2633':'#9ca3af';
 }
 
 function wschCloseCompleteModal(){
@@ -4199,39 +4260,61 @@ async function wschConfirmComplete(){
   if(amtVal===null||isNaN(amtVal)){alert('실제 위탁량을 입력해주세요.');return;}
   var invoice=(document.getElementById('wscm-invoice').value||'').trim();
   var vehicle=(document.getElementById('wscm-vehicle').value||'').trim();
-  var driver=(document.getElementById('wscm-driver').value||'').trim();
   var notes=(document.getElementById('wscm-notes').value||'').trim();
   var now=new Date().toISOString();
   var by=currentUser?(currentUser.name||currentUser.username):'';
+
+  // 차감 목록 수집 및 검증
+  var deductions=[];
+  var valid=true;
+  document.querySelectorAll('#wscm-deduct-rows .wscm-deduct-row').forEach(function(row){
+    var chk=row.querySelector('.wscm-deduct-chk');
+    var amtInp=row.querySelector('.wscm-deduct-amt');
+    if(!chk||!amtInp||!chk.checked)return;
+    var deductAmt=parseFloat(amtInp.value);
+    var maxAmt=parseFloat(amtInp.dataset.max)||0;
+    if(isNaN(deductAmt)||deductAmt<0){valid=false;alert('차감 수량을 올바르게 입력해주세요.');return;}
+    if(deductAmt>maxAmt){valid=false;alert('현재 보관량('+maxAmt+')을 초과할 수 없습니다.');return;}
+    deductions.push({storId:amtInp.dataset.storid,amt:deductAmt,max:maxAmt,unit:amtInp.dataset.unit,label:amtInp.dataset.label});
+  });
+  if(!valid)return;
+
   try{
-    // 1) waste_schedule 완료 처리 + 실측값 반영
+    // 1) waste_schedule UPDATE
     await sb('waste_schedule','?id=eq.'+_wschCompleteId,{method:'PATCH',body:{
       status:'completed',completed_at:now,
       expected_amount:amtVal,expected_unit:'톤',
       vehicle_no:vehicle||null,
-      driver_name:driver||null,
       notes:notes||null
     }});
     // 2) waste_disposal INSERT
-    var dispPayload={
+    await sb('waste_disposal','',{method:'POST',headers:{'Prefer':'return=minimal'},body:{
       disposal_date:r.scheduled_date||now.slice(0,10),
       vendor_name:r.vendor_name||'',
       waste_type:r.waste_type||'',
-      amount:amtVal,
-      unit:'톤',
+      amount:amtVal,unit:'톤',
       invoice_number:invoice||null,
       notes:notes||null,
       created_by:by
-    };
-    await sb('waste_disposal','',{method:'POST',headers:{'Prefer':'return=minimal'},body:dispPayload});
-    // 3) waste_storage 보관량 0 + 마지막 배출일
-    var ws=(_wsData||[]).find(function(x){return x.waste_type===r.waste_type;});
-    if(ws){
-      await sb('waste_storage','?id=eq.'+ws.id,{method:'PATCH',body:{current_amount:0,last_disposal_date:r.scheduled_date||now.slice(0,10),updated_at:now,updated_by:by}});
-      ws.current_amount=0;ws.last_disposal_date=r.scheduled_date||now.slice(0,10);
+    }});
+    // 3) waste_storage 차감
+    var toastParts=[];
+    for(var i=0;i<deductions.length;i++){
+      var d=deductions[i];
+      if(!d.storId)continue;
+      var newAmt=Math.max(0,d.max-d.amt);
+      await sb('waste_storage','?id=eq.'+d.storId,{method:'PATCH',body:{
+        current_amount:newAmt,
+        last_disposal_date:r.scheduled_date||now.slice(0,10),
+        updated_at:now,updated_by:by
+      }});
+      toastParts.push(d.label+' '+d.amt+d.unit);
+      var cached=(_wsData||[]).find(function(x){return String(x.id)===String(d.storId);});
+      if(cached){cached.current_amount=newAmt;cached.last_disposal_date=r.scheduled_date||now.slice(0,10);}
     }
     wschCloseCompleteModal();
-    showToast('배출 완료 — '+(r.waste_type||'')+' 보관량 0으로 초기화');
+    var toastMsg='배출 완료 — '+(toastParts.length?toastParts.join(', ')+' 차감 (총 '+amtVal+'톤)':'보관량 차감 없음');
+    showToast(toastMsg);
     wschLoad();
   }catch(e){showToast('처리 실패: '+e.message);}
 }
@@ -4284,7 +4367,6 @@ function wschShowDetail(id){
   lines.push('처리방법: '+(r.process_method_name||'-')+(r.process_method_code?' ('+r.process_method_code+')':''));
   lines.push('실제 위탁량: '+(r.expected_amount!=null?r.expected_amount+'톤':'-'));
   lines.push('차량번호: '+(r.vehicle_no||'-'));
-  lines.push('운전자: '+(r.driver_name||'-'));
   lines.push('비고: '+(r.notes||'-'));
   alert(lines.join('\n'));
 }
@@ -4307,7 +4389,7 @@ async function wschDelete(id){
 function wschExcel(){
   if(!_wschData.length){alert('내보낼 데이터가 없습니다.');return;}
   var rows=_wschData.map(function(r){
-    return{'인수예정일':r.scheduled_date,'위탁업체':r.vendor_name,'폐기물종류':r.waste_type,'처리방법':r.process_method_name||'','처리코드':r.process_method_code||'','위탁량(톤)':r.expected_amount!=null?r.expected_amount:'','차량번호':r.vehicle_no||'','운전자':r.driver_name||'','상태':r.status,'비고':r.notes||''};
+    return{'인수예정일':r.scheduled_date,'위탁업체':r.vendor_name,'폐기물종류':r.waste_type,'처리방법':r.process_method_name||'','처리코드':r.process_method_code||'','위탁량(톤)':r.expected_amount!=null?r.expected_amount:'','차량번호':r.vehicle_no||'','상태':r.status,'비고':r.notes||''};
   });
   var ws=XLSX.utils.json_to_sheet(rows);
   var wb=XLSX.utils.book_new();
