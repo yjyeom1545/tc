@@ -5297,6 +5297,15 @@ async function queryAirLog(){
   }
   if(noDataMsg)noDataMsg.style.display='none';
   clearFormNoData();
+  // 조회모드: al-auto(신규기본값 회색) 제거 + em 입력값 초기화
+  var formArea=document.getElementById('al-form-area');
+  if(formArea){
+    formArea.querySelectorAll('.al-auto').forEach(function(el){
+      el.classList.remove('al-auto');
+      el.value='';
+      el.style.color='';
+    });
+  }
   // SEMS 상태 보존
   alEditSemsState={
     registered:data[0].sems_registered||false,
@@ -5314,13 +5323,14 @@ async function queryAirLog(){
   }
   // SEMS 상태 행
   renderSemsRow(date,alEditSemsState);
-  // 입력칸 채우기
+  // 입력칸 채우기 (사용자 직접 저장한 값 → 진한 색)
+  var uColor='#1a2230';
   data.forEach(function(r){
     if(r.facility_type==='배출구'&&r.facility_no!==8){
       var n=r.facility_no;
-      if(r.start_time){var p=r.start_time.split(':');var sh=document.getElementById('em'+n+'-sh');var sm=document.getElementById('em'+n+'-sm');if(sh&&!sh.disabled)sh.value=p[0]||'';if(sm&&!sm.disabled)sm.value=p[1]||'';}
-      if(r.end_time){var p=r.end_time.split(':');var eh=document.getElementById('em'+n+'-eh');var em_=document.getElementById('em'+n+'-em');if(eh&&!eh.disabled)eh.value=p[0]||'';if(em_&&!em_.disabled)em_.value=p[1]||'';}
-      if(r.operation_hours!=null){var hr=document.getElementById('em'+n+'-hr');if(hr&&!hr.disabled)hr.value=r.operation_hours;}
+      if(r.start_time){var p=r.start_time.split(':');var sh=document.getElementById('em'+n+'-sh');var sm=document.getElementById('em'+n+'-sm');if(sh&&!sh.disabled){sh.value=p[0]||'';sh.style.color=uColor;}if(sm&&!sm.disabled){sm.value=p[1]||'';sm.style.color=uColor;}}
+      if(r.end_time){var p=r.end_time.split(':');var eh=document.getElementById('em'+n+'-eh');var em_=document.getElementById('em'+n+'-em');if(eh&&!eh.disabled){eh.value=p[0]||'';eh.style.color=uColor;}if(em_&&!em_.disabled){em_.value=p[1]||'';em_.style.color=uColor;}}
+      if(r.operation_hours!=null){var hr=document.getElementById('em'+n+'-hr');if(hr&&!hr.disabled){hr.value=r.operation_hours;hr.style.color=uColor;}}
       setStatus('em'+n,r.status||'정상');
     }
     if(r.facility_type==='방지시설'){
@@ -5328,7 +5338,7 @@ async function queryAirLog(){
       var prevEl=document.getElementById('pr'+n+'-prev');
       var inp=document.getElementById('pr'+n+'-today');
       if(r.power_prev!=null&&prevEl){prevEl.value=r.power_prev;alPrevPower[n]=r.power_prev;}
-      if(inp&&!inp.disabled&&r.power_today!=null)inp.value=r.power_today;
+      if(inp&&!inp.disabled&&r.power_today!=null){inp.value=r.power_today;inp.style.color=uColor;}
       calcPower(n);
     }
   });
