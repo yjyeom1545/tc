@@ -6749,6 +6749,16 @@ async function sbQ(table,query){
         <div class="pwa-menu-desc">보관 현황 및 배출 기록</div>
       </div>
     </div>
+    <!-- 도장시설 (필터 교체) -->
+    <div class="pwa-menu-card" onclick="showPwaSubscreen('filter','도장시설')">
+      <div class="pwa-menu-card-main">
+        <div class="pwa-menu-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0f2744" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 21l18 0"/><path d="M5 21v-14l6 4l0 -4l6 4l0 -4l4 4l0 14"/><path d="M12 21l0 -6a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1l0 6"/><path d="M8 9l0 2"/></svg>
+        </div>
+        <div class="pwa-menu-title">도장시설</div>
+        <div class="pwa-menu-desc">여과지필터 교체 입력</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -8102,7 +8112,9 @@ function _updatePwaGreeting(){
   if(dateEl){
     var d=new Date();
     var days=['일','월','화','수','목','금','토'];
-    dateEl.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')';
+    var h=d.getHours();var mn=d.getMinutes();
+    var ampm=h<12?'오전':'오후';var h12=h===0?12:h>12?h-12:h;
+    dateEl.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+') · '+ampm+' '+h12+':'+String(mn).padStart(2,'0');
   }
 }
 </script>
