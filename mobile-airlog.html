@@ -120,6 +120,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f4f6f9;min-height:100vh;p
 /* ── Toast ── */
 .toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%);background:rgba(15,39,68,.92);color:white;padding:10px 20px;border-radius:8px;font-size:13px;z-index:300;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;}
 .toast.on{opacity:1;}
+/* ── 날짜 화살표 + 미입력 버튼 ── */
+.arr-btn{width:30px;height:38px;border:1px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;color:#374151;flex-shrink:0;padding:0;-webkit-tap-highlight-color:transparent;line-height:1;}
+.miss-btn{width:100%;height:34px;border:1px solid #d1d5db;border-radius:8px;background:white;color:#6b7280;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;margin-top:7px;}
 </style>
 </head>
 <body>
@@ -143,10 +146,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f4f6f9;min-height:100vh;p
   </div>
   <div class="date-row">
     <span class="date-lbl">운전일자</span>
-    <input type="date" class="date-inp" id="date-inp" oninput="onDateChange()">
+    <button class="arr-btn" onclick="mobDateShift(-1)" title="하루 전">&#8249;</button>
+    <input type="date" class="date-inp" id="date-inp" oninput="onDateChange()" style="flex:1;min-width:0;">
+    <button class="arr-btn" id="mob-date-next" onclick="mobDateShift(1)" title="하루 후">&#8250;</button>
     <button class="qry-btn" id="qry-btn" onclick="queryEdit()">조회</button>
     <span class="status-chip chip-new" id="status-chip">신규 작성</span>
   </div>
+  <button class="miss-btn" onclick="mobJumpMissing()">미입력 일자로 이동</button>
 </div>
 
 <!-- Edit banner -->
@@ -259,14 +265,14 @@ function buildCards(){
       '</div>'+
       '<div class="fcard-body">'+
         '<div class="trow"><span class="tlbl">시작</span><div class="tinps">'+
-          '<input type="number" class="tinp" id="sh'+n+'" min="0" max="23" placeholder="08" oninput="markUser(this);calcH('+n+')">'+
+          '<input type="text" inputmode="numeric" class="tinp" id="sh'+n+'" maxlength="2" placeholder="08" oninput="markUser(this);calcH('+n+')" onfocus="alAutoFocus(this)">'+
           '<span class="tcolon">:</span>'+
-          '<input type="number" class="tinp" id="sm'+n+'" min="0" max="59" placeholder="00" oninput="markUser(this);calcH('+n+')">'+
+          '<input type="text" inputmode="numeric" class="tinp" id="sm'+n+'" maxlength="2" placeholder="00" oninput="markUser(this);calcH('+n+')" onfocus="alAutoFocus(this)">'+
         '</div></div>'+
         '<div class="trow"><span class="tlbl">종료</span><div class="tinps">'+
-          '<input type="number" class="tinp" id="eh'+n+'" min="0" max="23" placeholder="17" oninput="markUser(this);calcH('+n+')">'+
+          '<input type="text" inputmode="numeric" class="tinp" id="eh'+n+'" maxlength="2" placeholder="17" oninput="markUser(this);calcH('+n+')" onfocus="alAutoFocus(this)">'+
           '<span class="tcolon">:</span>'+
-          '<input type="number" class="tinp" id="em'+n+'" min="0" max="59" placeholder="00" oninput="markUser(this);calcH('+n+')">'+
+          '<input type="text" inputmode="numeric" class="tinp" id="em'+n+'" maxlength="2" placeholder="00" oninput="markUser(this);calcH('+n+')" onfocus="alAutoFocus(this)">'+
         '</div></div>'+
         '<div class="srow">'+
           '<button class="sbtn" id="sn'+n+'" onclick="setSt('+n+',\'정상\')">정상</button>'+
@@ -590,7 +596,10 @@ function onSave(){
     if(emM>0) parts.push('가동시간 미입력 '+emM+'개');
     if(prM>0) parts.push('전력사용량 미입력 '+prM+'개');
     showModal('미입력 항목 확인',parts.join(', ')+'입니다.\n미입력 시설을 제외하고 저장하시겠어요?','저장',doSave);
-  } else {doSave();}
+  } else {
+    var isMod=mode==='edit';
+    showModal(isMod?'수정하시겠습니까?':'저장하시겠습니까?','',isMod?'수정':'저장',doSave);
+  }
 }
 
 async function doSave(){
@@ -707,6 +716,45 @@ function showAlert(body){
   g('modal').className='modal-bg on';
 }
 function closeModal(){g('modal').className='modal-bg';}
+
+// ── 날짜 화살표 이동 ──
+function mobDateShift(delta){
+  var el=g('date-inp'); if(!el||!el.value) return;
+  var d=new Date(el.value+'T00:00:00');
+  d.setDate(d.getDate()+delta);
+  var t=new Date();t.setHours(0,0,0,0);
+  if(d>t) return;
+  el.value=d.toISOString().split('T')[0];
+  var nb=g('mob-date-next');
+  if(nb){var n2=new Date(d);n2.setDate(n2.getDate()+1);nb.style.opacity=n2>t?'0.4':'1';}
+  onDateChange();
+}
+
+// ── 미입력 일자로 이동 ──
+async function mobJumpMissing(){
+  showToast('조회 중...');
+  var t=new Date();t.setHours(0,0,0,0);
+  var s=new Date(t);s.setDate(s.getDate()-90);
+  var ss=s.toISOString().split('T')[0],ts=t.toISOString().split('T')[0];
+  var data=await sbGet('air_operation_log','?log_date=gte.'+ss+'&log_date=lte.'+ts+'&select=log_date&limit=9999');
+  var logged=new Set((data||[]).map(function(r){return r.log_date;}));
+  for(var d=new Date(s);d<=t;d.setDate(d.getDate()+1)){
+    if(d.getDay()===0||d.getDay()===6) continue;
+    var ds=d.toISOString().split('T')[0];
+    if(!logged.has(ds)){
+      g('date-inp').value=ds; onDateChange();
+      showToast('미입력 일자: '+ds); return;
+    }
+  }
+  showToast('미입력 일자가 없습니다. 모두 입력 완료된 상태입니다.');
+}
+
+// ── 자동값 입력칸 focus 시 전체 선택 (덧붙임 방지) ──
+function alAutoFocus(el){
+  if(el.style.color==='rgb(148, 163, 184)'||el.style.color==='#94a3b8'){
+    setTimeout(function(){try{el.select();}catch(e){}},0);
+  }
+}
 </script>
 </body>
 </html>

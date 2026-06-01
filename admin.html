@@ -1772,9 +1772,12 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         <button id="al-btn-new" onclick="setAirlogMode('new')" style="padding:5px 14px;font-size:12px;font-weight:700;background:white;color:#0f2744;border:none;border-radius:4px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;box-shadow:0 1px 2px rgba(0,0,0,0.08);">신규 입력</button>
         <button id="al-btn-edit" onclick="setAirlogMode('edit')" style="padding:5px 14px;font-size:12px;font-weight:400;background:none;color:#6b7280;border:none;border-radius:4px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회 · 수정</button>
       </div>
-      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+      <div style="margin-left:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
         <span class="filter-label">운전일자</span>
+        <button onclick="alDateShift(-1)" title="하루 전" style="width:28px;height:32px;border:1px solid #e5e7eb;border-radius:5px;background:white;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;font-family:inherit;color:#374151;padding:0;line-height:1;">&#8249;</button>
         <input type="date" id="al-input-date" onchange="onAirlogDateChange(this.value)" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+        <button id="al-date-next" onclick="alDateShift(1)" title="하루 후" style="width:28px;height:32px;border:1px solid #e5e7eb;border-radius:5px;background:white;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;font-family:inherit;color:#374151;padding:0;line-height:1;">&#8250;</button>
+        <button onclick="jumpToMissingDate()" style="padding:5px 10px;border:1px solid #d1d5db;border-radius:5px;background:white;color:#6b7280;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;height:32px;">미입력 일자로 이동</button>
         <button id="al-query-btn" onclick="queryAirLog()" style="display:none;padding:7px 14px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">조회</button>
         <span id="al-new-status-chip" style="display:none;"></span>
       </div>
@@ -2466,6 +2469,15 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     <div class="modal-btns">
       <button class="modal-cancel" onclick="closeModal()">취소</button>
       <button class="modal-confirm" id="modal-confirm-btn">삭제</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="al-confirm-modal" onclick="if(event.target===this)alCloseConfirm()">
+  <div class="modal">
+    <div class="modal-title" id="al-confirm-title">확인</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="alCloseConfirm()">취소</button>
+      <button class="modal-confirm" id="al-confirm-ok" onclick="alCloseConfirm();if(window._alConfirmCb){var _cb=window._alConfirmCb;window._alConfirmCb=null;_cb();}">확인</button>
     </div>
   </div>
 </div>
@@ -5008,19 +5020,10 @@ function autoCalcHours(n){
   var eh=document.getElementById('em'+n+'-eh').value;
   var em=document.getElementById('em'+n+'-em').value;
   var hrEl=document.getElementById('em'+n+'-hr');
-  if(sh&&eh){
-    var startMins=parseInt(sh)*60+(parseInt(sm)||0);
-    var endMins=parseInt(eh)*60+(parseInt(em)||0);
-    var diff=endMins-startMins;
-    if(diff>0){
-      // 점심시간(12:00~13:00) 포함 여부 확인
-      var lunchStart=12*60, lunchEnd=13*60;
-      if(startMins<lunchEnd&&endMins>lunchStart){
-        diff-=60; // 1시간 차감
-      }
-      hrEl.value=(diff/60).toFixed(1);
-    }else{hrEl.value='';}
-  }else{hrEl.value='';}
+  if(sh!==''&&eh!==''){
+    var diff=(parseInt(eh)*60+(parseInt(em)||0))-(parseInt(sh)*60+(parseInt(sm)||0));
+    if(hrEl) hrEl.value=diff>0?(diff/60).toFixed(1):'';
+  }else{if(hrEl)hrEl.value='';}
 }
 
 function setStatus(id,status){
@@ -5163,10 +5166,12 @@ function setAirlogMode(mode){
 }
 
 function onAirlogDateChange(date){
+  _alUpdateNextBtn(date);
   if(alMode==='new') initNewAirlogMode(date);
 }
 
 async function initNewAirlogMode(date){
+  _alUpdateNextBtn(date);
   fillFormDefaults();
   await loadPrevPower(date);
   await updateAirlogStatusChip(date);
@@ -5506,6 +5511,13 @@ async function saveAirLog(){
       return;
     }
   }
+  var title=alMode==='edit'?'수정하시겠습니까?':'저장하시겠습니까?';
+  var okLbl=alMode==='edit'?'수정':'저장';
+  alShowConfirmModal(title,okLbl,_doActualSaveAirLog);
+}
+
+async function _doActualSaveAirLog(){
+  var date=document.getElementById('al-input-date').value;
   var btn=document.getElementById('al-save-btn');
   btn.disabled=true;btn.textContent='저장 중...';
 
@@ -5556,12 +5568,73 @@ async function saveAirLog(){
     await fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+date+'&submitted_by=eq.'+encodeURIComponent(currentUser.name||currentUser.username),{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
     var res=await fetch(SB_URL+'/rest/v1/air_operation_log',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},body:JSON.stringify(records)});
     if(!res.ok){var errText=await res.text();throw new Error(errText);}
-    alert('저장 완료!');
+    showToast('저장 완료');
     if(alMode==='new')updateAirlogStatusChip(date);
-  }catch(e){console.error(e);alert('저장 실패: '+e.message);}
-  btn.disabled=false;btn.textContent='저장';
+  }catch(e){console.error(e);showToast('저장 실패: '+e.message);}
+  btn.disabled=false;btn.textContent=alMode==='edit'?'수정 저장':'저장';
 }
 
+
+// ── 대기운영기록: 날짜 이동 + 미입력 일자 점프 ──
+function _alUpdateNextBtn(dateStr){
+  var nextBtn=document.getElementById('al-date-next');
+  if(!nextBtn) return;
+  var ds=dateStr||document.getElementById('al-input-date').value;
+  if(!ds) return;
+  var d=new Date(ds+'T00:00:00');
+  var t=new Date();t.setHours(0,0,0,0);
+  var nxt=new Date(d);nxt.setDate(nxt.getDate()+1);
+  var dis=nxt>t;
+  nextBtn.style.opacity=dis?'0.4':'1';
+  nextBtn.style.cursor=dis?'not-allowed':'pointer';
+}
+
+function alDateShift(delta){
+  var dateEl=document.getElementById('al-input-date');
+  if(!dateEl||!dateEl.value) return;
+  var d=new Date(dateEl.value+'T00:00:00');
+  d.setDate(d.getDate()+delta);
+  var t=new Date();t.setHours(0,0,0,0);
+  if(d>t) return;
+  var newVal=d.toISOString().split('T')[0];
+  dateEl.value=newVal;
+  _alUpdateNextBtn(newVal);
+  onAirlogDateChange(newVal);
+}
+
+async function jumpToMissingDate(){
+  showToast('미입력 일자 조회 중...');
+  var t=new Date();t.setHours(0,0,0,0);
+  var s=new Date(t);s.setDate(s.getDate()-90);
+  var ss=s.toISOString().split('T')[0];
+  var ts=t.toISOString().split('T')[0];
+  var data=await sb('air_operation_log','?log_date=gte.'+ss+'&log_date=lte.'+ts+'&select=log_date&limit=9999');
+  var logged=new Set((data||[]).map(function(r){return r.log_date;}));
+  for(var d=new Date(s);d<=t;d.setDate(d.getDate()+1)){
+    if(d.getDay()===0||d.getDay()===6) continue;
+    var ds=d.toISOString().split('T')[0];
+    if(!logged.has(ds)){
+      document.getElementById('al-input-date').value=ds;
+      onAirlogDateChange(ds);
+      showToast('미입력 일자: '+ds);
+      return;
+    }
+  }
+  showToast('미입력 일자가 없습니다. 모두 입력 완료된 상태입니다.');
+}
+
+// ── 대기운영기록: 저장 확인 모달 ──
+var _alConfirmCb=null;
+function alShowConfirmModal(title,okLbl,cb){
+  _alConfirmCb=cb;
+  document.getElementById('al-confirm-title').textContent=title;
+  document.getElementById('al-confirm-ok').textContent=okLbl;
+  document.getElementById('al-confirm-modal').classList.add('show');
+}
+function alCloseConfirm(){
+  document.getElementById('al-confirm-modal').classList.remove('show');
+  _alConfirmCb=null;
+}
 
 async function exportSemsEmission(){
   var errEl=document.getElementById('sems-export-err');
