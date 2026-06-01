@@ -639,25 +639,25 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 
   <!-- KPI 4개 -->
   <div class="dh-kpi-row">
-    <div class="dh-kpi">
-      <div class="dh-kpi-lbl">미개선 점검<span class="dh-kpi-lbl-tag" id="kpi1-tag" style="background:#fde8e8;color:#b91c1c;">주의</span></div>
-      <div class="dh-kpi-val"><span id="kpi-insp-miss">-</span><span class="u">건</span></div>
-      <div class="dh-kpi-tr up" id="kpi-insp-trend">-</div>
+    <div class="dh-kpi" id="kpi-card-air-prev" style="cursor:default;">
+      <div class="dh-kpi-lbl">대기운영기록 미입력<span class="dh-kpi-lbl-tag" id="kpi-air-prev-tag">-월</span></div>
+      <div class="dh-kpi-val"><span id="kpi-air-prev">-</span><span class="u">건</span></div>
+      <div class="dh-kpi-tr neu" id="kpi-air-prev-sub"></div>
     </div>
-    <div class="dh-kpi">
-      <div class="dh-kpi-lbl">월간 점검 개선율</div>
-      <div class="dh-kpi-val"><span id="kpi-insp-rate">-</span><span class="u">%</span></div>
-      <div class="dh-kpi-tr neu" id="kpi-insp-rate-sub">-</div>
+    <div class="dh-kpi" id="kpi-card-air-curr" style="cursor:default;">
+      <div class="dh-kpi-lbl">대기운영기록 미입력<span class="dh-kpi-lbl-tag" id="kpi-air-curr-tag">-월</span></div>
+      <div class="dh-kpi-val"><span id="kpi-air-curr">-</span><span class="u">건</span></div>
+      <div class="dh-kpi-tr neu" id="kpi-air-curr-sub"></div>
     </div>
-    <div class="dh-kpi">
-      <div class="dh-kpi-lbl">대기운영기록 미입력<span class="dh-kpi-lbl-tag" id="kpi3-tag" style="background:#fdf2e2;color:#b45309;">-</span></div>
-      <div class="dh-kpi-val"><span id="kpi-air-miss">-</span><span class="u">일</span></div>
-      <div class="dh-kpi-tr neu" id="kpi-air-miss-sub">-</div>
-    </div>
-    <div class="dh-kpi">
-      <div class="dh-kpi-lbl">배출 요청 필요<span class="dh-kpi-lbl-tag" id="kpi4-tag" style="background:#fdf2e2;color:#b45309;">-</span></div>
+    <div class="dh-kpi" id="kpi-card-waste" style="cursor:default;">
+      <div class="dh-kpi-lbl">배출 요청 필요<span class="dh-kpi-lbl-tag" id="kpi-waste-cnt-tag" style="display:none;background:#fdf2e2;color:#b45309;"></span></div>
       <div class="dh-kpi-val"><span id="kpi-waste-req">-</span><span class="u">건</span></div>
-      <div class="dh-kpi-tr neu" id="kpi-waste-req-sub">-</div>
+      <div class="dh-kpi-tr neu" id="kpi-waste-sub"></div>
+    </div>
+    <div class="dh-kpi" id="kpi-card-filter" style="cursor:default;">
+      <div class="dh-kpi-lbl">필터 마지막 교체</div>
+      <div class="dh-kpi-val"><span id="kpi-filter-days">-</span><span class="u" id="kpi-filter-unit">일</span></div>
+      <div class="dh-kpi-tr neu" id="kpi-filter-sub"></div>
     </div>
   </div>
 
@@ -2627,6 +2627,9 @@ async function loadDashboard(){
   var curMonth=now.getMonth()+1;
   var today=now.toISOString().split('T')[0];
   var ym=year+'-'+String(curMonth).padStart(2,'0');
+  var prevMonth=curMonth===1?12:curMonth-1;
+  var prevYear=curMonth===1?year-1:year;
+  var prevYm=prevYear+'-'+String(prevMonth).padStart(2,'0');
   var el=function(id){return document.getElementById(id);};
 
   // Hello 헤더
@@ -2643,42 +2646,85 @@ async function loadDashboard(){
     sb('air_operation_log','?log_date=gte.'+year+'-01-01&select=log_date,facility_type,sems_registered&order=log_date.asc'),
     sb('inspection_records','?select=id,inspect_date,issue,status,category&order=inspect_date.desc'),
     sb('waste_storage','?select=*&order=display_order.asc'),
-    sb('waste_schedule','?status=eq.scheduled&scheduled_date=gte.'+today+'&select=*&order=scheduled_date.asc&limit=5')
+    sb('waste_schedule','?status=eq.scheduled&scheduled_date=gte.'+today+'&select=*&order=scheduled_date.asc&limit=5'),
+    sb('air_operation_log','?log_date=gte.'+prevYm+'-01&log_date=lt.'+ym+'-01&facility_type=eq.배출구&select=log_date'),
+    sb('filter_records','?select=record_date&order=record_date.desc&limit=1')
   ]);
   var airlogMonth=results[0]||[];
   var airlogYear=results[1]||[];
   var inspectAll=results[2]||[];
   var storageData=results[3]||[];
   var wasteSchedule=results[4]||[];
+  var airlogPrevMonth=results[5]||[];
+  var filterLatest=results[6]||[];
 
-  // ── KPI 1 & 2: 점검 ──
+  // ── 점검 변수 (환경점검 요약·알림칩에서 사용) ──
   var inspectMiss=inspectAll.filter(function(r){return r.status==='miss';});
   var inspHold=inspectAll.filter(function(r){return r.status==='hold';}).length;
   var inspDone=inspectAll.filter(function(r){return r.status==='done';}).length;
   var inspDenom=inspectAll.length-inspHold;
   var inspRate=inspDenom>0?Math.round(inspDone/inspDenom*100):0;
-  if(el('kpi-insp-miss'))el('kpi-insp-miss').textContent=inspectMiss.length;
-  if(el('kpi-insp-trend'))el('kpi-insp-trend').textContent=inspectMiss.length>0?'미개선 항목 확인 필요':'모두 처리됨';
-  if(el('kpi1-tag'))el('kpi1-tag').style.display=inspectMiss.length>0?'':'none';
-  if(el('kpi-insp-rate'))el('kpi-insp-rate').textContent=inspRate;
-  if(el('kpi-insp-rate-sub'))el('kpi-insp-rate-sub').textContent='전체 '+inspDenom+'건 기준';
 
-  // ── KPI 3: 대기운영기록 미입력 (평일 기준) ──
+  // ── KPI 1: 대기운영기록 미입력 (전월) ──
+  var prevWdCount=0;
+  var pd=new Date(prevYear,prevMonth-1,1);var prevEnd=new Date(prevYear,prevMonth,0);
+  while(pd<=prevEnd){var pdow=pd.getDay();if(pdow!==0&&pdow!==6)prevWdCount++;pd.setDate(pd.getDate()+1);}
+  var prevLogDates=new Set(airlogPrevMonth.map(function(r){return r.log_date;}));
+  var airPrevMiss=Math.max(0,prevWdCount-prevLogDates.size);
+  if(el('kpi-air-prev'))el('kpi-air-prev').textContent=airPrevMiss;
+  if(el('kpi-air-prev-tag'))el('kpi-air-prev-tag').textContent=prevMonth+'월';
+  var cardAirPrev=el('kpi-card-air-prev');
+  if(airPrevMiss===0){
+    if(cardAirPrev)cardAirPrev.style.background='#f9fafb';
+    var prevNumEl=el('kpi-air-prev');if(prevNumEl)prevNumEl.style.color='#16a34a';
+    if(el('kpi-air-prev-sub')){el('kpi-air-prev-sub').textContent='입력완료';el('kpi-air-prev-sub').style.color='#16a34a';}
+  }else{
+    if(cardAirPrev)cardAirPrev.style.background='';
+    var prevNumEl=el('kpi-air-prev');if(prevNumEl)prevNumEl.style.color='#b91c1c';
+    if(el('kpi-air-prev-sub'))el('kpi-air-prev-sub').textContent='';
+  }
+
+  // ── KPI 2: 대기운영기록 미입력 (이번달) ──
   var weekdayCount=0;
   var d=new Date(year,curMonth-1,1);var todayD=new Date(today);
   while(d<=todayD){var dow=d.getDay();if(dow!==0&&dow!==6)weekdayCount++;d.setDate(d.getDate()+1);}
   var logDates=new Set(airlogMonth.map(function(r){return r.log_date;}));
-  var airMiss=Math.max(0,weekdayCount-logDates.size);
-  if(el('kpi-air-miss'))el('kpi-air-miss').textContent=airMiss;
-  if(el('kpi3-tag'))el('kpi3-tag').textContent=curMonth+'월';
-  if(el('kpi-air-miss-sub'))el('kpi-air-miss-sub').textContent='평일 기준 · 오늘까지 '+logDates.size+'일 입력';
+  var airCurrMiss=Math.max(0,weekdayCount-logDates.size);
+  if(el('kpi-air-curr'))el('kpi-air-curr').textContent=airCurrMiss;
+  if(el('kpi-air-curr-tag'))el('kpi-air-curr-tag').textContent=curMonth+'월';
+  var cardAirCurr=el('kpi-card-air-curr');
+  if(airCurrMiss===0){
+    if(cardAirCurr)cardAirCurr.style.background='#f9fafb';
+    var currNumEl=el('kpi-air-curr');if(currNumEl)currNumEl.style.color='#16a34a';
+    if(el('kpi-air-curr-sub')){el('kpi-air-curr-sub').textContent='입력완료';el('kpi-air-curr-sub').style.color='#16a34a';}
+  }else{
+    if(cardAirCurr)cardAirCurr.style.background='';
+    var currNumEl=el('kpi-air-curr');if(currNumEl)currNumEl.style.color='#ea580c';
+    if(el('kpi-air-curr-sub'))el('kpi-air-curr-sub').textContent='';
+  }
 
-  // ── KPI 4: 배출 요청 필요 ──
+  // ── KPI 3: 배출 요청 필요 ──
   var reqItems=storageData.filter(function(w){return wsPct(w)>=75;});
-  var urgItems=reqItems.filter(function(w){return wsPct(w)>=90;});
   if(el('kpi-waste-req'))el('kpi-waste-req').textContent=reqItems.length;
-  if(el('kpi4-tag'))el('kpi4-tag').textContent=reqItems.length+'건';
-  if(el('kpi-waste-req-sub'))el('kpi-waste-req-sub').textContent=urgItems.length>0?urgItems.slice(0,2).map(function(w){return w.waste_type;}).join(' · '):reqItems.length===0?'모두 정상':'주의 항목 있음';
+  var wasteTag=el('kpi-waste-cnt-tag');
+  if(wasteTag){if(reqItems.length>0){wasteTag.style.display='';wasteTag.textContent=reqItems.length+'건';}else{wasteTag.style.display='none';}}
+  if(el('kpi-waste-sub'))el('kpi-waste-sub').textContent=reqItems.length>0?'주의 항목 있음':'';
+
+  // ── KPI 4: 필터 마지막 교체 ──
+  var latestFR=filterLatest.length>0?filterLatest[0]:null;
+  if(latestFR&&latestFR.record_date){
+    var fp=latestFR.record_date.split('-');
+    var filterDateObj=new Date(+fp[0],+fp[1]-1,+fp[2]);
+    var tp=today.split('-');var todayDateObj=new Date(+tp[0],+tp[1]-1,+tp[2]);
+    var filterDiff=Math.floor((todayDateObj-filterDateObj)/(1000*60*60*24));
+    if(el('kpi-filter-days'))el('kpi-filter-days').textContent=filterDiff;
+    if(el('kpi-filter-unit'))el('kpi-filter-unit').textContent='일';
+    if(el('kpi-filter-sub'))el('kpi-filter-sub').textContent=latestFR.record_date+' 등록';
+  }else{
+    if(el('kpi-filter-days'))el('kpi-filter-days').textContent='-';
+    if(el('kpi-filter-unit'))el('kpi-filter-unit').textContent='';
+    if(el('kpi-filter-sub'))el('kpi-filter-sub').textContent='등록 기록 없음';
+  }
 
   // 알림칩 (topbar용)
   var chipInspect=el('dash-chip-inspect');
