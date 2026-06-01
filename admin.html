@@ -3158,7 +3158,7 @@ var batchYr=new Date().getFullYear(),batchMo=new Date().getMonth()+1;
 function initBatchWidget(){
   var w=document.getElementById('bulk-filter-widget');
   if(!w)return;
-  w.style.display='';
+  w.style.display='block';
   batchYr=new Date().getFullYear();
   batchMo=new Date().getMonth()+1;
   batchUpdateLabel();
@@ -6570,12 +6570,12 @@ async function checkAndNotify(){
     // 대기측정 D-7
     var d7=new Date(today);d7.setDate(d7.getDate()+7);
     var d7Str=d7.toISOString().split('T')[0];
-    var am=await sbQ('air_measurement','?measure_date=eq.'+d7Str+'&status=eq.예정&select=facility_name');
+    var am=await sbQ('air_measurement','?measure_date=eq.'+d7Str+'&status=eq.예정&select=facilities');
     if(am&&am.length){
-      sendLocalNotif('대기측정 D-7',am.map(function(r){return r.facility_name;}).join(', ')+' 측정 7일 전입니다.','admin.html#air');
+      sendLocalNotif('대기측정 D-7',am.map(function(r){return r.facilities;}).join(', ')+' 측정 7일 전입니다.','admin.html#air');
     }
     // 미개선 기한 초과
-    var insp=await sbQ('inspection_records','?status=eq.miss&due_date=lt.'+todayStr+'&select=issue');
+    var insp=await sbQ('inspection_records','?status=eq.miss&select=issue');
     if(insp&&insp.length){
       sendLocalNotif('미개선 점검 기한 초과',insp.length+'건의 점검 항목이 기한을 초과했습니다.','admin.html#inspect');
     }
