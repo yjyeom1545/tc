@@ -2475,8 +2475,9 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 <div class="modal-bg" id="al-confirm-modal" onclick="if(event.target===this)alCloseConfirm()">
   <div class="modal">
     <div class="modal-title" id="al-confirm-title">확인</div>
+    <div id="al-confirm-body" style="font-size:13px;color:#374151;margin-bottom:14px;line-height:1.6;display:none;white-space:pre-line;"></div>
     <div class="modal-btns">
-      <button class="modal-cancel" onclick="alCloseConfirm()">취소</button>
+      <button class="modal-cancel" id="al-confirm-cancel" onclick="alCloseConfirm()">취소</button>
       <button class="modal-confirm" id="al-confirm-ok" onclick="alCloseConfirm();if(window._alConfirmCb){var _cb=window._alConfirmCb;window._alConfirmCb=null;_cb();}">확인</button>
     </div>
   </div>
@@ -5525,6 +5526,12 @@ async function _doActualSaveAirLog(){
   var date=document.getElementById('al-input-date').value;
   var btn=document.getElementById('al-save-btn');
   btn.disabled=true;btn.textContent='저장 중...';
+  // 수정 모드: 이전 당일검침 스냅샷 (다음 운영일 전일검침 갱신 확인용)
+  var _oldPrTodayMap={};
+  if(alMode==='edit'){
+    var _snap=await sb('air_operation_log','?log_date=eq.'+date+'&facility_type=eq.방지시설&select=facility_no,power_today');
+    (_snap||[]).forEach(function(r){if(r.power_today!=null)_oldPrTodayMap[r.facility_no]=parseFloat(r.power_today);});
+  }
 
   var emNames={1:'탈청시설 (200HP)',2:'도장시설 (600㎥)',3:'도장시설 (600㎥)',4:'도장시설 (600㎥)',5:'건조시설 (345.6㎥)',6:'도장 및 건조시설 (319㎥)',7:'도장 및 건조시설 (319㎥)',9:'도장시설 (656.6㎥)'};
   var prNames={1:'여과집진시설',2:'흡착에의한시설',3:'흡착에의한시설',4:'흡착에의한시설',5:'흡착에의한시설',6:'1차여과, 2차흡착',7:'1차여과, 2차흡착',8:'흡착에의한시설',9:'흡착에의한시설'};
@@ -5575,10 +5582,67 @@ async function _doActualSaveAirLog(){
     if(!res.ok){var errText=await res.text();throw new Error(errText);}
     showToast('저장 완료');
     if(alMode==='new')updateAirlogStatusChip(date);
+    if(alMode==='edit')_alCheckNextDayPrev(date,_oldPrTodayMap,records);
   }catch(e){console.error(e);showToast('저장 실패: '+e.message);}
   btn.disabled=false;btn.textContent=alMode==='edit'?'수정 저장':'저장';
 }
 
+
+// ── 수정 저장 후: 다음 운영일 전일검침 갱신 확인 ──
+async function _alCheckNextDayPrev(date,oldTodayMap,savedRecords){
+  if(!Object.keys(oldTodayMap).length) return;
+  // 다음 운영일 조회
+  var step1=await sb('air_operation_log','?log_date=gt.'+date+'&facility_type=eq.방지시설&select=log_date&order=log_date.asc&limit=1');
+  if(!step1||!step1.length) return;
+  var nextDate=step1[0].log_date;
+  // 다음 운영일 방지시설 현재 값 조회
+  var nextData=await sb('air_operation_log','?log_date=eq.'+nextDate+'&facility_type=eq.방지시설&select=facility_no,power_prev,power_today');
+  if(!nextData||!nextData.length) return;
+  var nextMap={};
+  nextData.forEach(function(r){nextMap[r.facility_no]={prev:r.power_prev!=null?parseFloat(r.power_prev):null,today:r.power_today!=null?parseFloat(r.power_today):null};});
+  // 저장된 새 당일검침 맵
+  var newTodayMap={};
+  savedRecords.forEach(function(r){if(r.facility_type==='방지시설'&&r.power_today!=null)newTodayMap[r.facility_no]=r.power_today;});
+  // 갱신 후보: 다음 운영일 power_prev === 수정 전 당일검침, 그리고 값이 달라졌을 때
+  var updateMap={};
+  Object.keys(oldTodayMap).forEach(function(no){
+    no=parseInt(no);
+    var oldVal=oldTodayMap[no];
+    var nm=nextMap[no];
+    var newVal=newTodayMap[no];
+    if(nm&&nm.prev!=null&&oldVal!=null&&nm.prev===oldVal&&newVal!=null&&newVal!==oldVal){
+      updateMap[no]=newVal;
+    }
+  });
+  if(!Object.keys(updateMap).length) return;
+  var cnt=Object.keys(updateMap).length;
+  alShowConfirmModal(
+    nextDate+' 전일검침 갱신 확인',
+    '갱신',
+    function(){_alDoUpdateNextDayPrev(nextDate,updateMap,nextData);},
+    '그대로 두기',
+    '수정한 데이터가 '+nextDate+'의 전일검침으로 사용되고 있습니다 ('+cnt+'개 시설).\n'+nextDate+'의 전일검침과 당일사용량도 함께 갱신하시겠습니까?'
+  );
+}
+
+async function _alDoUpdateNextDayPrev(nextDate,updateMap,nextData){
+  var nextTodayMap={};
+  nextData.forEach(function(r){if(r.power_today!=null)nextTodayMap[r.facility_no]=parseFloat(r.power_today);});
+  try{
+    await Promise.all(Object.keys(updateMap).map(function(no){
+      no=parseInt(no);
+      var newPrev=updateMap[no];
+      var nToday=nextTodayMap[no];
+      var newDaily=(nToday!=null&&newPrev!=null&&(nToday-newPrev)>=0)?(nToday-newPrev):null;
+      return fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+nextDate+'&facility_type=eq.방지시설&facility_no=eq.'+no,{
+        method:'PATCH',
+        headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
+        body:JSON.stringify({power_prev:newPrev,power_daily:newDaily})
+      });
+    }));
+    showToast(nextDate+' 전일검침 갱신 완료');
+  }catch(e){showToast('갱신 실패: '+e.message);console.error(e);}
+}
 
 // ── 대기운영기록: 날짜 이동 + 미입력 일자 점프 ──
 function _alUpdateNextBtn(dateStr){
@@ -5635,10 +5699,14 @@ async function jumpToMissingDate(){
 
 // ── 대기운영기록: 저장 확인 모달 ──
 var _alConfirmCb=null;
-function alShowConfirmModal(title,okLbl,cb){
+function alShowConfirmModal(title,okLbl,cb,cancelLbl,bodyMsg){
   _alConfirmCb=cb;
   document.getElementById('al-confirm-title').textContent=title;
   document.getElementById('al-confirm-ok').textContent=okLbl;
+  var cc=document.getElementById('al-confirm-cancel');
+  if(cc)cc.textContent=cancelLbl||'취소';
+  var bd=document.getElementById('al-confirm-body');
+  if(bd){bd.textContent=bodyMsg||'';bd.style.display=bodyMsg?'':'none';}
   document.getElementById('al-confirm-modal').classList.add('show');
 }
 function alCloseConfirm(){
