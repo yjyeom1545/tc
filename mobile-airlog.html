@@ -449,24 +449,21 @@ function calcD(n){
   updProg();
 }
 
-// ── 전일검침 자동 불러오기 ──
+// ── 전일검침 자동 불러오기 (이 날짜 이전 중 가장 최근 기록) ──
 async function loadPrev(date){
   prevPow={};
-  for(var i=1;i<=7;i++){
-    var d=new Date(date+'T00:00:00'); d.setDate(d.getDate()-i);
-    if(d.getDay()===0||d.getDay()===6) continue;
-    var ds=d.toISOString().split('T')[0];
-    var data=await sbGet('air_operation_log','?log_date=eq.'+ds+'&facility_type=eq.방지시설&select=facility_no,power_today&order=facility_no.asc');
-    if(data&&data.length){
-      data.forEach(function(r){
-        if(r.power_today!=null){
-          prevPow[r.facility_no]=r.power_today;
-          var el=g('pp'+r.facility_no); if(el) el.value=r.power_today;
-        }
-      });
-      PR_NOS.forEach(function(n){calcD(n);});
-      break;
-    }
+  var step1=await sbGet('air_operation_log','?log_date=lt.'+date+'&facility_type=eq.방지시설&select=log_date&order=log_date.desc&limit=1');
+  if(!step1||!step1.length) return;
+  var prevDate=step1[0].log_date;
+  var data=await sbGet('air_operation_log','?log_date=eq.'+prevDate+'&facility_type=eq.방지시설&select=facility_no,power_today&order=facility_no.asc');
+  if(data&&data.length){
+    data.forEach(function(r){
+      if(r.power_today!=null){
+        prevPow[r.facility_no]=r.power_today;
+        var el=g('pp'+r.facility_no); if(el) el.value=r.power_today;
+      }
+    });
+    PR_NOS.forEach(function(n){calcD(n);});
   }
 }
 
@@ -527,20 +524,17 @@ async function queryEdit(){
 }
 
 async function loadPrevEdit(date){
-  for(var i=1;i<=7;i++){
-    var d=new Date(date+'T00:00:00'); d.setDate(d.getDate()-i);
-    if(d.getDay()===0||d.getDay()===6) continue;
-    var ds=d.toISOString().split('T')[0];
-    var data=await sbGet('air_operation_log','?log_date=eq.'+ds+'&facility_type=eq.방지시설&select=facility_no,power_today');
-    if(data&&data.length){
-      data.forEach(function(r){
-        if(r.power_today!=null&&prevPow[r.facility_no]==null){
-          prevPow[r.facility_no]=r.power_today;
-          var el=g('pp'+r.facility_no); if(el&&!el.value) el.value=r.power_today;
-        }
-      });
-      break;
-    }
+  var step1=await sbGet('air_operation_log','?log_date=lt.'+date+'&facility_type=eq.방지시설&select=log_date&order=log_date.desc&limit=1');
+  if(!step1||!step1.length) return;
+  var prevDate=step1[0].log_date;
+  var data=await sbGet('air_operation_log','?log_date=eq.'+prevDate+'&facility_type=eq.방지시설&select=facility_no,power_today');
+  if(data&&data.length){
+    data.forEach(function(r){
+      if(r.power_today!=null&&prevPow[r.facility_no]==null){
+        prevPow[r.facility_no]=r.power_today;
+        var el=g('pp'+r.facility_no); if(el&&!el.value) el.value=r.power_today;
+      }
+    });
   }
 }
 
@@ -737,12 +731,17 @@ async function mobJumpMissing(){
   showToast('조회 중...');
   var t=new Date();t.setHours(0,0,0,0);
   var ts=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
-  var data=await sbGet('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&select=log_date&limit=9999');
-  var logged=new Set((data||[]).map(function(r){return r.log_date;}));
+  var results=await Promise.all([
+    sbGet('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&select=log_date&limit=9999'),
+    sbGet('holidays','?is_active=eq.true&select=holiday_date')
+  ]);
+  var logged=new Set((results[0]||[]).map(function(r){return r.log_date;}));
+  var holidays=new Set((results[1]||[]).map(function(r){return r.holiday_date;}));
   var sysStart=new Date(SYS_START+'T00:00:00');
   for(var d=new Date(sysStart);d<=t;d.setDate(d.getDate()+1)){
     if(d.getDay()===0||d.getDay()===6) continue;
     var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(holidays.has(ds)) continue;
     if(!logged.has(ds)){
       g('date-inp').value=ds; onDateChange();
       showToast('미입력 일자: '+ds); return;
