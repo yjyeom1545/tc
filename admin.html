@@ -2637,7 +2637,7 @@ async function loadDashboard(){
   var days=['일','월','화','수','목','금','토'];
   var year=now.getFullYear();
   var curMonth=now.getMonth()+1;
-  var today=now.toISOString().split('T')[0];
+  var today=year+'-'+String(curMonth).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
   var ym=year+'-'+String(curMonth).padStart(2,'0');
   var prevMonth=curMonth===1?12:curMonth-1;
   var prevYear=curMonth===1?year-1:year;
@@ -2728,17 +2728,20 @@ async function loadDashboard(){
   }
 
   // ── 대기운영기록 매트릭스 (평일 기준) ──
-  var LEGACY_MONTHS=3;
+  var SYSTEM_START_DATE='2026-04-01';
 
   // 날짜 문자열("YYYY-MM-DD") → 로컬 Date (UTC 오프셋 영향 제거)
   function parseDateL(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
   function dowL(s){return parseDateL(s).getDay();}
 
-  // 해당 월의 평일 분모 (미래 날짜·토일 제외)
+  // 해당 월의 평일 분모 (시스템 시작일 이전·미래·토일 제외)
   function wdDenom(m){
     if(m>curMonth)return 0;
-    var start=new Date(year,m-1,1);
+    var rawStart=new Date(year,m-1,1);
+    var sysStartD=parseDateL(SYSTEM_START_DATE);
+    var start=rawStart>=sysStartD?rawStart:sysStartD;
     var end=(m===curMonth)?parseDateL(today):new Date(year,m,0);
+    if(start>end)return 0;
     var cnt=0;
     for(var d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
       var dw=d.getDay();if(dw!==0&&dw!==6)cnt++;
@@ -2776,7 +2779,6 @@ async function loadDashboard(){
   function alDot(st){return '<span class="dh-dot '+st+'"></span>';}
 
   function alStatusWd(m,wdDates){
-    if(m<=LEGACY_MONTHS)return alDot('done');
     var denom=wdDenom(m);
     if(denom===0)return alDot('none');
     var filled=wdDates[m]?wdDates[m].size:0;
@@ -2786,7 +2788,6 @@ async function loadDashboard(){
   }
 
   function semsStatusWd(m){
-    if(m<=LEGACY_MONTHS)return alDot('done');
     var denom=wdDenom(m);
     if(denom===0)return alDot('none');
     var reg=semsWdReg[m]||0;
@@ -2796,9 +2797,14 @@ async function loadDashboard(){
   }
 
   function wdTooltip(m){
-    if(m<=LEGACY_MONTHS)return m+'월: 시스템 도입 이전';
     var denom=wdDenom(m);
-    if(denom===0)return m+'월: 해당 없음 (미래)';
+    if(denom===0){
+      var sysM=parseInt(SYSTEM_START_DATE.substring(5,7));
+      var sysY=parseInt(SYSTEM_START_DATE.substring(0,4));
+      if(m>curMonth)return m+'월: 해당 없음 (미래)';
+      if(year<sysY||(year===sysY&&m<sysM))return m+'월: 시스템 도입 이전';
+      return m+'월: 해당 없음';
+    }
     var emF=emWdDates[m]?emWdDates[m].size:0;
     var sReg=semsWdReg[m]||0;
     return m+'월 평일 '+denom+'일 중 '+emF+'일 입력, SEMS 등록 '+sReg+'일';
@@ -5218,14 +5224,16 @@ async function updateAirlogStatusChip(date){
   var chip=document.getElementById('al-new-status-chip');
   if(!chip)return;
   if(!date){chip.style.display='none';return;}
-  var neutral='display:inline-flex;align-items:center;padding:3px 10px;border-radius:4px;font-size:11.5px;font-weight:600;background:#f1f3f5;color:#6b7280;white-space:nowrap;';
-  var green='display:inline-flex;align-items:center;padding:3px 10px;border-radius:4px;font-size:11.5px;font-weight:600;background:#d1fae5;color:#065f46;white-space:nowrap;';
+  var base='display:inline-flex;align-items:center;justify-content:center;width:62px;padding:3px 0;border-radius:4px;font-size:11.5px;font-weight:600;white-space:nowrap;';
+  var neutral=base+'background:#f1f3f5;color:#6b7280;';
+  var green=base+'background:#d1fae5;color:#065f46;';
   chip.style.cssText=neutral;
-  chip.textContent='조회 중...';
+  chip.textContent='조회 중';
   var data=await sb('air_operation_log','?log_date=eq.'+date+'&select=created_at,submitted_by&limit=1&order=created_at.asc');
   if(!data||!data.length){
     chip.style.cssText=neutral;
-    chip.textContent='신규 작성';
+    chip.textContent='미입력';
+    chip.title='';
   } else {
     // 실제 DB 데이터를 폼에 채워 진한 글씨로 표시
     var fullData=await sb('air_operation_log','?log_date=eq.'+date+'&select=*&order=facility_type.asc,facility_no.asc');
@@ -5234,9 +5242,9 @@ async function updateAirlogStatusChip(date){
     var timeStr='';
     if(r.created_at){var d=new Date(r.created_at);timeStr=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
     var nameStr=r.submitted_by?displayName(r.submitted_by):'';
-    var label='✓ 작성 완료'+(timeStr?' · '+timeStr:'')+(nameStr?' · '+nameStr:'');
     chip.style.cssText=green;
-    chip.textContent=label;
+    chip.textContent='입력완료';
+    chip.title=(timeStr?timeStr:'')+(nameStr?' · '+nameStr:'');
   }
 }
 
@@ -5596,23 +5604,23 @@ function alDateShift(delta){
   d.setDate(d.getDate()+delta);
   var t=new Date();t.setHours(0,0,0,0);
   if(d>t) return;
-  var newVal=d.toISOString().split('T')[0];
+  var newVal=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   dateEl.value=newVal;
   _alUpdateNextBtn(newVal);
   onAirlogDateChange(newVal);
 }
 
 async function jumpToMissingDate(){
+  var SYS_START='2026-04-01';
   showToast('미입력 일자 조회 중...');
   var t=new Date();t.setHours(0,0,0,0);
-  var s=new Date(t);s.setDate(s.getDate()-90);
-  var ss=s.toISOString().split('T')[0];
-  var ts=t.toISOString().split('T')[0];
-  var data=await sb('air_operation_log','?log_date=gte.'+ss+'&log_date=lte.'+ts+'&select=log_date&limit=9999');
+  var ts=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  var data=await sb('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&select=log_date&limit=9999');
   var logged=new Set((data||[]).map(function(r){return r.log_date;}));
-  for(var d=new Date(s);d<=t;d.setDate(d.getDate()+1)){
+  var sysStart=new Date(SYS_START+'T00:00:00');
+  for(var d=new Date(sysStart);d<=t;d.setDate(d.getDate()+1)){
     if(d.getDay()===0||d.getDay()===6) continue;
-    var ds=d.toISOString().split('T')[0];
+    var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     if(!logged.has(ds)){
       document.getElementById('al-input-date').value=ds;
       onAirlogDateChange(ds);

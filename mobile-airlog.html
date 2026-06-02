@@ -33,7 +33,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f4f6f9;min-height:100vh;p
 .qry-btn{height:38px;padding:0 14px;background:#0f2744;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;flex-shrink:0;display:none;}
 
 /* ── Status chip (신규 입력 모드) ── */
-.status-chip{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:4px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;letter-spacing:-.1px;}
+.status-chip{display:inline-flex;align-items:center;justify-content:center;width:58px;font-size:11px;font-weight:600;padding:4px 0;border-radius:20px;white-space:nowrap;flex-shrink:0;letter-spacing:-.1px;}
 .chip-new{background:#f1f5f9;color:#64748b;}
 .chip-done{background:#dcfce7;color:#15803d;}
 
@@ -150,7 +150,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f4f6f9;min-height:100vh;p
     <input type="date" class="date-inp" id="date-inp" oninput="onDateChange()" style="flex:1;min-width:0;">
     <button class="arr-btn" id="mob-date-next" onclick="mobDateShift(1)" title="하루 후">&#8250;</button>
     <button class="qry-btn" id="qry-btn" onclick="queryEdit()">조회</button>
-    <span class="status-chip chip-new" id="status-chip">신규 작성</span>
+    <span class="status-chip chip-new" id="status-chip">미입력</span>
   </div>
   <button class="miss-btn" onclick="mobJumpMissing()">미입력 일자로 이동</button>
 </div>
@@ -352,13 +352,14 @@ async function updateChip(date){
   chip.className='status-chip chip-new'; chip.textContent='조회 중…';
   var data=await sbGet('air_operation_log','?log_date=eq.'+date+'&select=created_at,submitted_by&limit=1&order=created_at.desc');
   if(!data||!data.length){
-    chip.className='status-chip chip-new'; chip.textContent='신규 작성';
+    chip.className='status-chip chip-new'; chip.textContent='미입력'; chip.title='';
   } else {
     var r=data[0];
     var tStr=r.created_at?fmtAt(r.created_at).slice(11,16):'';
     var bStr=r.submitted_by||'';
     chip.className='status-chip chip-done';
-    chip.textContent='✓ 작성 완료'+(tStr?' · '+tStr:'')+(bStr?' · '+bStr:'');
+    chip.textContent='입력완료';
+    chip.title=(tStr?tStr:'')+(bStr?' · '+bStr:'');
   }
 }
 
@@ -724,7 +725,7 @@ function mobDateShift(delta){
   d.setDate(d.getDate()+delta);
   var t=new Date();t.setHours(0,0,0,0);
   if(d>t) return;
-  el.value=d.toISOString().split('T')[0];
+  el.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   var nb=g('mob-date-next');
   if(nb){var n2=new Date(d);n2.setDate(n2.getDate()+1);nb.style.opacity=n2>t?'0.4':'1';}
   onDateChange();
@@ -732,15 +733,16 @@ function mobDateShift(delta){
 
 // ── 미입력 일자로 이동 ──
 async function mobJumpMissing(){
+  var SYS_START='2026-04-01';
   showToast('조회 중...');
   var t=new Date();t.setHours(0,0,0,0);
-  var s=new Date(t);s.setDate(s.getDate()-90);
-  var ss=s.toISOString().split('T')[0],ts=t.toISOString().split('T')[0];
-  var data=await sbGet('air_operation_log','?log_date=gte.'+ss+'&log_date=lte.'+ts+'&select=log_date&limit=9999');
+  var ts=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  var data=await sbGet('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&select=log_date&limit=9999');
   var logged=new Set((data||[]).map(function(r){return r.log_date;}));
-  for(var d=new Date(s);d<=t;d.setDate(d.getDate()+1)){
+  var sysStart=new Date(SYS_START+'T00:00:00');
+  for(var d=new Date(sysStart);d<=t;d.setDate(d.getDate()+1)){
     if(d.getDay()===0||d.getDay()===6) continue;
-    var ds=d.toISOString().split('T')[0];
+    var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     if(!logged.has(ds)){
       g('date-inp').value=ds; onDateChange();
       showToast('미입력 일자: '+ds); return;
