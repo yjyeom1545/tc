@@ -2478,7 +2478,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     <div id="al-confirm-body" style="font-size:13px;color:#374151;margin-bottom:14px;line-height:1.6;display:none;white-space:pre-line;"></div>
     <div class="modal-btns">
       <button class="modal-cancel" id="al-confirm-cancel" onclick="alCloseConfirm()">취소</button>
-      <button class="modal-confirm" id="al-confirm-ok" onclick="alCloseConfirm();if(window._alConfirmCb){var _cb=window._alConfirmCb;window._alConfirmCb=null;_cb();}">확인</button>
+      <button class="modal-confirm" id="al-confirm-ok" onclick="var _cb=window._alConfirmCb;alCloseConfirm();if(_cb)_cb();">확인</button>
     </div>
   </div>
 </div>
@@ -5574,6 +5574,12 @@ async function _doActualSaveAirLog(){
       sems_registered_at:alMode==='edit'?alEditSemsState.at:null,
       sems_registered_by:alMode==='edit'?alEditSemsState.by:null
     });
+  }
+
+  if(!records.length){
+    showToast('저장할 데이터가 없습니다.');
+    btn.disabled=false;btn.textContent=alMode==='edit'?'수정 저장':'저장';
+    return;
   }
 
   try{

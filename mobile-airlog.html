@@ -659,9 +659,7 @@ async function doSave(){
   }
 
   try{
-    var delQ=mode==='new'
-      ?'?log_date=eq.'+date+'&submitted_by=eq.'+encodeURIComponent(by)
-      :'?log_date=eq.'+date;
+    var delQ='?log_date=eq.'+date+'&submitted_by=eq.'+encodeURIComponent(by);
     await fetch(SB_URL+'/rest/v1/air_operation_log'+delQ,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
     var res=await fetch(SB_URL+'/rest/v1/air_operation_log',{
       method:'POST',
