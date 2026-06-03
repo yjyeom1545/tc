@@ -1,8 +1,7 @@
 const CACHE = 'tc-v2';
 const OFFLINE_URLS = [
   'login.html',
-  'admin.html',
-  'waste-oil-form.html'
+  'admin.html'
 ];
 
 self.addEventListener('install', e => {
