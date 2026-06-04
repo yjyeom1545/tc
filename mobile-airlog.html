@@ -383,19 +383,14 @@ async function updateChip(date){
   }
 }
 
-// ── 기본값 채우기 (자동값 = 회색) ──
+// ── 신규 입력 폼 초기화 ──
 function fillDefs(){
   EM_NOS.forEach(function(n){
-    if(n===9&&!canEdit9()) return;
-    var d=EM_DEF[n]||EM_DEF['_'];
-    setAutoV('sh'+n,d.sh); setAutoV('sm'+n,d.sm);
-    setAutoV('eh'+n,d.eh); setAutoV('em'+n,d.em);
-    // 총가동시간 계산
-    var sh=parseInt(d.sh)||0,sm=parseInt(d.sm)||0,eh=parseInt(d.eh)||0,em=parseInt(d.em)||0;
-    var diff=(eh*60+em)-(sh*60+sm);
-    var et=g('et'+n); if(et) et.textContent=diff>0?'총 '+(diff/60).toFixed(1)+'h':'-';
-    setStVisual(n,'정상');
-    emStatus[n]='정상';
+    ['sh','sm','eh','em'].forEach(function(k){
+      var el=g(k+n); if(el){el.value='';el.style.color='#1a2230';}
+    });
+    var et=g('et'+n); if(et) et.textContent='-';
+    setStVisual(n,null); emStatus[n]=null;
   });
   PR_NOS.forEach(function(n){
     var pt=g('pt'+n); if(pt){pt.value='';pt.style.color='#0f2744';}
@@ -605,17 +600,38 @@ function actSems(action,date){
 // ── Save ──
 function onSave(){
   if(isRO()){showToast('테스트 계정은 조회만 가능합니다');return;}
-  var emM=EM_NOS.filter(function(n){return !emStatus[n];}).length;
-  var prM=PR_NOS.filter(function(n){var e=g('pt'+n);return !e||e.value==='';}).length;
-  if(emM>0||prM>0){
-    var parts=[];
-    if(emM>0) parts.push('가동시간 미입력 '+emM+'개');
-    if(prM>0) parts.push('전력사용량 미입력 '+prM+'개');
-    showModal('미입력 항목 확인',parts.join(', ')+'입니다.\n미입력 시설을 제외하고 저장하시겠어요?','저장',doSave);
-  } else {
-    var isMod=mode==='edit';
-    showModal(isMod?'수정하시겠습니까?':'저장하시겠습니까?','',isMod?'수정':'저장',doSave);
+  // 신규 모드: 부분 입력 검증
+  if(mode==='new'){
+    var _emShortNames={1:'탈청시설(1번)',2:'도장시설(2번)',3:'도장시설(3번)',4:'도장시설(4번)',5:'건조시설(5번)',6:'도장및건조시설(6번)',7:'도장및건조시설(7번)',9:'도장시설(9번)'};
+    for(var _pi=0;_pi<EM_NOS.length;_pi++){
+      var _pn=EM_NOS[_pi];
+      var _shEl=g('sh'+_pn); if(_shEl&&_shEl.disabled) continue;
+      var _hasStart=_shEl&&_shEl.value!=='';
+      var _ehEl=g('eh'+_pn);
+      var _hasEnd=_ehEl&&_ehEl.value!=='';
+      var _hasSt=!!emStatus[_pn];
+      if((_hasStart||_hasEnd||_hasSt)&&!(_hasStart&&_hasEnd&&_hasSt)){
+        showToast(_emShortNames[_pn]+' 시간과 상태를 모두 입력해주세요');
+        return;
+      }
+    }
+    var _hasAnyEm=EM_NOS.some(function(n){var el=g('sh'+n);return el&&!el.disabled&&el.value!==''&&g('eh'+n)&&g('eh'+n).value!==''&&!!emStatus[n];});
+    var _hasAnyPr=PR_NOS.some(function(n){var el=g('pt'+n);return el&&el.value!=='';});
+    if(!_hasAnyEm&&!_hasAnyPr){showToast('입력된 데이터가 없습니다');return;}
   }
+  var isMod=mode==='edit';
+  if(isMod){
+    var emM=EM_NOS.filter(function(n){return !emStatus[n];}).length;
+    var prM=PR_NOS.filter(function(n){var e=g('pt'+n);return !e||e.value==='';}).length;
+    if(emM>0||prM>0){
+      var parts=[];
+      if(emM>0) parts.push('가동시간 미입력 '+emM+'개');
+      if(prM>0) parts.push('전력사용량 미입력 '+prM+'개');
+      showModal('미입력 항목 확인',parts.join(', ')+'입니다.\n미입력 시설을 제외하고 저장하시겠어요?','저장',doSave);
+      return;
+    }
+  }
+  showModal(isMod?'수정하시겠습니까?':'저장하시겠습니까?','',isMod?'수정':'저장',doSave);
 }
 
 async function doSave(){
