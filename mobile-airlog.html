@@ -234,6 +234,11 @@ function g(id){return document.getElementById(id);}
 function pad2(n){return String(n).padStart(2,'0');}
 function today(){return new Date().toISOString().split('T')[0];}
 function isRO(){return currentUser&&currentUser.username==='tc1234';}
+function canEdit9(){
+  if(!currentUser) return false;
+  if(currentUser.username==='yjyeom') return true;
+  return !!(currentUser.permissions&&currentUser.permissions.airlog_9);
+}
 
 // ── Boot ──
 (function init(){
@@ -243,7 +248,22 @@ function isRO(){return currentUser&&currentUser.username==='tc1234';}
   g('date-inp').value=today();
   buildCards();
   setMode('new');
+  _applyMobPerms();
 })();
+
+function _applyMobPerms(){
+  if(canEdit9()) return;
+  var noPerm='font-size:10px;color:#9ca3af;margin-left:auto;padding-left:6px;';
+  ['ec9','pc9'].forEach(function(cid){
+    var card=g(cid); if(!card) return;
+    card.style.opacity='0.4';
+    card.querySelectorAll('input,button').forEach(function(el){el.disabled=true;el.style.cursor='not-allowed';});
+    var hdr=card.querySelector('.fcard-hdr');
+    if(hdr&&!hdr.querySelector('.mob-no-perm')){
+      var lbl=document.createElement('span');lbl.className='mob-no-perm';lbl.textContent='권한 없음';lbl.style.cssText=noPerm;hdr.appendChild(lbl);
+    }
+  });
+}
 
 function goBack(){window.location.href='admin.html';}
 
@@ -366,6 +386,7 @@ async function updateChip(date){
 // ── 기본값 채우기 (자동값 = 회색) ──
 function fillDefs(){
   EM_NOS.forEach(function(n){
+    if(n===9&&!canEdit9()) return;
     var d=EM_DEF[n]||EM_DEF['_'];
     setAutoV('sh'+n,d.sh); setAutoV('sm'+n,d.sm);
     setAutoV('eh'+n,d.eh); setAutoV('em'+n,d.em);
@@ -623,7 +644,9 @@ async function doSave(){
   var semsBy2=mode==='edit'?semsState.by:null;
   var recs=[];
 
+  var _canEdit9=canEdit9();
   EM_NOS.forEach(function(n){
+    if(n===9&&!_canEdit9) return;
     if(!emStatus[n]) return;
     var sh=g('sh'+n).value,sm=g('sm'+n).value,eh=g('eh'+n).value,em=g('em'+n).value;
     var startM=(parseInt(sh)||0)*60+(parseInt(sm)||0);
@@ -641,6 +664,7 @@ async function doSave(){
   });
 
   PR_NOS.forEach(function(n){
+    if(n===9&&!_canEdit9) return;
     var el=g('pt'+n); if(!el||el.value==='') return;
     var tv=parseFloat(el.value);
     var pv=prevPow[n]!=null?prevPow[n]:null;
