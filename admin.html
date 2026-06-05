@@ -3815,12 +3815,12 @@ function ws_esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;
 // 연간 폐기물 배출량 (Phase 4)
 // ══════════════════════════════════════
 var WA_TYPES=[
-  {group:'지정폐기물',area:'조립',name:'폐합성수지'},
-  {group:'지정폐기물',area:'조립',name:'폐목재'},
   {group:'지정폐기물',area:'제작',name:'폐유고상'},
   {group:'지정폐기물',area:'제작',name:'폐유액상'},
   {group:'지정폐기물',area:'제작',name:'폐페인트(고상)'},
-  {group:'지정폐기물',area:'제작',name:'분진'},
+  {group:'일반폐기물',area:'제작',name:'분진'},
+  {group:'일반폐기물',area:'조립',name:'폐합성수지'},
+  {group:'일반폐기물',area:'조립',name:'폐목재'},
   {group:'일반폐기물',area:'-',   name:'일반쓰레기'}
 ];
 
