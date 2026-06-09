@@ -5030,8 +5030,15 @@ function autoCalcHours(n){
   var em=document.getElementById('em'+n+'-em').value;
   var hrEl=document.getElementById('em'+n+'-hr');
   if(sh!==''&&eh!==''){
-    var diff=(parseInt(eh)*60+(parseInt(em)||0))-(parseInt(sh)*60+(parseInt(sm)||0));
-    if(hrEl) hrEl.value=diff>0?(diff/60).toFixed(1):'';
+    var start=parseInt(sh)*60+(parseInt(sm)||0);
+    var end=parseInt(eh)*60+(parseInt(em)||0);
+    if(end>start){
+      var total=end-start;
+      var overlapStart=Math.max(start,720);
+      var overlapEnd=Math.min(end,780);
+      total-=Math.max(0,overlapEnd-overlapStart);
+      if(hrEl)hrEl.value=(total/60).toFixed(1);
+    }else{if(hrEl)hrEl.value='';}
   }else{if(hrEl)hrEl.value='';}
 }
 
@@ -5300,10 +5307,10 @@ function fillFormDefaults(){
     });
     var hr=document.getElementById('em'+n+'-hr');
     if(hr&&!hr.disabled){hr.value='';hr.classList.remove('al-auto');hr.style.color='';}
-    delete alStatusMap['em'+n];
+    alStatusMap['em'+n]='정상';
     var nb=document.getElementById('em'+n+'-normal');
     var ab=document.getElementById('em'+n+'-abnormal');
-    if(nb)nb.className='al-sbtn';
+    if(nb)nb.className='al-sbtn al-normal';
     if(ab)ab.className='al-sbtn';
   });
 }
@@ -5533,9 +5540,8 @@ async function saveAirLog(){
       if(_psh&&_psh.disabled)continue;
       var _hasStart=_psh&&_psh.value!=='';
       var _hasEnd=_peh&&_peh.value!=='';
-      var _hasSt=!!alStatusMap['em'+_pn];
-      if((_hasStart||_hasEnd||_hasSt)&&!(_hasStart&&_hasEnd&&_hasSt)){
-        showToast(_emNamesShort[_pn]+' 시간과 상태를 모두 입력해주세요');
+      if(_hasStart!==_hasEnd){
+        showToast(_emNamesShort[_pn]+' 시작/종료 시간을 모두 입력해주세요');
         return;
       }
     }
@@ -5576,9 +5582,8 @@ async function _doActualSaveAirLog(){
     var eh=document.getElementById('em'+n+'-eh').value;
     var em_=document.getElementById('em'+n+'-em').value;
     var hr=document.getElementById('em'+n+'-hr').value;
-    var hasSt=!!alStatusMap['em'+n];
-    // 신규 모드: 셋 다 없으면 스킵 (부분입력은 saveAirLog에서 이미 차단됨)
-    if(alMode==='new'&&!sh&&!eh&&!hasSt)return;
+    // 신규 모드: 시간 없으면 스킵 (부분입력은 saveAirLog에서 이미 차단됨)
+    if(alMode==='new'&&!sh&&!eh)return;
     var startTime=(sh||sm)?((sh||'00')+':'+(sm||'00')):null;
     var endTime=(eh||em_)?((eh||'00')+':'+(em_||'00')):null;
     records.push({

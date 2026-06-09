@@ -390,7 +390,7 @@ function fillDefs(){
       var el=g(k+n); if(el){el.value='';el.style.color='#1a2230';}
     });
     var et=g('et'+n); if(et) et.textContent='-';
-    setStVisual(n,null); emStatus[n]=null;
+    setSt(n,'정상',true);
   });
   PR_NOS.forEach(function(n){
     var pt=g('pt'+n); if(pt){pt.value='';pt.style.color='#0f2744';}
@@ -433,11 +433,19 @@ function clearEdit(){
 
 // ── 가동시간 자동 계산 ──
 function calcH(n){
-  var sh=parseInt(g('sh'+n).value)||0,sm=parseInt(g('sm'+n).value)||0;
-  var eh=parseInt(g('eh'+n).value)||0,em=parseInt(g('em'+n).value)||0;
-  var diff=(eh*60+em)-(sh*60+sm);
+  var shv=g('sh'+n).value,smv=g('sm'+n).value;
+  var ehv=g('eh'+n).value,emv=g('em'+n).value;
   var et=g('et'+n);
-  if(et) et.textContent=diff>0?'총 '+(diff/60).toFixed(1)+'h':'-';
+  if(shv===''||ehv===''){if(et)et.textContent='-';updProg();return;}
+  var start=parseInt(shv)*60+(parseInt(smv)||0);
+  var end=parseInt(ehv)*60+(parseInt(emv)||0);
+  if(end>start){
+    var total=end-start;
+    var overlapStart=Math.max(start,720);
+    var overlapEnd=Math.min(end,780);
+    total-=Math.max(0,overlapEnd-overlapStart);
+    if(et)et.textContent='총 '+(total/60).toFixed(1)+'h';
+  }else{if(et)et.textContent='-';}
   updProg();
 }
 
@@ -609,9 +617,8 @@ function onSave(){
       var _hasStart=_shEl&&_shEl.value!=='';
       var _ehEl=g('eh'+_pn);
       var _hasEnd=_ehEl&&_ehEl.value!=='';
-      var _hasSt=!!emStatus[_pn];
-      if((_hasStart||_hasEnd||_hasSt)&&!(_hasStart&&_hasEnd&&_hasSt)){
-        showToast(_emShortNames[_pn]+' 시간과 상태를 모두 입력해주세요');
+      if(_hasStart!==_hasEnd){
+        showToast(_emShortNames[_pn]+' 시작/종료 시간을 모두 입력해주세요');
         return;
       }
     }
@@ -663,12 +670,17 @@ async function doSave(){
   var _canEdit9=canEdit9();
   EM_NOS.forEach(function(n){
     if(n===9&&!_canEdit9) return;
-    if(!emStatus[n]) return;
     var sh=g('sh'+n).value,sm=g('sm'+n).value,eh=g('eh'+n).value,em=g('em'+n).value;
+    if(!sh&&!eh) return;
     var startM=(parseInt(sh)||0)*60+(parseInt(sm)||0);
     var endM=(parseInt(eh)||0)*60+(parseInt(em)||0);
-    var diff=endM-startM;
-    var hr=diff>0?parseFloat((diff/60).toFixed(1)):null;
+    var hr=null;
+    if(endM>startM){
+      var total=endM-startM;
+      var olS=Math.max(startM,720),olE=Math.min(endM,780);
+      total-=Math.max(0,olE-olS);
+      hr=parseFloat((total/60).toFixed(1));
+    }
     recs.push({
       log_date:date,submitted_by:by,facility_no:n,facility_name:EM_NAMES[n],facility_type:'배출구',
       start_time:(sh||sm)?(pad2(parseInt(sh)||0)+':'+pad2(parseInt(sm)||0)):null,
