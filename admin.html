@@ -1008,6 +1008,9 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 .ws-badge-crit{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;white-space:nowrap;background:#fff7ed;color:#c2410c;border:1px solid #fdba74;}
 .ws-badge-overdue{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;white-space:nowrap;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;}
 .ws-badge-cancel{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;white-space:nowrap;background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db;}
+.ws-chip-dot.scheduled{background:#2563eb;}
+.ws-fill-scheduled{background:#2563eb;}
+.ws-badge-scheduled{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
 .ws-table tbody tr{height:56px;}
 .wsch-inline-cell{cursor:pointer;}
 .wsch-inline-cell:hover{background:#f0f7ff !important;}
@@ -1334,7 +1337,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
       <div class="ws-filter-label">상태 구분</div>
       <div class="ws-filter-input">
         <select id="ws-filter-status">
-          <option value="">전체</option><option value="normal">정상</option><option value="warning">배출 요청 필요</option>
+          <option value="">전체</option><option value="scheduled">배출예정</option><option value="normal">정상</option><option value="warning">배출 요청 필요</option>
         </select>
       </div>
     </div>
@@ -1367,6 +1370,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 
   <!-- 요약 칩 -->
   <div class="ws-summary-bar">
+    <div class="ws-chip"><div class="ws-chip-dot scheduled"></div><div class="ws-chip-label">배출예정</div><div class="ws-chip-value" id="ws-cnt-scheduled">-<span class="unit">건</span></div></div>
     <div class="ws-chip"><div class="ws-chip-dot warning"></div><div class="ws-chip-label">배출 요청 필요</div><div class="ws-chip-value" id="ws-cnt-warning">-<span class="unit">건</span></div></div>
     <div class="ws-chip"><div class="ws-chip-dot success"></div><div class="ws-chip-label">정상</div><div class="ws-chip-value" id="ws-cnt-success">-<span class="unit">건</span></div></div>
     <div class="ws-chip"><div class="ws-chip-dot neutral"></div><div class="ws-chip-label">이번달 배출</div><div class="ws-chip-value" id="ws-cnt-month">-<span class="unit">건</span></div></div>
@@ -3418,6 +3422,7 @@ async function batchSave(){
 var _wsData=[];          // waste_storage 전체 (캐시)
 var _wsDisposal=[];      // 당월 배출 기록 (캐시)
 var _wsMonthDisposed=[]; // 이번달 배출된 waste_type 목록
+var _wsScheduledTypes=new Set(); // 배출예정 waste_type Set (waste_schedule 기반)
 
 async function loadWasteStorage(){
   // 날짜 초기값 설정 (당월 1일 ~ 말일)
@@ -3441,8 +3446,12 @@ async function loadWasteStorage(){
     var mTo=y+'-'+m+'-'+String(lastDay).padStart(2,'0');
     _wsDisposal=await sb('waste_disposal','?disposal_date=gte.'+mFrom+'&disposal_date=lte.'+mTo+'&order=disposal_date.desc,created_at.desc');
     _wsMonthDisposed=[...(new Set((_wsDisposal||[]).map(function(d){return d.waste_type;})))];
+    // 배출예정 waste_schedule 로드 (scheduled_date >= 오늘 AND completed_at IS NULL)
+    var todayStr=now.toISOString().slice(0,10);
+    var schedData=await sb('waste_schedule','?scheduled_date=gte.'+todayStr+'&completed_at=is.null&select=waste_type');
+    _wsScheduledTypes=new Set((schedData||[]).map(function(r){return r.waste_type;}));
   }catch(e){
-    _wsData=[];_wsDisposal=[];_wsMonthDisposed=[];
+    _wsData=[];_wsDisposal=[];_wsMonthDisposed=[];_wsScheduledTypes=new Set();
     console.error('보관 현황 로드 오류:',e);
   }
   wsRenderAll();
@@ -3453,7 +3462,17 @@ function wsPct(w){
     ? (w.max_amount?Math.round((parseFloat(w.current_amount)||0)/parseFloat(w.max_amount)*100):0)
     : (parseFloat(w.current_amount)||0);
 }
-function wsStatus(pct){ return pct>=75?{label:'배출 요청 필요',cls:'warning'}:{label:'정상',cls:'success'}; }
+function wsMapToScheduleType(wasteType){
+  if(!wasteType)return wasteType;
+  var specials={'폐유고상(링팩)':'폐유고상','폐유고상(톤백)':'폐유고상','폐페인트(캔)':'폐페인트','폐페인트(톤백)':'폐페인트'};
+  if(specials[wasteType])return specials[wasteType];
+  var m=wasteType.match(/^([^(]+)/);
+  return m?m[1].trim():wasteType;
+}
+function wsStatus(pct,wasteType){
+  if(wasteType&&_wsScheduledTypes.has(wsMapToScheduleType(wasteType)))return{label:'배출예정',cls:'scheduled'};
+  return pct>=75?{label:'배출 요청 필요',cls:'warning'}:{label:'정상',cls:'success'};
+}
 
 function wsGetFiltered(){
   var typeF=document.getElementById('ws-filter-type')?document.getElementById('ws-filter-type').value:'';
@@ -3468,9 +3487,10 @@ function wsGetFiltered(){
     if(displayF==='month'&&!_wsMonthDisposed.includes(w.waste_type))return false;
     if(statusF){
       var pct=wsPct(w);
-      var s=wsStatus(pct);
+      var s=wsStatus(pct,w.waste_type);
       if(statusF==='normal'&&s.cls!=='success')return false;
       if(statusF==='warning'&&s.cls!=='warning')return false;
+      if(statusF==='scheduled'&&s.cls!=='scheduled')return false;
     }
     return true;
   });
@@ -3513,7 +3533,7 @@ function wsRenderTable(rows){
 
 function wsRenderRow(w,i,editing){
   var pct=wsPct(w);
-  var s=wsStatus(pct);
+  var s=wsStatus(pct,w.waste_type);
   var maxDisp=w.unit_type==='count'?(w.max_amount||'-'):'-';
   var days=wsDaysSince(w.last_disposal_date);
   var daysStr=days!==null?days+'일':'-';
@@ -3570,7 +3590,7 @@ function wsEditPreview(i){
   var val=parseFloat(inp.value)||0;
   var w=_wsFilteredCache[i];
   var pct=w.unit_type==='count'?(w.max_amount?Math.round(val/parseFloat(w.max_amount)*100):0):val;
-  var s=wsStatus(pct);
+  var s=wsStatus(pct,w.waste_type);
   var progEl=document.getElementById('ws-edit-progress-'+i);
   if(progEl)progEl.innerHTML='<div class="ws-progress-wrap"><div class="ws-progress"><div class="ws-progress-fill ws-fill-'+s.cls+'" style="width:'+Math.min(pct,100)+'%"></div></div><span class="ws-progress-pct">'+pct+'%</span></div>';
   var bdgEl=document.getElementById('ws-badge-'+i);
@@ -3613,12 +3633,15 @@ async function wsSaveRow(i){
 
 function wsRenderSummary(){
   var data=_wsData||[];
-  var warn=data.filter(function(w){return wsStatus(wsPct(w)).cls==='warning';}).length;
-  var succ=data.length-warn;
+  var sched=data.filter(function(w){return wsStatus(wsPct(w),w.waste_type).cls==='scheduled';}).length;
+  var warn=data.filter(function(w){return wsStatus(wsPct(w),w.waste_type).cls==='warning';}).length;
+  var succ=data.length-sched-warn;
   var mnth=(_wsDisposal||[]).length;
+  var schEl=document.getElementById('ws-cnt-scheduled');
   var wEl=document.getElementById('ws-cnt-warning');
   var sEl=document.getElementById('ws-cnt-success');
   var mEl=document.getElementById('ws-cnt-month');
+  if(schEl)schEl.innerHTML=sched+'<span class="unit">건</span>';
   if(wEl)wEl.innerHTML=warn+'<span class="unit">건</span>';
   if(sEl)sEl.innerHTML=succ+'<span class="unit">건</span>';
   if(mEl)mEl.innerHTML=mnth+'<span class="unit">건</span>';
