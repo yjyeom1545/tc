@@ -98,6 +98,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f4f6f9;min-height:100vh;p
 .pinp{flex:1;height:36px;border:1px solid #e2e8f0;border-radius:8px;padding:0 10px;font-size:14px;font-family:inherit;color:#0f2744;outline:none;}
 .pinp:focus{border-color:#0f2744;}
 .pinp.auto{background:#f8fafc;color:#9ca3af;cursor:not-allowed;}
+.pinp.today-inp{border-radius:8px 0 0 8px;border-right:none;}
+.pr-step-wrap{display:flex;flex-direction:column;}
+.pr-step-btn{min-width:32px;height:18px;padding:0;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.pr-step-btn:first-child{border-radius:0 8px 0 0;border-bottom:none;}
+.pr-step-btn:last-child{border-radius:0 0 8px 0;}
+.pr-step-btn:active{background:#e2e8f0;}
+.mob-pr-auto{color:#9ca3af!important;}
 .punit{font-size:12px;color:#9ca3af;margin-left:6px;flex-shrink:0;width:30px;}
 .pval{flex:1;height:36px;display:flex;align-items:center;padding:0 10px;font-size:14px;font-weight:600;color:#9ca3af;}
 
@@ -312,7 +319,13 @@ function buildCards(){
           '<input type="number" class="pinp auto" id="pp'+n+'" readonly placeholder="-">'+
           '<span class="punit">kWh</span></div>'+
         '<div class="prow"><span class="plbl">당일검침</span>'+
-          '<input type="number" class="pinp" id="pt'+n+'" placeholder="입력" oninput="calcD('+n+')">'+
+          '<div style="display:flex;align-items:stretch;flex:1;">'+
+            '<input type="number" class="pinp today-inp" id="pt'+n+'" placeholder="입력" oninput="mobPrMarkUser(this,'+n+');calcD('+n+')">'+
+            '<div class="pr-step-wrap">'+
+              '<button class="pr-step-btn" onclick="mobPrStep('+n+',1)">▲</button>'+
+              '<button class="pr-step-btn" onclick="mobPrStep('+n+',-1)">▼</button>'+
+            '</div>'+
+          '</div>'+
           '<span class="punit">kWh</span></div>'+
         '<div class="prow"><span class="plbl">당일사용량</span>'+
           '<div class="pval" id="pd'+n+'">-</div>'+
@@ -393,7 +406,7 @@ function fillDefs(){
     setSt(n,'정상',true);
   });
   PR_NOS.forEach(function(n){
-    var pt=g('pt'+n); if(pt){pt.value='';pt.style.color='#0f2744';}
+    var pt=g('pt'+n); if(pt){pt.value='';pt.style.color='#0f2744';pt.classList.remove('mob-pr-auto');}
     var pd=g('pd'+n); if(pd){pd.textContent='-';pd.style.color='#9ca3af';}
   });
   updProg();
@@ -425,7 +438,7 @@ function clearEdit(){
   });
   PR_NOS.forEach(function(n){
     var pp=g('pp'+n),pt=g('pt'+n),pd=g('pd'+n);
-    if(pp)pp.value=''; if(pt){pt.value='';pt.style.color='#0f2744';}
+    if(pp)pp.value=''; if(pt){pt.value='';pt.style.color='#0f2744';pt.classList.remove('mob-pr-auto');}
     if(pd){pd.textContent='-';pd.style.color='#9ca3af';}
   });
   prevPow={}; updProg();
@@ -460,6 +473,27 @@ function setStVisual(n,st){
   sa.className='sbtn'+(st==='비정상'?' sabnorm':'');
 }
 
+function mobPrMarkUser(el,no){
+  el.classList.remove('mob-pr-auto');
+  var pv=prevPow[no]!=null?prevPow[no]:null;
+  if(pv!=null&&el.value!==''&&parseFloat(el.value)<pv){
+    showToast(no+'번: 당일검침이 전일검침보다 작습니다');
+    el.value=pv;
+    el.classList.add('mob-pr-auto');
+  }
+}
+function mobPrStep(no,dir){
+  var el=g('pt'+no);
+  if(!el||el.disabled)return;
+  var pv=prevPow[no]!=null?prevPow[no]:null;
+  var cur=el.value!==''?parseFloat(el.value):(pv!=null?pv:0);
+  var next=cur+dir;
+  if(pv!=null&&next<pv){showToast(no+'번: 전일검침보다 작아질 수 없습니다');return;}
+  if(next<0)return;
+  el.value=next;
+  el.classList.remove('mob-pr-auto');
+  calcD(no);
+}
 // ── 당일사용량 자동 계산 ──
 function calcD(n){
   var tv=g('pt'+n).value!==''?parseFloat(g('pt'+n).value):null;
@@ -468,7 +502,8 @@ function calcD(n){
   if(tv!=null&&pv!=null){
     var diff=tv-pv;
     pd.textContent=diff>=0?diff.toFixed(0):'오류';
-    pd.style.color=diff>=0?'#0f2744':'#dc2626';
+    var _isAuto=g('pt'+n).classList.contains('mob-pr-auto');
+    pd.style.color=diff<0?'#dc2626':(_isAuto?'#9ca3af':'#0f2744');
   } else {pd.textContent='-';pd.style.color='#9ca3af';}
   updProg();
 }
@@ -487,7 +522,13 @@ async function loadPrev(date){
         var el=g('pp'+r.facility_no); if(el) el.value=r.power_today;
       }
     });
-    PR_NOS.forEach(function(n){calcD(n);});
+    PR_NOS.forEach(function(n){
+      if(prevPow[n]!=null){
+        var _pt=g('pt'+n);
+        if(_pt&&!_pt.disabled&&_pt.value===''){_pt.value=prevPow[n];_pt.classList.add('mob-pr-auto');}
+      }
+      calcD(n);
+    });
   }
 }
 
@@ -635,6 +676,30 @@ function onSave(){
       if(emM>0) parts.push('가동시간 미입력 '+emM+'개');
       if(prM>0) parts.push('전력사용량 미입력 '+prM+'개');
       showModal('미입력 항목 확인',parts.join(', ')+'입니다.\n미입력 시설을 제외하고 저장하시겠어요?','저장',doSave);
+      return;
+    }
+  }
+  if(mode==='new'){
+    var _mActive=0,_mIdle=[],_mEmpty=0,_mUsage=0;
+    PR_NOS.forEach(function(n){
+      if(n===9&&!canEdit9())return;
+      var _el=g('pt'+n);if(!_el||_el.disabled)return;
+      if(_el.value===''){_mEmpty++;return;}
+      var _tv=parseFloat(_el.value);
+      var _pv=prevPow[n]!=null?prevPow[n]:null;
+      if(_pv!=null&&_tv===_pv){_mIdle.push(n+'번 '+PR_NAMES[n]);}
+      else if(_pv!=null&&_tv>_pv){_mActive++;_mUsage+=(_tv-_pv);}
+      else{_mActive++;}
+    });
+    if(_mIdle.length>0){
+      var _ml=[];
+      _ml.push('가동: '+_mActive+'개 시설'+(_mUsage>0?' (총 '+_mUsage.toFixed(0)+' kWh)':''));
+      _ml.push('미가동(사용량 0): '+_mIdle.length+'개 시설');
+      _mIdle.forEach(function(x){_ml.push('  · '+x);});
+      if(_mEmpty>0){_ml.push('미입력: '+_mEmpty+'개 시설');_ml.push('');_ml.push('⚠️ 미입력 시설이 있습니다. 입력 후 저장 권장.');}
+      _ml.push('');
+      _ml.push('미가동 시설들이 정말 가동 안 했는지 확인해 주세요.');
+      showModal('전력사용량 확인',_ml.join('\n'),'저장',doSave,'취소');
       return;
     }
   }
