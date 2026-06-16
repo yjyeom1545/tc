@@ -8538,6 +8538,24 @@ var _pressurePeriod = '3m';
 var _pressureAllData = [];
 var _carbonRecords = [];
 
+// fetch 기반 REST API 헬퍼 (프로젝트 공통 패턴 사용)
+function sbPressure(path, opts) {
+  opts = opts || {};
+  var url = SB_URL + '/rest/v1/' + path;
+  var headers = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache'
+  };
+  if (opts.prefer) headers['Prefer'] = opts.prefer;
+  return fetch(url, {
+    method: opts.method || 'GET',
+    headers: headers,
+    body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined
+  });
+}
+
 function calcKValue(facilityNo, flowCmm, pressureDiff) {
   if (!pressureDiff || pressureDiff <= 0) return null;
   var k = flowCmm / Math.sqrt(pressureDiff);
@@ -8564,16 +8582,18 @@ async function initPressurePage() {
   }
   buildPressureInputFields();
   try {
-    var { data } = await supabase.from('pressure_readings').select('*').order('read_date', { ascending: true });
-    _pressureAllData = data || [];
+    var res = await sbPressure('pressure_readings?select=*&order=read_date.asc');
+    if (!res.ok) throw new Error('pressure_readings 로딩 실패: ' + res.status);
+    _pressureAllData = await res.json();
     await renderFacilityCards();
     renderPressureChart(_pressureChartTab, _pressurePeriod);
     renderPressureLegend();
     renderInsights();
   } catch(e) { console.error('차압 데이터 로딩 오류:', e); }
   try {
-    var { data: cr } = await supabase.from('activated_carbon_records').select('*').order('replace_date', { ascending: false });
-    _carbonRecords = cr || [];
+    var res2 = await sbPressure('activated_carbon_records?select=*&order=replace_date.desc');
+    if (!res2.ok) throw new Error('activated_carbon_records 로딩 실패: ' + res2.status);
+    _carbonRecords = await res2.json();
     renderCarbonTable();
   } catch(e) { console.error('활성탄 데이터 로딩 오류:', e); }
 }
@@ -8808,11 +8828,18 @@ async function savePressureReadings() {
   });
   if (!rows.length) { alert('입력된 차압값이 없습니다.'); return; }
   try {
-    var { error } = await supabase.from('pressure_readings').upsert(rows, { onConflict: 'read_date,facility_no' });
-    if (error) throw error;
+    var saveRes = await sbPressure(
+      'pressure_readings?on_conflict=read_date,facility_no',
+      { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: rows }
+    );
+    if (!saveRes.ok) {
+      var errText = await saveRes.text();
+      console.error('저장 오류 응답:', saveRes.status, errText);
+      throw new Error('저장 실패 (' + saveRes.status + '): ' + errText);
+    }
     alert('저장되었습니다.');
-    var { data } = await supabase.from('pressure_readings').select('*').order('read_date', { ascending: true });
-    _pressureAllData = data || [];
+    var reloadRes = await sbPressure('pressure_readings?select=*&order=read_date.asc');
+    _pressureAllData = reloadRes.ok ? await reloadRes.json() : _pressureAllData;
     await renderFacilityCards();
     renderPressureChart(_pressureChartTab, _pressurePeriod);
     renderInsights();
@@ -8825,7 +8852,7 @@ async function savePressureReadings() {
     document.getElementById('pressure-measure-day').checked = false;
     toggleFlowInputs();
     document.getElementById('pressure-realtime-results').innerHTML = '';
-  } catch(e) { console.error('저장 오류:', e); alert('저장 중 오류가 발생했습니다.'); }
+  } catch(e) { console.error('저장 오류 상세:', e); alert('저장 중 오류가 발생했습니다.\n' + e.message); }
 }
 
 async function saveActivatedCarbon() {
@@ -8834,14 +8861,21 @@ async function saveActivatedCarbon() {
   var note = document.getElementById('carbon-note').value.trim();
   if (!dateVal) { alert('교체일을 입력해주세요.'); return; }
   try {
-    var { error } = await supabase.from('activated_carbon_records').insert({ replace_date: dateVal, facility_no: facilityNo, note: note || null });
-    if (error) throw error;
+    var insRes = await sbPressure(
+      'activated_carbon_records',
+      { method: 'POST', prefer: 'return=minimal', body: { replace_date: dateVal, facility_no: facilityNo, note: note || null } }
+    );
+    if (!insRes.ok) {
+      var errText = await insRes.text();
+      console.error('활성탄 등록 오류 응답:', insRes.status, errText);
+      throw new Error('등록 실패 (' + insRes.status + '): ' + errText);
+    }
     alert('등록되었습니다.');
     document.getElementById('carbon-note').value = '';
-    var { data } = await supabase.from('activated_carbon_records').select('*').order('replace_date', { ascending: false });
-    _carbonRecords = data || [];
+    var reloadRes = await sbPressure('activated_carbon_records?select=*&order=replace_date.desc');
+    _carbonRecords = reloadRes.ok ? await reloadRes.json() : _carbonRecords;
     renderCarbonTable();
-  } catch(e) { console.error('활성탄 등록 오류:', e); alert('등록 중 오류가 발생했습니다.'); }
+  } catch(e) { console.error('활성탄 등록 오류 상세:', e); alert('등록 중 오류가 발생했습니다.\n' + e.message); }
 }
 
 function renderCarbonTable() {
