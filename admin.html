@@ -2529,29 +2529,57 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     </div>
   </div>
 
-  <!-- 3-4. 입력 + 공식 2열 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;" class="pressure-input-grid">
-    <!-- 왼쪽: 차압값 입력 -->
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title" style="margin-bottom:12px;">오늘 차압값 입력</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-          <label style="font-size:12px;color:#6b7280;font-weight:500;white-space:nowrap;">날짜</label>
-          <input type="date" id="pressure-input-date" style="border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />
+  <!-- 3-4. 입력(A+B) + 공식 2열 -->
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:14px;margin-bottom:14px;" class="pressure-input-grid">
+
+    <!-- 왼쪽: 섹션A + 섹션B 세로 배치 -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+
+      <!-- 섹션 A: 일일 차압 입력 -->
+      <div class="card">
+        <div class="card-body">
+          <div style="margin-bottom:4px;">
+            <div class="card-title" style="margin-bottom:2px;">오늘 차압값 입력</div>
+            <div style="font-size:11px;color:#9ca3af;">매일 입력 — 미측정 시설은 공란</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin:12px 0 10px;">
+            <label style="font-size:12px;color:#6b7280;font-weight:500;white-space:nowrap;">날짜</label>
+            <input type="date" id="pa-date" style="border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />
+          </div>
+          <div id="pa-diff-fields" style="display:flex;flex-direction:column;gap:7px;"></div>
+          <button onclick="saveDailyDiff()" style="margin-top:12px;width:100%;padding:9px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;">차압 저장</button>
         </div>
-        <div id="pressure-input-fields" style="display:flex;flex-direction:column;gap:7px;"></div>
-        <div style="margin-top:10px;padding:8px;background:#f8fafc;border-radius:6px;border:1px solid #e8ecf0;">
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#374151;cursor:pointer;font-weight:500;">
-            <input type="checkbox" id="pressure-measure-day" onchange="toggleFlowInputs()" style="accent-color:#2563eb;" />
-            측정업체 방문일 — 유량 입력하여 k값 계산
-          </label>
-        </div>
-        <div id="pressure-flow-fields" style="display:none;flex-direction:column;gap:7px;margin-top:10px;"></div>
-        <button onclick="savePressureReadings()" style="margin-top:14px;width:100%;padding:9px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;">저장</button>
       </div>
-    </div>
+
+      <!-- 섹션 B: 측정업체 방문일 유량 입력 -->
+      <div class="card" style="border:1px solid #dbeafe;">
+        <div class="card-body">
+          <div style="margin-bottom:4px;">
+            <div class="card-title" style="margin-bottom:2px;color:#1d4ed8;">측정업체 방문일 유량 입력</div>
+            <div style="font-size:11px;color:#9ca3af;">월 2회 — 구두 확인 유량값 입력 후 k값 자동 계산</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin:12px 0 10px;">
+            <label style="font-size:12px;color:#6b7280;font-weight:500;white-space:nowrap;">측정일</label>
+            <input type="date" id="pb-date" style="border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;">유량 (CMM)</div>
+              <div id="pb-flow-fields" style="display:flex;flex-direction:column;gap:7px;"></div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;">당일 차압 (mmAq)</div>
+              <div id="pb-diff-fields" style="display:flex;flex-direction:column;gap:7px;"></div>
+            </div>
+          </div>
+          <button onclick="saveMeasureDayFlow()" style="margin-top:12px;width:100%;padding:9px;background:#1d4ed8;color:white;border:none;border-radius:6px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;">유량 + k값 저장</button>
+        </div>
+      </div>
+
+    </div><!-- /왼쪽 -->
+
     <!-- 오른쪽: 공식 + 실시간 계산 -->
-    <div class="card" style="background:#0f2744;">
+    <div class="card" style="background:#0f2744;align-self:start;position:sticky;top:16px;">
       <div class="card-body">
         <div style="color:rgba(255,255,255,0.9);font-size:13px;font-weight:700;margin-bottom:14px;">공식 및 실시간 계산</div>
         <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:rgba(255,255,255,0.75);line-height:2;">
@@ -2562,7 +2590,8 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         <div id="pressure-realtime-results" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
-  </div>
+
+  </div><!-- /3-4 grid -->
 
   <!-- 3-5. 인사이트 섹션 -->
   <div class="card" style="margin-bottom:14px;">
@@ -8568,19 +8597,22 @@ function estimateFlow(k, pressureDiff) {
   return Math.round(k * Math.sqrt(pressureDiff) * 10) / 10;
 }
 
+function _todayStr() {
+  var now = new Date();
+  return now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+}
+
 async function initPressurePage() {
-  // 날짜 기본값
-  var dateEl = document.getElementById('pressure-input-date');
-  if (dateEl && !dateEl.value) {
-    var now = new Date();
-    dateEl.value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-  }
+  var paDate = document.getElementById('pa-date');
+  if (paDate && !paDate.value) paDate.value = _todayStr();
+  var pbDate = document.getElementById('pb-date');
+  if (pbDate && !pbDate.value) pbDate.value = _todayStr();
   var carbonDateEl = document.getElementById('carbon-date');
-  if (carbonDateEl && !carbonDateEl.value) {
-    var now2 = new Date();
-    carbonDateEl.value = now2.getFullYear() + '-' + String(now2.getMonth()+1).padStart(2,'0') + '-' + String(now2.getDate()).padStart(2,'0');
-  }
-  buildPressureInputFields();
+  if (carbonDateEl && !carbonDateEl.value) carbonDateEl.value = _todayStr();
+
+  buildSectionAFields();
+  buildSectionBFields();
+
   try {
     var res = await sbPressure('pressure_readings?select=*&order=read_date.asc');
     if (!res.ok) throw new Error('pressure_readings 로딩 실패: ' + res.status);
@@ -8598,69 +8630,70 @@ async function initPressurePage() {
   } catch(e) { console.error('활성탄 데이터 로딩 오류:', e); }
 }
 
-function buildPressureInputFields() {
-  var pFields = document.getElementById('pressure-input-fields');
-  var fFields = document.getElementById('pressure-flow-fields');
-  if (!pFields || !fFields) return;
-  pFields.innerHTML = PRESSURE_FACILITIES.map(function(no) {
-    return '<div style="display:flex;align-items:center;gap:8px;">'
-      + '<span style="width:54px;font-size:12px;color:#374151;font-weight:600;">' + no + '번 시설</span>'
-      + '<input type="number" id="p-diff-' + no + '" placeholder="차압 (mmAq)" step="0.1" min="0"'
-      + ' oninput="updateRealtimeCalc(' + no + ')"'
+function buildSectionAFields() {
+  var el = document.getElementById('pa-diff-fields');
+  if (!el) return;
+  el.innerHTML = PRESSURE_FACILITIES.map(function(no) {
+    return '<div style="display:flex;align-items:center;gap:6px;">'
+      + '<span style="width:50px;font-size:12px;color:#374151;font-weight:600;flex-shrink:0;">' + no + '번</span>'
+      + '<input type="number" id="pa-diff-' + no + '" placeholder="–" step="0.1" min="0"'
       + ' style="flex:1;border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />'
-      + '</div>';
-  }).join('');
-  fFields.innerHTML = PRESSURE_FACILITIES.map(function(no) {
-    return '<div style="display:flex;align-items:center;gap:8px;">'
-      + '<span style="width:54px;font-size:12px;color:#374151;font-weight:600;">' + no + '번 유량</span>'
-      + '<input type="number" id="p-flow-' + no + '" placeholder="유량 (CMM)" step="0.1" min="0"'
-      + ' oninput="updateRealtimeCalc(' + no + ')"'
-      + ' style="flex:1;border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />'
+      + '<span style="font-size:11px;color:#9ca3af;white-space:nowrap;">mmAq</span>'
       + '</div>';
   }).join('');
 }
 
-function toggleFlowInputs() {
-  var show = document.getElementById('pressure-measure-day').checked;
-  var fFields = document.getElementById('pressure-flow-fields');
-  if (fFields) fFields.style.display = show ? 'flex' : 'none';
-  updateAllRealtimeCalc();
+function buildSectionBFields() {
+  var flowEl = document.getElementById('pb-flow-fields');
+  var diffEl = document.getElementById('pb-diff-fields');
+  if (!flowEl || !diffEl) return;
+  flowEl.innerHTML = PRESSURE_FACILITIES.map(function(no) {
+    return '<div style="display:flex;align-items:center;gap:6px;">'
+      + '<span style="width:34px;font-size:12px;color:#374151;font-weight:600;flex-shrink:0;">' + no + '번</span>'
+      + '<input type="number" id="pb-flow-' + no + '" placeholder="–" step="0.1" min="0"'
+      + ' oninput="updateMeasureCalc(' + no + ')"'
+      + ' style="flex:1;border:1px solid #dbeafe;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />'
+      + '</div>';
+  }).join('');
+  diffEl.innerHTML = PRESSURE_FACILITIES.map(function(no) {
+    return '<div style="display:flex;align-items:center;gap:6px;">'
+      + '<span style="width:34px;font-size:12px;color:#374151;font-weight:600;flex-shrink:0;">' + no + '번</span>'
+      + '<input type="number" id="pb-diff-' + no + '" placeholder="–" step="0.1" min="0"'
+      + ' oninput="updateMeasureCalc(' + no + ')"'
+      + ' style="flex:1;border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />'
+      + '</div>';
+  }).join('');
 }
 
-function updateAllRealtimeCalc() {
-  PRESSURE_FACILITIES.forEach(function(no) { updateRealtimeCalc(no); });
-}
-
-function updateRealtimeCalc(facilityNo) {
-  var pdEl = document.getElementById('p-diff-' + facilityNo);
-  var pfEl = document.getElementById('p-flow-' + facilityNo);
-  var pd = pdEl ? parseFloat(pdEl.value) : NaN;
+function updateMeasureCalc(facilityNo) {
+  var pfEl = document.getElementById('pb-flow-' + facilityNo);
+  var pdEl = document.getElementById('pb-diff-' + facilityNo);
   var pf = pfEl ? parseFloat(pfEl.value) : NaN;
-  var isMeasureDay = document.getElementById('pressure-measure-day') && document.getElementById('pressure-measure-day').checked;
+  var pd = pdEl ? parseFloat(pdEl.value) : NaN;
 
   var resultsEl = document.getElementById('pressure-realtime-results');
   if (!resultsEl) return;
 
   var existingEl = document.getElementById('realtime-' + facilityNo);
-  if (isNaN(pd) && isNaN(pf)) {
+  if ((isNaN(pf) || pf <= 0) && (isNaN(pd) || pd <= 0)) {
     if (existingEl) existingEl.remove();
     return;
   }
 
   var html = '<div id="realtime-' + facilityNo + '" style="background:rgba(255,255,255,0.07);border-radius:6px;padding:10px;border-left:3px solid ' + FACILITY_COLORS[facilityNo] + ';">'
-    + '<div style="font-size:11px;font-weight:700;color:white;margin-bottom:6px;">' + facilityNo + '번 시설</div>';
+    + '<div style="font-size:11px;font-weight:700;color:white;margin-bottom:5px;">' + facilityNo + '번 시설</div>';
 
-  if (!isNaN(pd) && isMeasureDay && !isNaN(pf) && pf > 0) {
+  if (!isNaN(pf) && pf > 0 && !isNaN(pd) && pd > 0) {
     var calc = calcKValue(facilityNo, pf, pd);
     if (calc) {
       html += '<div style="font-size:11px;color:#60a5fa;">k = ' + calc.k + '</div>'
         + '<div style="font-size:11px;color:#34d399;">효율 = ' + calc.efficiency + ' %</div>';
     }
-  } else if (!isNaN(pd)) {
+  } else if (!isNaN(pd) && pd > 0) {
     var lastK = getLastKValue(facilityNo);
     if (lastK) {
       var est = estimateFlow(lastK, pd);
-      if (est) {
+      if (est !== null) {
         var eff = Math.round((est / DESIGN_CAPACITY[facilityNo]) * 1000) / 10;
         html += '<div style="font-size:11px;color:#fbbf24;">Q추정 = ' + est + ' CMM</div>'
           + '<div style="font-size:11px;color:#34d399;">효율 ≈ ' + eff + ' %</div>';
@@ -8668,15 +8701,13 @@ function updateRealtimeCalc(facilityNo) {
     } else {
       html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);">k값 없음 — 유량 입력 필요</div>';
     }
+  } else if (!isNaN(pf) && pf > 0) {
+    html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);">차압값도 입력하면 k값 계산 가능</div>';
   }
 
   html += '</div>';
-
-  if (existingEl) {
-    existingEl.outerHTML = html;
-  } else {
-    resultsEl.insertAdjacentHTML('beforeend', html);
-  }
+  if (existingEl) { existingEl.outerHTML = html; }
+  else { resultsEl.insertAdjacentHTML('beforeend', html); }
 }
 
 function getLastKValue(facilityNo) {
@@ -8805,54 +8836,71 @@ function renderPressureChart(tab, period) {
   });
 }
 
-async function savePressureReadings() {
-  var dateEl = document.getElementById('pressure-input-date');
-  var dateVal = dateEl ? dateEl.value : '';
+async function _savePressureRows(rows) {
+  var saveRes = await sbPressure(
+    'pressure_readings?on_conflict=read_date,facility_no',
+    { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: rows }
+  );
+  if (!saveRes.ok) {
+    var errText = await saveRes.text();
+    console.error('저장 오류 응답:', saveRes.status, errText);
+    throw new Error('저장 실패 (' + saveRes.status + '): ' + errText);
+  }
+  var reloadRes = await sbPressure('pressure_readings?select=*&order=read_date.asc');
+  if (reloadRes.ok) _pressureAllData = await reloadRes.json();
+  await renderFacilityCards();
+  renderPressureChart(_pressureChartTab, _pressurePeriod);
+  renderInsights();
+}
+
+async function saveDailyDiff() {
+  var dateVal = (document.getElementById('pa-date') || {}).value;
   if (!dateVal) { alert('날짜를 선택해주세요.'); return; }
-  var isMeasureDay = document.getElementById('pressure-measure-day').checked;
   var rows = [];
-  var hasAny = false;
   PRESSURE_FACILITIES.forEach(function(no) {
-    var pdEl = document.getElementById('p-diff-' + no);
-    var pfEl = document.getElementById('p-flow-' + no);
+    var pdEl = document.getElementById('pa-diff-' + no);
     var pd = pdEl ? parseFloat(pdEl.value) : NaN;
-    var pf = pfEl && isMeasureDay ? parseFloat(pfEl.value) : NaN;
-    if (isNaN(pd)) return;
-    hasAny = true;
-    var row = { read_date: dateVal, facility_no: no, pressure_diff: pd, is_measure_day: isMeasureDay };
-    if (isMeasureDay && !isNaN(pf) && pf > 0) {
-      var calc = calcKValue(no, pf, pd);
-      if (calc) { row.flow_cmm = pf; row.k_value = calc.k; row.efficiency = calc.efficiency; }
-    }
-    rows.push(row);
+    if (isNaN(pd) || pd === '') return;
+    rows.push({ read_date: dateVal, facility_no: no, pressure_diff: pd, is_measure_day: false });
   });
   if (!rows.length) { alert('입력된 차압값이 없습니다.'); return; }
   try {
-    var saveRes = await sbPressure(
-      'pressure_readings?on_conflict=read_date,facility_no',
-      { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: rows }
-    );
-    if (!saveRes.ok) {
-      var errText = await saveRes.text();
-      console.error('저장 오류 응답:', saveRes.status, errText);
-      throw new Error('저장 실패 (' + saveRes.status + '): ' + errText);
-    }
-    alert('저장되었습니다.');
-    var reloadRes = await sbPressure('pressure_readings?select=*&order=read_date.asc');
-    _pressureAllData = reloadRes.ok ? await reloadRes.json() : _pressureAllData;
-    await renderFacilityCards();
-    renderPressureChart(_pressureChartTab, _pressurePeriod);
-    renderInsights();
+    await _savePressureRows(rows);
+    alert('차압값이 저장되었습니다.');
     PRESSURE_FACILITIES.forEach(function(no) {
-      var pdEl = document.getElementById('p-diff-' + no);
-      var pfEl = document.getElementById('p-flow-' + no);
-      if (pdEl) pdEl.value = '';
-      if (pfEl) pfEl.value = '';
+      var el = document.getElementById('pa-diff-' + no);
+      if (el) el.value = '';
     });
-    document.getElementById('pressure-measure-day').checked = false;
-    toggleFlowInputs();
+  } catch(e) { console.error('차압 저장 오류:', e); alert('저장 중 오류가 발생했습니다.\n' + e.message); }
+}
+
+async function saveMeasureDayFlow() {
+  var dateVal = (document.getElementById('pb-date') || {}).value;
+  if (!dateVal) { alert('측정일을 선택해주세요.'); return; }
+  var rows = [];
+  PRESSURE_FACILITIES.forEach(function(no) {
+    var pfEl = document.getElementById('pb-flow-' + no);
+    var pdEl = document.getElementById('pb-diff-' + no);
+    var pf = pfEl ? parseFloat(pfEl.value) : NaN;
+    var pd = pdEl ? parseFloat(pdEl.value) : NaN;
+    if (isNaN(pf) || pf <= 0 || isNaN(pd) || pd <= 0) return;
+    var calc = calcKValue(no, pf, pd);
+    var row = { read_date: dateVal, facility_no: no, pressure_diff: pd, flow_cmm: pf, is_measure_day: true };
+    if (calc) { row.k_value = calc.k; row.efficiency = calc.efficiency; }
+    rows.push(row);
+  });
+  if (!rows.length) { alert('유량과 차압이 모두 입력된 시설이 없습니다.'); return; }
+  try {
+    await _savePressureRows(rows);
+    alert('유량 및 k값이 저장되었습니다. (' + rows.length + '개 시설)');
+    PRESSURE_FACILITIES.forEach(function(no) {
+      var fEl = document.getElementById('pb-flow-' + no);
+      var dEl = document.getElementById('pb-diff-' + no);
+      if (fEl) fEl.value = '';
+      if (dEl) dEl.value = '';
+    });
     document.getElementById('pressure-realtime-results').innerHTML = '';
-  } catch(e) { console.error('저장 오류 상세:', e); alert('저장 중 오류가 발생했습니다.\n' + e.message); }
+  } catch(e) { console.error('유량 저장 오류:', e); alert('저장 중 오류가 발생했습니다.\n' + e.message); }
 }
 
 async function saveActivatedCarbon() {
