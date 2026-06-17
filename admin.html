@@ -545,6 +545,10 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><circle cx="18" cy="6" r="3"/></svg>
       차압 관리
     </div>
+    <div class="nav-item" id="nav-carbon" onclick="showTab('carbon')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      활성탄 교체
+    </div>
     <div class="nav-section">폐기물</div>
     <div class="nav-item" id="nav-waste-storage" onclick="showTab('waste-storage')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
@@ -2633,6 +2637,114 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 
 </div><!-- /tab-pressure -->
 
+<div id="tab-carbon" class="content hidden">
+
+  <!-- 3-1. 페이지 타이틀 -->
+  <div class="ws-page-title" style="margin-bottom:14px;"><span class="ws-page-title-icon"></span>활성탄 교체 이력</div>
+
+  <!-- 3-2. 요약 카드 4개 -->
+  <div class="stats-grid" style="margin-bottom:14px;">
+    <div class="stat-card">
+      <div class="stat-label">전체 교체 기록</div>
+      <div class="stat-value" id="carbon-stat-total">—<span class="stat-unit">건</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">마지막 교체일</div>
+      <div class="stat-value" style="font-size:15px;padding-top:4px;" id="carbon-stat-last">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">교체 가장 오래된 시설</div>
+      <div class="stat-value" style="font-size:15px;padding-top:4px;" id="carbon-stat-oldest">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">올해 교체 건수</div>
+      <div class="stat-value" id="carbon-stat-year">—<span class="stat-unit">건</span></div>
+    </div>
+  </div>
+
+  <!-- 3-3. 교체 등록 -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-body">
+      <div style="margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:2px;">교체 등록</div>
+        <div style="font-size:11px;color:#9ca3af;">과거 교체 이력도 소급 등록 가능</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">시설 선택</div>
+          <select id="carbon-facility" style="border:1px solid #e8ecf0;border-radius:5px;padding:7px 10px;font-size:13px;font-family:inherit;color:#374151;outline:none;min-width:110px;">
+            <option value="1">1번 시설</option>
+            <option value="2">2번 시설</option>
+            <option value="3">3번 시설</option>
+            <option value="4">4번 시설</option>
+            <option value="5">5번 시설</option>
+            <option value="6">6번 시설</option>
+            <option value="7">7번 시설</option>
+            <option value="9">9번 시설</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">교체일</div>
+          <input type="date" id="carbon-date" style="border:1px solid #e8ecf0;border-radius:5px;padding:7px 8px;font-size:13px;font-family:inherit;color:#374151;outline:none;" />
+        </div>
+        <div style="flex:1;min-width:150px;">
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">비고 (선택)</div>
+          <input type="text" id="carbon-note" placeholder="내용 입력..." style="width:100%;border:1px solid #e8ecf0;border-radius:5px;padding:7px 8px;font-size:13px;font-family:inherit;color:#374151;outline:none;box-sizing:border-box;" />
+        </div>
+        <button onclick="saveCarbonRecord()" style="padding:8px 20px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;white-space:nowrap;height:36px;">등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-4. 시설별 현황 카드 -->
+  <div id="carbon-facility-cards" style="display:flex;gap:10px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:14px;padding-bottom:4px;"></div>
+
+  <!-- 3-5. 이력 테이블 -->
+  <div class="card">
+    <div class="card-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+        <div class="card-title" style="margin:0;">교체 이력</div>
+        <button onclick="exportCarbonExcel()" style="padding:6px 14px;background:#0f2744;color:white;border:none;border-radius:5px;font-size:12px;font-family:inherit;font-weight:600;cursor:pointer;">엑셀 저장</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        <div>
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">시설</div>
+          <select id="ch-facility" onchange="renderCarbonHistory()" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:inherit;color:#374151;outline:none;">
+            <option value="all">전체</option>
+            <option value="1">1번</option><option value="2">2번</option><option value="3">3번</option>
+            <option value="4">4번</option><option value="5">5번</option><option value="6">6번</option>
+            <option value="7">7번</option><option value="9">9번</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">연도</div>
+          <select id="ch-year" onchange="renderCarbonHistory()" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:inherit;color:#374151;outline:none;">
+            <option value="all">전체</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:#f8fafc;border-bottom:2px solid #e8ecf0;">
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">No.</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">시설</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">교체일</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">경과일</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">비고</th>
+              <th style="padding:8px 10px;text-align:center;color:#6b7280;font-weight:600;">관리</th>
+            </tr>
+          </thead>
+          <tbody id="carbon-history-tbody">
+            <tr><td colspan="6" style="padding:20px;text-align:center;color:#9ca3af;">데이터 없음</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-carbon -->
+
 </div><!-- /main-area -->
 
 <!-- 삭제 확인 모달 -->
@@ -2725,7 +2837,7 @@ function showTab(tab){
   if(navEl)navEl.classList.add('active');
   // 하단 탭 바 활성화 (웹 전용, PWA에서는 없음)
   document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('active');});
-  var btabMap={'home':'home','inspect':'inspect','3s5s':'inspect','airlog':'airlog','air':'airlog','waste-storage':'waste-storage','waste-annual':'waste-storage','waste-schedule':'waste-storage','filter':'more','pressure':'more','users':'more'};
+  var btabMap={'home':'home','inspect':'inspect','3s5s':'inspect','airlog':'airlog','air':'airlog','waste-storage':'waste-storage','waste-annual':'waste-storage','waste-schedule':'waste-storage','filter':'more','pressure':'more','carbon':'more','users':'more'};
   var btabEl=document.getElementById('btab-'+(btabMap[tab]||tab));
   if(btabEl)btabEl.classList.add('active');
   // 3정5S 사이드바 아코디언 동기화
@@ -2735,10 +2847,10 @@ function showTab(tab){
     if(p3&&c3&&c3.style.display==='none'){p3.classList.add('open');c3.style.display='block';}
   }
   // topbar 타이틀 + 브레드크럼
-  var titles={home:'홈',filter:'필터 교체',pressure:'차압 관리','waste-storage':'폐기물 보관 현황','waste-annual':'연간 폐기물 배출량','waste-schedule':'배출 일정',airlog:'대기운영기록',air:'대기측정 일정',inspect:'환경점검','3s5s':'3정5S',users:'사용자 관리'};
+  var titles={home:'홈',filter:'필터 교체',pressure:'차압 관리',carbon:'활성탄 교체','waste-storage':'폐기물 보관 현황','waste-annual':'연간 폐기물 배출량','waste-schedule':'배출 일정',airlog:'대기운영기록',air:'대기측정 일정',inspect:'환경점검','3s5s':'3정5S',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
   if(titleEl)titleEl.textContent=titles[tab]||tab;
-  var bcMap={home:{section:'',cur:'홈'},filter:{section:'집진설비',cur:'필터 교체'},pressure:{section:'집진설비',cur:'차압 관리'},'waste-storage':{section:'폐기물',cur:'보관 현황'},'waste-annual':{section:'폐기물',cur:'연간 배출량'},'waste-schedule':{section:'폐기물',cur:'배출 일정'},airlog:{section:'대기',cur:'대기운영기록'},air:{section:'대기',cur:'대기측정 일정'},inspect:{section:'점검 관리',cur:'환경점검'},'3s5s':{section:'점검 관리',cur:'3정5S'},users:{section:'관리',cur:'사용자 관리'}};
+  var bcMap={home:{section:'',cur:'홈'},filter:{section:'집진설비',cur:'필터 교체'},pressure:{section:'집진설비',cur:'차압 관리'},carbon:{section:'집진설비',cur:'활성탄 교체'},'waste-storage':{section:'폐기물',cur:'보관 현황'},'waste-annual':{section:'폐기물',cur:'연간 배출량'},'waste-schedule':{section:'폐기물',cur:'배출 일정'},airlog:{section:'대기',cur:'대기운영기록'},air:{section:'대기',cur:'대기측정 일정'},inspect:{section:'점검 관리',cur:'환경점검'},'3s5s':{section:'점검 관리',cur:'3정5S'},users:{section:'관리',cur:'사용자 관리'}};
   var bc=bcMap[tab]||{section:'',cur:titles[tab]||tab};
   var secEl=document.getElementById('bc-section'),curEl=document.getElementById('bc-cur');
   var sep1El=document.getElementById('bc-sep1'),sep2El=document.getElementById('bc-sep2');
@@ -2771,6 +2883,7 @@ function loadCurrentTab(){
     else if(currentTab==='inspect')loadInspect();
     else if(currentTab==='3s5s')init3s5sTab(window._ss3panel||'input');
     else if(currentTab==='pressure')initPressurePage();
+    else if(currentTab==='carbon')initCarbonPage();
     else if(currentTab==='users')loadUsers();
   }catch(e){console.error('탭 로딩 오류:',e);}
   updateSyncTime();
@@ -9080,6 +9193,282 @@ function _doExportPressureExcel() {
   var ws = XLSX.utils.aoa_to_sheet(data);
   XLSX.utils.book_append_sheet(wb, ws, '차압이력');
   XLSX.writeFile(wb, '차압이력_' + _todayStr() + '.xlsx');
+}
+</script>
+
+<!-- ===== 활성탄 교체 ===== -->
+<script>
+var CARBON_CYCLE_DAYS = 365;
+var CARBON_WARN_DAYS = 300;
+var CARBON_FACILITIES = [1, 2, 3, 4, 5, 6, 7, 9];
+var _carbonAllData = [];
+
+function sbCarbon(path, opts) {
+  opts = opts || {};
+  var url = SB_URL + '/rest/v1/' + path;
+  var headers = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache'
+  };
+  if (opts.prefer) headers['Prefer'] = opts.prefer;
+  return fetch(url, {
+    method: opts.method || 'GET',
+    headers: headers,
+    body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined
+  });
+}
+
+function _carbonTodayStr() {
+  var now = new Date();
+  return now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+}
+
+function _carbonElapsed(dateStr) {
+  if (!dateStr) return null;
+  var diff = Math.floor((new Date() - new Date(dateStr)) / 86400000);
+  return diff;
+}
+
+async function initCarbonPage() {
+  var dateEl = document.getElementById('carbon-date');
+  if (dateEl && !dateEl.value) dateEl.value = _carbonTodayStr();
+
+  try {
+    var res = await sbCarbon('activated_carbon_records?select=*&order=replace_date.desc');
+    if (!res.ok) throw new Error('activated_carbon_records 로딩 실패: ' + res.status);
+    _carbonAllData = await res.json();
+    _buildCarbonYearFilter();
+    renderCarbonSummary();
+    renderCarbonFacilityCards();
+    renderCarbonHistory();
+  } catch(e) {
+    console.error('활성탄 데이터 로딩 오류:', e);
+    showToast('데이터 로딩 오류: ' + e.message);
+  }
+}
+
+function _buildCarbonYearFilter() {
+  var sel = document.getElementById('ch-year');
+  if (!sel) return;
+  var years = {};
+  _carbonAllData.forEach(function(r) { if (r.replace_date) years[r.replace_date.slice(0,4)] = true; });
+  var sortedYears = Object.keys(years).sort(function(a,b){return b-a;});
+  var curYear = String(new Date().getFullYear());
+  var options = '<option value="all">전체</option>';
+  sortedYears.forEach(function(y) { options += '<option value="' + y + '"' + (y===curYear?' selected':'') + '>' + y + '년</option>'; });
+  sel.innerHTML = options;
+}
+
+function renderCarbonSummary() {
+  var total = _carbonAllData.length;
+  var thisYear = String(new Date().getFullYear());
+  var yearCount = _carbonAllData.filter(function(r) { return r.replace_date && r.replace_date.startsWith(thisYear); }).length;
+
+  var lastEl = document.getElementById('carbon-stat-last');
+  var totalEl = document.getElementById('carbon-stat-total');
+  var oldestEl = document.getElementById('carbon-stat-oldest');
+  var yearEl = document.getElementById('carbon-stat-year');
+
+  if (totalEl) totalEl.innerHTML = total + '<span class="stat-unit">건</span>';
+  if (yearEl) yearEl.innerHTML = yearCount + '<span class="stat-unit">건</span>';
+
+  if (lastEl) {
+    var sorted = _carbonAllData.slice().sort(function(a,b){ return a.replace_date < b.replace_date ? 1 : -1; });
+    lastEl.textContent = sorted.length ? sorted[0].replace_date : '—';
+  }
+
+  if (oldestEl) {
+    var lastByFacility = {};
+    CARBON_FACILITIES.forEach(function(no) {
+      var rows = _carbonAllData.filter(function(r) { return r.facility_no === no; });
+      rows.sort(function(a,b){ return a.replace_date < b.replace_date ? 1 : -1; });
+      lastByFacility[no] = rows.length ? rows[0].replace_date : null;
+    });
+    var oldest = null, oldestNo = null;
+    CARBON_FACILITIES.forEach(function(no) {
+      var d = lastByFacility[no];
+      var elapsed = d ? _carbonElapsed(d) : Infinity;
+      if (oldest === null || elapsed > oldest) { oldest = elapsed; oldestNo = no; }
+    });
+    if (oldestNo !== null) {
+      var elapsedText = lastByFacility[oldestNo] ? oldest + '일 경과' : '기록 없음';
+      oldestEl.textContent = oldestNo + '번 시설 (' + elapsedText + ')';
+    } else {
+      oldestEl.textContent = '—';
+    }
+  }
+}
+
+function renderCarbonFacilityCards() {
+  var container = document.getElementById('carbon-facility-cards');
+  if (!container) return;
+
+  var lastByFacility = {};
+  CARBON_FACILITIES.forEach(function(no) {
+    var rows = _carbonAllData.filter(function(r) { return r.facility_no === no; });
+    rows.sort(function(a,b){ return a.replace_date < b.replace_date ? 1 : -1; });
+    lastByFacility[no] = rows.length ? rows[0] : null;
+  });
+
+  container.innerHTML = CARBON_FACILITIES.map(function(no) {
+    var last = lastByFacility[no];
+    var elapsed = last ? _carbonElapsed(last.replace_date) : null;
+    var statusLabel, statusColor, borderColor;
+    if (elapsed === null) {
+      statusLabel = '기록 없음'; statusColor = '#9ca3af'; borderColor = '#e8ecf0';
+    } else if (elapsed >= CARBON_CYCLE_DAYS) {
+      statusLabel = '교체시기'; statusColor = '#ef4444'; borderColor = '#ef4444';
+    } else if (elapsed >= CARBON_WARN_DAYS) {
+      statusLabel = '주의'; statusColor = '#f59e0b'; borderColor = '#f59e0b';
+    } else {
+      statusLabel = '정상'; statusColor = '#10b981'; borderColor = '#10b981';
+    }
+
+    var dateText = last ? last.replace_date : '기록 없음';
+    var elapsedText = elapsed !== null ? elapsed + '일 경과' : '';
+
+    return '<div style="min-width:108px;flex:1;border:1px solid #e8ecf0;border-top:3px solid ' + borderColor + ';border-radius:8px;background:white;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">'
+      + '<div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:5px;">' + no + '번 시설</div>'
+      + '<div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:3px;">' + dateText + '</div>'
+      + (elapsedText ? '<div style="font-size:11px;color:#6b7280;margin-bottom:4px;">' + elapsedText + '</div>' : '')
+      + '<span style="display:inline-block;padding:1px 7px;border-radius:9px;font-size:10px;font-weight:600;background:' + statusColor + '20;color:' + statusColor + ';">' + statusLabel + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+async function saveCarbonRecord() {
+  if (isReadOnly()) { showToast('테스트 계정은 조회만 가능합니다'); return; }
+  var facilityNo = parseInt((document.getElementById('carbon-facility') || {}).value);
+  var dateVal = (document.getElementById('carbon-date') || {}).value;
+  var note = ((document.getElementById('carbon-note') || {}).value || '').trim();
+  if (!dateVal) { alert('교체일을 선택해주세요.'); return; }
+  if (!facilityNo) { alert('시설을 선택해주세요.'); return; }
+
+  var payload = {
+    replace_date: dateVal,
+    facility_no: facilityNo,
+    note: note || null,
+    created_by: currentUser ? (currentUser.name || currentUser.username) : null
+  };
+
+  try {
+    var res = await sbCarbon('activated_carbon_records', {
+      method: 'POST', prefer: 'return=minimal', body: payload
+    });
+    if (!res.ok) {
+      var errText = await res.text();
+      throw new Error('등록 실패 (' + res.status + '): ' + errText);
+    }
+    showToast(facilityNo + '번 시설 활성탄 교체 등록 완료');
+    var noteEl = document.getElementById('carbon-note');
+    if (noteEl) noteEl.value = '';
+    var reload = await sbCarbon('activated_carbon_records?select=*&order=replace_date.desc');
+    if (reload.ok) _carbonAllData = await reload.json();
+    _buildCarbonYearFilter();
+    renderCarbonSummary();
+    renderCarbonFacilityCards();
+    renderCarbonHistory();
+  } catch(e) {
+    console.error('활성탄 등록 오류:', e);
+    alert('등록 중 오류가 발생했습니다.\n' + e.message);
+  }
+}
+
+function renderCarbonHistory(facilityFilter, yearFilter) {
+  var fSel = facilityFilter != null ? facilityFilter : ((document.getElementById('ch-facility') || {}).value || 'all');
+  var ySel = yearFilter != null ? yearFilter : ((document.getElementById('ch-year') || {}).value || 'all');
+
+  var rows = _carbonAllData.slice();
+  if (fSel !== 'all') rows = rows.filter(function(r) { return r.facility_no === parseInt(fSel); });
+  if (ySel !== 'all') rows = rows.filter(function(r) { return r.replace_date && r.replace_date.startsWith(ySel); });
+  rows.sort(function(a,b) { return a.replace_date < b.replace_date ? 1 : -1; });
+
+  var tbody = document.getElementById('carbon-history-tbody');
+  if (!tbody) return;
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#9ca3af;">데이터 없음</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(function(r, i) {
+    var elapsed = r.replace_date ? _carbonElapsed(r.replace_date) : null;
+    var elapsedText = elapsed !== null ? elapsed + '일 경과' : '—';
+    var elapsedColor = elapsed !== null && elapsed >= CARBON_CYCLE_DAYS ? '#ef4444' : elapsed !== null && elapsed >= CARBON_WARN_DAYS ? '#f59e0b' : '#374151';
+    var canDelete = isAdmin();
+    var deleteBtn = canDelete
+      ? '<button onclick="deleteCarbonRecord(\'' + r.id + '\')" style="padding:2px 8px;background:none;border:1px solid #fecaca;border-radius:4px;font-size:10px;color:#dc2626;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">삭제</button>'
+      : '<span style="font-size:11px;color:#d1d5db;">—</span>';
+    return '<tr style="border-bottom:1px solid #f3f4f6;">'
+      + '<td style="padding:8px 10px;color:#9ca3af;">' + (i+1) + '</td>'
+      + '<td style="padding:8px 10px;font-weight:600;">' + r.facility_no + '번</td>'
+      + '<td style="padding:8px 10px;">' + (r.replace_date || '—') + '</td>'
+      + '<td style="padding:8px 10px;color:' + elapsedColor + ';font-weight:' + (elapsed !== null && elapsed >= CARBON_WARN_DAYS ? '600' : '400') + ';">' + elapsedText + '</td>'
+      + '<td style="padding:8px 10px;color:#6b7280;">' + (r.note || '—') + '</td>'
+      + '<td style="padding:8px 10px;text-align:center;">' + deleteBtn + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+async function deleteCarbonRecord(id) {
+  if (isReadOnly()) { showToast('테스트 계정은 조회만 가능합니다'); return; }
+  if (!isAdmin()) { showToast('관리자만 삭제할 수 있습니다.'); return; }
+  if (!confirm('이 교체 기록을 삭제하시겠습니까?')) return;
+  try {
+    var res = await sbCarbon('activated_carbon_records?id=eq.' + id, { method: 'DELETE', prefer: 'return=minimal' });
+    if (!res.ok) {
+      var errText = await res.text();
+      throw new Error('삭제 실패 (' + res.status + '): ' + errText);
+    }
+    showToast('삭제 완료');
+    var reload = await sbCarbon('activated_carbon_records?select=*&order=replace_date.desc');
+    if (reload.ok) _carbonAllData = await reload.json();
+    renderCarbonSummary();
+    renderCarbonFacilityCards();
+    renderCarbonHistory();
+  } catch(e) {
+    console.error('삭제 오류:', e);
+    alert('삭제 중 오류가 발생했습니다.\n' + e.message);
+  }
+}
+
+function exportCarbonExcel() {
+  if (typeof XLSX === 'undefined') {
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = function() { _doExportCarbonExcel(); };
+    document.head.appendChild(s);
+  } else {
+    _doExportCarbonExcel();
+  }
+}
+
+function _doExportCarbonExcel() {
+  var fSel = (document.getElementById('ch-facility') || {}).value || 'all';
+  var ySel = (document.getElementById('ch-year') || {}).value || 'all';
+  var rows = _carbonAllData.slice();
+  if (fSel !== 'all') rows = rows.filter(function(r) { return r.facility_no === parseInt(fSel); });
+  if (ySel !== 'all') rows = rows.filter(function(r) { return r.replace_date && r.replace_date.startsWith(ySel); });
+  rows.sort(function(a,b) { return a.replace_date < b.replace_date ? 1 : -1; });
+
+  var data = [['No.', '시설', '교체일', '경과일', '비고', '등록자']];
+  rows.forEach(function(r, i) {
+    var elapsed = r.replace_date ? _carbonElapsed(r.replace_date) : '';
+    data.push([
+      i+1,
+      r.facility_no + '번',
+      r.replace_date || '',
+      elapsed !== '' ? elapsed + '일 경과' : '',
+      r.note || '',
+      r.created_by || ''
+    ]);
+  });
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, '활성탄교체이력');
+  XLSX.writeFile(wb, '활성탄교체이력_' + _carbonTodayStr() + '.xlsx');
 }
 </script>
 
