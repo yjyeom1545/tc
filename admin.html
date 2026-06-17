@@ -549,6 +549,10 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       활성탄 교체
     </div>
+    <div class="nav-item" id="nav-diagnosis" onclick="showTab('diagnosis')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>
+      종합진단
+    </div>
     <div class="nav-section">폐기물</div>
     <div class="nav-item" id="nav-waste-storage" onclick="showTab('waste-storage')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg>
@@ -2745,6 +2749,64 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 
 </div><!-- /tab-carbon -->
 
+<div id="tab-diagnosis" class="content hidden">
+
+  <!-- 2-1. 페이지 타이틀 -->
+  <div class="ws-page-title" style="margin-bottom:4px;"><span class="ws-page-title-icon"></span>종합진단</div>
+  <div style="font-size:12px;color:#9ca3af;margin-bottom:16px;padding-left:12px;">차압·k값·활성탄 데이터를 종합하여 원인을 자동 판단합니다</div>
+
+  <!-- 2-2. 조치 우선순위 -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-body">
+      <div style="margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:2px;">조치 우선순위</div>
+        <div style="font-size:11px;color:#9ca3af;">자동 판단 결과 · 급한 시설부터 정렬 · 정상 시설 제외</div>
+      </div>
+      <div id="diag-priority-list">
+        <div style="padding:20px;text-align:center;color:#9ca3af;font-size:13px;">데이터 로딩 중...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2-3. 시설별 진단 매트릭스 -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-body">
+      <div style="margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:2px;">시설별 진단 매트릭스</div>
+        <div style="font-size:11px;color:#9ca3af;">행 클릭 시 하단에 판단 근거 표시</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:#f8fafc;border-bottom:2px solid #e8ecf0;">
+              <th style="padding:9px 10px;text-align:left;color:#6b7280;font-weight:600;white-space:nowrap;">시설</th>
+              <th style="padding:9px 10px;text-align:right;color:#6b7280;font-weight:600;white-space:nowrap;">차압(mmAq)</th>
+              <th style="padding:9px 10px;text-align:center;color:#6b7280;font-weight:600;white-space:nowrap;">k값 추이</th>
+              <th style="padding:9px 10px;text-align:right;color:#6b7280;font-weight:600;white-space:nowrap;">효율</th>
+              <th style="padding:9px 10px;text-align:center;color:#6b7280;font-weight:600;white-space:nowrap;">필터 경과</th>
+              <th style="padding:9px 10px;text-align:center;color:#6b7280;font-weight:600;white-space:nowrap;">활성탄 경과</th>
+              <th style="padding:9px 10px;text-align:center;color:#6b7280;font-weight:600;white-space:nowrap;">자동 판단</th>
+            </tr>
+          </thead>
+          <tbody id="diag-matrix-tbody">
+            <tr><td colspan="7" style="padding:20px;text-align:center;color:#9ca3af;">데이터 로딩 중...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:#d1d5db;">※ 필터 경과: filter_records는 도장 부스 계통(상도룸/하도룸)으로 저장되어 시설번호 매핑 불가 — 연동 예정</div>
+    </div>
+  </div>
+
+  <!-- 2-4. 판단 근거 섹션 -->
+  <div class="card" id="diag-logic-card" style="display:none;">
+    <div class="card-body">
+      <div class="card-title" style="margin-bottom:12px;" id="diag-logic-title">판단 근거</div>
+      <div id="diag-logic-body"></div>
+    </div>
+  </div>
+
+</div><!-- /tab-diagnosis -->
+
 </div><!-- /main-area -->
 
 <!-- 삭제 확인 모달 -->
@@ -2837,7 +2899,7 @@ function showTab(tab){
   if(navEl)navEl.classList.add('active');
   // 하단 탭 바 활성화 (웹 전용, PWA에서는 없음)
   document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('active');});
-  var btabMap={'home':'home','inspect':'inspect','3s5s':'inspect','airlog':'airlog','air':'airlog','waste-storage':'waste-storage','waste-annual':'waste-storage','waste-schedule':'waste-storage','filter':'more','pressure':'more','carbon':'more','users':'more'};
+  var btabMap={'home':'home','inspect':'inspect','3s5s':'inspect','airlog':'airlog','air':'airlog','waste-storage':'waste-storage','waste-annual':'waste-storage','waste-schedule':'waste-storage','filter':'more','pressure':'more','carbon':'more','diagnosis':'more','users':'more'};
   var btabEl=document.getElementById('btab-'+(btabMap[tab]||tab));
   if(btabEl)btabEl.classList.add('active');
   // 3정5S 사이드바 아코디언 동기화
@@ -2847,10 +2909,10 @@ function showTab(tab){
     if(p3&&c3&&c3.style.display==='none'){p3.classList.add('open');c3.style.display='block';}
   }
   // topbar 타이틀 + 브레드크럼
-  var titles={home:'홈',filter:'필터 교체',pressure:'차압 관리',carbon:'활성탄 교체','waste-storage':'폐기물 보관 현황','waste-annual':'연간 폐기물 배출량','waste-schedule':'배출 일정',airlog:'대기운영기록',air:'대기측정 일정',inspect:'환경점검','3s5s':'3정5S',users:'사용자 관리'};
+  var titles={home:'홈',filter:'필터 교체',pressure:'차압 관리',carbon:'활성탄 교체',diagnosis:'종합진단','waste-storage':'폐기물 보관 현황','waste-annual':'연간 폐기물 배출량','waste-schedule':'배출 일정',airlog:'대기운영기록',air:'대기측정 일정',inspect:'환경점검','3s5s':'3정5S',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
   if(titleEl)titleEl.textContent=titles[tab]||tab;
-  var bcMap={home:{section:'',cur:'홈'},filter:{section:'집진설비',cur:'필터 교체'},pressure:{section:'집진설비',cur:'차압 관리'},carbon:{section:'집진설비',cur:'활성탄 교체'},'waste-storage':{section:'폐기물',cur:'보관 현황'},'waste-annual':{section:'폐기물',cur:'연간 배출량'},'waste-schedule':{section:'폐기물',cur:'배출 일정'},airlog:{section:'대기',cur:'대기운영기록'},air:{section:'대기',cur:'대기측정 일정'},inspect:{section:'점검 관리',cur:'환경점검'},'3s5s':{section:'점검 관리',cur:'3정5S'},users:{section:'관리',cur:'사용자 관리'}};
+  var bcMap={home:{section:'',cur:'홈'},filter:{section:'집진설비',cur:'필터 교체'},pressure:{section:'집진설비',cur:'차압 관리'},carbon:{section:'집진설비',cur:'활성탄 교체'},diagnosis:{section:'집진설비',cur:'종합진단'},'waste-storage':{section:'폐기물',cur:'보관 현황'},'waste-annual':{section:'폐기물',cur:'연간 배출량'},'waste-schedule':{section:'폐기물',cur:'배출 일정'},airlog:{section:'대기',cur:'대기운영기록'},air:{section:'대기',cur:'대기측정 일정'},inspect:{section:'점검 관리',cur:'환경점검'},'3s5s':{section:'점검 관리',cur:'3정5S'},users:{section:'관리',cur:'사용자 관리'}};
   var bc=bcMap[tab]||{section:'',cur:titles[tab]||tab};
   var secEl=document.getElementById('bc-section'),curEl=document.getElementById('bc-cur');
   var sep1El=document.getElementById('bc-sep1'),sep2El=document.getElementById('bc-sep2');
@@ -2884,6 +2946,7 @@ function loadCurrentTab(){
     else if(currentTab==='3s5s')init3s5sTab(window._ss3panel||'input');
     else if(currentTab==='pressure')initPressurePage();
     else if(currentTab==='carbon')initCarbonPage();
+    else if(currentTab==='diagnosis')initDiagnosisPage();
     else if(currentTab==='users')loadUsers();
   }catch(e){console.error('탭 로딩 오류:',e);}
   updateSyncTime();
@@ -9469,6 +9532,344 @@ function _doExportCarbonExcel() {
   var ws = XLSX.utils.aoa_to_sheet(data);
   XLSX.utils.book_append_sheet(wb, ws, '활성탄교체이력');
   XLSX.writeFile(wb, '활성탄교체이력_' + _carbonTodayStr() + '.xlsx');
+}
+</script>
+
+<!-- ===== 종합진단 ===== -->
+<script>
+var DIAG_FACILITIES = [1, 2, 3, 4, 5, 6, 7, 9];
+var DIAG_DESIGN_CAPACITY = { 1:1000, 2:400, 3:400, 4:400, 5:90, 6:300, 7:300, 9:1000 };
+var DIAG_PRESSURE_DANGER = 160;
+var DIAG_PRESSURE_WARN = 120;
+var DIAG_CARBON_CYCLE = 365;
+var DIAG_CARBON_WARN = 300;
+var _diagFacilitiesData = [];
+var _diagSelectedFacility = null;
+
+function sbDiag(path, opts) {
+  opts = opts || {};
+  var url = SB_URL + '/rest/v1/' + path;
+  var headers = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' };
+  if (opts.prefer) headers['Prefer'] = opts.prefer;
+  return fetch(url, { method: opts.method || 'GET', headers: headers });
+}
+
+function _diagElapsed(dateStr) {
+  if (!dateStr) return null;
+  return Math.floor((new Date() - new Date(dateStr)) / 86400000);
+}
+
+function _diagTodayStr() {
+  var n = new Date();
+  return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0');
+}
+
+async function loadDiagnosisData() {
+  var [prRes, carbonRes] = await Promise.all([
+    sbDiag('pressure_readings?select=*&order=read_date.desc'),
+    sbDiag('activated_carbon_records?select=*&order=replace_date.desc')
+  ]);
+  if (!prRes.ok) throw new Error('pressure_readings 로딩 실패: ' + prRes.status);
+  if (!carbonRes.ok) throw new Error('activated_carbon_records 로딩 실패: ' + carbonRes.status);
+
+  var prData = await prRes.json();
+  var carbonData = await carbonRes.json();
+
+  return DIAG_FACILITIES.map(function(no) {
+    var facilityRows = prData.filter(function(r) { return r.facility_no === no; });
+    facilityRows.sort(function(a, b) { return a.read_date < b.read_date ? 1 : -1; });
+
+    var latestRow = facilityRows[0] || null;
+    var pressure = latestRow ? latestRow.pressure_diff : null;
+    var efficiency = null;
+
+    // 최신 efficiency (k값 있는 행에서)
+    var kRows = facilityRows.filter(function(r) { return r.k_value != null; });
+    if (kRows.length) efficiency = kRows[0].efficiency;
+
+    // k값 추이: 최근 3개 비교
+    var kVals = kRows.slice(0, 3).map(function(r) { return r.k_value; });
+    var kTrend = 'none';
+    if (kVals.length >= 2) {
+      if (kVals[0] < kVals[1]) kTrend = 'down';
+      else if (kVals[0] > kVals[1]) kTrend = 'up';
+      else kTrend = 'flat';
+    }
+
+    // 차압 고착 감지: 최근 5개 값이 모두 동일
+    var recentPressures = facilityRows.slice(0, 5).map(function(r) { return r.pressure_diff; }).filter(function(v) { return v != null; });
+    var isPressureStuck = recentPressures.length >= 4 && recentPressures.every(function(v) { return v === recentPressures[0]; });
+
+    // 활성탄 경과일
+    var carbonRows = carbonData.filter(function(r) { return r.facility_no === no; });
+    carbonRows.sort(function(a, b) { return a.replace_date < b.replace_date ? 1 : -1; });
+    var carbonDays = carbonRows.length ? _diagElapsed(carbonRows[0].replace_date) : null;
+    var lastCarbonDate = carbonRows.length ? carbonRows[0].replace_date : null;
+    var lastPressureDate = latestRow ? latestRow.read_date : null;
+
+    return {
+      facilityNo: no,
+      pressure: pressure,
+      kTrend: kTrend,
+      kVals: kVals,
+      efficiency: efficiency != null ? Math.round(efficiency * 10) / 10 : null,
+      filterDays: null, // filter_records 매핑 불가
+      carbonDays: carbonDays,
+      lastCarbonDate: lastCarbonDate,
+      lastPressureDate: lastPressureDate,
+      isPressureStuck: isPressureStuck
+    };
+  });
+}
+
+function diagnoseFacility(data) {
+  var p = data.pressure;
+  if (data.isPressureStuck)
+    return { type: 'check', label: '차압계 점검', severity: 'watch' };
+
+  if (p == null)
+    return { type: 'nodata', label: '데이터 없음', severity: 'none' };
+
+  if (p < DIAG_PRESSURE_WARN && data.efficiency == null && data.carbonDays == null)
+    return { type: 'ok', label: '정상', severity: 'none' };
+
+  if (p >= DIAG_PRESSURE_DANGER) {
+    if (data.carbonDays != null && data.carbonDays >= DIAG_CARBON_CYCLE)
+      return { type: 'carbon', label: '활성탄 교체 검토', severity: 'urgent' };
+    return { type: 'filter', label: '필터 교체', severity: 'urgent' };
+  }
+
+  if (p >= DIAG_PRESSURE_WARN) {
+    if (data.efficiency == null)
+      return { type: 'wait', label: '측정 대기', severity: 'watch' };
+    return { type: 'watch', label: '관찰 필요', severity: 'watch' };
+  }
+
+  if (data.efficiency != null && data.efficiency < 50)
+    return { type: 'equip', label: '덕트 누기 점검', severity: 'urgent' };
+
+  if (data.kTrend === 'down' && data.efficiency != null && data.efficiency < 80)
+    return { type: 'watch', label: '관찰 필요', severity: 'watch' };
+
+  if (data.carbonDays != null && data.carbonDays >= DIAG_CARBON_CYCLE)
+    return { type: 'carbon', label: '활성탄 교체 검토', severity: 'watch' };
+
+  return { type: 'ok', label: '정상', severity: 'none' };
+}
+
+function severityScore(data, diagnosis) {
+  var score = 0;
+  if (diagnosis.severity === 'urgent') score += 100;
+  if (diagnosis.severity === 'watch') score += 50;
+  if (data.efficiency != null) score += (100 - data.efficiency);
+  if (data.kTrend === 'down') score += 30;
+  if (data.pressure != null && data.pressure >= DIAG_PRESSURE_DANGER) score += 20;
+  if (data.carbonDays != null && data.carbonDays >= DIAG_CARBON_CYCLE) score += 15;
+  return score;
+}
+
+async function initDiagnosisPage() {
+  try {
+    _diagFacilitiesData = await loadDiagnosisData();
+    renderPriorityList(_diagFacilitiesData);
+    renderDiagnosisMatrix(_diagFacilitiesData);
+    if (_diagSelectedFacility != null) renderDiagnosisLogic(_diagSelectedFacility);
+  } catch(e) {
+    console.error('종합진단 로딩 오류:', e);
+    showToast('데이터 로딩 오류: ' + e.message);
+  }
+}
+
+function renderPriorityList(facilitiesData) {
+  var el = document.getElementById('diag-priority-list');
+  if (!el) return;
+
+  var diagnosed = facilitiesData.map(function(d) {
+    var diag = diagnoseFacility(d);
+    return { data: d, diag: diag, score: severityScore(d, diag) };
+  });
+  diagnosed.sort(function(a, b) { return b.score - a.score; });
+  var needsAction = diagnosed.filter(function(x) { return x.diag.severity !== 'none'; });
+
+  if (!needsAction.length) {
+    el.innerHTML = '<div style="padding:16px;text-align:center;color:#10b981;font-size:13px;font-weight:600;">모든 시설 정상입니다.</div>';
+    return;
+  }
+
+  el.innerHTML = needsAction.map(function(x, i) {
+    var d = x.data, diag = x.diag;
+    var isUrgent = diag.severity === 'urgent';
+    var borderColor = isUrgent ? '#ef4444' : '#f59e0b';
+    var bgColor = isUrgent ? '#fef2f2' : '#fffbeb';
+    var badgeBg = isUrgent ? '#ef4444' : '#f59e0b';
+
+    var summary = [];
+    if (d.pressure != null) summary.push('차압 ' + d.pressure + ' mmAq');
+    if (d.kTrend === 'down') summary.push('k값 하락');
+    if (d.efficiency != null) summary.push('효율 ' + d.efficiency + '%');
+    if (d.carbonDays != null) summary.push('활성탄 ' + d.carbonDays + '일 경과');
+
+    return '<div onclick="renderDiagnosisLogic(' + JSON.stringify(d).replace(/"/g, '&quot;') + ')" '
+      + 'style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:' + bgColor + ';border-left:4px solid ' + borderColor + ';border-radius:6px;margin-bottom:8px;cursor:pointer;">'
+      + '<div style="width:24px;height:24px;border-radius:50%;background:' + borderColor + ';color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + (i+1) + '</div>'
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:2px;">' + d.facilityNo + '번 시설' + (d.efficiency != null ? ' <span style="font-weight:400;font-size:12px;color:#6b7280;">효율 ' + d.efficiency + '%</span>' : '') + '</div>'
+        + '<div style="font-size:11px;color:#6b7280;">' + (summary.join(' · ') || '데이터 확인 필요') + '</div>'
+      + '</div>'
+      + '<span style="padding:3px 10px;border-radius:12px;background:' + badgeBg + ';color:white;font-size:11px;font-weight:700;white-space:nowrap;">' + diag.label + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+function renderDiagnosisMatrix(facilitiesData) {
+  var tbody = document.getElementById('diag-matrix-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = facilitiesData.map(function(d) {
+    var diag = diagnoseFacility(d);
+
+    // 차압 셀
+    var pressureCell = '—';
+    if (d.pressure != null) {
+      var pColor = d.pressure >= DIAG_PRESSURE_DANGER ? '#ef4444' : d.pressure >= DIAG_PRESSURE_WARN ? '#f59e0b' : '#10b981';
+      pressureCell = '<span style="font-weight:600;color:' + pColor + ';">' + d.pressure + '</span>';
+    }
+
+    // k값 추이 셀
+    var kCell = '—';
+    if (d.kTrend !== 'none') {
+      var kIcon = d.kTrend === 'down' ? '↓' : d.kTrend === 'up' ? '↑' : '→';
+      var kColor = d.kTrend === 'down' ? '#ef4444' : d.kTrend === 'up' ? '#10b981' : '#9ca3af';
+      var kLabel = d.kTrend === 'down' ? '하락' : d.kTrend === 'up' ? '상승' : '유지';
+      kCell = '<span style="font-weight:600;color:' + kColor + ';">' + kIcon + ' ' + kLabel + '</span>';
+    }
+
+    // 효율 셀
+    var effCell = '—';
+    if (d.efficiency != null) {
+      var eColor = d.efficiency >= 80 ? '#10b981' : d.efficiency >= 50 ? '#f59e0b' : '#ef4444';
+      effCell = '<span style="font-weight:600;color:' + eColor + ';">' + d.efficiency + '%</span>';
+    }
+
+    // 활성탄 경과
+    var carbonCell = '—';
+    if (d.carbonDays != null) {
+      var cColor = d.carbonDays >= DIAG_CARBON_CYCLE ? '#ef4444' : d.carbonDays >= DIAG_CARBON_WARN ? '#f59e0b' : '#10b981';
+      carbonCell = '<span style="color:' + cColor + ';font-weight:' + (d.carbonDays >= DIAG_CARBON_WARN ? '600' : '400') + ';">' + d.carbonDays + '일</span>';
+    }
+
+    // 자동 판단 뱃지
+    var diagBg = diag.severity === 'urgent' ? '#fef2f2' : diag.severity === 'watch' ? '#fffbeb' : '#f0fdf4';
+    var diagColor = diag.severity === 'urgent' ? '#ef4444' : diag.severity === 'watch' ? '#d97706' : '#10b981';
+    var diagBadge = '<span style="padding:2px 8px;border-radius:9px;font-size:11px;font-weight:600;background:' + diagBg + ';color:' + diagColor + ';">' + diag.label + '</span>';
+
+    var dEncoded = JSON.stringify(d).replace(/"/g, '&quot;');
+    return '<tr onclick="renderDiagnosisLogic(' + dEncoded + ')" style="border-bottom:1px solid #f3f4f6;cursor:pointer;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'
+      + '<td style="padding:9px 10px;font-weight:700;white-space:nowrap;">' + d.facilityNo + '번</td>'
+      + '<td style="padding:9px 10px;text-align:right;">' + pressureCell + '</td>'
+      + '<td style="padding:9px 10px;text-align:center;">' + kCell + '</td>'
+      + '<td style="padding:9px 10px;text-align:right;">' + effCell + '</td>'
+      + '<td style="padding:9px 10px;text-align:center;font-size:11px;color:#9ca3af;">연동 예정</td>'
+      + '<td style="padding:9px 10px;text-align:center;">' + carbonCell + '</td>'
+      + '<td style="padding:9px 10px;text-align:center;">' + diagBadge + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function renderDiagnosisLogic(facilityData) {
+  if (typeof facilityData === 'string') {
+    try { facilityData = JSON.parse(facilityData); } catch(e) { return; }
+  }
+  _diagSelectedFacility = facilityData;
+  var d = facilityData;
+  var diag = diagnoseFacility(d);
+  var card = document.getElementById('diag-logic-card');
+  var titleEl = document.getElementById('diag-logic-title');
+  var bodyEl = document.getElementById('diag-logic-body');
+  if (!card || !bodyEl) return;
+
+  if (titleEl) titleEl.textContent = '판단 근거 — ' + d.facilityNo + '번 시설';
+  card.style.display = '';
+
+  var steps = [];
+
+  // Q1. 차압 기준
+  var q1Pass = d.pressure != null && d.pressure >= DIAG_PRESSURE_DANGER;
+  steps.push({
+    q: '차압이 위험 기준(' + DIAG_PRESSURE_DANGER + ' mmAq) 이상인가?',
+    a: d.pressure != null ? d.pressure + ' mmAq' : '데이터 없음',
+    result: q1Pass ? '예' : '아니오',
+    pass: q1Pass
+  });
+
+  // Q2. 차압 주의 구간
+  var q2Pass = d.pressure != null && d.pressure >= DIAG_PRESSURE_WARN && d.pressure < DIAG_PRESSURE_DANGER;
+  steps.push({
+    q: '차압이 주의 구간(' + DIAG_PRESSURE_WARN + '~' + (DIAG_PRESSURE_DANGER-1) + ' mmAq)인가?',
+    a: d.pressure != null ? d.pressure + ' mmAq' : '데이터 없음',
+    result: q2Pass ? '예' : '아니오',
+    pass: q2Pass
+  });
+
+  // Q3. k값 추이
+  var kLabel = d.kTrend === 'down' ? '하락 중' : d.kTrend === 'up' ? '상승 중' : d.kTrend === 'flat' ? '유지' : '데이터 부족';
+  steps.push({
+    q: 'k값이 하락 중인가? (최근 ' + d.kVals.length + '개 비교)',
+    a: d.kVals.length ? d.kVals.map(function(v){ return Math.round(v*100)/100; }).join(' → ') : '데이터 없음',
+    result: d.kTrend === 'down' ? '예 — 하락 추세' : kLabel,
+    pass: d.kTrend === 'down'
+  });
+
+  // Q4. 효율
+  steps.push({
+    q: '가동 효율이 80% 미만인가?',
+    a: d.efficiency != null ? d.efficiency + '%' : '미측정 (유량 데이터 없음)',
+    result: d.efficiency != null ? (d.efficiency < 80 ? '예 — ' + d.efficiency + '%' : '아니오 — ' + d.efficiency + '%') : '판단 불가',
+    pass: d.efficiency != null && d.efficiency < 80
+  });
+
+  // Q5. 활성탄 교체 주기
+  var q5Pass = d.carbonDays != null && d.carbonDays >= DIAG_CARBON_CYCLE;
+  steps.push({
+    q: '활성탄 교체 주기(' + DIAG_CARBON_CYCLE + '일)가 경과했는가?',
+    a: d.carbonDays != null ? d.carbonDays + '일 경과 (마지막 교체: ' + (d.lastCarbonDate || '—') + ')' : '교체 기록 없음',
+    result: q5Pass ? '예 — 교체 시기 경과' : (d.carbonDays != null ? '아니오 — ' + (DIAG_CARBON_CYCLE - d.carbonDays) + '일 남음' : '기록 없음'),
+    pass: q5Pass
+  });
+
+  // Q6. 차압 고착
+  steps.push({
+    q: '차압 값이 고착(최근 4회 이상 동일)되어 있는가?',
+    a: d.isPressureStuck ? '동일 값 반복 감지' : '정상 변동',
+    result: d.isPressureStuck ? '예 — 차압계 오작동 의심' : '아니오',
+    pass: d.isPressureStuck
+  });
+
+  var diagBg = diag.severity === 'urgent' ? '#fef2f2' : diag.severity === 'watch' ? '#fffbeb' : '#f0fdf4';
+  var diagColor = diag.severity === 'urgent' ? '#ef4444' : diag.severity === 'watch' ? '#d97706' : '#10b981';
+  var diagBorder = diag.severity === 'urgent' ? '#ef4444' : diag.severity === 'watch' ? '#f59e0b' : '#10b981';
+
+  bodyEl.innerHTML = '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">'
+    + steps.map(function(s) {
+      var iconColor = s.pass ? '#ef4444' : '#10b981';
+      var icon = s.pass ? '⚠' : '✓';
+      return '<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f8fafc;border-radius:6px;">'
+        + '<span style="font-size:14px;color:' + iconColor + ';flex-shrink:0;margin-top:1px;">' + icon + '</span>'
+        + '<div style="flex:1;">'
+          + '<div style="font-size:12px;color:#6b7280;margin-bottom:2px;">' + s.q + '</div>'
+          + '<div style="font-size:12px;color:#374151;"><strong>' + s.result + '</strong>'
+            + (s.a && s.a !== s.result ? ' <span style="color:#9ca3af;">(' + s.a + ')</span>' : '') + '</div>'
+        + '</div>'
+        + '</div>';
+    }).join('')
+    + '</div>'
+    + '<div style="padding:14px;background:' + diagBg + ';border-left:4px solid ' + diagBorder + ';border-radius:6px;margin-bottom:12px;">'
+      + '<div style="font-size:12px;color:#6b7280;margin-bottom:4px;">자동 판단 결론</div>'
+      + '<div style="font-size:16px;font-weight:700;color:' + diagColor + ';">' + diag.label + '</div>'
+    + '</div>'
+    + '<div style="font-size:11px;color:#9ca3af;">※ 활성탄·설비 문제는 데이터만으로 단정 불가 — 현장 점검 병행 필요</div>';
+
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 </script>
 
