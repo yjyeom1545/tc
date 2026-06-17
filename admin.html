@@ -2502,19 +2502,19 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 <!-- 차압관리 탭 -->
 <div id="tab-pressure" class="content hidden">
 
-  <!-- 3-1. 페이지 타이틀 -->
+  <!-- 2-1. 페이지 타이틀 -->
   <div class="ws-page-title" style="margin-bottom:14px;"><span class="ws-page-title-icon"></span>방지시설 차압 모니터링</div>
 
-  <!-- 3-2. 시설 카드 8개 -->
+  <!-- 2-2. 시설 카드 8개 -->
   <div id="pressure-cards" style="display:flex;gap:10px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:18px;padding-bottom:4px;"></div>
 
-  <!-- 3-3. 그래프 섹션 -->
+  <!-- 2-3. 그래프 섹션 -->
   <div class="card" style="margin-bottom:14px;">
     <div class="card-body">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
         <div style="display:flex;gap:4px;">
-          <button id="pressure-tab-chart" class="btn btn-sm" style="background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:5px;font-size:12px;cursor:pointer;font-family:inherit;" onclick="switchPressureChartTab('pressure')">차압 추이</button>
-          <button id="pressure-tab-k" class="btn btn-sm" style="background:#e5e7eb;color:#374151;border:none;padding:5px 14px;border-radius:5px;font-size:12px;cursor:pointer;font-family:inherit;" onclick="switchPressureChartTab('k')">k값 추이</button>
+          <button id="pressure-tab-chart" style="background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:5px;font-size:12px;cursor:pointer;font-family:inherit;" onclick="switchPressureChartTab('pressure')">차압 추이</button>
+          <button id="pressure-tab-k" style="background:#e5e7eb;color:#374151;border:none;padding:5px 14px;border-radius:5px;font-size:12px;cursor:pointer;font-family:inherit;" onclick="switchPressureChartTab('k')">k값 추이</button>
         </div>
         <div style="display:flex;gap:4px;">
           <button class="pressure-period-btn" data-period="1m" style="background:#e5e7eb;color:#374151;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;" onclick="setPressurePeriod('1m')">1개월</button>
@@ -2523,115 +2523,108 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
           <button class="pressure-period-btn" data-period="all" style="background:#e5e7eb;color:#374151;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;" onclick="setPressurePeriod('all')">전체</button>
         </div>
       </div>
-      <!-- 범례 -->
       <div id="pressure-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:11px;color:#6b7280;"></div>
       <div style="position:relative;height:260px;"><canvas id="pressureChart"></canvas></div>
+      <div id="pressure-chart-note" style="display:none;margin-top:8px;font-size:11px;color:#9ca3af;text-align:center;">측정업체 방문일 실측값 기준 · k값이 낮아질수록 시설 상태 저하</div>
     </div>
   </div>
 
-  <!-- 3-4. 입력(A+B) + 공식 2열 -->
-  <div style="display:grid;grid-template-columns:1fr 38%;gap:14px;margin-bottom:14px;" class="pressure-input-grid">
+  <!-- 2-4. 입력 섹션 3열 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 34%;gap:14px;margin-bottom:14px;" class="pressure-input-grid">
 
-    <!-- 왼쪽: 섹션A + 섹션B 세로 배치 -->
-    <div style="display:flex;flex-direction:column;gap:14px;">
-
-      <!-- 섹션 A: 일일 차압 입력 -->
-      <div class="card">
-        <div class="card-body">
-          <div style="margin-bottom:4px;">
-            <div class="card-title" style="margin-bottom:2px;">오늘 차압값 입력</div>
-            <div style="font-size:11px;color:#9ca3af;">매일 입력 — 미측정 시설은 공란. 과거 날짜 소급 입력 가능.</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;margin:12px 0 10px;">
-            <label style="font-size:12px;color:#6b7280;font-weight:500;white-space:nowrap;">날짜</label>
-            <input type="date" id="pa-date" style="border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />
-          </div>
-          <div id="pa-diff-fields" style="display:flex;flex-direction:column;gap:7px;"></div>
-          <button onclick="saveDailyDiff()" style="margin-top:12px;width:100%;padding:9px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;">차압 저장</button>
+    <!-- 왼쪽: 차압 입력 -->
+    <div class="card">
+      <div class="card-body">
+        <div style="margin-bottom:4px;">
+          <div class="card-title" style="margin-bottom:2px;">차압 입력</div>
+          <div style="font-size:11px;color:#9ca3af;">매일 입력 · 소급 입력 가능</div>
         </div>
-      </div>
-
-      <!-- 섹션 B: 측정업체 방문일 유량 입력 -->
-      <div class="card" style="border:1px solid #dbeafe;">
-        <div class="card-body">
-          <div style="margin-bottom:4px;">
-            <div class="card-title" style="margin-bottom:2px;color:#1d4ed8;">측정업체 방문일 유량 입력</div>
-            <div style="font-size:11px;color:#9ca3af;">월 2회 — 유량값 입력 시 해당 날짜 차압 데이터를 자동 조회하여 k값 계산</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;margin:12px 0 10px;">
-            <label style="font-size:12px;color:#6b7280;font-weight:500;white-space:nowrap;">측정일</label>
-            <input type="date" id="pb-date" onchange="clearMeasureCalc()" style="border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />
-          </div>
-          <div style="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;">유량 (CMM)</div>
-          <div id="pb-flow-fields" style="display:flex;flex-direction:column;gap:7px;"></div>
-          <button onclick="saveMeasureDayFlow()" style="margin-top:12px;width:100%;padding:9px;background:#1d4ed8;color:white;border:none;border-radius:6px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;">유량 + k값 저장</button>
+        <div style="display:flex;align-items:center;gap:8px;margin:12px 0 10px;">
+          <label style="font-size:12px;color:#6b7280;font-weight:500;white-space:nowrap;">날짜</label>
+          <input type="date" id="pa-date" oninput="liveCalc()" style="border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />
         </div>
+        <div id="pa-diff-fields" style="display:flex;flex-direction:column;gap:7px;"></div>
+        <button onclick="savePressureData('pressure')" style="margin-top:12px;width:100%;padding:9px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;">차압 저장</button>
       </div>
+    </div>
 
-    </div><!-- /왼쪽 -->
+    <!-- 가운데: 유량 입력 -->
+    <div class="card" style="border:1px solid #dbeafe;">
+      <div class="card-body">
+        <div style="margin-bottom:4px;">
+          <div class="card-title" style="margin-bottom:2px;color:#1d4ed8;">유량 입력</div>
+          <div style="font-size:11px;color:#9ca3af;">측정업체 방문일만 · 구두 확인값 · 차압 미입력 시 k값은 나중에 자동계산</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin:12px 0 10px;">
+          <label style="font-size:12px;color:#6b7280;font-weight:500;white-space:nowrap;">측정일</label>
+          <input type="date" id="pb-date" oninput="liveCalc()" style="border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />
+        </div>
+        <div id="pb-flow-fields" style="display:flex;flex-direction:column;gap:7px;"></div>
+        <button onclick="savePressureData('flow')" style="margin-top:12px;width:100%;padding:9px;background:#1d4ed8;color:white;border:none;border-radius:6px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;">유량 저장</button>
+      </div>
+    </div>
 
     <!-- 오른쪽: 공식 + 실시간 계산 -->
     <div class="card" style="background:#0f2744;align-self:start;position:sticky;top:16px;">
       <div class="card-body">
-        <div style="color:rgba(255,255,255,0.9);font-size:15px;font-weight:700;margin-bottom:16px;">공식 및 실시간 계산</div>
-        <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:14px;margin-bottom:16px;line-height:2.2;">
-          <div style="font-size:16px;"><strong style="color:#60a5fa;">k = Q ÷ √ΔP</strong></div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:10px;">유량 역산</div>
-          <div style="font-size:16px;"><strong style="color:#34d399;">효율 = Q ÷ 설계용량 × 100</strong></div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:10px;">설계용량 대비 %</div>
-          <div style="font-size:16px;"><strong style="color:#fbbf24;">Q추정 = k × √ΔP</strong></div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.55);">차압으로 유량 추정</div>
+        <div style="color:rgba(255,255,255,0.9);font-size:15px;font-weight:700;margin-bottom:14px;">공식 · 실시간 계산</div>
+        <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:12px;margin-bottom:14px;line-height:2.1;">
+          <div style="font-size:15px;"><strong style="color:#60a5fa;">k = Q ÷ √ΔP</strong></div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:8px;">유량 역산</div>
+          <div style="font-size:15px;"><strong style="color:#34d399;">효율 = Q ÷ 설계용량 × 100</strong></div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:8px;">설계용량 대비 %</div>
+          <div style="font-size:15px;"><strong style="color:#fbbf24;">Q추정 = k × √ΔP</strong></div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);">차압으로 유량 추정</div>
         </div>
         <div id="pressure-realtime-results" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
 
-  </div><!-- /3-4 grid -->
+  </div><!-- /3열 grid -->
 
-  <!-- 3-5. 인사이트 섹션 -->
-  <div class="card" style="margin-bottom:14px;">
-    <div class="card-body">
-      <div class="card-title" style="margin-bottom:12px;">지금 해야 할 것</div>
-      <div id="pressure-insights" style="display:flex;flex-direction:column;gap:8px;"></div>
-    </div>
-  </div>
-
-  <!-- 3-6. 활성탄 교체 기록 -->
+  <!-- 2-5. 이력 조회 테이블 -->
   <div class="card">
     <div class="card-body">
-      <div class="card-title" style="margin-bottom:14px;">활성탄 교체 이력</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+        <div class="card-title" style="margin:0;">이력 조회</div>
+        <button onclick="exportPressureExcel()" style="padding:6px 14px;background:#0f2744;color:white;border:none;border-radius:5px;font-size:12px;font-family:inherit;font-weight:600;cursor:pointer;">엑셀 저장</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
         <div>
-          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">시설 선택</div>
-          <select id="carbon-facility" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:inherit;color:#374151;outline:none;">
-            <option value="1">1번 시설</option><option value="2">2번 시설</option><option value="3">3번 시설</option>
-            <option value="4">4번 시설</option><option value="5">5번 시설</option><option value="6">6번 시설</option>
-            <option value="7">7번 시설</option><option value="9">9번 시설</option>
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">시설</div>
+          <select id="ph-facility" onchange="renderHistoryTable()" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:inherit;color:#374151;outline:none;">
+            <option value="all">전체</option>
+            <option value="1">1번</option><option value="2">2번</option><option value="3">3번</option>
+            <option value="4">4번</option><option value="5">5번</option><option value="6">6번</option>
+            <option value="7">7번</option><option value="9">9번</option>
           </select>
         </div>
         <div>
-          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">교체일</div>
-          <input type="date" id="carbon-date" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">구분</div>
+          <select id="ph-type" onchange="renderHistoryTable()" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:inherit;color:#374151;outline:none;">
+            <option value="all">전체</option>
+            <option value="measured">실측</option>
+            <option value="estimated">추정</option>
+          </select>
         </div>
-        <div style="flex:1;min-width:120px;">
-          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">비고 (선택)</div>
-          <input type="text" id="carbon-note" placeholder="내용 입력..." style="width:100%;border:1px solid #e8ecf0;border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;box-sizing:border-box;" />
-        </div>
-        <button onclick="saveActivatedCarbon()" style="padding:6px 16px;background:#0f2744;color:white;border:none;border-radius:5px;font-size:12px;font-family:inherit;font-weight:600;cursor:pointer;white-space:nowrap;">등록</button>
       </div>
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead>
-            <tr style="background:#f8fafc;border-bottom:1px solid #e8ecf0;">
-              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">No.</th>
-              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">시설</th>
-              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">교체일</th>
-              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">비고</th>
-              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">경과일</th>
+            <tr style="background:#f8fafc;border-bottom:2px solid #e8ecf0;">
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;white-space:nowrap;">날짜</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;white-space:nowrap;">시설</th>
+              <th style="padding:8px 10px;text-align:right;color:#6b7280;font-weight:600;white-space:nowrap;">차압(mmAq)</th>
+              <th style="padding:8px 10px;text-align:right;color:#6b7280;font-weight:600;white-space:nowrap;">유량(CMM)</th>
+              <th style="padding:8px 10px;text-align:center;color:#6b7280;font-weight:600;white-space:nowrap;">구분</th>
+              <th style="padding:8px 10px;text-align:right;color:#6b7280;font-weight:600;white-space:nowrap;">k값</th>
+              <th style="padding:8px 10px;text-align:right;color:#6b7280;font-weight:600;white-space:nowrap;">효율(%)</th>
+              <th style="padding:8px 10px;text-align:center;color:#6b7280;font-weight:600;white-space:nowrap;">k값변화</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;white-space:nowrap;">비고</th>
             </tr>
           </thead>
-          <tbody id="carbon-table-body">
-            <tr><td colspan="5" style="padding:20px;text-align:center;color:#9ca3af;">데이터 없음</td></tr>
+          <tbody id="pressure-history-tbody">
+            <tr><td colspan="9" style="padding:20px;text-align:center;color:#9ca3af;">데이터 없음</td></tr>
           </tbody>
         </table>
       </div>
@@ -8556,13 +8549,12 @@ var FACILITY_COLORS = {
   5: '#1D9E75', 6: '#639922', 7: '#BA7517', 9: '#888780'
 };
 
+
 var _pressureChart = null;
 var _pressureChartTab = 'pressure';
 var _pressurePeriod = '3m';
 var _pressureAllData = [];
-var _carbonRecords = [];
 
-// fetch 기반 REST API 헬퍼 (프로젝트 공통 패턴 사용)
 function sbPressure(path, opts) {
   opts = opts || {};
   var url = SB_URL + '/rest/v1/' + path;
@@ -8580,6 +8572,11 @@ function sbPressure(path, opts) {
   });
 }
 
+function _todayStr() {
+  var now = new Date();
+  return now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+}
+
 function calcKValue(facilityNo, flowCmm, pressureDiff) {
   if (!pressureDiff || pressureDiff <= 0) return null;
   var k = flowCmm / Math.sqrt(pressureDiff);
@@ -8592,9 +8589,10 @@ function estimateFlow(k, pressureDiff) {
   return Math.round(k * Math.sqrt(pressureDiff) * 10) / 10;
 }
 
-function _todayStr() {
-  var now = new Date();
-  return now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+function getLastKValues(facilityNo) {
+  var rows = _pressureAllData.filter(function(r) { return r.facility_no === facilityNo && r.k_value != null; });
+  rows.sort(function(a, b) { return a.read_date < b.read_date ? 1 : -1; });
+  return rows;
 }
 
 async function initPressurePage() {
@@ -8602,136 +8600,90 @@ async function initPressurePage() {
   if (paDate && !paDate.value) paDate.value = _todayStr();
   var pbDate = document.getElementById('pb-date');
   if (pbDate && !pbDate.value) pbDate.value = _todayStr();
-  var carbonDateEl = document.getElementById('carbon-date');
-  if (carbonDateEl && !carbonDateEl.value) carbonDateEl.value = _todayStr();
 
-  buildSectionAFields();
-  buildSectionBFields();
+  _buildPressureInputFields();
+  _buildFlowInputFields();
 
   try {
     var res = await sbPressure('pressure_readings?select=*&order=read_date.asc');
     if (!res.ok) throw new Error('pressure_readings 로딩 실패: ' + res.status);
     _pressureAllData = await res.json();
     await renderFacilityCards();
-    renderPressureChart(_pressureChartTab, _pressurePeriod);
+    renderChart(_pressureChartTab, _pressurePeriod);
     renderPressureLegend();
-    renderInsights();
+    renderHistoryTable();
   } catch(e) { console.error('차압 데이터 로딩 오류:', e); }
-  try {
-    var res2 = await sbPressure('activated_carbon_records?select=*&order=replace_date.desc');
-    if (!res2.ok) throw new Error('activated_carbon_records 로딩 실패: ' + res2.status);
-    _carbonRecords = await res2.json();
-    renderCarbonTable();
-  } catch(e) { console.error('활성탄 데이터 로딩 오류:', e); }
 }
 
-function buildSectionAFields() {
+function _buildPressureInputFields() {
   var el = document.getElementById('pa-diff-fields');
   if (!el) return;
   el.innerHTML = PRESSURE_FACILITIES.map(function(no) {
     return '<div style="display:flex;align-items:center;gap:6px;">'
-      + '<span style="width:50px;font-size:12px;color:#374151;font-weight:600;flex-shrink:0;">' + no + '번</span>'
-      + '<input type="number" id="pa-diff-' + no + '" placeholder="–" step="0.1" min="0"'
+      + '<span style="width:34px;font-size:12px;color:#374151;font-weight:600;flex-shrink:0;">' + no + '번</span>'
+      + '<input type="number" id="pa-diff-' + no + '" placeholder="–" step="0.1" min="0" oninput="liveCalc()"'
       + ' style="flex:1;border:1px solid #e8ecf0;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />'
       + '<span style="font-size:11px;color:#9ca3af;white-space:nowrap;">mmAq</span>'
       + '</div>';
   }).join('');
 }
 
-function buildSectionBFields() {
-  var flowEl = document.getElementById('pb-flow-fields');
-  if (!flowEl) return;
-  flowEl.innerHTML = PRESSURE_FACILITIES.map(function(no) {
+function _buildFlowInputFields() {
+  var el = document.getElementById('pb-flow-fields');
+  if (!el) return;
+  el.innerHTML = PRESSURE_FACILITIES.map(function(no) {
     return '<div style="display:flex;align-items:center;gap:6px;">'
       + '<span style="width:34px;font-size:12px;color:#374151;font-weight:600;flex-shrink:0;">' + no + '번</span>'
-      + '<input type="number" id="pb-flow-' + no + '" placeholder="–" step="0.1" min="0"'
-      + ' oninput="updateMeasureCalc(' + no + ')"'
+      + '<input type="number" id="pb-flow-' + no + '" placeholder="–" step="0.1" min="0" oninput="liveCalc()"'
       + ' style="flex:1;border:1px solid #dbeafe;border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;color:#374151;outline:none;" />'
       + '<span style="font-size:11px;color:#9ca3af;white-space:nowrap;">CMM</span>'
       + '</div>';
   }).join('');
 }
 
-function clearMeasureCalc() {
-  document.getElementById('pressure-realtime-results').innerHTML = '';
-}
-
-function _getPbDateDiff(facilityNo) {
-  var dateEl = document.getElementById('pb-date');
-  if (!dateEl || !dateEl.value) return null;
-  var row = _pressureAllData.find(function(r) {
-    return r.facility_no === facilityNo && r.read_date === dateEl.value && r.pressure_diff !== null;
-  });
-  return row ? row.pressure_diff : null;
-}
-
-function updateMeasureCalc(facilityNo) {
-  var pfEl = document.getElementById('pb-flow-' + facilityNo);
-  var pf = pfEl ? parseFloat(pfEl.value) : NaN;
-
-  var resultsEl = document.getElementById('pressure-realtime-results');
-  if (!resultsEl) return;
-
-  var existingEl = document.getElementById('realtime-' + facilityNo);
-  if (isNaN(pf) || pf <= 0) {
-    if (existingEl) existingEl.remove();
-    return;
-  }
-
-  var pd = _getPbDateDiff(facilityNo);
-  var html = '<div id="realtime-' + facilityNo + '" style="background:rgba(255,255,255,0.07);border-radius:6px;padding:12px;border-left:3px solid ' + FACILITY_COLORS[facilityNo] + ';">'
-    + '<div style="font-size:13px;font-weight:700;color:white;margin-bottom:6px;">' + facilityNo + '번 시설</div>';
-
-  if (pd !== null && pd > 0) {
-    var calc = calcKValue(facilityNo, pf, pd);
-    if (calc) {
-      html += '<div style="font-size:15px;color:#60a5fa;font-weight:600;">k = ' + calc.k + '</div>'
-        + '<div style="font-size:15px;color:#34d399;font-weight:600;">효율 = ' + calc.efficiency + ' %</div>'
-        + '<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;">차압 ' + pd + ' mmAq 기준</div>';
-    }
-  } else {
-    html += '<div style="font-size:13px;color:#fbbf24;">Q = ' + pf + ' CMM 입력됨</div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;">해당 날짜 차압 데이터 없음 — k값 미계산</div>';
-  }
-
-  html += '</div>';
-  if (existingEl) { existingEl.outerHTML = html; }
-  else { resultsEl.insertAdjacentHTML('beforeend', html); }
-}
-
-function getLastKValue(facilityNo) {
-  var rows = _pressureAllData.filter(function(r) { return r.facility_no === facilityNo && r.k_value; });
-  if (!rows.length) return null;
-  rows.sort(function(a, b) { return a.read_date < b.read_date ? 1 : -1; });
-  return rows[0].k_value;
-}
-
 async function renderFacilityCards() {
   var container = document.getElementById('pressure-cards');
   if (!container) return;
-  var today = new Date();
-  var todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  var todayStr = _todayStr();
   var todayData = {};
   _pressureAllData.filter(function(r) { return r.read_date === todayStr; }).forEach(function(r) { todayData[r.facility_no] = r; });
 
   container.innerHTML = PRESSURE_FACILITIES.map(function(no) {
     var r = todayData[no];
     var pd = r ? r.pressure_diff : null;
-    var kv = r ? r.k_value : getLastKValue(no);
-    var status = 'none';
-    var statusLabel = '미입력';
-    var statusColor = '#9ca3af';
-    var borderColor = '#e8ecf0';
-    if (pd !== null && pd !== undefined) {
-      if (pd >= PRESSURE_THRESHOLDS.danger) { status='danger'; statusLabel='심각'; statusColor='#ef4444'; borderColor='#ef4444'; }
-      else if (pd >= PRESSURE_THRESHOLDS.warn) { status='warn'; statusLabel='주의'; statusColor='#f59e0b'; borderColor='#f59e0b'; }
-      else { status='ok'; statusLabel='정상'; statusColor='#10b981'; borderColor='#10b981'; }
+
+    var kRows = getLastKValues(no);
+    var lastK = kRows.length ? kRows[0].k_value : null;
+    var kTrend = null;
+    if (kRows.length >= 2) kTrend = kRows[0].k_value < kRows[1].k_value ? 'down' : 'up';
+
+    var estimatedFlow = null;
+    if (pd != null && lastK != null) estimatedFlow = estimateFlow(lastK, pd);
+
+    var statusLabel = '미입력', statusColor = '#9ca3af', borderColor = '#e8ecf0';
+    if (pd != null) {
+      if (pd >= PRESSURE_THRESHOLDS.danger) { statusLabel='심각'; statusColor='#ef4444'; borderColor='#ef4444'; }
+      else if (pd >= PRESSURE_THRESHOLDS.warn) { statusLabel='주의'; statusColor='#f59e0b'; borderColor='#f59e0b'; }
+      else { statusLabel='정상'; statusColor='#10b981'; borderColor='#10b981'; }
     }
-    return '<div style="min-width:110px;flex:1;border:1px solid #e8ecf0;border-top:3px solid ' + borderColor + ';border-radius:8px;background:white;padding:12px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">'
-      + '<div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">' + no + '번 시설</div>'
-      + '<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:4px;">' + (pd !== null && pd !== undefined ? pd + '<span style="font-size:10px;font-weight:400;color:#9ca3af;margin-left:2px;">mmAq</span>' : '<span style="font-size:13px;color:#9ca3af;">미입력</span>') + '</div>'
-      + '<span style="display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;background:' + statusColor + '20;color:' + statusColor + ';">' + statusLabel + '</span>'
-      + (kv ? '<div style="margin-top:6px;font-size:10px;color:#9ca3af;">k = ' + (Math.round(kv*100)/100) + '</div>' : '')
+
+    var kHtml = lastK != null
+      ? '<div style="margin-top:4px;font-size:10px;color:' + (kTrend==='down'?'#ef4444':'#9ca3af') + ';">'
+        + (kTrend==='down'?'↓ ':'') + 'k = ' + (Math.round(lastK*100)/100) + '</div>'
+      : '<div style="margin-top:4px;font-size:10px;color:#d1d5db;">k —</div>';
+
+    var flowHtml = estimatedFlow != null
+      ? '<div style="margin-top:2px;font-size:10px;color:#6b7280;"><em>' + estimatedFlow + ' CMM</em> <span style="color:#9ca3af;">(추정)</span></div>'
+      : '<div style="margin-top:2px;font-size:10px;color:#d1d5db;">유량 —</div>';
+
+    return '<div style="min-width:108px;flex:1;border:1px solid #e8ecf0;border-top:3px solid ' + borderColor + ';border-radius:8px;background:white;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">'
+      + '<div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:5px;">' + no + '번 시설</div>'
+      + '<div style="font-size:17px;font-weight:700;color:#111827;margin-bottom:3px;">'
+        + (pd != null ? pd + '<span style="font-size:10px;font-weight:400;color:#9ca3af;margin-left:2px;">mmAq</span>' : '<span style="font-size:12px;color:#9ca3af;">미입력</span>')
+      + '</div>'
+      + '<span style="display:inline-block;padding:1px 6px;border-radius:9px;font-size:10px;font-weight:600;background:' + statusColor + '20;color:' + statusColor + ';">' + statusLabel + '</span>'
+      + flowHtml
+      + kHtml
       + '</div>';
   }).join('');
 }
@@ -8742,8 +8694,7 @@ function renderPressureLegend() {
   el.innerHTML = PRESSURE_FACILITIES.map(function(no) {
     return '<span style="display:flex;align-items:center;gap:4px;">'
       + '<span style="width:12px;height:3px;background:' + FACILITY_COLORS[no] + ';display:inline-block;border-radius:2px;"></span>'
-      + '<span>' + no + '번</span>'
-      + '</span>';
+      + '<span>' + no + '번</span></span>';
   }).join('');
 }
 
@@ -8762,7 +8713,9 @@ function switchPressureChartTab(tab) {
   var bt2 = document.getElementById('pressure-tab-k');
   if (bt1) { bt1.style.background = tab==='pressure'?'#2563eb':'#e5e7eb'; bt1.style.color = tab==='pressure'?'white':'#374151'; }
   if (bt2) { bt2.style.background = tab==='k'?'#2563eb':'#e5e7eb'; bt2.style.color = tab==='k'?'white':'#374151'; }
-  renderPressureChart(_pressureChartTab, _pressurePeriod);
+  var noteEl = document.getElementById('pressure-chart-note');
+  if (noteEl) noteEl.style.display = tab === 'k' ? 'block' : 'none';
+  renderChart(tab, _pressurePeriod);
 }
 
 function setPressurePeriod(period) {
@@ -8772,229 +8725,361 @@ function setPressurePeriod(period) {
     btn.style.background = active ? '#2563eb' : '#e5e7eb';
     btn.style.color = active ? 'white' : '#374151';
   });
-  renderPressureChart(_pressureChartTab, _pressurePeriod);
+  renderChart(_pressureChartTab, period);
 }
 
-function renderPressureChart(tab, period) {
+function _calcTrendLine(points) {
+  var n = points.length;
+  if (n < 2) return null;
+  var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  points.forEach(function(p, i) { sumX += i; sumY += p; sumXY += i*p; sumX2 += i*i; });
+  var slope = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
+  var intercept = (sumY - slope*sumX) / n;
+  return points.map(function(_, i) { return Math.round((slope*i + intercept)*100)/100; });
+}
+
+function renderChart(tab, period) {
   var canvas = document.getElementById('pressureChart');
   if (!canvas) return;
   var startDate = getPressurePeriodStart(period);
   var filtered = startDate ? _pressureAllData.filter(function(r) { return r.read_date >= startDate; }) : _pressureAllData;
 
-  var dateSet = {};
-  filtered.forEach(function(r) { dateSet[r.read_date] = true; });
-  var labels = Object.keys(dateSet).sort();
+  var datasets = [];
 
-  var datasets = PRESSURE_FACILITIES.map(function(no) {
-    var dataMap = {};
-    filtered.filter(function(r) { return r.facility_no === no; }).forEach(function(r) {
-      var val = tab === 'k' ? r.k_value : r.pressure_diff;
-      if (val !== null && val !== undefined) dataMap[r.read_date] = val;
+  if (tab === 'k') {
+    var facilityKData = {};
+    PRESSURE_FACILITIES.forEach(function(no) {
+      var rows = filtered.filter(function(r) { return r.facility_no === no && r.k_value != null; });
+      rows.sort(function(a, b) { return a.read_date < b.read_date ? 1 : -1; });
+      if (rows.length) facilityKData[no] = rows.reverse();
     });
-    return {
-      label: no + '번',
-      data: labels.map(function(d) { return dataMap[d] !== undefined ? dataMap[d] : null; }),
-      borderColor: FACILITY_COLORS[no],
-      backgroundColor: FACILITY_COLORS[no] + '22',
-      tension: 0.3,
-      spanGaps: true,
-      pointRadius: 3,
-      borderWidth: 2
-    };
-  });
 
-  if (_pressureChart) { _pressureChart.destroy(); _pressureChart = null; }
-  _pressureChart = new Chart(canvas.getContext('2d'), {
-    type: 'line',
-    data: { labels: labels, datasets: datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { mode: 'index', intersect: false }
-      },
-      scales: {
-        x: { ticks: { font: { size: 10 }, maxTicksLimit: 10 } },
-        y: {
-          ticks: { font: { size: 10 } },
-          title: { display: true, text: tab === 'k' ? 'k값' : '차압 (mmAq)', font: { size: 10 } }
+    var allDates = [];
+    Object.values(facilityKData).forEach(function(rows) { rows.forEach(function(r) { if (allDates.indexOf(r.read_date) < 0) allDates.push(r.read_date); }); });
+    allDates.sort();
+
+    PRESSURE_FACILITIES.forEach(function(no) {
+      var rows = facilityKData[no];
+      if (!rows || !rows.length) return;
+      var dataMap = {};
+      rows.forEach(function(r) { dataMap[r.read_date] = r.k_value; });
+      var pts = allDates.map(function(d) { return dataMap[d] != null ? dataMap[d] : null; });
+      var validPts = rows.map(function(r) { return r.k_value; });
+      var trend = _calcTrendLine(validPts);
+      datasets.push({
+        label: no + '번',
+        data: pts,
+        borderColor: FACILITY_COLORS[no],
+        backgroundColor: FACILITY_COLORS[no] + '33',
+        tension: 0.2,
+        spanGaps: false,
+        pointRadius: 6,
+        borderWidth: 2
+      });
+      if (trend && trend.length >= 2) {
+        var trendFull = allDates.map(function(d) { return dataMap[d] != null ? trend[rows.findIndex(function(r){ return r.read_date===d; })] : null; });
+        datasets.push({
+          label: no + '번 추세',
+          data: trendFull,
+          borderColor: FACILITY_COLORS[no] + '88',
+          borderDash: [4, 4],
+          borderWidth: 1,
+          pointRadius: 0,
+          tension: 0,
+          spanGaps: true
+        });
+      }
+    });
+
+    if (_pressureChart) { _pressureChart.destroy(); _pressureChart = null; }
+    _pressureChart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: { labels: allDates, datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+        scales: {
+          x: { ticks: { font: { size: 10 }, maxTicksLimit: 10 } },
+          y: { ticks: { font: { size: 10 } }, title: { display: true, text: 'k값', font: { size: 10 } } }
         }
       }
-    }
-  });
+    });
+  } else {
+    var dateSet = {};
+    filtered.forEach(function(r) { if (r.pressure_diff != null) dateSet[r.read_date] = true; });
+    var labels = Object.keys(dateSet).sort();
+
+    PRESSURE_FACILITIES.forEach(function(no) {
+      var dataMap = {};
+      filtered.filter(function(r) { return r.facility_no === no && r.pressure_diff != null; }).forEach(function(r) { dataMap[r.read_date] = r.pressure_diff; });
+      datasets.push({
+        label: no + '번',
+        data: labels.map(function(d) { return dataMap[d] !== undefined ? dataMap[d] : null; }),
+        borderColor: FACILITY_COLORS[no],
+        backgroundColor: FACILITY_COLORS[no] + '22',
+        tension: 0.3,
+        spanGaps: true,
+        pointRadius: 3,
+        borderWidth: 2
+      });
+    });
+
+    if (_pressureChart) { _pressureChart.destroy(); _pressureChart = null; }
+    _pressureChart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: { labels: labels, datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+        scales: {
+          x: { ticks: { font: { size: 10 }, maxTicksLimit: 10 } },
+          y: { ticks: { font: { size: 10 } }, title: { display: true, text: '차압 (mmAq)', font: { size: 10 } } }
+        }
+      }
+    });
+  }
 }
 
-async function _savePressureRows(rows) {
-  var saveRes = await sbPressure(
+function liveCalc() {
+  var resultsEl = document.getElementById('pressure-realtime-results');
+  if (!resultsEl) return;
+  var paDate = (document.getElementById('pa-date') || {}).value;
+  var pbDate = (document.getElementById('pb-date') || {}).value;
+
+  var html = '';
+  PRESSURE_FACILITIES.forEach(function(no) {
+    var pdEl = document.getElementById('pa-diff-' + no);
+    var pfEl = document.getElementById('pb-flow-' + no);
+    var pdInput = pdEl ? parseFloat(pdEl.value) : NaN;
+    var pfInput = pfEl ? parseFloat(pfEl.value) : NaN;
+
+    var hasPd = !isNaN(pdInput) && pdInput > 0;
+    var hasPf = !isNaN(pfInput) && pfInput > 0;
+
+    if (!hasPd && !hasPf) return;
+
+    var kRows = getLastKValues(no);
+    var savedK = kRows.length ? kRows[0].k_value : null;
+
+    var blockHtml = '<div id="realtime-' + no + '" style="background:rgba(255,255,255,0.07);border-radius:6px;padding:10px;border-left:3px solid ' + FACILITY_COLORS[no] + ';margin-bottom:4px;">'
+      + '<div style="font-size:12px;font-weight:700;color:white;margin-bottom:5px;">' + no + '번 시설</div>';
+
+    if (hasPd && hasPf) {
+      var calc = calcKValue(no, pfInput, pdInput);
+      if (calc) {
+        blockHtml += '<div style="font-size:13px;color:#60a5fa;font-weight:600;">k = ' + pfInput + ' ÷ √' + pdInput + ' = ' + calc.k + '</div>'
+          + '<div style="font-size:13px;color:#34d399;font-weight:600;">효율 = ' + pfInput + ' ÷ ' + DESIGN_CAPACITY[no] + ' × 100 = ' + calc.efficiency + '%</div>';
+      }
+    } else if (hasPd && savedK) {
+      var est = estimateFlow(savedK, pdInput);
+      if (est != null) {
+        blockHtml += '<div style="font-size:12px;color:#fbbf24;">Q추정 = ' + savedK + ' × √' + pdInput + ' = <strong>' + est + ' CMM</strong> <em style="font-size:10px;">(추정)</em></div>';
+      }
+    } else if (hasPd) {
+      blockHtml += '<div style="font-size:11px;color:rgba(255,255,255,0.5);">차압 ' + pdInput + ' mmAq — 저장된 k값 없어 추정 불가</div>';
+    } else if (hasPf) {
+      var pdFromDb = null;
+      if (paDate) {
+        var dbRow = _pressureAllData.find(function(r) { return r.facility_no === no && r.read_date === paDate && r.pressure_diff != null; });
+        if (dbRow) pdFromDb = dbRow.pressure_diff;
+      }
+      if (pdFromDb != null) {
+        var calc2 = calcKValue(no, pfInput, pdFromDb);
+        if (calc2) {
+          blockHtml += '<div style="font-size:13px;color:#60a5fa;font-weight:600;">k = ' + pfInput + ' ÷ √' + pdFromDb + ' = ' + calc2.k + '</div>'
+            + '<div style="font-size:13px;color:#34d399;font-weight:600;">효율 = ' + calc2.efficiency + '%</div>'
+            + '<div style="font-size:10px;color:rgba(255,255,255,0.4);">DB 차압 ' + pdFromDb + ' mmAq 기준</div>';
+        }
+      } else {
+        blockHtml += '<div style="font-size:11px;color:#fbbf24;">Q = ' + pfInput + ' CMM — 차압 데이터 없음, k 미계산</div>';
+      }
+    }
+
+    blockHtml += '</div>';
+    html += blockHtml;
+  });
+
+  resultsEl.innerHTML = html || '<div style="font-size:11px;color:rgba(255,255,255,0.35);text-align:center;padding:8px;">차압 또는 유량 입력 시 계산 결과가 표시됩니다</div>';
+}
+
+async function savePressureData(type) {
+  if (type === 'pressure') {
+    var dateVal = (document.getElementById('pa-date') || {}).value;
+    if (!dateVal) { alert('날짜를 선택해주세요.'); return; }
+    var rows = [];
+    PRESSURE_FACILITIES.forEach(function(no) {
+      var pdEl = document.getElementById('pa-diff-' + no);
+      var pd = pdEl ? parseFloat(pdEl.value) : NaN;
+      if (isNaN(pd) || pdEl.value === '') return;
+      var existing = _pressureAllData.find(function(r) { return r.facility_no === no && r.read_date === dateVal; });
+      var row = { read_date: dateVal, facility_no: no, pressure_diff: pd };
+      if (existing && existing.flow_cmm != null) {
+        var calc = calcKValue(no, existing.flow_cmm, pd);
+        if (calc) { row.k_value = calc.k; row.efficiency = calc.efficiency; }
+      }
+      rows.push(row);
+    });
+    if (!rows.length) { alert('입력된 차압값이 없습니다.'); return; }
+    try {
+      await _upsertPressureRows(rows);
+      alert('차압값이 저장되었습니다.');
+      PRESSURE_FACILITIES.forEach(function(no) { var el = document.getElementById('pa-diff-' + no); if (el) el.value = ''; });
+    } catch(e) { alert('저장 오류: ' + e.message); }
+
+  } else if (type === 'flow') {
+    var dateVal2 = (document.getElementById('pb-date') || {}).value;
+    if (!dateVal2) { alert('측정일을 선택해주세요.'); return; }
+    var rows2 = [];
+    PRESSURE_FACILITIES.forEach(function(no) {
+      var pfEl = document.getElementById('pb-flow-' + no);
+      var pf = pfEl ? parseFloat(pfEl.value) : NaN;
+      if (isNaN(pf) || pf <= 0) return;
+      var existing = _pressureAllData.find(function(r) { return r.facility_no === no && r.read_date === dateVal2; });
+      var pd = (existing && existing.pressure_diff != null) ? existing.pressure_diff : null;
+      var row = { read_date: dateVal2, facility_no: no, flow_cmm: pf, is_measure_day: true, flow_source: 'measured' };
+      if (pd != null && pd > 0) {
+        var calc = calcKValue(no, pf, pd);
+        if (calc) { row.k_value = calc.k; row.efficiency = calc.efficiency; }
+      } else {
+        row.k_value = null; row.efficiency = null;
+      }
+      rows2.push(row);
+    });
+    if (!rows2.length) { alert('입력된 유량값이 없습니다.'); return; }
+    var withK = rows2.filter(function(r) { return r.k_value != null; }).length;
+    var msg = rows2.length + '개 시설 저장';
+    if (rows2.length - withK > 0) msg += ' (차압 미입력 ' + (rows2.length-withK) + '개는 k값 나중에 자동계산)';
+    try {
+      await _upsertPressureRows(rows2);
+      alert(msg + ' 완료');
+      PRESSURE_FACILITIES.forEach(function(no) { var el = document.getElementById('pb-flow-' + no); if (el) el.value = ''; });
+      document.getElementById('pressure-realtime-results').innerHTML = '';
+    } catch(e) { alert('저장 오류: ' + e.message); }
+  }
+}
+
+async function _upsertPressureRows(rows) {
+  var res = await sbPressure(
     'pressure_readings?on_conflict=read_date,facility_no',
     { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: rows }
   );
-  if (!saveRes.ok) {
-    var errText = await saveRes.text();
-    console.error('저장 오류 응답:', saveRes.status, errText);
-    throw new Error('저장 실패 (' + saveRes.status + '): ' + errText);
+  if (!res.ok) {
+    var errText = await res.text();
+    throw new Error('저장 실패 (' + res.status + '): ' + errText);
   }
-  var reloadRes = await sbPressure('pressure_readings?select=*&order=read_date.asc');
-  if (reloadRes.ok) _pressureAllData = await reloadRes.json();
+  var reload = await sbPressure('pressure_readings?select=*&order=read_date.asc');
+  if (reload.ok) _pressureAllData = await reload.json();
   await renderFacilityCards();
-  renderPressureChart(_pressureChartTab, _pressurePeriod);
-  renderInsights();
+  renderChart(_pressureChartTab, _pressurePeriod);
+  renderHistoryTable();
 }
 
-async function saveDailyDiff() {
-  var dateVal = (document.getElementById('pa-date') || {}).value;
-  if (!dateVal) { alert('날짜를 선택해주세요.'); return; }
-  var rows = [];
-  PRESSURE_FACILITIES.forEach(function(no) {
-    var pdEl = document.getElementById('pa-diff-' + no);
-    var pd = pdEl ? parseFloat(pdEl.value) : NaN;
-    if (isNaN(pd) || pd === '') return;
-    rows.push({ read_date: dateVal, facility_no: no, pressure_diff: pd, is_measure_day: false });
-  });
-  if (!rows.length) { alert('입력된 차압값이 없습니다.'); return; }
-  try {
-    await _savePressureRows(rows);
-    alert('차압값이 저장되었습니다.');
-    PRESSURE_FACILITIES.forEach(function(no) {
-      var el = document.getElementById('pa-diff-' + no);
-      if (el) el.value = '';
-    });
-  } catch(e) { console.error('차압 저장 오류:', e); alert('저장 중 오류가 발생했습니다.\n' + e.message); }
-}
+async function renderHistoryTable(facilityFilter, typeFilter) {
+  var fSel = facilityFilter != null ? facilityFilter : (document.getElementById('ph-facility') || {}).value || 'all';
+  var tSel = typeFilter != null ? typeFilter : (document.getElementById('ph-type') || {}).value || 'all';
 
-async function saveMeasureDayFlow() {
-  var dateVal = (document.getElementById('pb-date') || {}).value;
-  if (!dateVal) { alert('측정일을 선택해주세요.'); return; }
+  var rows = _pressureAllData.slice().sort(function(a, b) { return a.read_date < b.read_date ? 1 : -1; });
 
-  var rows = [];
-  PRESSURE_FACILITIES.forEach(function(no) {
-    var pfEl = document.getElementById('pb-flow-' + no);
-    var pf = pfEl ? parseFloat(pfEl.value) : NaN;
-    if (isNaN(pf) || pf <= 0) return;
+  if (fSel !== 'all') rows = rows.filter(function(r) { return r.facility_no === parseInt(fSel); });
+  if (tSel === 'measured') rows = rows.filter(function(r) { return r.flow_source === 'measured' && r.flow_cmm != null; });
+  else if (tSel === 'estimated') rows = rows.filter(function(r) { return r.flow_source === 'estimated'; });
 
-    // 해당 날짜 차압값 기존 DB 데이터에서 조회
-    var existing = _pressureAllData.find(function(r) {
-      return r.facility_no === no && r.read_date === dateVal;
-    });
-    var pd = (existing && existing.pressure_diff !== null) ? existing.pressure_diff : null;
-
-    var row = { read_date: dateVal, facility_no: no, flow_cmm: pf, is_measure_day: true };
-    if (pd !== null && pd > 0) {
-      var calc = calcKValue(no, pf, pd);
-      row.pressure_diff = pd;
-      if (calc) { row.k_value = calc.k; row.efficiency = calc.efficiency; }
-    }
-    rows.push(row);
-  });
-
-  if (!rows.length) { alert('입력된 유량값이 없습니다.'); return; }
-
-  var withK = rows.filter(function(r) { return r.k_value; }).length;
-  var withoutK = rows.length - withK;
-  var confirmMsg = rows.length + '개 시설 저장';
-  if (withoutK > 0) confirmMsg += ' (차압 없는 ' + withoutK + '개 시설은 k값 미계산)';
-
-  try {
-    await _savePressureRows(rows);
-    alert(confirmMsg + ' 완료');
-    PRESSURE_FACILITIES.forEach(function(no) {
-      var fEl = document.getElementById('pb-flow-' + no);
-      if (fEl) fEl.value = '';
-    });
-    document.getElementById('pressure-realtime-results').innerHTML = '';
-  } catch(e) { console.error('유량 저장 오류:', e); alert('저장 중 오류가 발생했습니다.\n' + e.message); }
-}
-
-async function saveActivatedCarbon() {
-  var facilityNo = parseInt(document.getElementById('carbon-facility').value);
-  var dateVal = document.getElementById('carbon-date').value;
-  var note = document.getElementById('carbon-note').value.trim();
-  if (!dateVal) { alert('교체일을 입력해주세요.'); return; }
-  try {
-    var insRes = await sbPressure(
-      'activated_carbon_records',
-      { method: 'POST', prefer: 'return=minimal', body: { replace_date: dateVal, facility_no: facilityNo, note: note || null } }
-    );
-    if (!insRes.ok) {
-      var errText = await insRes.text();
-      console.error('활성탄 등록 오류 응답:', insRes.status, errText);
-      throw new Error('등록 실패 (' + insRes.status + '): ' + errText);
-    }
-    alert('등록되었습니다.');
-    document.getElementById('carbon-note').value = '';
-    var reloadRes = await sbPressure('activated_carbon_records?select=*&order=replace_date.desc');
-    _carbonRecords = reloadRes.ok ? await reloadRes.json() : _carbonRecords;
-    renderCarbonTable();
-  } catch(e) { console.error('활성탄 등록 오류 상세:', e); alert('등록 중 오류가 발생했습니다.\n' + e.message); }
-}
-
-function renderCarbonTable() {
-  var tbody = document.getElementById('carbon-table-body');
+  var prevK = {};
+  var tbody = document.getElementById('pressure-history-tbody');
   if (!tbody) return;
-  if (!_carbonRecords.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#9ca3af;">데이터 없음</td></tr>';
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="padding:20px;text-align:center;color:#9ca3af;">데이터 없음</td></tr>';
     return;
   }
-  var today = new Date();
-  tbody.innerHTML = _carbonRecords.map(function(r, i) {
-    var rd = new Date(r.replace_date);
-    var elapsed = Math.floor((today - rd) / 86400000);
+
+  var kByFacility = {};
+  PRESSURE_FACILITIES.forEach(function(no) {
+    var kRows = _pressureAllData.filter(function(r) { return r.facility_no === no && r.k_value != null; });
+    kRows.sort(function(a, b) { return a.read_date < b.read_date ? 1 : -1; });
+    kByFacility[no] = kRows;
+  });
+
+  tbody.innerHTML = rows.map(function(r) {
+    var typeLabel, typeBadge;
+    if (r.flow_cmm != null && r.pressure_diff == null) {
+      typeLabel = '차압미입력'; typeBadge = 'background:#fef3c7;color:#92400e;';
+    } else if (r.flow_source === 'measured' && r.flow_cmm != null) {
+      typeLabel = '실측'; typeBadge = 'background:#d1fae5;color:#065f46;';
+    } else if (r.flow_source === 'estimated') {
+      typeLabel = '추정'; typeBadge = 'background:#f3f4f6;color:#6b7280;';
+    } else {
+      typeLabel = '차압만'; typeBadge = 'background:#eff6ff;color:#1d4ed8;';
+    }
+
+    var kChange = '—';
+    if (r.k_value != null) {
+      var facilityKRows = kByFacility[r.facility_no] || [];
+      var idx = facilityKRows.findIndex(function(x) { return x.read_date === r.read_date && x.id === r.id; });
+      if (idx < 0) idx = facilityKRows.findIndex(function(x) { return x.read_date === r.read_date; });
+      if (idx >= 0 && idx + 1 < facilityKRows.length) {
+        var prevKVal = facilityKRows[idx + 1].k_value;
+        if (r.k_value < prevKVal) kChange = '<span style="color:#ef4444;font-weight:600;">▼ ' + Math.abs(Math.round((r.k_value-prevKVal)*100)/100) + '</span>';
+        else if (r.k_value > prevKVal) kChange = '<span style="color:#10b981;font-weight:600;">▲ ' + Math.abs(Math.round((r.k_value-prevKVal)*100)/100) + '</span>';
+        else kChange = '±0';
+      } else if (idx === facilityKRows.length - 1) { kChange = '—'; }
+    }
+
+    var flowDisplay = r.flow_cmm != null ? r.flow_cmm : '—';
+    if (r.flow_source === 'estimated' && r.flow_cmm != null) flowDisplay = '<em>' + r.flow_cmm + '</em>';
+
     return '<tr style="border-bottom:1px solid #f3f4f6;">'
-      + '<td style="padding:8px 10px;color:#9ca3af;">' + (i+1) + '</td>'
-      + '<td style="padding:8px 10px;font-weight:600;">' + r.facility_no + '번</td>'
-      + '<td style="padding:8px 10px;">' + r.replace_date + '</td>'
-      + '<td style="padding:8px 10px;color:#6b7280;">' + (r.note || '-') + '</td>'
-      + '<td style="padding:8px 10px;color:#374151;">' + elapsed + '일 경과</td>'
+      + '<td style="padding:7px 10px;white-space:nowrap;">' + r.read_date + '</td>'
+      + '<td style="padding:7px 10px;font-weight:600;">' + r.facility_no + '번</td>'
+      + '<td style="padding:7px 10px;text-align:right;">' + (r.pressure_diff != null ? r.pressure_diff : '—') + '</td>'
+      + '<td style="padding:7px 10px;text-align:right;">' + flowDisplay + '</td>'
+      + '<td style="padding:7px 10px;text-align:center;"><span style="padding:1px 7px;border-radius:9px;font-size:10px;font-weight:600;' + typeBadge + '">' + typeLabel + '</span></td>'
+      + '<td style="padding:7px 10px;text-align:right;">' + (r.k_value != null ? Math.round(r.k_value*100)/100 : '—') + '</td>'
+      + '<td style="padding:7px 10px;text-align:right;">' + (r.efficiency != null ? Math.round(r.efficiency*10)/10 + '%' : '—') + '</td>'
+      + '<td style="padding:7px 10px;text-align:center;">' + kChange + '</td>'
+      + '<td style="padding:7px 10px;color:#9ca3af;">' + (r.note || '') + '</td>'
       + '</tr>';
   }).join('');
 }
 
-async function renderInsights() {
-  var el = document.getElementById('pressure-insights');
-  if (!el) return;
-  var insights = [];
-  var today = new Date();
-  var todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-  var todayData = {};
-  _pressureAllData.filter(function(r) { return r.read_date === todayStr; }).forEach(function(r) { todayData[r.facility_no] = r; });
-
-  PRESSURE_FACILITIES.forEach(function(no) {
-    var r = todayData[no];
-    if (!r) {
-      insights.push({ type: 'info', msg: no + '번 시설 — 오늘 차압 미입력' });
-      return;
-    }
-    var pd = r.pressure_diff;
-    if (pd >= PRESSURE_THRESHOLDS.danger) insights.push({ type: 'danger', msg: no + '번 시설 — 차압 ' + pd + ' mmAq (심각: 즉시 점검 필요)' });
-    else if (pd >= PRESSURE_THRESHOLDS.warn) insights.push({ type: 'warn', msg: no + '번 시설 — 차압 ' + pd + ' mmAq (주의 수준)' });
-  });
-
-  // k값 2회 연속 하락 감지
-  PRESSURE_FACILITIES.forEach(function(no) {
-    var rows = _pressureAllData.filter(function(r) { return r.facility_no === no && r.k_value; });
-    rows.sort(function(a, b) { return a.read_date > b.read_date ? 1 : -1; });
-    if (rows.length >= 3) {
-      var last = rows.slice(-3);
-      if (last[2].k_value < last[1].k_value && last[1].k_value < last[0].k_value) {
-        insights.push({ type: 'danger', msg: no + '번 시설 — k값 3회 연속 하락 (필터 성능 저하 의심)' });
-      } else if (last[2].k_value < last[1].k_value) {
-        insights.push({ type: 'warn', msg: no + '번 시설 — k값 연속 하락 추세' });
-      }
-    }
-  });
-
-  if (!insights.length) {
-    el.innerHTML = '<div style="color:#10b981;font-size:13px;">모든 시설 정상입니다.</div>';
-    return;
+function exportPressureExcel() {
+  if (typeof XLSX === 'undefined') {
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = function() { _doExportPressureExcel(); };
+    document.head.appendChild(s);
+  } else {
+    _doExportPressureExcel();
   }
-  var colorMap = { danger: '#ef4444', warn: '#f59e0b', info: '#9ca3af' };
-  var bgMap = { danger: '#fef2f2', warn: '#fffbeb', info: '#f9fafb' };
-  el.innerHTML = insights.map(function(ins) {
-    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:' + bgMap[ins.type] + ';border-left:3px solid ' + colorMap[ins.type] + ';border-radius:4px;font-size:12px;color:#374151;">'
-      + '<span style="width:8px;height:8px;border-radius:50%;background:' + colorMap[ins.type] + ';flex-shrink:0;"></span>'
-      + ins.msg + '</div>';
-  }).join('');
+}
+
+function _doExportPressureExcel() {
+  var fSel = (document.getElementById('ph-facility') || {}).value || 'all';
+  var tSel = (document.getElementById('ph-type') || {}).value || 'all';
+  var rows = _pressureAllData.slice().sort(function(a, b) { return a.read_date < b.read_date ? 1 : -1; });
+  if (fSel !== 'all') rows = rows.filter(function(r) { return r.facility_no === parseInt(fSel); });
+  if (tSel === 'measured') rows = rows.filter(function(r) { return r.flow_source === 'measured' && r.flow_cmm != null; });
+  else if (tSel === 'estimated') rows = rows.filter(function(r) { return r.flow_source === 'estimated'; });
+
+  var data = [['날짜','시설','차압(mmAq)','유량(CMM)','구분','k값','효율(%)','비고']];
+  rows.forEach(function(r) {
+    var typeLabel = r.flow_cmm != null && r.pressure_diff == null ? '차압미입력'
+      : r.flow_source === 'measured' && r.flow_cmm != null ? '실측'
+      : r.flow_source === 'estimated' ? '추정' : '차압만';
+    data.push([
+      r.read_date, r.facility_no + '번',
+      r.pressure_diff != null ? r.pressure_diff : '',
+      r.flow_cmm != null ? r.flow_cmm : '',
+      typeLabel,
+      r.k_value != null ? Math.round(r.k_value*100)/100 : '',
+      r.efficiency != null ? Math.round(r.efficiency*10)/10 : '',
+      r.note || ''
+    ]);
+  });
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, '차압이력');
+  XLSX.writeFile(wb, '차압이력_' + _todayStr() + '.xlsx');
 }
 </script>
 
