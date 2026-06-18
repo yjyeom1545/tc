@@ -2775,7 +2775,14 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 
   <!-- 2-1. 페이지 타이틀 -->
   <div class="ws-page-title" style="margin-bottom:4px;"><span class="ws-page-title-icon"></span>종합진단</div>
-  <div style="font-size:12px;color:#9ca3af;margin-bottom:16px;padding-left:12px;">차압·k값·활성탄 데이터를 종합하여 원인을 자동 판단합니다</div>
+  <div style="font-size:12px;color:#9ca3af;margin-bottom:12px;padding-left:12px;">활성탄 교체 경과일 기준 점검 · 차압·k값은 참고 표시</div>
+
+  <!-- 데이터 수집 단계 안내 -->
+  <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#1e40af;line-height:1.7;">
+    <strong>※ 현재 차압·k값 데이터 수집 단계입니다.</strong><br>
+    데이터가 충분히 누적되면(약 3~6개월) 필터·설비·활성탄 원인별 정밀 자동진단이 활성화됩니다.<br>
+    현재는 <strong>활성탄 교체 경과일 기준</strong>으로만 점검 신호를 표시합니다.
+  </div>
 
   <!-- 2-2. 조치 우선순위 -->
   <div class="card" style="margin-bottom:14px;">
@@ -9785,6 +9792,10 @@ async function loadDiagnosisData() {
       }
     }
 
+    var filterType = (typeof BAGFILTER_FACILITIES !== 'undefined' && BAGFILTER_FACILITIES.indexOf(no) >= 0)
+      ? 'bagfilter' : 'carbon';
+    var isInactive = (typeof INACTIVE_FACILITIES !== 'undefined' && INACTIVE_FACILITIES.indexOf(no) >= 0);
+
     return {
       facilityNo: no,
       pressure: pressure,
@@ -9797,7 +9808,9 @@ async function loadDiagnosisData() {
       carbonDays: carbonDays,
       lastCarbonDate: lastCarbonDate,
       lastPressureDate: lastPressureDate,
-      isPressureStuck: isPressureStuck
+      isPressureStuck: isPressureStuck,
+      filterType: filterType,
+      isInactive: isInactive
     };
   });
 }
@@ -9882,11 +9895,35 @@ function severityScore(data, diagnosis) {
   var score = 0;
   if (diagnosis.severity === 'urgent') score += 100;
   if (diagnosis.severity === 'watch') score += 50;
-  if (data.efficiency != null) score += (100 - data.efficiency);
-  if (data.kTrend === 'down') score += 30;
-  if (data.pressure != null && data.pressure >= DIAG_PRESSURE_DANGER) score += 20;
-  if (data.carbonDays != null && data.carbonDays >= DIAG_CARBON_CYCLE) score += 15;
+  if (data.carbonDays != null) score += Math.min(data.carbonDays / 10, 50);
   return score;
+}
+
+// 현재 운영 판단 함수: 활성탄 경과 중심, 차압은 참고 표시
+var SIMPLE_CARBON_CYCLE  = 365;   // 1년 — 점검 권장
+var SIMPLE_CARBON_URGENT = 730;   // 2년 — 교체 시급
+
+function diagnoseSimple(data) {
+  if (data.isInactive)
+    return { label:'비가동', severity:'none', reason:'비가동 시설' };
+
+  if (data.filterType === 'bagfilter')
+    return { label:'백필터 — 차압 기반 관리', severity:'none', reason:'백필터 시설은 차압 직접 확인' };
+
+  if (data.carbonDays != null) {
+    if (data.carbonDays >= SIMPLE_CARBON_URGENT)
+      return { label:'활성탄 교체 시급', severity:'urgent',
+               reason:'활성탄 ' + data.carbonDays + '일 경과 (2년 초과)' };
+    if (data.carbonDays >= SIMPLE_CARBON_CYCLE)
+      return { label:'활성탄 점검 권장', severity:'watch',
+               reason:'활성탄 ' + data.carbonDays + '일 경과 (1년 초과)' };
+  }
+
+  if (data.pressure != null && data.pressure >= 160)
+    return { label:'차압 높음 — 관찰', severity:'watch',
+             reason:'차압 ' + data.pressure + ' mmAq — 데이터 누적 후 정밀 진단 예정' };
+
+  return { label:'정상', severity:'none', reason:'활성탄 교체 주기 이내' };
 }
 
 async function initDiagnosisPage() {
@@ -9906,7 +9943,7 @@ function renderPriorityList(facilitiesData) {
   if (!el) return;
 
   var diagnosed = facilitiesData.map(function(d) {
-    var diag = diagnoseFacility(d);
+    var diag = diagnoseSimple(d);
     return { data: d, diag: diag, score: severityScore(d, diag) };
   });
   diagnosed.sort(function(a, b) { return b.score - a.score; });
@@ -9949,7 +9986,7 @@ function renderDiagnosisMatrix(facilitiesData) {
   if (!tbody) return;
 
   tbody.innerHTML = facilitiesData.map(function(d) {
-    var diag = diagnoseFacility(d);
+    var diag = diagnoseSimple(d);
     var mShortName = (typeof FACILITY_SHORT !== 'undefined' && FACILITY_SHORT[d.facilityNo]) ? FACILITY_SHORT[d.facilityNo] : '';
 
     // 차압 셀
@@ -10031,118 +10068,72 @@ function renderDiagnosisLogic(facilityData) {
   if (titleEl) titleEl.textContent = '판단 근거 — ' + d.facilityNo + '번' + logicShortName;
   card.style.display = '';
 
-  // 배제 순서 체크 단계 구성
-  var steps = [];
+  // 데이터 요약 항목
+  var items = [];
 
-  // S1. 차압 고착 확인
-  steps.push({
-    q: '차압계 고착 여부 (최근 4회 이상 동일값)',
-    result: d.isPressureStuck ? '감지 — 차압계 오작동 의심' : '정상 변동',
-    pass: d.isPressureStuck,
-    skip: false
+  items.push({
+    label: '활성탄 경과',
+    value: d.carbonDays != null
+      ? d.carbonDays + '일 (마지막: ' + (d.lastCarbonDate || '—') + ')'
+      : '기록 없음',
+    color: d.carbonDays == null ? '#9ca3af'
+      : d.carbonDays >= SIMPLE_CARBON_URGENT ? '#ef4444'
+      : d.carbonDays >= SIMPLE_CARBON_CYCLE  ? '#f59e0b' : '#10b981'
   });
 
-  // S2. 차압 기준 확인
-  var overDanger = d.pressure != null && d.pressure >= 160;
-  var overCarbon = d.pressure != null && d.pressure >= 200;
-  steps.push({
-    q: '차압 수준 확인',
-    result: d.pressure == null ? '데이터 없음'
-      : d.pressure >= 160 ? d.pressure + ' mmAq — 위험 기준(160) 초과'
-      : d.pressure >= 120 ? d.pressure + ' mmAq — 주의 구간(120~159)'
-      : d.pressure + ' mmAq — 정상',
-    pass: overDanger,
-    skip: false
-  });
-
-  // S3. 필터 교체 경과일 (필터 대상 시설만)
   var logicRoomName = FACILITY_TO_FILTER_ROOM[d.facilityNo] || null;
-  if (logicRoomName) {
-    var filterOld = d.filterDays === null || d.filterDays > 14;
-    steps.push({
-      q: '필터 최근 교체 여부 (' + logicRoomName + ', 14일 이내 기준)',
-      result: d.filterDays === null ? '기록 없음 — 교체 필요'
-        : d.filterDays <= 14 ? d.filterDays + '일 경과 — 최근 교체 (마지막: ' + d.lastFilterDate + ')'
-        : d.filterDays + '일 경과 — 교체 필요 (마지막: ' + (d.lastFilterDate || '—') + ')',
-      pass: filterOld,
-      skip: !overDanger
-    });
-
-    // S4. 필터 교체 후 k값 회복 여부
-    var kRecovStr = d.kRecovered === true ? '회복됨 (교체 후 k값 10%↑ 이상)'
-      : d.kRecovered === false ? '미회복 (교체 후 k값 변화 없음 또는 하락)'
-      : '판단 불가 (데이터 부족)';
-    steps.push({
-      q: '필터 교체 후 k값 회복 여부',
-      result: kRecovStr,
-      pass: d.kRecovered !== true,
-      skip: !overDanger || filterOld
-    });
-  }
-
-  // S5. 활성탄 차압 기준 초과 여부
-  steps.push({
-    q: '활성탄 포화 차압 기준(200 mmAq) 초과 여부',
-    result: overCarbon ? d.pressure + ' mmAq — 초과 → 활성탄 포화 의심'
-      : (d.pressure != null ? d.pressure + ' mmAq — 미초과' : '데이터 없음'),
-    pass: overCarbon,
-    skip: !overDanger
+  items.push({
+    label: '필터 경과' + (logicRoomName ? ' (' + logicRoomName + ')' : ''),
+    value: !logicRoomName ? '해당 없음'
+      : d.filterDays != null ? d.filterDays + '일 (마지막: ' + (d.lastFilterDate || '—') + ')'
+      : '기록 없음',
+    color: !logicRoomName ? '#d1d5db'
+      : d.filterDays == null ? '#9ca3af'
+      : d.filterDays <= 7 ? '#10b981' : d.filterDays <= 14 ? '#f59e0b' : '#ef4444'
   });
 
-  // S6. 활성탄 교체 경과일
-  var q5Pass = d.carbonDays != null && d.carbonDays >= DIAG_CARBON_CYCLE;
-  steps.push({
-    q: '활성탄 교체 경과일 (' + DIAG_CARBON_CYCLE + '일 주기 기준)',
-    result: d.carbonDays != null
-      ? d.carbonDays + '일 경과 (마지막: ' + (d.lastCarbonDate || '—') + ')' + (q5Pass ? ' — 교체 시기' : ' — 여유 있음')
-      : '교체 기록 없음',
-    pass: q5Pass,
-    skip: false
+  items.push({
+    label: '차압 (최근)',
+    value: d.pressure != null ? d.pressure + ' mmAq (참고용 · ' + (d.lastPressureDate || '—') + ')' : '데이터 없음',
+    color: d.pressure == null ? '#9ca3af'
+      : d.pressure >= 160 ? '#ef4444' : d.pressure >= 120 ? '#f59e0b' : '#10b981'
   });
 
-  // S7. 효율
-  steps.push({
-    q: '가동 효율 (유량 기반)',
-    result: d.efficiency != null
-      ? d.efficiency + '%' + (d.efficiency < 50 ? ' — 저하 심각' : d.efficiency < 80 ? ' — 주의' : ' — 정상')
-      : '미측정 (유량 데이터 없음)',
-    pass: d.efficiency != null && d.efficiency < 50,
-    skip: false
+  items.push({
+    label: 'k값 추이',
+    value: d.kVals.length
+      ? d.kVals.map(function(v) { return Math.round(v * 100) / 100; }).join(' → ')
+        + ' (' + (d.kTrend === 'down' ? '하락' : d.kTrend === 'up' ? '상승' : d.kTrend === 'flat' ? '유지' : '—') + ')'
+      : '데이터 없음',
+    color: d.kTrend === 'down' ? '#ef4444' : d.kTrend === 'up' ? '#10b981' : '#9ca3af'
+  });
+
+  items.push({
+    label: '효율',
+    value: d.efficiency != null ? d.efficiency + '%' : '미측정',
+    color: d.efficiency == null ? '#9ca3af'
+      : d.efficiency >= 80 ? '#10b981' : d.efficiency >= 50 ? '#f59e0b' : '#ef4444'
   });
 
   var diagBg = diag.severity === 'urgent' ? '#fef2f2' : diag.severity === 'watch' ? '#fffbeb' : '#f0fdf4';
   var diagColor = diag.severity === 'urgent' ? '#ef4444' : diag.severity === 'watch' ? '#d97706' : '#10b981';
   var diagBorder = diag.severity === 'urgent' ? '#ef4444' : diag.severity === 'watch' ? '#f59e0b' : '#10b981';
 
-  bodyEl.innerHTML = '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">'
-    + steps.map(function(s) {
-      if (s.skip) {
-        return '<div style="display:flex;gap:10px;align-items:flex-start;padding:7px 10px;background:#f9fafb;border-radius:6px;opacity:0.45;">'
-          + '<span style="font-size:13px;color:#d1d5db;flex-shrink:0;margin-top:1px;">—</span>'
-          + '<div style="flex:1;">'
-            + '<div style="font-size:11px;color:#9ca3af;">' + s.q + '</div>'
-            + '<div style="font-size:11px;color:#d1d5db;">해당 없음 (차압 정상 범위)</div>'
-          + '</div></div>';
-      }
-      var iconColor = s.pass ? '#ef4444' : '#10b981';
-      var icon = s.pass ? '✗' : '✓';
-      return '<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f8fafc;border-radius:6px;">'
-        + '<span style="font-size:13px;font-weight:700;color:' + iconColor + ';flex-shrink:0;margin-top:1px;">' + icon + '</span>'
-        + '<div style="flex:1;">'
-          + '<div style="font-size:11px;color:#6b7280;margin-bottom:2px;">' + s.q + '</div>'
-          + '<div style="font-size:12px;color:#374151;font-weight:600;">' + s.result + '</div>'
-        + '</div></div>';
+  bodyEl.innerHTML = '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">'
+    + items.map(function(item) {
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#f8fafc;border-radius:6px;">'
+        + '<span style="font-size:11px;color:#6b7280;font-weight:600;">' + item.label + '</span>'
+        + '<span style="font-size:12px;color:' + item.color + ';font-weight:600;">' + item.value + '</span>'
+        + '</div>';
     }).join('')
     + '</div>'
     + '<div style="padding:14px;background:' + diagBg + ';border-left:4px solid ' + diagBorder + ';border-radius:6px;margin-bottom:12px;">'
-      + '<div style="font-size:11px;color:#6b7280;margin-bottom:4px;">자동 판단 결론 (배제 순서: 필터 → 설비 → 활성탄)</div>'
+      + '<div style="font-size:11px;color:#6b7280;margin-bottom:4px;">현재 판단 (활성탄 경과 기준)</div>'
       + '<div style="font-size:16px;font-weight:700;color:' + diagColor + ';margin-bottom:4px;">' + diag.label + '</div>'
-      + (diag.reason ? '<div style="font-size:12px;color:' + diagColor + ';opacity:0.8;">' + diag.reason + '</div>' : '')
+      + (diag.reason ? '<div style="font-size:12px;color:' + diagColor + ';opacity:0.85;">' + diag.reason + '</div>' : '')
     + '</div>'
-    + '<div style="font-size:11px;color:#9ca3af;line-height:1.6;">'
-      + '※ 자동 판단은 데이터 기반 참고용입니다.<br>'
-      + '차압 문제가 항상 활성탄 문제는 아니며,<br>'
-      + '흡착탑 내부 챔버·스크린·배풍기 먼지 등도 원인일 수 있어 현장 점검을 병행해야 합니다.'
+    + '<div style="font-size:11px;color:#9ca3af;line-height:1.7;">'
+      + '※ 차압·k값은 현재 데이터 수집 단계입니다. 약 3~6개월 누적 후 필터·설비·활성탄 원인별 정밀 진단이 활성화됩니다.'
     + '</div>';
 
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
