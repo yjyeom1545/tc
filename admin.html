@@ -2814,7 +2814,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
           </tbody>
         </table>
       </div>
-      <div style="margin-top:8px;font-size:11px;color:#d1d5db;">※ 필터 경과: filter_records는 도장 부스 계통(하도룸/상도룸 #1/#2)으로 저장되어 시설번호 매핑 불가 — 연동 예정</div>
+      <div style="margin-top:8px;font-size:11px;color:#9ca3af;">※ 필터 경과: 하도룸(2·3·4번), 상도룸 #1(6번) 실제 교체 기록 연동. 1·5·9번은 필터 교체 해당 없음.</div>
     </div>
   </div>
 
@@ -9627,6 +9627,21 @@ var DIAG_PRESSURE_DANGER = 160;
 var DIAG_PRESSURE_WARN = 120;
 var DIAG_CARBON_CYCLE = 365;
 var DIAG_CARBON_WARN = 300;
+var DIAG_FILTER_RECENT_DAYS = 14;  // 이 이내 교체 = "최근 교체"
+var DIAG_FILTER_WARN_DAYS = 7;     // 7일 이하 정상, 8~14일 주의, 15일+ 교체시기
+
+// filter_records room_name ↔ 시설번호 매핑 (실제 DB값 기준)
+var FILTER_ROOM_TO_FACILITY = {
+  '하도룸':    [2, 3, 4],
+  '상도룸 #1': [6],
+  '상도룸 #2': [7]
+};
+var FACILITY_TO_FILTER_ROOM = {
+  2: '하도룸', 3: '하도룸', 4: '하도룸',
+  6: '상도룸 #1',
+  7: '상도룸 #2'
+};
+
 var _diagFacilitiesData = [];
 var _diagSelectedFacility = null;
 
@@ -9649,15 +9664,26 @@ function _diagTodayStr() {
 }
 
 async function loadDiagnosisData() {
-  var [prRes, carbonRes] = await Promise.all([
+  var [prRes, carbonRes, filterRes] = await Promise.all([
     sbDiag('pressure_readings?select=*&order=read_date.desc'),
-    sbDiag('activated_carbon_records?select=*&order=replace_date.desc')
+    sbDiag('activated_carbon_records?select=*&order=replace_date.desc'),
+    sbDiag('filter_records?select=room_name,record_date&order=record_date.desc')
   ]);
   if (!prRes.ok) throw new Error('pressure_readings 로딩 실패: ' + prRes.status);
   if (!carbonRes.ok) throw new Error('activated_carbon_records 로딩 실패: ' + carbonRes.status);
+  if (!filterRes.ok) throw new Error('filter_records 로딩 실패: ' + filterRes.status);
 
   var prData = await prRes.json();
   var carbonData = await carbonRes.json();
+  var filterData = await filterRes.json();
+
+  // room_name별 최신 record_date 맵
+  var filterLastDate = {};
+  filterData.forEach(function(r) {
+    if (!filterLastDate[r.room_name] || r.record_date > filterLastDate[r.room_name]) {
+      filterLastDate[r.room_name] = r.record_date;
+    }
+  });
 
   return DIAG_FACILITIES.map(function(no) {
     var facilityRows = prData.filter(function(r) { return r.facility_no === no; });
@@ -9684,12 +9710,19 @@ async function loadDiagnosisData() {
     var recentPressures = facilityRows.slice(0, 5).map(function(r) { return r.pressure_diff; }).filter(function(v) { return v != null; });
     var isPressureStuck = recentPressures.length >= 4 && recentPressures.every(function(v) { return v === recentPressures[0]; });
 
-    // 활성탄 경과일
-    var carbonRows = carbonData.filter(function(r) { return r.facility_no === no; });
+    // 활성탄 경과일 (replace_type='carbon'만, 백필터 제외)
+    var carbonRows = carbonData.filter(function(r) {
+      return r.facility_no === no && (r.replace_type || 'carbon') === 'carbon';
+    });
     carbonRows.sort(function(a, b) { return a.replace_date < b.replace_date ? 1 : -1; });
     var carbonDays = carbonRows.length ? _diagElapsed(carbonRows[0].replace_date) : null;
     var lastCarbonDate = carbonRows.length ? carbonRows[0].replace_date : null;
     var lastPressureDate = latestRow ? latestRow.read_date : null;
+
+    // 필터 경과일 (FACILITY_TO_FILTER_ROOM 매핑 기준)
+    var roomName = FACILITY_TO_FILTER_ROOM[no] || null;
+    var lastFilterDate = roomName ? (filterLastDate[roomName] || null) : null;
+    var filterDays = lastFilterDate ? _diagElapsed(lastFilterDate) : null;
 
     return {
       facilityNo: no,
@@ -9697,7 +9730,8 @@ async function loadDiagnosisData() {
       kTrend: kTrend,
       kVals: kVals,
       efficiency: efficiency != null ? Math.round(efficiency * 10) / 10 : null,
-      filterDays: null, // filter_records 매핑 불가
+      filterDays: filterDays,
+      lastFilterDate: lastFilterDate,
       carbonDays: carbonDays,
       lastCarbonDate: lastCarbonDate,
       lastPressureDate: lastPressureDate,
@@ -9714,10 +9748,22 @@ function diagnoseFacility(data) {
   if (p == null)
     return { type: 'nodata', label: '데이터 없음', severity: 'none' };
 
+  // 필터 교체 대상 시설 여부 (1·5·9번은 false)
+  var hasFilter = FACILITY_TO_FILTER_ROOM[data.facilityNo] != null;
+
   if (p < DIAG_PRESSURE_WARN && data.efficiency == null && data.carbonDays == null)
     return { type: 'ok', label: '정상', severity: 'none' };
 
   if (p >= DIAG_PRESSURE_DANGER) {
+    if (hasFilter) {
+      // 최근 교체(14일 이내)인데 차압 높음 → 활성탄 원인 의심
+      if (data.filterDays != null && data.filterDays <= DIAG_FILTER_RECENT_DAYS
+          && data.carbonDays != null && data.carbonDays >= DIAG_CARBON_CYCLE)
+        return { type: 'carbon', label: '활성탄 교체 검토', severity: 'urgent' };
+      // 필터 오래됨 or 기록 없음 → 필터 교체
+      return { type: 'filter', label: '필터 교체', severity: 'urgent' };
+    }
+    // 필터 없는 시설 (1·5·9): 기존 로직
     if (data.carbonDays != null && data.carbonDays >= DIAG_CARBON_CYCLE)
       return { type: 'carbon', label: '활성탄 교체 검토', severity: 'urgent' };
     return { type: 'filter', label: '필터 교체', severity: 'urgent' };
@@ -9787,17 +9833,19 @@ function renderPriorityList(facilitiesData) {
     var bgColor = isUrgent ? '#fef2f2' : '#fffbeb';
     var badgeBg = isUrgent ? '#ef4444' : '#f59e0b';
 
+    var pShortName = (typeof FACILITY_SHORT !== 'undefined' && FACILITY_SHORT[d.facilityNo]) ? FACILITY_SHORT[d.facilityNo] : '';
     var summary = [];
     if (d.pressure != null) summary.push('차압 ' + d.pressure + ' mmAq');
     if (d.kTrend === 'down') summary.push('k값 하락');
     if (d.efficiency != null) summary.push('효율 ' + d.efficiency + '%');
+    if (d.filterDays != null) summary.push('필터 ' + d.filterDays + '일 경과');
     if (d.carbonDays != null) summary.push('활성탄 ' + d.carbonDays + '일 경과');
 
     return '<div onclick="renderDiagnosisLogic(' + JSON.stringify(d).replace(/"/g, '&quot;') + ')" '
       + 'style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:' + bgColor + ';border-left:4px solid ' + borderColor + ';border-radius:6px;margin-bottom:8px;cursor:pointer;">'
       + '<div style="width:24px;height:24px;border-radius:50%;background:' + borderColor + ';color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + (i+1) + '</div>'
       + '<div style="flex:1;min-width:0;">'
-        + '<div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:2px;">' + d.facilityNo + '번 시설' + (d.efficiency != null ? ' <span style="font-weight:400;font-size:12px;color:#6b7280;">효율 ' + d.efficiency + '%</span>' : '') + '</div>'
+        + '<div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:2px;">' + d.facilityNo + '번' + (pShortName ? ' <span style="font-size:11px;color:#9ca3af;font-weight:400;">' + pShortName + '</span>' : '') + (d.efficiency != null ? ' <span style="font-weight:400;font-size:12px;color:#6b7280;">효율 ' + d.efficiency + '%</span>' : '') + '</div>'
         + '<div style="font-size:11px;color:#6b7280;">' + (summary.join(' · ') || '데이터 확인 필요') + '</div>'
       + '</div>'
       + '<span style="padding:3px 10px;border-radius:12px;background:' + badgeBg + ';color:white;font-size:11px;font-weight:700;white-space:nowrap;">' + diag.label + '</span>'
@@ -9811,6 +9859,7 @@ function renderDiagnosisMatrix(facilitiesData) {
 
   tbody.innerHTML = facilitiesData.map(function(d) {
     var diag = diagnoseFacility(d);
+    var mShortName = (typeof FACILITY_SHORT !== 'undefined' && FACILITY_SHORT[d.facilityNo]) ? FACILITY_SHORT[d.facilityNo] : '';
 
     // 차압 셀
     var pressureCell = '—';
@@ -9835,9 +9884,24 @@ function renderDiagnosisMatrix(facilitiesData) {
       effCell = '<span style="font-weight:600;color:' + eColor + ';">' + d.efficiency + '%</span>';
     }
 
+    // 필터 경과 셀
+    var filterCell;
+    var mRoomName = FACILITY_TO_FILTER_ROOM[d.facilityNo] || null;
+    if (!mRoomName) {
+      filterCell = '<span style="color:#d1d5db;font-size:10px;">해당없음</span>';
+    } else if (d.filterDays === null) {
+      filterCell = '<span style="color:#9ca3af;font-size:10px;">기록 없음</span>';
+    } else {
+      var fColor = d.filterDays <= DIAG_FILTER_WARN_DAYS ? '#10b981'
+        : d.filterDays <= DIAG_FILTER_RECENT_DAYS ? '#f59e0b' : '#ef4444';
+      filterCell = '<span style="color:' + fColor + ';font-weight:' + (d.filterDays > DIAG_FILTER_WARN_DAYS ? '600' : '400') + ';">' + d.filterDays + '일</span>';
+    }
+
     // 활성탄 경과
     var carbonCell = '—';
-    if (d.carbonDays != null) {
+    if (d.facilityNo === 1) {
+      carbonCell = '<span style="color:#9ca3af;font-size:10px;">백필터</span>';
+    } else if (d.carbonDays != null) {
       var cColor = d.carbonDays >= DIAG_CARBON_CYCLE ? '#ef4444' : d.carbonDays >= DIAG_CARBON_WARN ? '#f59e0b' : '#10b981';
       carbonCell = '<span style="color:' + cColor + ';font-weight:' + (d.carbonDays >= DIAG_CARBON_WARN ? '600' : '400') + ';">' + d.carbonDays + '일</span>';
     }
@@ -9849,11 +9913,11 @@ function renderDiagnosisMatrix(facilitiesData) {
 
     var dEncoded = JSON.stringify(d).replace(/"/g, '&quot;');
     return '<tr onclick="renderDiagnosisLogic(' + dEncoded + ')" style="border-bottom:1px solid #f3f4f6;cursor:pointer;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'
-      + '<td style="padding:9px 10px;font-weight:700;white-space:nowrap;">' + d.facilityNo + '번</td>'
+      + '<td style="padding:9px 10px;font-weight:700;white-space:nowrap;">' + d.facilityNo + '번' + (mShortName ? '<br><span style="font-size:10px;color:#9ca3af;font-weight:400;">' + mShortName + '</span>' : '') + '</td>'
       + '<td style="padding:9px 10px;text-align:right;">' + pressureCell + '</td>'
       + '<td style="padding:9px 10px;text-align:center;">' + kCell + '</td>'
       + '<td style="padding:9px 10px;text-align:right;">' + effCell + '</td>'
-      + '<td style="padding:9px 10px;text-align:center;font-size:11px;color:#9ca3af;">연동 예정</td>'
+      + '<td style="padding:9px 10px;text-align:center;">' + filterCell + '</td>'
       + '<td style="padding:9px 10px;text-align:center;">' + carbonCell + '</td>'
       + '<td style="padding:9px 10px;text-align:center;">' + diagBadge + '</td>'
       + '</tr>';
@@ -9872,7 +9936,8 @@ function renderDiagnosisLogic(facilityData) {
   var bodyEl = document.getElementById('diag-logic-body');
   if (!card || !bodyEl) return;
 
-  if (titleEl) titleEl.textContent = '판단 근거 — ' + d.facilityNo + '번 시설';
+  var logicShortName = (typeof FACILITY_SHORT !== 'undefined' && FACILITY_SHORT[d.facilityNo]) ? ' ' + FACILITY_SHORT[d.facilityNo] : '';
+  if (titleEl) titleEl.textContent = '판단 근거 — ' + d.facilityNo + '번' + logicShortName;
   card.style.display = '';
 
   var steps = [];
@@ -9911,6 +9976,22 @@ function renderDiagnosisLogic(facilityData) {
     result: d.efficiency != null ? (d.efficiency < 80 ? '예 — ' + d.efficiency + '%' : '아니오 — ' + d.efficiency + '%') : '판단 불가',
     pass: d.efficiency != null && d.efficiency < 80
   });
+
+  // Q_filter. 필터 교체 경과일 (필터 대상 시설만)
+  var logicRoomName = FACILITY_TO_FILTER_ROOM[d.facilityNo] || null;
+  if (logicRoomName) {
+    var qfPass = d.filterDays != null && d.filterDays > DIAG_FILTER_RECENT_DAYS;
+    var qfResult = d.filterDays == null ? '기록 없음'
+      : d.filterDays <= DIAG_FILTER_WARN_DAYS ? '정상 — ' + d.filterDays + '일 경과 (최근 교체)'
+      : d.filterDays <= DIAG_FILTER_RECENT_DAYS ? '주의 — ' + d.filterDays + '일 경과'
+      : '교체 시기 — ' + d.filterDays + '일 경과';
+    steps.push({
+      q: '필터 교체 경과일 (' + logicRoomName + ')',
+      a: d.filterDays != null ? d.filterDays + '일 경과 (마지막: ' + (d.lastFilterDate || '—') + ')' : '교체 기록 없음',
+      result: qfResult,
+      pass: qfPass
+    });
+  }
 
   // Q5. 활성탄 교체 주기
   var q5Pass = d.carbonDays != null && d.carbonDays >= DIAG_CARBON_CYCLE;
