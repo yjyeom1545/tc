@@ -9514,6 +9514,23 @@ function renderCarbonHistory(facilityFilter, yearFilter) {
   var fSel = facilityFilter != null ? facilityFilter : ((document.getElementById('ch-facility') || {}).value || 'all');
   var ySel = yearFilter != null ? yearFilter : ((document.getElementById('ch-year') || {}).value || 'all');
 
+  // 전체 데이터 기준으로 시설+종류별 "다음 교체일" 맵 구성
+  // (연도 필터와 무관하게 실제 다음 교체일을 찾아야 하므로 _carbonAllData 전체 사용)
+  var nextDateMap = {};
+  var groupedAll = {};
+  _carbonAllData.forEach(function(r) {
+    var key = r.facility_no + '_' + (r.replace_type || 'carbon');
+    if (!groupedAll[key]) groupedAll[key] = [];
+    groupedAll[key].push(r);
+  });
+  Object.keys(groupedAll).forEach(function(key) {
+    var grp = groupedAll[key];
+    grp.sort(function(a, b) { return a.replace_date < b.replace_date ? -1 : 1; });
+    grp.forEach(function(r, i) {
+      nextDateMap[r.id] = i < grp.length - 1 ? grp[i + 1].replace_date : null;
+    });
+  });
+
   var rows = _carbonAllData.slice();
   if (tSel !== 'all') rows = rows.filter(function(r) { return (r.replace_type || 'carbon') === tSel; });
   if (fSel !== 'all') rows = rows.filter(function(r) { return r.facility_no === parseInt(fSel); });
@@ -9528,11 +9545,29 @@ function renderCarbonHistory(facilityFilter, yearFilter) {
     return;
   }
 
+  var todayMs = new Date(_carbonTodayStr()).getTime();
+
   tbody.innerHTML = rows.map(function(r, i) {
-    var elapsed = r.replace_date ? _carbonElapsed(r.replace_date) : null;
-    var elapsedText = elapsed !== null ? elapsed + '일 경과' : '—';
-    var elapsedColor = elapsed !== null && elapsed >= CARBON_CYCLE_DAYS ? '#ef4444'
-      : elapsed !== null && elapsed >= CARBON_WARN_DAYS ? '#f59e0b' : '#374151';
+    var nextDate = nextDateMap[r.id] !== undefined ? nextDateMap[r.id] : null;
+    var isLatest = nextDate === null;
+    var elapsed, elapsedText, elapsedColor, elapsedWeight;
+
+    if (!r.replace_date) {
+      elapsedText = '—'; elapsedColor = '#9ca3af'; elapsedWeight = '400';
+    } else if (isLatest) {
+      // 최신 교체 건: 오늘까지 경과일 (현재 진행중)
+      elapsed = Math.floor((todayMs - new Date(r.replace_date).getTime()) / 86400000);
+      elapsedText = elapsed + '일 (진행중)';
+      elapsedColor = elapsed >= CARBON_CYCLE_DAYS ? '#ef4444'
+        : elapsed >= CARBON_WARN_DAYS ? '#f59e0b' : '#10b981';
+      elapsedWeight = elapsed >= CARBON_WARN_DAYS ? '600' : '400';
+    } else {
+      // 과거 교체 건: 다음 교체일까지의 기간 (교체 주기)
+      elapsed = Math.floor((new Date(nextDate).getTime() - new Date(r.replace_date).getTime()) / 86400000);
+      elapsedText = elapsed + '일';
+      elapsedColor = '#6b7280';
+      elapsedWeight = '400';
+    }
 
     var rt = r.replace_type || 'carbon';
     var typeBadge = rt === 'bagfilter'
@@ -9548,7 +9583,7 @@ function renderCarbonHistory(facilityFilter, yearFilter) {
       + '<td style="padding:8px 10px;text-align:center;">' + typeBadge + '</td>'
       + '<td style="padding:8px 10px;font-weight:600;">' + r.facility_no + '번' + (typeof FACILITY_SHORT !== 'undefined' && FACILITY_SHORT[r.facility_no] ? ' <span style="font-size:10px;color:#6b7280;font-weight:400;">(' + FACILITY_SHORT[r.facility_no] + ')</span>' : '') + '</td>'
       + '<td style="padding:8px 10px;">' + (r.replace_date || '—') + '</td>'
-      + '<td style="padding:8px 10px;color:' + elapsedColor + ';font-weight:' + (elapsed !== null && elapsed >= CARBON_WARN_DAYS ? '600' : '400') + ';">' + elapsedText + '</td>'
+      + '<td style="padding:8px 10px;color:' + elapsedColor + ';font-weight:' + elapsedWeight + ';">' + elapsedText + '</td>'
       + '<td style="padding:8px 10px;color:#6b7280;">' + (r.note || '—') + '</td>'
       + '<td style="padding:8px 10px;text-align:center;">' + deleteBtn + '</td>'
       + '</tr>';
