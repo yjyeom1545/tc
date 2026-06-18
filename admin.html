@@ -2684,14 +2684,14 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         </div>
         <div>
           <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">시설 선택</div>
-          <select id="carbon-facility" style="border:1px solid #e8ecf0;border-radius:5px;padding:7px 10px;font-size:13px;font-family:inherit;color:#374151;outline:none;min-width:110px;">
-            <option value="2">2번 시설</option>
-            <option value="3">3번 시설</option>
-            <option value="4">4번 시설</option>
-            <option value="5">5번 시설</option>
-            <option value="6">6번 시설</option>
-            <option value="7">7번 시설</option>
-            <option value="9">9번 시설</option>
+          <select id="carbon-facility" style="border:1px solid #e8ecf0;border-radius:5px;padding:7px 10px;font-size:13px;font-family:inherit;color:#374151;outline:none;min-width:160px;">
+            <option value="2">2번 — 도장시설 (하도룸)</option>
+            <option value="3">3번 — 도장시설 (하도룸)</option>
+            <option value="4">4번 — 도장시설 (하도룸)</option>
+            <option value="5">5번 — 건조시설 (건조룸)</option>
+            <option value="6">6번 — 도장및건조시설 (상도룸)</option>
+            <option value="7">7번 — 도장및건조시설 (상도룸)</option>
+            <option value="9">9번 — 도장시설</option>
           </select>
         </div>
         <div>
@@ -2728,11 +2728,16 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         </div>
         <div>
           <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">시설</div>
-          <select id="ch-facility" onchange="renderCarbonHistory()" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:inherit;color:#374151;outline:none;">
+          <select id="ch-facility" onchange="renderCarbonHistory()" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:inherit;color:#374151;outline:none;min-width:150px;">
             <option value="all">전체</option>
-            <option value="1">1번</option><option value="2">2번</option><option value="3">3번</option>
-            <option value="4">4번</option><option value="5">5번</option><option value="6">6번</option>
-            <option value="7">7번</option><option value="9">9번</option>
+            <option value="1">1번 (쇼트룸)</option>
+            <option value="2">2번 (하도룸)</option>
+            <option value="3">3번 (하도룸)</option>
+            <option value="4">4번 (하도룸)</option>
+            <option value="5">5번 (건조룸)</option>
+            <option value="6">6번 (상도룸)</option>
+            <option value="7">7번 (상도룸)</option>
+            <option value="9">9번 (도장시설)</option>
           </select>
         </div>
         <div>
@@ -9284,6 +9289,25 @@ var BAGFILTER_FACILITIES = [1];                     // 백필터 시설
 var ALL_FILTER_FACILITIES = [1, 2, 3, 4, 5, 6, 7, 9];
 var _carbonAllData = [];
 
+var FACILITY_NAMES = {
+  1: '탈청시설 (쇼트룸)',
+  2: '도장시설 (하도룸)',
+  3: '도장시설 (하도룸)',
+  4: '도장시설 (하도룸)',
+  5: '건조시설 (건조룸)',
+  6: '도장및건조시설 (상도룸)',
+  7: '도장및건조시설 (상도룸)',
+  9: '도장시설'
+};
+
+var FACILITY_SHORT = {
+  1: '쇼트룸',
+  2: '하도룸', 3: '하도룸', 4: '하도룸',
+  5: '건조룸',
+  6: '상도룸', 7: '상도룸',
+  9: '도장시설'
+};
+
 function sbCarbon(path, opts) {
   opts = opts || {};
   var url = SB_URL + '/rest/v1/' + path;
@@ -9317,10 +9341,10 @@ function _updateCarbonFacilityOptions() {
   if (!typeSel || !facSel) return;
   var type = typeSel.value;
   if (type === 'bagfilter') {
-    facSel.innerHTML = '<option value="1">1번 시설</option>';
+    facSel.innerHTML = '<option value="1">1번 — ' + (FACILITY_NAMES[1] || '') + '</option>';
   } else {
     facSel.innerHTML = [2,3,4,5,6,7,9].map(function(n) {
-      return '<option value="' + n + '">' + n + '번 시설</option>';
+      return '<option value="' + n + '">' + n + '번 — ' + (FACILITY_NAMES[n] || '') + '</option>';
     }).join('');
   }
 }
@@ -9431,9 +9455,10 @@ function renderCarbonFacilityCards() {
     var dateText = last ? last.replace_date : '기록 없음';
     var elapsedText = elapsed !== null ? elapsed + '일 경과' : '';
 
+    var shortName = (typeof FACILITY_SHORT !== 'undefined' && FACILITY_SHORT[no]) ? FACILITY_SHORT[no] : '';
     return '<div style="min-width:108px;flex:1;border:1px solid #e8ecf0;border-top:3px solid ' + borderColor + ';border-radius:8px;background:white;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">'
-      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">'
-        + '<div style="font-size:11px;color:#6b7280;font-weight:600;">' + no + '번 시설</div>'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">'
+        + '<div style="font-size:11px;color:#6b7280;font-weight:600;">' + no + '번' + (shortName ? ' ' + shortName : '') + '</div>'
         + '<span style="padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;background:' + typeBadgeColor + '18;color:' + typeBadgeColor + ';">' + typeLabel + '</span>'
       + '</div>'
       + '<div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:3px;">' + dateText + '</div>'
@@ -9521,7 +9546,7 @@ function renderCarbonHistory(facilityFilter, yearFilter) {
     return '<tr style="border-bottom:1px solid #f3f4f6;">'
       + '<td style="padding:8px 10px;color:#9ca3af;">' + (i+1) + '</td>'
       + '<td style="padding:8px 10px;text-align:center;">' + typeBadge + '</td>'
-      + '<td style="padding:8px 10px;font-weight:600;">' + r.facility_no + '번</td>'
+      + '<td style="padding:8px 10px;font-weight:600;">' + r.facility_no + '번' + (typeof FACILITY_SHORT !== 'undefined' && FACILITY_SHORT[r.facility_no] ? ' <span style="font-size:10px;color:#6b7280;font-weight:400;">(' + FACILITY_SHORT[r.facility_no] + ')</span>' : '') + '</td>'
       + '<td style="padding:8px 10px;">' + (r.replace_date || '—') + '</td>'
       + '<td style="padding:8px 10px;color:' + elapsedColor + ';font-weight:' + (elapsed !== null && elapsed >= CARBON_WARN_DAYS ? '600' : '400') + ';">' + elapsedText + '</td>'
       + '<td style="padding:8px 10px;color:#6b7280;">' + (r.note || '—') + '</td>'
