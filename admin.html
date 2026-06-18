@@ -2708,7 +2708,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   </div>
 
   <!-- 시설별 현황 카드 -->
-  <div id="carbon-facility-cards" style="display:flex;gap:10px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:14px;padding-bottom:4px;"></div>
+  <div id="carbon-facility-cards" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:4px;"></div>
 
   <!-- 이력 테이블 -->
   <div class="card">
@@ -2737,6 +2737,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
             <option value="5">5번 (건조룸)</option>
             <option value="6">6번 (상도룸)</option>
             <option value="7">7번 (상도룸)</option>
+            <option value="8">8번 (연마시설)</option>
             <option value="9">9번 (도장시설)</option>
           </select>
         </div>
@@ -9284,9 +9285,9 @@ function _doExportPressureExcel() {
 <script>
 var CARBON_CYCLE_DAYS = 365;
 var CARBON_WARN_DAYS = 300;
-var CARBON_FACILITIES = [2, 3, 4, 5, 6, 7, 9];   // 활성탄 시설
-var BAGFILTER_FACILITIES = [1];                     // 백필터 시설
-var ALL_FILTER_FACILITIES = [1, 2, 3, 4, 5, 6, 7, 9];
+var CARBON_FACILITIES = [2, 3, 4, 5, 6, 7, 9];      // 활성탄 시설
+var BAGFILTER_FACILITIES = [1, 8];                   // 백필터 시설 (8번 연마시설 포함)
+var ALL_FILTER_FACILITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 var _carbonAllData = [];
 
 var FACILITY_NAMES = {
@@ -9297,6 +9298,7 @@ var FACILITY_NAMES = {
   5: '건조시설 (건조룸)',
   6: '도장및건조시설 (상도룸)',
   7: '도장및건조시설 (상도룸)',
+  8: '연마시설 (비가동)',
   9: '도장시설'
 };
 
@@ -9305,8 +9307,12 @@ var FACILITY_SHORT = {
   2: '하도룸', 3: '하도룸', 4: '하도룸',
   5: '건조룸',
   6: '상도룸', 7: '상도룸',
+  8: '연마시설',
   9: '도장시설'
 };
+
+// 비가동 시설 목록 (현황 카드에서 경고 색상 표시 안 함)
+var INACTIVE_FACILITIES = [8];
 
 function sbCarbon(path, opts) {
   opts = opts || {};
@@ -9341,7 +9347,9 @@ function _updateCarbonFacilityOptions() {
   if (!typeSel || !facSel) return;
   var type = typeSel.value;
   if (type === 'bagfilter') {
-    facSel.innerHTML = '<option value="1">1번 — ' + (FACILITY_NAMES[1] || '') + '</option>';
+    facSel.innerHTML = [1, 8].map(function(n) {
+      return '<option value="' + n + '">' + n + '번 — ' + (FACILITY_NAMES[n] || '') + '</option>';
+    }).join('');
   } else {
     facSel.innerHTML = [2,3,4,5,6,7,9].map(function(n) {
       return '<option value="' + n + '">' + n + '번 — ' + (FACILITY_NAMES[n] || '') + '</option>';
@@ -9411,6 +9419,7 @@ function renderCarbonSummary() {
     });
     var oldest = null, oldestNo = null;
     ALL_FILTER_FACILITIES.forEach(function(no) {
+      if (INACTIVE_FACILITIES.indexOf(no) >= 0) return; // 비가동 제외
       var d = lastByFacility[no];
       var elapsed = d ? _carbonElapsed(d) : Infinity;
       if (oldest === null || elapsed > oldest) { oldest = elapsed; oldestNo = no; }
@@ -9441,8 +9450,12 @@ function renderCarbonFacilityCards() {
     var last = rows.length ? rows[0] : null;
     var elapsed = last ? _carbonElapsed(last.replace_date) : null;
 
+    var isInactive = INACTIVE_FACILITIES.indexOf(no) >= 0;
     var statusLabel, statusColor, borderColor;
-    if (elapsed === null) {
+    if (isInactive) {
+      // 비가동 시설: 이력과 무관하게 회색 고정
+      statusLabel = '비가동'; statusColor = '#9ca3af'; borderColor = '#d1d5db';
+    } else if (elapsed === null) {
       statusLabel = '기록 없음'; statusColor = '#9ca3af'; borderColor = '#e8ecf0';
     } else if (elapsed >= CARBON_CYCLE_DAYS) {
       statusLabel = '교체시기'; statusColor = '#ef4444'; borderColor = '#ef4444';
@@ -9456,7 +9469,7 @@ function renderCarbonFacilityCards() {
     var elapsedText = elapsed !== null ? elapsed + '일 경과' : '';
 
     var shortName = (typeof FACILITY_SHORT !== 'undefined' && FACILITY_SHORT[no]) ? FACILITY_SHORT[no] : '';
-    return '<div style="min-width:108px;flex:1;border:1px solid #e8ecf0;border-top:3px solid ' + borderColor + ';border-radius:8px;background:white;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">'
+    return '<div style="min-width:90px;flex:1;border:1px solid #e8ecf0;border-top:3px solid ' + borderColor + ';border-radius:8px;background:' + (isInactive ? '#f9fafb' : 'white') + ';padding:10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">'
       + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">'
         + '<div style="font-size:11px;color:#6b7280;font-weight:600;">' + no + '번' + (shortName ? ' ' + shortName : '') + '</div>'
         + '<span style="padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;background:' + typeBadgeColor + '18;color:' + typeBadgeColor + ';">' + typeLabel + '</span>'
