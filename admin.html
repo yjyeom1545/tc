@@ -9240,7 +9240,7 @@ async function renderHistoryTable(facilityFilter, typeFilter) {
       + '<td style="padding:7px 10px;text-align:right;">' + flowDisplay + '</td>'
       + '<td style="padding:7px 10px;text-align:center;"><span style="padding:1px 7px;border-radius:9px;font-size:10px;font-weight:600;' + typeBadge + '">' + typeLabel + '</span></td>'
       + '<td style="padding:7px 10px;text-align:right;">' + (r.k_value != null ? Math.round(r.k_value*100)/100 : '—') + '</td>'
-      + '<td style="padding:7px 10px;text-align:right;">' + (r.efficiency != null ? Math.round(r.efficiency*10)/10 + '%' : '—') + '</td>'
+      + '<td style="padding:7px 10px;text-align:right;">' + (r.efficiency != null ? (function(e){ var c=e>=EFFICIENCY_NORMAL?'#10b981':e>=EFFICIENCY_DANGER?'#f59e0b':'#ef4444'; return '<span style="color:'+c+';font-weight:600;">'+Math.round(e*10)/10+'%</span>'; })(r.efficiency) : '—') + '</td>'
       + '<td style="padding:7px 10px;text-align:center;">' + kChange + '</td>'
       + '<td style="padding:7px 10px;color:#9ca3af;">' + (r.note || '') + '</td>'
       + '</tr>';
@@ -9682,7 +9682,9 @@ var DIAG_PRESSURE_DANGER = 160;
 var DIAG_PRESSURE_WARN = 120;
 var DIAG_CARBON_CYCLE = 365;
 var DIAG_CARBON_WARN = 300;
-var DIAG_FILTER_RECENT_DAYS = 14;  // 이 이내 교체 = "최근 교체"
+var DIAG_FILTER_RECENT_DAYS = 14;
+var EFFICIENCY_NORMAL = 80;  // 정상 기준선 (%)
+var EFFICIENCY_DANGER = 50;  // 위험 마지노선 (%)  // 이 이내 교체 = "최근 교체"
 var DIAG_FILTER_WARN_DAYS = 7;     // 7일 이하 정상, 8~14일 주의, 15일+ 교체시기
 
 // filter_records room_name ↔ 시설번호 매핑 (실제 DB값 기준)
@@ -9842,8 +9844,8 @@ function diagnoseFacility(data) {
     return { type:'ok', label:'정상', severity:'none',
              reason:'차압 정상 범위' };
 
-  // 3. 차압 정상인데 효율 50% 미만 → 덕트·송풍기 의심
-  if (data.pressure < PRESSURE_WARN && data.efficiency != null && data.efficiency < 50)
+  // 3. 차압 정상인데 효율 위험 기준 미만 → 덕트·송풍기 의심
+  if (data.pressure < PRESSURE_WARN && data.efficiency != null && data.efficiency < EFFICIENCY_DANGER)
     return { type:'equip', label:'덕트·송풍기 점검', severity:'urgent',
              reason:'차압은 정상인데 유량 저하 — 덕트 누기 또는 송풍기 출력 저하 의심' };
 
@@ -10008,7 +10010,7 @@ function renderDiagnosisMatrix(facilitiesData) {
     // 효율 셀
     var effCell = '—';
     if (d.efficiency != null) {
-      var eColor = d.efficiency >= 80 ? '#10b981' : d.efficiency >= 50 ? '#f59e0b' : '#ef4444';
+      var eColor = d.efficiency >= EFFICIENCY_NORMAL ? '#10b981' : d.efficiency >= EFFICIENCY_DANGER ? '#f59e0b' : '#ef4444';
       effCell = '<span style="font-weight:600;color:' + eColor + ';">' + d.efficiency + '%</span>';
     }
 
@@ -10112,7 +10114,7 @@ function renderDiagnosisLogic(facilityData) {
     label: '효율',
     value: d.efficiency != null ? d.efficiency + '%' : '미측정',
     color: d.efficiency == null ? '#9ca3af'
-      : d.efficiency >= 80 ? '#10b981' : d.efficiency >= 50 ? '#f59e0b' : '#ef4444'
+      : d.efficiency >= EFFICIENCY_NORMAL ? '#10b981' : d.efficiency >= EFFICIENCY_DANGER ? '#f59e0b' : '#ef4444'
   });
 
   var diagBg = diag.severity === 'urgent' ? '#fef2f2' : diag.severity === 'watch' ? '#fffbeb' : '#f0fdf4';
