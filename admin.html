@@ -9897,13 +9897,16 @@ function severityScore(data, diagnosis) {
   var score = 0;
   if (diagnosis.severity === 'urgent') score += 100;
   if (diagnosis.severity === 'watch') score += 50;
-  if (data.carbonDays != null) score += Math.min(data.carbonDays / 10, 50);
+  if (data.carbonDays != null) {
+    if (data.carbonDays >= SIMPLE_CARBON_URGENT) score += 40;
+    else if (data.carbonDays >= SIMPLE_CARBON_CYCLE) score += 30;
+  }
   return score;
 }
 
 // 현재 운영 판단 함수: 활성탄 경과 중심, 차압은 참고 표시
 var SIMPLE_CARBON_CYCLE  = 365;   // 1년 — 점검 권장
-var SIMPLE_CARBON_URGENT = 730;   // 2년 — 교체 시급
+var SIMPLE_CARBON_URGENT = 730;   // 2년 — 교체 확인 필요
 
 function diagnoseSimple(data) {
   if (data.isInactive)
@@ -9914,8 +9917,8 @@ function diagnoseSimple(data) {
 
   if (data.carbonDays != null) {
     if (data.carbonDays >= SIMPLE_CARBON_URGENT)
-      return { label:'활성탄 교체 시급', severity:'urgent',
-               reason:'활성탄 ' + data.carbonDays + '일 경과 (2년 초과)' };
+      return { label:'활성탄 교체 확인 필요', severity:'watch',
+               reason:'활성탄 ' + data.carbonDays + '일 경과 (2년 초과) — 교체 기록 1회뿐, 정상 주기 판단 불가, 현장 확인 권장' };
     if (data.carbonDays >= SIMPLE_CARBON_CYCLE)
       return { label:'활성탄 점검 권장', severity:'watch',
                reason:'활성탄 ' + data.carbonDays + '일 경과 (1년 초과)' };
