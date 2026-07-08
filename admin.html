@@ -5518,23 +5518,19 @@ async function loadPrevPower(date){
     var dailyEl=document.getElementById('pr'+i+'-daily');
     if(dailyEl){dailyEl.textContent='-';dailyEl.style.color='#d1d5db';}
   }
-  // 이 날짜 이전 중 가장 최근 방지시설 기록 날짜 조회 (주말·공휴일 자동 처리)
-  var step1=await sb('air_operation_log','?log_date=lt.'+date+'&facility_type=eq.방지시설&select=log_date&order=log_date.desc&limit=1');
-  if(step1&&step1.length){
-    var prevDate=step1[0].log_date;
-    var data=await sb('air_operation_log','?log_date=eq.'+prevDate+'&facility_type=eq.방지시설&select=facility_no,power_today&order=facility_no.asc');
-    if(data&&data.length){
-      data.forEach(function(r){
-        if(r.power_today!=null){
-          alPrevPower[r.facility_no]=r.power_today;
-          var prevEl=document.getElementById('pr'+r.facility_no+'-prev');
-          if(prevEl)prevEl.value=r.power_today;
-        }
-      });
-    }
-  }
+  // 담당 방지시설마다 독립 쿼리로 각 시설의 마지막 검침 조회 (병렬)
+  var _pNos=getAirLogPrNos();
+  await Promise.all(_pNos.map(function(n){
+    return sb('air_operation_log','?facility_no=eq.'+n+'&facility_type=eq.방지시설&log_date=lt.'+date+'&power_today=not.is.null&select=power_today,log_date&order=log_date.desc&limit=1')
+    .then(function(res){
+      if(res&&res.length&&res[0].power_today!=null){
+        alPrevPower[n]=res[0].power_today;
+        var prevEl=document.getElementById('pr'+n+'-prev');
+        if(prevEl)prevEl.value=res[0].power_today;
+      }
+    });
+  }));
   if(alMode==='new'){
-    var _pNos=getAirLogPrNos();
     _pNos.forEach(function(n){
       if(alPrevPower[n]!=null){
         var _tel=document.getElementById('pr'+n+'-today');
@@ -5770,6 +5766,8 @@ async function queryAirLog(){
       calcPower(n);
     }
   });
+  // 조회·수정 모드: 담당 외 시설 읽기전용 적용 (admin은 전체 수정 가능)
+  _applyAirlogPerms();
 }
 
 function formatSemsAt(isoStr){
@@ -5939,41 +5937,65 @@ async function saveAirLog(){
       }
     }
   }
-  // 신규 입력 모드: 해당 일자 데이터 중복 여부 확인
+  // 신규 입력 모드: 담당 시설 기준 중복 여부 확인
   if(alMode==='new'){
-    var existing=await sb('air_operation_log','?log_date=eq.'+date+'&select=id&limit=1');
+    var _allMyNos=Array.from(new Set(getAirLogEmNos().concat(getAirLogPrNos())));
+    var existing=await sb('air_operation_log','?log_date=eq.'+date+'&facility_no=in.('+_allMyNos.join(',')+')'+'&select=id&limit=1');
     if(existing&&existing.length){
       alert('[이미 작성된 일자입니다]\n\n'+date+' 데이터가 이미 작성되어 있습니다.\n수정하시려면 [조회·수정] 탭을 이용해 주세요.');
       return;
     }
   }
-  var title=alMode==='edit'?'수정하시겠습니까?':'저장하시겠습니까?';
-  var okLbl=alMode==='edit'?'수정':'저장';
-  var _prNames={1:'여과집진시설',2:'흡착에의한시설',3:'흡착에의한시설',4:'흡착에의한시설',5:'흡착에의한시설',6:'1차여과, 2차흡착',7:'1차여과, 2차흡착',8:'흡착에의한시설',9:'흡착에의한시설'};
-  var _myPrNos=getAirLogPrNos();
-  var _prActive=0,_prIdle=[],_prEmpty=0,_prUsage=0;
-  _myPrNos.forEach(function(no){
-    var _tel=document.getElementById('pr'+no+'-today');
-    if(!_tel||_tel.disabled)return;
-    if(_tel.value===''){_prEmpty++;return;}
-    var _tv=parseFloat(_tel.value);
-    var _pv=alPrevPower[no]!=null?alPrevPower[no]:null;
-    if(_pv!=null&&_tv===_pv){_prIdle.push(no+'번 '+_prNames[no]);}
-    else if(_pv!=null&&_tv>_pv){_prActive++;_prUsage+=(_tv-_pv);}
-    else{_prActive++;}
+  // E: 검침 급증 경고 (상수)
+  var _SURGE_RATIO=0.20;
+  var _SURGE_ABS=1000;
+  var _surgeWarn=[];
+  getAirLogPrNos().forEach(function(no){
+    var prevEl=document.getElementById('pr'+no+'-prev');
+    var todayEl=document.getElementById('pr'+no+'-today');
+    if(!todayEl||todayEl.disabled||todayEl.value==='')return;
+    var pv=prevEl&&prevEl.value!==''?parseFloat(prevEl.value):null;
+    var tv=parseFloat(todayEl.value);
+    if(pv!=null&&tv>pv){
+      var diff=tv-pv;
+      if(diff>_SURGE_ABS||(pv>0&&diff/pv>_SURGE_RATIO))_surgeWarn.push(no+'번 시설: +'+diff.toFixed(0)+' kWh');
+    }
   });
-  if(_prIdle.length>0){
-    var _lines=[];
-    _lines.push('가동: '+_prActive+'개 시설'+(_prUsage>0?' (총 '+_prUsage.toFixed(0)+' kWh 사용)':''));
-    _lines.push('미가동(사용량 0): '+_prIdle.length+'개 시설');
-    _prIdle.forEach(function(x){_lines.push('  · '+x);});
-    if(_prEmpty>0){_lines.push('미입력: '+_prEmpty+'개 시설 (입력해 주세요)');_lines.push('');_lines.push('⚠️ 미입력 시설이 있습니다. 입력 후 저장 권장.');}
-    _lines.push('');
-    _lines.push('미가동 시설들이 정말 가동 안 했는지 확인해 주세요.');
-    alShowConfirmModal('전력사용량 확인',okLbl,_doActualSaveAirLog,'취소',_lines.join('\n'));
+  // idle check + 저장 확인 모달 (surge 확인 후 실행)
+  function _alProceedSave(){
+    var title=alMode==='edit'?'수정하시겠습니까?':'저장하시겠습니까?';
+    var okLbl=alMode==='edit'?'수정':'저장';
+    var _prNames={1:'여과집진시설',2:'흡착에의한시설',3:'흡착에의한시설',4:'흡착에의한시설',5:'흡착에의한시설',6:'1차여과, 2차흡착',7:'1차여과, 2차흡착',8:'흡착에의한시설',9:'흡착에의한시설'};
+    var _myPrNos=getAirLogPrNos();
+    var _prActive=0,_prIdle=[],_prEmpty=0,_prUsage=0;
+    _myPrNos.forEach(function(no){
+      var _tel=document.getElementById('pr'+no+'-today');
+      if(!_tel||_tel.disabled)return;
+      if(_tel.value===''){_prEmpty++;return;}
+      var _tv=parseFloat(_tel.value);
+      var _pv=alPrevPower[no]!=null?alPrevPower[no]:null;
+      if(_pv!=null&&_tv===_pv){_prIdle.push(no+'번 '+_prNames[no]);}
+      else if(_pv!=null&&_tv>_pv){_prActive++;_prUsage+=(_tv-_pv);}
+      else{_prActive++;}
+    });
+    if(_prIdle.length>0){
+      var _lines=[];
+      _lines.push('가동: '+_prActive+'개 시설'+(_prUsage>0?' (총 '+_prUsage.toFixed(0)+' kWh 사용)':''));
+      _lines.push('미가동(사용량 0): '+_prIdle.length+'개 시설');
+      _prIdle.forEach(function(x){_lines.push('  · '+x);});
+      if(_prEmpty>0){_lines.push('미입력: '+_prEmpty+'개 시설 (입력해 주세요)');_lines.push('');_lines.push('⚠️ 미입력 시설이 있습니다. 입력 후 저장 권장.');}
+      _lines.push('');
+      _lines.push('미가동 시설들이 정말 가동 안 했는지 확인해 주세요.');
+      alShowConfirmModal('전력사용량 확인',okLbl,_doActualSaveAirLog,'취소',_lines.join('\n'));
+      return;
+    }
+    alShowConfirmModal(title,okLbl,_doActualSaveAirLog);
+  }
+  if(_surgeWarn.length>0){
+    alShowConfirmModal('검침값 급증 확인','확인',_alProceedSave,'취소','검침값이 평소보다 많이 증가했습니다. 확인해 주세요.\n\n'+_surgeWarn.join('\n'));
     return;
   }
-  alShowConfirmModal(title,okLbl,_doActualSaveAirLog);
+  _alProceedSave();
 }
 
 async function _doActualSaveAirLog(){
@@ -5999,8 +6021,9 @@ async function _doActualSaveAirLog(){
     var eh=document.getElementById('em'+n+'-eh').value;
     var em_=document.getElementById('em'+n+'-em').value;
     var hr=document.getElementById('em'+n+'-hr').value;
-    // 신규 모드: 시간 없으면 스킵 (부분입력은 saveAirLog에서 이미 차단됨)
-    if(alMode==='new'&&!sh&&!eh)return;
+    // 신규 모드: 시간도 status도 없으면 스킵 (미운영이라도 status 입력 시 저장)
+    var _emStatus=alStatusMap['em'+n];
+    if(alMode==='new'&&!sh&&!eh&&!_emStatus)return;
     var startTime=(sh||sm)?((sh||'00')+':'+(sm||'00')):null;
     var endTime=(eh||em_)?((eh||'00')+':'+(em_||'00')):null;
     records.push({
@@ -6042,8 +6065,7 @@ async function _doActualSaveAirLog(){
   }
 
   try{
-    await fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+date+'&submitted_by=eq.'+encodeURIComponent(currentUser.name||currentUser.username),{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-    var res=await fetch(SB_URL+'/rest/v1/air_operation_log',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},body:JSON.stringify(records)});
+    var res=await fetch(SB_URL+'/rest/v1/air_operation_log?on_conflict=log_date,facility_no,facility_type',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(records)});
     if(!res.ok){var errText=await res.text();throw new Error(errText);}
     showToast('저장 완료');
     if(alMode==='new')updateAirlogStatusChip(date);
@@ -6141,18 +6163,43 @@ async function jumpToMissingDate(){
   showToast('미입력 일자 조회 중...');
   var t=new Date();t.setHours(0,0,0,0);
   var ts=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  var myEmNos=getAirLogEmNos();
+  var myPrNos=getAirLogPrNos();
   var results=await Promise.all([
-    sb('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&select=log_date&limit=9999'),
+    sb('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&select=log_date,facility_no,facility_type,power_today,start_time,end_time,operation_hours,status&limit=99999'),
     sb('holidays','?is_active=eq.true&select=holiday_date')
   ]);
-  var logged=new Set((results[0]||[]).map(function(r){return r.log_date;}));
+  var records=results[0]||[];
   var holidays=new Set((results[1]||[]).map(function(r){return r.holiday_date;}));
+  // 날짜별 시설 기록 색인
+  var dateMap={};
+  records.forEach(function(r){
+    if(!dateMap[r.log_date])dateMap[r.log_date]={em:{},pr:{}};
+    if(r.facility_type==='배출구')dateMap[r.log_date].em[r.facility_no]=r;
+    if(r.facility_type==='방지시설')dateMap[r.log_date].pr[r.facility_no]=r;
+  });
   var sysStart=new Date(SYS_START+'T00:00:00');
   for(var d=new Date(sysStart);d<=t;d.setDate(d.getDate()+1)){
     if(d.getDay()===0||d.getDay()===6) continue;
     var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     if(holidays.has(ds)) continue;
-    if(!logged.has(ds)){
+    var dayData=dateMap[ds]||{em:{},pr:{}};
+    var done=true;
+    // 배출구 완료: 담당 배출구마다 record 존재 + 시간 or status 입력
+    for(var _ei=0;_ei<myEmNos.length;_ei++){
+      var _en=myEmNos[_ei];
+      var er=dayData.em[_en];
+      if(!er||(!er.start_time&&!er.end_time&&er.operation_hours==null&&!er.status)){done=false;break;}
+    }
+    // 방지시설 완료: 담당 방지시설마다 power_today 존재
+    if(done){
+      for(var _pi2=0;_pi2<myPrNos.length;_pi2++){
+        var _pn2=myPrNos[_pi2];
+        var pr=dayData.pr[_pn2];
+        if(!pr||pr.power_today==null){done=false;break;}
+      }
+    }
+    if(!done){
       document.getElementById('al-input-date').value=ds;
       onAirlogDateChange(ds);
       showToast('미입력 일자: '+ds);

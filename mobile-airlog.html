@@ -246,6 +246,22 @@ function canEdit9(){
   if(currentUser.username==='yjyeom') return true;
   return !!(currentUser.permissions&&currentUser.permissions.airlog_9);
 }
+function getMyEmNos(){
+  if(!currentUser) return [];
+  if(currentUser.username==='yjyeom') return [1,2,3,4,5,6,7,9];
+  var nos=[];
+  if(currentUser.permissions&&currentUser.permissions.airlog_1to8) nos=nos.concat([1,2,3,4,5,6,7]);
+  if(currentUser.permissions&&currentUser.permissions.airlog_9) nos.push(9);
+  return nos;
+}
+function getMyPrNos(){
+  if(!currentUser) return [];
+  if(currentUser.username==='yjyeom') return [1,2,3,4,5,6,7,8,9];
+  var nos=[];
+  if(currentUser.permissions&&currentUser.permissions.airlog_1to8) nos=nos.concat([1,2,3,4,5,6,7,8]);
+  if(currentUser.permissions&&currentUser.permissions.airlog_9) nos.push(9);
+  return nos;
+}
 
 // ── Boot ──
 (function init(){
@@ -259,15 +275,29 @@ function canEdit9(){
 })();
 
 function _applyMobPerms(){
-  if(canEdit9()) return;
+  var myEmNos=getMyEmNos();
+  var myPrNos=getMyPrNos();
   var noPerm='font-size:10px;color:#9ca3af;margin-left:auto;padding-left:6px;';
-  ['ec9','pc9'].forEach(function(cid){
-    var card=g(cid); if(!card) return;
-    card.style.opacity='0.4';
-    card.querySelectorAll('input,button').forEach(function(el){el.disabled=true;el.style.cursor='not-allowed';});
-    var hdr=card.querySelector('.fcard-hdr');
-    if(hdr&&!hdr.querySelector('.mob-no-perm')){
-      var lbl=document.createElement('span');lbl.className='mob-no-perm';lbl.textContent='권한 없음';lbl.style.cssText=noPerm;hdr.appendChild(lbl);
+  EM_NOS.forEach(function(n){
+    if(myEmNos.indexOf(n)<0){
+      var card=g('ec'+n); if(!card) return;
+      card.style.opacity='0.4';
+      card.querySelectorAll('input,button').forEach(function(el){el.disabled=true;el.style.cursor='not-allowed';});
+      var hdr=card.querySelector('.fcard-hdr');
+      if(hdr&&!hdr.querySelector('.mob-no-perm')){
+        var lbl=document.createElement('span');lbl.className='mob-no-perm';lbl.textContent='권한 없음';lbl.style.cssText=noPerm;hdr.appendChild(lbl);
+      }
+    }
+  });
+  PR_NOS.forEach(function(n){
+    if(myPrNos.indexOf(n)<0){
+      var card=g('pc'+n); if(!card) return;
+      card.style.opacity='0.4';
+      card.querySelectorAll('input,button').forEach(function(el){el.disabled=true;el.style.cursor='not-allowed';});
+      var hdr=card.querySelector('.fcard-hdr');
+      if(hdr&&!hdr.querySelector('.mob-no-perm')){
+        var lbl=document.createElement('span');lbl.className='mob-no-perm';lbl.textContent='권한 없음';lbl.style.cssText=noPerm;hdr.appendChild(lbl);
+      }
     }
   });
 }
@@ -508,28 +538,26 @@ function calcD(n){
   updProg();
 }
 
-// ── 전일검침 자동 불러오기 (이 날짜 이전 중 가장 최근 기록) ──
+// ── 전일검침 자동 불러오기 (담당 시설별 독립 조회) ──
 async function loadPrev(date){
   prevPow={};
-  var step1=await sbGet('air_operation_log','?log_date=lt.'+date+'&facility_type=eq.방지시설&select=log_date&order=log_date.desc&limit=1');
-  if(!step1||!step1.length) return;
-  var prevDate=step1[0].log_date;
-  var data=await sbGet('air_operation_log','?log_date=eq.'+prevDate+'&facility_type=eq.방지시설&select=facility_no,power_today&order=facility_no.asc');
-  if(data&&data.length){
-    data.forEach(function(r){
-      if(r.power_today!=null){
-        prevPow[r.facility_no]=r.power_today;
-        var el=g('pp'+r.facility_no); if(el) el.value=r.power_today;
+  var myPrNos=getMyPrNos();
+  await Promise.all(myPrNos.map(function(n){
+    return sbGet('air_operation_log','?facility_no=eq.'+n+'&facility_type=eq.방지시설&log_date=lt.'+date+'&power_today=not.is.null&select=power_today,log_date&order=log_date.desc&limit=1')
+    .then(function(res){
+      if(res&&res.length&&res[0].power_today!=null){
+        prevPow[n]=res[0].power_today;
+        var el=g('pp'+n); if(el) el.value=res[0].power_today;
       }
     });
-    PR_NOS.forEach(function(n){
-      if(prevPow[n]!=null){
-        var _pt=g('pt'+n);
-        if(_pt&&!_pt.disabled&&_pt.value===''){_pt.value=prevPow[n];_pt.classList.add('mob-pr-auto');}
-      }
-      calcD(n);
-    });
-  }
+  }));
+  myPrNos.forEach(function(n){
+    if(prevPow[n]!=null){
+      var _pt=g('pt'+n);
+      if(_pt&&!_pt.disabled&&_pt.value===''){_pt.value=prevPow[n];_pt.classList.add('mob-pr-auto');}
+    }
+    calcD(n);
+  });
 }
 
 // ── 진행 카운트 ──
@@ -586,21 +614,22 @@ async function queryEdit(){
     }
   });
   updProg();
+  // 조회·수정 모드: 담당 외 시설 읽기전용 적용
+  _applyMobPerms();
 }
 
 async function loadPrevEdit(date){
-  var step1=await sbGet('air_operation_log','?log_date=lt.'+date+'&facility_type=eq.방지시설&select=log_date&order=log_date.desc&limit=1');
-  if(!step1||!step1.length) return;
-  var prevDate=step1[0].log_date;
-  var data=await sbGet('air_operation_log','?log_date=eq.'+prevDate+'&facility_type=eq.방지시설&select=facility_no,power_today');
-  if(data&&data.length){
-    data.forEach(function(r){
-      if(r.power_today!=null&&prevPow[r.facility_no]==null){
-        prevPow[r.facility_no]=r.power_today;
-        var el=g('pp'+r.facility_no); if(el&&!el.value) el.value=r.power_today;
+  // 조회·수정 모드: 전체 시설 독립 조회 (DB에 없는 시설만 fallback)
+  await Promise.all(PR_NOS.map(function(n){
+    if(prevPow[n]!=null) return Promise.resolve();
+    return sbGet('air_operation_log','?facility_no=eq.'+n+'&facility_type=eq.방지시설&log_date=lt.'+date+'&power_today=not.is.null&select=power_today,log_date&order=log_date.desc&limit=1')
+    .then(function(res){
+      if(res&&res.length&&res[0].power_today!=null&&prevPow[n]==null){
+        prevPow[n]=res[0].power_today;
+        var el=g('pp'+n); if(el&&!el.value) el.value=res[0].power_today;
       }
     });
-  }
+  }));
 }
 
 // ── SEMS ──
@@ -649,11 +678,13 @@ function actSems(action,date){
 // ── Save ──
 function onSave(){
   if(isRO()){showToast('테스트 계정은 조회만 가능합니다');return;}
+  var myEmNos=getMyEmNos();
+  var myPrNos=getMyPrNos();
   // 신규 모드: 부분 입력 검증
   if(mode==='new'){
     var _emShortNames={1:'탈청시설(1번)',2:'도장시설(2번)',3:'도장시설(3번)',4:'도장시설(4번)',5:'건조시설(5번)',6:'도장및건조시설(6번)',7:'도장및건조시설(7번)',9:'도장시설(9번)'};
-    for(var _pi=0;_pi<EM_NOS.length;_pi++){
-      var _pn=EM_NOS[_pi];
+    for(var _pi=0;_pi<myEmNos.length;_pi++){
+      var _pn=myEmNos[_pi];
       var _shEl=g('sh'+_pn); if(_shEl&&_shEl.disabled) continue;
       var _hasStart=_shEl&&_shEl.value!=='';
       var _ehEl=g('eh'+_pn);
@@ -663,14 +694,14 @@ function onSave(){
         return;
       }
     }
-    var _hasAnyEm=EM_NOS.some(function(n){var el=g('sh'+n);return el&&!el.disabled&&el.value!==''&&g('eh'+n)&&g('eh'+n).value!==''&&!!emStatus[n];});
-    var _hasAnyPr=PR_NOS.some(function(n){var el=g('pt'+n);return el&&el.value!=='';});
+    var _hasAnyEm=myEmNos.some(function(n){var el=g('sh'+n);return el&&!el.disabled&&el.value!==''&&g('eh'+n)&&g('eh'+n).value!==''&&!!emStatus[n];});
+    var _hasAnyPr=myPrNos.some(function(n){var el=g('pt'+n);return el&&el.value!=='';});
     if(!_hasAnyEm&&!_hasAnyPr){showToast('입력된 데이터가 없습니다');return;}
   }
   var isMod=mode==='edit';
   if(isMod){
-    var emM=EM_NOS.filter(function(n){return !emStatus[n];}).length;
-    var prM=PR_NOS.filter(function(n){var e=g('pt'+n);return !e||e.value==='';}).length;
+    var emM=myEmNos.filter(function(n){return !emStatus[n];}).length;
+    var prM=myPrNos.filter(function(n){var e=g('pt'+n);return !e||e.value==='';}).length;
     if(emM>0||prM>0){
       var parts=[];
       if(emM>0) parts.push('가동시간 미입력 '+emM+'개');
@@ -679,40 +710,62 @@ function onSave(){
       return;
     }
   }
-  if(mode==='new'){
-    var _mActive=0,_mIdle=[],_mEmpty=0,_mUsage=0;
-    PR_NOS.forEach(function(n){
-      if(n===9&&!canEdit9())return;
-      var _el=g('pt'+n);if(!_el||_el.disabled)return;
-      if(_el.value===''){_mEmpty++;return;}
-      var _tv=parseFloat(_el.value);
-      var _pv=prevPow[n]!=null?prevPow[n]:null;
-      if(_pv!=null&&_tv===_pv){_mIdle.push(n+'번 '+PR_NAMES[n]);}
-      else if(_pv!=null&&_tv>_pv){_mActive++;_mUsage+=(_tv-_pv);}
-      else{_mActive++;}
-    });
-    if(_mIdle.length>0){
-      var _ml=[];
-      _ml.push('가동: '+_mActive+'개 시설'+(_mUsage>0?' (총 '+_mUsage.toFixed(0)+' kWh)':''));
-      _ml.push('미가동(사용량 0): '+_mIdle.length+'개 시설');
-      _mIdle.forEach(function(x){_ml.push('  · '+x);});
-      if(_mEmpty>0){_ml.push('미입력: '+_mEmpty+'개 시설');_ml.push('');_ml.push('⚠️ 미입력 시설이 있습니다. 입력 후 저장 권장.');}
-      _ml.push('');
-      _ml.push('미가동 시설들이 정말 가동 안 했는지 확인해 주세요.');
-      showModal('전력사용량 확인',_ml.join('\n'),'저장',doSave,'취소');
-      return;
+  // E: 검침 급증 경고 상수
+  var _SURGE_RATIO=0.20;
+  var _SURGE_ABS=1000;
+  var _surgeW=[];
+  myPrNos.forEach(function(n){
+    var el=g('pt'+n); if(!el||el.disabled||el.value==='') return;
+    var tv=parseFloat(el.value);
+    var pv=prevPow[n]!=null?prevPow[n]:null;
+    if(pv!=null&&tv>pv){
+      var diff=tv-pv;
+      if(diff>_SURGE_ABS||(pv>0&&diff/pv>_SURGE_RATIO))_surgeW.push(n+'번: +'+diff.toFixed(0)+' kWh');
     }
+  });
+  function _mobProceedSave(){
+    if(mode==='new'){
+      var _mActive=0,_mIdle=[],_mEmpty=0,_mUsage=0;
+      myPrNos.forEach(function(n){
+        var _el=g('pt'+n);if(!_el||_el.disabled)return;
+        if(_el.value===''){_mEmpty++;return;}
+        var _tv=parseFloat(_el.value);
+        var _pv=prevPow[n]!=null?prevPow[n]:null;
+        if(_pv!=null&&_tv===_pv){_mIdle.push(n+'번 '+PR_NAMES[n]);}
+        else if(_pv!=null&&_tv>_pv){_mActive++;_mUsage+=(_tv-_pv);}
+        else{_mActive++;}
+      });
+      if(_mIdle.length>0){
+        var _ml=[];
+        _ml.push('가동: '+_mActive+'개 시설'+(_mUsage>0?' (총 '+_mUsage.toFixed(0)+' kWh)':''));
+        _ml.push('미가동(사용량 0): '+_mIdle.length+'개 시설');
+        _mIdle.forEach(function(x){_ml.push('  · '+x);});
+        if(_mEmpty>0){_ml.push('미입력: '+_mEmpty+'개 시설');_ml.push('');_ml.push('⚠️ 미입력 시설이 있습니다. 입력 후 저장 권장.');}
+        _ml.push('');
+        _ml.push('미가동 시설들이 정말 가동 안 했는지 확인해 주세요.');
+        showModal('전력사용량 확인',_ml.join('\n'),'저장',doSave,'취소');
+        return;
+      }
+    }
+    showModal(isMod?'수정하시겠습니까?':'저장하시겠습니까?','',isMod?'수정':'저장',doSave);
   }
-  showModal(isMod?'수정하시겠습니까?':'저장하시겠습니까?','',isMod?'수정':'저장',doSave);
+  if(_surgeW.length>0){
+    showModal('검침값 급증 확인','검침값이 평소보다 많이 증가했습니다. 확인해 주세요.\n\n'+_surgeW.join('\n'),'계속',_mobProceedSave,'취소');
+    return;
+  }
+  _mobProceedSave();
 }
 
 async function doSave(){
   var date=g('date-inp').value;
   if(!date){showToast('날짜를 선택해주세요.');return;}
+  var myEmNos=getMyEmNos();
+  var myPrNos=getMyPrNos();
 
-  // 신규 모드: 기존 데이터 있으면 차단
+  // 신규 모드: 담당 시설 기준 중복 차단 (A-3)
   if(mode==='new'){
-    var existing=await sbGet('air_operation_log','?log_date=eq.'+date+'&select=id&limit=1');
+    var _allMyNos=Array.from(new Set(myEmNos.concat(myPrNos)));
+    var existing=await sbGet('air_operation_log','?log_date=eq.'+date+'&facility_no=in.('+_allMyNos.join(',')+')'+'&select=id&limit=1');
     if(existing&&existing.length){
       showAlert('이미 작성된 일자입니다.\n수정하시려면 [조회·수정] 탭을 이용해 주세요.');
       return;
@@ -732,15 +785,16 @@ async function doSave(){
   var semsBy2=mode==='edit'?semsState.by:null;
   var recs=[];
 
-  var _canEdit9=canEdit9();
-  EM_NOS.forEach(function(n){
-    if(n===9&&!_canEdit9) return;
+  // 담당 배출구 순회 (A-4: 담당 외 제외, D: 시간+status 모두 없을 때만 스킵)
+  myEmNos.forEach(function(n){
+    var shEl=g('sh'+n); if(shEl&&shEl.disabled) return;
     var sh=g('sh'+n).value,sm=g('sm'+n).value,eh=g('eh'+n).value,em=g('em'+n).value;
-    if(!sh&&!eh) return;
+    var status=emStatus[n];
+    if(!sh&&!eh&&!status) return; // 시간도 status도 없으면 스킵
     var startM=(parseInt(sh)||0)*60+(parseInt(sm)||0);
     var endM=(parseInt(eh)||0)*60+(parseInt(em)||0);
     var hr=null;
-    if(endM>startM){
+    if(sh&&eh&&endM>startM){
       var total=endM-startM;
       var olS=Math.max(startM,720),olE=Math.min(endM,780);
       total-=Math.max(0,olE-olS);
@@ -750,15 +804,15 @@ async function doSave(){
       log_date:date,submitted_by:by,facility_no:n,facility_name:EM_NAMES[n],facility_type:'배출구',
       start_time:(sh||sm)?(pad2(parseInt(sh)||0)+':'+pad2(parseInt(sm)||0)):null,
       end_time:(eh||em)?(pad2(parseInt(eh)||0)+':'+pad2(parseInt(em)||0)):null,
-      operation_hours:hr,status:emStatus[n]||'정상',
+      operation_hours:hr,status:status||'정상',
       power_prev:null,power_today:null,power_daily:null,
       sems_registered:semsReg,sems_registered_at:semsAt,sems_registered_by:semsBy2
     });
   });
 
-  PR_NOS.forEach(function(n){
-    if(n===9&&!_canEdit9) return;
-    var el=g('pt'+n); if(!el||el.value==='') return;
+  // 담당 방지시설 순회 (A-4: 담당 외 제외)
+  myPrNos.forEach(function(n){
+    var el=g('pt'+n); if(!el||el.disabled||el.value==='') return;
     var tv=parseFloat(el.value);
     var pv=prevPow[n]!=null?prevPow[n]:null;
     var daily=(pv!=null&&!isNaN(tv)&&tv-pv>=0)?(tv-pv):null;
@@ -776,11 +830,10 @@ async function doSave(){
   }
 
   try{
-    var delQ='?log_date=eq.'+date+'&submitted_by=eq.'+encodeURIComponent(by);
-    await fetch(SB_URL+'/rest/v1/air_operation_log'+delQ,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-    var res=await fetch(SB_URL+'/rest/v1/air_operation_log',{
+    // B: upsert (DELETE 제거)
+    var res=await fetch(SB_URL+'/rest/v1/air_operation_log?on_conflict=log_date,facility_no,facility_type',{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'resolution=merge-duplicates,return=minimal'},
       body:JSON.stringify(recs)
     });
     if(!res.ok){var t=await res.text();throw new Error(t);}
@@ -846,24 +899,48 @@ function mobDateShift(delta){
   onDateChange();
 }
 
-// ── 미입력 일자로 이동 ──
+// ── 미입력 일자로 이동 (담당 시설 완료 기준) ──
 async function mobJumpMissing(){
   var SYS_START='2026-04-01';
   showToast('조회 중...');
   var t=new Date();t.setHours(0,0,0,0);
   var ts=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  var myEmNos=getMyEmNos();
+  var myPrNos=getMyPrNos();
   var results=await Promise.all([
-    sbGet('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&select=log_date&limit=9999'),
+    sbGet('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&select=log_date,facility_no,facility_type,power_today,start_time,end_time,operation_hours,status&limit=99999'),
     sbGet('holidays','?is_active=eq.true&select=holiday_date')
   ]);
-  var logged=new Set((results[0]||[]).map(function(r){return r.log_date;}));
+  var records=results[0]||[];
   var holidays=new Set((results[1]||[]).map(function(r){return r.holiday_date;}));
+  var dateMap={};
+  records.forEach(function(r){
+    if(!dateMap[r.log_date])dateMap[r.log_date]={em:{},pr:{}};
+    if(r.facility_type==='배출구')dateMap[r.log_date].em[r.facility_no]=r;
+    if(r.facility_type==='방지시설')dateMap[r.log_date].pr[r.facility_no]=r;
+  });
   var sysStart=new Date(SYS_START+'T00:00:00');
   for(var d=new Date(sysStart);d<=t;d.setDate(d.getDate()+1)){
     if(d.getDay()===0||d.getDay()===6) continue;
     var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     if(holidays.has(ds)) continue;
-    if(!logged.has(ds)){
+    var dayData=dateMap[ds]||{em:{},pr:{}};
+    var done=true;
+    // 배출구 완료: 담당 배출구마다 record 존재 + 시간 or status 입력
+    for(var _ei=0;_ei<myEmNos.length;_ei++){
+      var _en=myEmNos[_ei];
+      var er=dayData.em[_en];
+      if(!er||(!er.start_time&&!er.end_time&&er.operation_hours==null&&!er.status)){done=false;break;}
+    }
+    // 방지시설 완료: 담당 방지시설마다 power_today 존재
+    if(done){
+      for(var _pi2=0;_pi2<myPrNos.length;_pi2++){
+        var _pn2=myPrNos[_pi2];
+        var pr=dayData.pr[_pn2];
+        if(!pr||pr.power_today==null){done=false;break;}
+      }
+    }
+    if(!done){
       g('date-inp').value=ds; onDateChange();
       showToast('미입력 일자: '+ds); return;
     }
