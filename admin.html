@@ -5412,6 +5412,7 @@ function setStatus(id,status){
 
 function alPrMarkUser(el,no){
   el.classList.remove('al-auto');
+  el.dataset.confirmed='1';
   var pv=alPrevPower[no]!=null?alPrevPower[no]:null;
   if(pv!=null&&el.value!==''&&parseFloat(el.value)<pv){
     showToast(no+'번 시설: 당일검침이 전일검침보다 작습니다');
@@ -5429,6 +5430,7 @@ function alPrStep(no,dir){
   if(next<0)return;
   el.value=next;
   el.classList.remove('al-auto');
+  el.dataset.confirmed='1';
   calcPower(no);
 }
 function calcPower(no){
@@ -5514,7 +5516,7 @@ async function loadPrevPower(date){
     var el=document.getElementById('pr'+i+'-prev');
     if(el)el.value='';
     var todayEl=document.getElementById('pr'+i+'-today');
-    if(todayEl&&!todayEl.disabled){todayEl.value='';todayEl.classList.remove('al-auto');}
+    if(todayEl&&!todayEl.disabled){todayEl.value='';todayEl.classList.remove('al-auto');todayEl.dataset.confirmed='0';}
     var dailyEl=document.getElementById('pr'+i+'-daily');
     if(dailyEl){dailyEl.textContent='-';dailyEl.style.color='#d1d5db';}
   }
@@ -5534,7 +5536,7 @@ async function loadPrevPower(date){
     _pNos.forEach(function(n){
       if(alPrevPower[n]!=null){
         var _tel=document.getElementById('pr'+n+'-today');
-        if(_tel&&!_tel.disabled&&_tel.value===''){_tel.value=alPrevPower[n];_tel.classList.add('al-auto');}
+        if(_tel&&!_tel.disabled&&_tel.value===''){_tel.value=alPrevPower[n];_tel.classList.add('al-auto');_tel.dataset.confirmed='0';}
       }
     });
   }
@@ -5614,7 +5616,7 @@ function loadFormFromDB(data){
       var prevEl=document.getElementById('pr'+n+'-prev');
       var inp=document.getElementById('pr'+n+'-today');
       if(r.power_prev!=null&&prevEl){prevEl.value=r.power_prev;alPrevPower[n]=r.power_prev;}
-      if(inp&&!inp.disabled&&r.power_today!=null)inp.value=r.power_today;
+      if(inp&&!inp.disabled&&r.power_today!=null){inp.value=r.power_today;inp.dataset.confirmed='1';}
       calcPower(n);
     }
   });
@@ -5762,7 +5764,7 @@ async function queryAirLog(){
       var prevEl=document.getElementById('pr'+n+'-prev');
       var inp=document.getElementById('pr'+n+'-today');
       if(r.power_prev!=null&&prevEl){prevEl.value=r.power_prev;alPrevPower[n]=r.power_prev;}
-      if(inp&&r.power_today!=null){inp.value=r.power_today;inp.style.color=inp.disabled?'#9ca3af':uColor;}
+      if(inp&&r.power_today!=null){inp.value=r.power_today;inp.style.color=inp.disabled?'#9ca3af':uColor;inp.dataset.confirmed='1';}
       calcPower(n);
     }
   });
@@ -5971,7 +5973,8 @@ async function saveAirLog(){
     _myPrNos.forEach(function(no){
       var _tel=document.getElementById('pr'+no+'-today');
       if(!_tel||_tel.disabled)return;
-      if(_tel.value===''){_prEmpty++;return;}
+      // 미확정(자동채움 그대로)은 미입력으로 집계
+      if(_tel.value===''||_tel.dataset.confirmed!=='1'){_prEmpty++;return;}
       var _tv=parseFloat(_tel.value);
       var _pv=alPrevPower[no]!=null?alPrevPower[no]:null;
       if(_pv!=null&&_tv===_pv){_prIdle.push(no+'번 '+_prNames[no]);}
@@ -6044,7 +6047,8 @@ async function _doActualSaveAirLog(){
     var no=myPrNos[i];
     var todayEl=document.getElementById('pr'+no+'-today');
     var todayVal=todayEl&&todayEl.value!==''?parseFloat(todayEl.value):null;
-    if(alMode==='new'&&todayVal===null)continue;
+    // 신규 모드: 미확정(자동채움 그대로) 시설은 저장 제외
+    if(alMode==='new'&&(todayVal===null||todayEl.dataset.confirmed!=='1'))continue;
     var prevVal=alPrevPower[no]!=null?alPrevPower[no]:null;
     var daily=(todayVal!=null&&prevVal!=null&&(todayVal-prevVal)>=0)?(todayVal-prevVal):null;
     records.push({

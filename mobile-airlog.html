@@ -436,7 +436,7 @@ function fillDefs(){
     setSt(n,'정상',true);
   });
   PR_NOS.forEach(function(n){
-    var pt=g('pt'+n); if(pt){pt.value='';pt.style.color='#0f2744';pt.classList.remove('mob-pr-auto');}
+    var pt=g('pt'+n); if(pt){pt.value='';pt.style.color='#0f2744';pt.classList.remove('mob-pr-auto');pt.dataset.confirmed='0';}
     var pd=g('pd'+n); if(pd){pd.textContent='-';pd.style.color='#9ca3af';}
   });
   updProg();
@@ -468,7 +468,7 @@ function clearEdit(){
   });
   PR_NOS.forEach(function(n){
     var pp=g('pp'+n),pt=g('pt'+n),pd=g('pd'+n);
-    if(pp)pp.value=''; if(pt){pt.value='';pt.style.color='#0f2744';pt.classList.remove('mob-pr-auto');}
+    if(pp)pp.value=''; if(pt){pt.value='';pt.style.color='#0f2744';pt.classList.remove('mob-pr-auto');pt.dataset.confirmed='0';}
     if(pd){pd.textContent='-';pd.style.color='#9ca3af';}
   });
   prevPow={}; updProg();
@@ -505,6 +505,7 @@ function setStVisual(n,st){
 
 function mobPrMarkUser(el,no){
   el.classList.remove('mob-pr-auto');
+  el.dataset.confirmed='1';
   var pv=prevPow[no]!=null?prevPow[no]:null;
   if(pv!=null&&el.value!==''&&parseFloat(el.value)<pv){
     showToast(no+'번: 당일검침이 전일검침보다 작습니다');
@@ -522,6 +523,7 @@ function mobPrStep(no,dir){
   if(next<0)return;
   el.value=next;
   el.classList.remove('mob-pr-auto');
+  el.dataset.confirmed='1';
   calcD(no);
 }
 // ── 당일사용량 자동 계산 ──
@@ -554,7 +556,7 @@ async function loadPrev(date){
   myPrNos.forEach(function(n){
     if(prevPow[n]!=null){
       var _pt=g('pt'+n);
-      if(_pt&&!_pt.disabled&&_pt.value===''){_pt.value=prevPow[n];_pt.classList.add('mob-pr-auto');}
+      if(_pt&&!_pt.disabled&&_pt.value===''){_pt.value=prevPow[n];_pt.classList.add('mob-pr-auto');_pt.dataset.confirmed='0';}
     }
     calcD(n);
   });
@@ -609,7 +611,7 @@ async function queryEdit(){
     if(r.facility_type==='방지시설'){
       var n=r.facility_no;
       if(r.power_prev!=null){var el=g('pp'+n);if(el)el.value=r.power_prev;prevPow[n]=r.power_prev;}
-      if(r.power_today!=null){setUserV('pt'+n,r.power_today);}
+      if(r.power_today!=null){setUserV('pt'+n,r.power_today);var _ptEl=g('pt'+n);if(_ptEl)_ptEl.dataset.confirmed='1';}
       calcD(n);
     }
   });
@@ -695,7 +697,7 @@ function onSave(){
       }
     }
     var _hasAnyEm=myEmNos.some(function(n){var el=g('sh'+n);return el&&!el.disabled&&el.value!==''&&g('eh'+n)&&g('eh'+n).value!==''&&!!emStatus[n];});
-    var _hasAnyPr=myPrNos.some(function(n){var el=g('pt'+n);return el&&el.value!=='';});
+    var _hasAnyPr=myPrNos.some(function(n){var el=g('pt'+n);return el&&el.value!==''&&el.dataset.confirmed==='1';});
     if(!_hasAnyEm&&!_hasAnyPr){showToast('입력된 데이터가 없습니다');return;}
   }
   var isMod=mode==='edit';
@@ -728,7 +730,8 @@ function onSave(){
       var _mActive=0,_mIdle=[],_mEmpty=0,_mUsage=0;
       myPrNos.forEach(function(n){
         var _el=g('pt'+n);if(!_el||_el.disabled)return;
-        if(_el.value===''){_mEmpty++;return;}
+        // 미확정(자동채움 그대로)은 미입력으로 집계
+        if(_el.value===''||_el.dataset.confirmed!=='1'){_mEmpty++;return;}
         var _tv=parseFloat(_el.value);
         var _pv=prevPow[n]!=null?prevPow[n]:null;
         if(_pv!=null&&_tv===_pv){_mIdle.push(n+'번 '+PR_NAMES[n]);}
@@ -813,6 +816,8 @@ async function doSave(){
   // 담당 방지시설 순회 (A-4: 담당 외 제외)
   myPrNos.forEach(function(n){
     var el=g('pt'+n); if(!el||el.disabled||el.value==='') return;
+    // 신규 모드: 미확정(자동채움 그대로) 시설은 저장 제외
+    if(mode==='new'&&el.dataset.confirmed!=='1') return;
     var tv=parseFloat(el.value);
     var pv=prevPow[n]!=null?prevPow[n]:null;
     var daily=(pv!=null&&!isNaN(tv)&&tv-pv>=0)?(tv-pv):null;
