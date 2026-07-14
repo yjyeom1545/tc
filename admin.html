@@ -1666,6 +1666,8 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
       <input type="month" id="sems-month" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;">
       <button onclick="exportSemsEmission()" style="padding:7px 14px;background:#1d4ed8;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;">배출구 가동시간 내보내기</button>
       <button onclick="exportSemsFacility()" style="padding:7px 14px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;">시설운전사항 내보내기</button>
+      <span style="width:1px;height:20px;background:#e5e7eb;"></span>
+      <button onclick="openAirLogExportModal()" style="padding:7px 14px;background:#15803d;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;">운영기록부 내보내기</button>
       <span id="sems-export-err" style="font-size:11px;color:#dc2626;"></span>
     </div>
   </div>
@@ -2498,6 +2500,31 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     <div class="modal-btns">
       <button class="modal-cancel" id="al-confirm-cancel" onclick="alCloseConfirm()">취소</button>
       <button class="modal-confirm" id="al-confirm-ok" onclick="var _cb=window._alConfirmCb;alCloseConfirm();if(_cb)_cb();">확인</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="airexport-modal" onclick="if(event.target===this)closeAirLogExportModal()">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-title">운영기록부 내보내기</div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button type="button" id="airexport-tab-single" onclick="airExportSetMode('single')" style="flex:1;padding:7px;border:1px solid #0f2744;background:#0f2744;color:white;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">단일 날짜</button>
+      <button type="button" id="airexport-tab-range" onclick="airExportSetMode('range')" style="flex:1;padding:7px;border:1px solid #e8ecf0;background:white;color:#6b7280;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">기간</button>
+    </div>
+    <div id="airexport-single-wrap">
+      <label style="font-size:12px;color:#374151;display:block;margin-bottom:4px;">날짜</label>
+      <input type="date" id="airexport-date-single" style="width:100%;border:1px solid #e8ecf0;border-radius:6px;padding:8px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;">
+    </div>
+    <div id="airexport-range-wrap" style="display:none;">
+      <label style="font-size:12px;color:#374151;display:block;margin-bottom:4px;">시작일</label>
+      <input type="date" id="airexport-date-from" style="width:100%;border:1px solid #e8ecf0;border-radius:6px;padding:8px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:8px;">
+      <label style="font-size:12px;color:#374151;display:block;margin-bottom:4px;">종료일</label>
+      <input type="date" id="airexport-date-to" style="width:100%;border:1px solid #e8ecf0;border-radius:6px;padding:8px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;">
+      <div style="font-size:11px;color:#9ca3af;margin-top:6px;">기간은 최대 31일까지 선택할 수 있습니다.</div>
+    </div>
+    <div id="airexport-err" style="font-size:11px;color:#dc2626;margin-top:10px;min-height:14px;"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeAirLogExportModal()">취소</button>
+      <button class="modal-confirm" id="airexport-run-btn" style="background:#15803d;" onclick="runAirLogExport()">내보내기</button>
     </div>
   </div>
 </div>
@@ -6327,6 +6354,201 @@ async function exportSemsFacility(){
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'시설운전사항');
     XLSX.writeFile(wb,'시설운전사항_'+year+mon+'.xlsx');
   }catch(e){errEl.textContent='내보내기 실패: '+e.message;}
+}
+
+// ── 운영기록부 내보내기 (배출시설·방지시설, A안 + ZIP) ──
+var _airExportMode='single';
+
+function openAirLogExportModal(){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  document.getElementById('airexport-err').textContent='';
+  airExportSetMode('single');
+  document.getElementById('airexport-modal').classList.add('show');
+}
+function closeAirLogExportModal(){
+  document.getElementById('airexport-modal').classList.remove('show');
+}
+function airExportSetMode(mode){
+  _airExportMode=mode;
+  var tS=document.getElementById('airexport-tab-single');
+  var tR=document.getElementById('airexport-tab-range');
+  var wS=document.getElementById('airexport-single-wrap');
+  var wR=document.getElementById('airexport-range-wrap');
+  if(mode==='single'){
+    wS.style.display='';wR.style.display='none';
+    tS.style.background='#0f2744';tS.style.borderColor='#0f2744';tS.style.color='white';
+    tR.style.background='white';tR.style.borderColor='#e8ecf0';tR.style.color='#6b7280';
+  }else{
+    wS.style.display='none';wR.style.display='';
+    tR.style.background='#0f2744';tR.style.borderColor='#0f2744';tR.style.color='white';
+    tS.style.background='white';tS.style.borderColor='#e8ecf0';tS.style.color='#6b7280';
+  }
+}
+
+function _airLoadScript(src){
+  return new Promise(function(resolve,reject){
+    var s=document.createElement('script');
+    s.src=src;s.onload=resolve;s.onerror=function(){reject(new Error('라이브러리 로드 실패: '+src));};
+    document.head.appendChild(s);
+  });
+}
+async function _airEnsureExcelLibs(){
+  var tasks=[];
+  if(typeof ExcelJS==='undefined')tasks.push(_airLoadScript('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'));
+  if(typeof JSZip==='undefined')tasks.push(_airLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'));
+  if(tasks.length)await Promise.all(tasks);
+}
+
+function _airDownloadBlob(blob,name){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=name;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+}
+
+// 선택 날짜 하루치 운영기록부 워크북 생성. 그 날짜에 기록이 전혀 없으면 null 반환.
+async function _airBuildWorkbookForDate(date){
+  var data=await sb('air_operation_log','?log_date=eq.'+date+'&select=*&order=facility_type.asc,facility_no.asc,created_at.asc');
+  if(!data||!data.length)return null;
+
+  var emNames={1:'탈청시설 (200HP)',2:'도장시설 (600㎥)',3:'도장시설 (600㎥)',4:'도장시설 (600㎥)',5:'건조시설 (345.6㎥)',6:'도장 및 건조시설 (319㎥)',7:'도장 및 건조시설 (319㎥)',8:'연마시설 (238.5㎥)',9:'도장시설 (656.6㎥)'};
+
+  // 배출구: facility_no별 머지 (기존 조회 화면과 동일한 방식)
+  var emMap={};
+  data.filter(function(r){return r.facility_type==='배출구';}).forEach(function(r){
+    var n=r.facility_no;
+    if(!emMap[n])emMap[n]={};
+    if(r.start_time)emMap[n].start_time=r.start_time;
+    if(r.end_time)emMap[n].end_time=r.end_time;
+    if(r.operation_hours!=null)emMap[n].operation_hours=r.operation_hours;
+    if(r.status)emMap[n].status=r.status;
+  });
+
+  // 방지시설: facility_no별 머지
+  var prMap={};
+  data.filter(function(r){return r.facility_type==='방지시설';}).forEach(function(r){
+    var n=r.facility_no;
+    if(!prMap[n])prMap[n]={};
+    if(r.power_today!=null)prMap[n].power_today=r.power_today;
+  });
+
+  // 전일검침: 이 날짜 이전 중 가장 최근 방지시설 기록 조회 (기존 조회 화면과 동일한 로직)
+  var prevPower={};
+  var vpStep1=await sb('air_operation_log','?log_date=lt.'+date+'&facility_type=eq.방지시설&select=log_date&order=log_date.desc&limit=1');
+  if(vpStep1&&vpStep1.length){
+    var vpPrevDate=vpStep1[0].log_date;
+    var prevData=await sb('air_operation_log','?log_date=eq.'+vpPrevDate+'&facility_type=eq.방지시설&select=facility_no,power_today&order=facility_no.asc');
+    (prevData||[]).forEach(function(r){if(r.power_today!=null)prevPower[r.facility_no]=r.power_today;});
+  }
+
+  var resp=await fetch('templates/운영기록부_양식.xlsx');
+  if(!resp.ok)throw new Error('템플릿 파일(templates/운영기록부_양식.xlsx)을 불러올 수 없습니다.');
+  var buf=await resp.arrayBuffer();
+  var wb=new ExcelJS.Workbook();
+  await wb.xlsx.load(buf);
+  var ws=wb.getWorksheet('운영기록부');
+
+  // 작성일자 A6
+  var dObj=new Date(date+'T00:00:00');
+  var wdKor=['일','월','화','수','목','금','토'][dObj.getDay()]+'요일';
+  ws.getCell('A6').value=dObj.getFullYear()+'년 '+(dObj.getMonth()+1)+'월 '+dObj.getDate()+'일 '+wdKor;
+
+  for(var n=1;n<=9;n++){
+    var r=8+n; // G9~G17 등, 시설 1~9
+    var em=emMap[n];
+    if(em){
+      if(em.start_time)ws.getCell('G'+r).value=em.start_time;
+      if(em.end_time)ws.getCell('J'+r).value=em.end_time;
+      if(em.operation_hours!=null)ws.getCell('L'+r).value='(   '+em.operation_hours+'h   )';
+      if(em.status){
+        var base=ws.getCell('M'+r).font||{};
+        if(em.status==='정상'){
+          ws.getCell('M'+r).value={richText:[
+            {text:'정상',font:Object.assign({},base,{bold:true,underline:true})},
+            {text:'   ,   비정상',font:Object.assign({},base)}
+          ]};
+        }else{
+          ws.getCell('M'+r).value={richText:[
+            {text:'정상   ,   ',font:Object.assign({},base)},
+            {text:'비정상',font:Object.assign({},base,{bold:true,underline:true})}
+          ]};
+        }
+      }
+    }
+    // em이 없으면(미가동) G/J/L/M 모두 템플릿 원문 그대로 둠
+
+    var rr=21+n; // D22~D30 등, 시설 1~9
+    var pr=prMap[n];
+    if(pr&&pr.power_today!=null){
+      ws.getCell('D'+rr).value=pr.power_today;
+      var prev=prevPower[n];
+      if(prev!=null){
+        var daily=pr.power_today-prev;
+        if(daily>=0)ws.getCell('E'+rr).value=daily;
+      }
+    }
+  }
+
+  var outBuf=await wb.xlsx.writeBuffer();
+  var blob=new Blob([outBuf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  return {name:'운영기록부_'+date+'.xlsx',blob:blob};
+}
+
+async function runAirLogExport(){
+  if(isReadOnly()){showReadOnlyToast();return;}
+  var errEl=document.getElementById('airexport-err');
+  errEl.textContent='';
+  var dates=[];
+  if(_airExportMode==='single'){
+    var d=document.getElementById('airexport-date-single').value;
+    if(!d){errEl.textContent='날짜를 선택해주세요.';return;}
+    dates=[d];
+  }else{
+    var from=document.getElementById('airexport-date-from').value;
+    var to=document.getElementById('airexport-date-to').value;
+    if(!from||!to){errEl.textContent='시작일과 종료일을 선택해주세요.';return;}
+    if(from>to){errEl.textContent='시작일이 종료일보다 늦을 수 없습니다.';return;}
+    var cur=new Date(from+'T00:00:00');
+    var end=new Date(to+'T00:00:00');
+    while(cur<=end){
+      dates.push(cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0'));
+      cur.setDate(cur.getDate()+1);
+    }
+    if(dates.length>31){errEl.textContent='기간은 최대 31일까지 선택할 수 있습니다.';return;}
+  }
+
+  var btn=document.getElementById('airexport-run-btn');
+  btn.disabled=true;btn.textContent='생성 중...';
+  try{
+    await _airEnsureExcelLibs();
+    var generated=[];
+    for(var i=0;i<dates.length;i++){
+      var g=await _airBuildWorkbookForDate(dates[i]);
+      if(g)generated.push(g);
+    }
+    if(!generated.length){
+      errEl.textContent='선택한 기간에 기록이 없습니다.';
+      return;
+    }
+    if(_airExportMode==='single'){
+      _airDownloadBlob(generated[0].blob,generated[0].name);
+      closeAirLogExportModal();
+      showToast('다운로드 완료');
+    }else{
+      var zip=new JSZip();
+      generated.forEach(function(g){zip.file(g.name,g.blob);});
+      var zipBlob=await zip.generateAsync({type:'blob'});
+      var zipName='운영기록부_'+dates[0].replace(/-/g,'')+'-'+dates[dates.length-1].replace(/-/g,'')+'.zip';
+      _airDownloadBlob(zipBlob,zipName);
+      closeAirLogExportModal();
+      showToast(dates.length+'일 중 '+generated.length+'일 생성 (기록 없는 날짜 제외)');
+    }
+  }catch(e){
+    errEl.textContent='내보내기 실패: '+e.message;
+  }finally{
+    btn.disabled=false;btn.textContent='내보내기';
+  }
 }
 
 
