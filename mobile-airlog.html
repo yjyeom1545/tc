@@ -240,7 +240,6 @@ var semsState={registered:false,at:null,by:null};
 function g(id){return document.getElementById(id);}
 function pad2(n){return String(n).padStart(2,'0');}
 function today(){return new Date().toISOString().split('T')[0];}
-function isRO(){return currentUser&&currentUser.username==='tc1234';}
 function canEdit9(){
   if(!currentUser) return false;
   if(currentUser.username==='yjyeom') return true;
@@ -661,7 +660,6 @@ function fmtAt(iso){
 }
 
 function actSems(action,date){
-  if(isRO()){showToast('테스트 계정은 조회만 가능합니다');return;}
   var isReg=(action==='register');
   var title=isReg?'SEMS 등록 확인':'SEMS 등록 취소';
   var body=isReg?'이 일자('+date+') 데이터를 SEMS에 등록 완료한 것으로 처리할까요?':'SEMS 등록 완료를 취소하시겠습니까?';
@@ -679,7 +677,6 @@ function actSems(action,date){
 
 // ── Save ──
 function onSave(){
-  if(isRO()){showToast('테스트 계정은 조회만 가능합니다');return;}
   var myEmNos=getMyEmNos();
   var myPrNos=getMyPrNos();
   // 신규 모드: 부분 입력 검증

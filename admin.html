@@ -504,8 +504,6 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   #insp-pdf-print-area .status-hold{background:#fef3c7 !important;color:#d97706 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   @page{size:A4 portrait;margin:15mm;}
 }
-#readonly-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(15,39,68,0.92);color:white;padding:10px 22px;border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif;z-index:10000;pointer-events:none;opacity:0;transition:opacity 0.2s;white-space:nowrap;}
-#readonly-toast.show{opacity:1;}
 </style>
 </head>
 <body>
@@ -1659,16 +1657,11 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
 <!-- 대기운영기록 탭 -->
 <div id="tab-airlog" class="content hidden">
 
-  <!-- SEMS 내보내기 바 (관리자 전용) -->
+  <!-- 엑셀 내보내기 바 (관리자 전용) -->
   <div id="sems-export-bar" style="display:none;background:white;border:1px solid #e8ecf0;border-radius:8px;padding:12px 16px;margin-bottom:14px;">
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <span style="font-size:12px;font-weight:700;color:#0f2744;white-space:nowrap;">SEMS 내보내기</span>
-      <input type="month" id="sems-month" style="border:1px solid #e8ecf0;border-radius:5px;padding:6px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:#374151;background:white;outline:none;">
-      <button onclick="exportSemsEmission()" style="padding:7px 14px;background:#1d4ed8;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;">배출구 가동시간 내보내기</button>
-      <button onclick="exportSemsFacility()" style="padding:7px 14px;background:#0f2744;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;">시설운전사항 내보내기</button>
-      <span style="width:1px;height:20px;background:#e5e7eb;"></span>
+      <span style="font-size:12px;font-weight:700;color:#0f2744;white-space:nowrap;">엑셀 내보내기</span>
       <button onclick="openAirLogExportModal()" style="padding:7px 14px;background:#15803d;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;">운영기록부 내보내기</button>
-      <span id="sems-export-err" style="font-size:11px;color:#dc2626;"></span>
     </div>
   </div>
 
@@ -2481,8 +2474,6 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   </div>
 </div>
 
-<div id="readonly-toast">테스트 계정은 조회만 가능합니다.</div>
-
 <div class="modal-bg" id="del-modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="modal-title">삭제 확인</div>
@@ -2893,8 +2884,6 @@ function checkAuth(){
   var semsBar=document.getElementById('sems-export-bar');
   if(semsBar&&isAdmin()){
     semsBar.style.display='block';
-    var smEl=document.getElementById('sems-month');
-    if(smEl&&!smEl.value){var _dn=new Date();smEl.value=_dn.getFullYear()+'-'+String(_dn.getMonth()+1).padStart(2,'0');}
   }
   if(isAdmin()||hasPerm('filter_write')){initBatchWidget();}
   return true;
@@ -2912,8 +2901,6 @@ function closeSidebar(){
 }
 
 function isAdmin(){return currentUser&&currentUser.username==='yjyeom';}
-function isReadOnly(){return currentUser&&currentUser.username==='tc1234';}
-function showReadOnlyToast(){var t=document.getElementById('readonly-toast');if(!t)return;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(function(){t.classList.remove('show');},3000);}
 function hasPerm(key){if(isAdmin())return true;return !!(currentUser&&currentUser.permissions&&currentUser.permissions[key]);}
 function getAirLogEmNos(){
   var nos=[];
@@ -3521,7 +3508,6 @@ function frUpdateBulkDeleteBtn(){
 }
 
 async function frBulkDelete(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var checked=document.querySelectorAll('#fr-tbody .fr-chk:checked');
   if(!checked.length)return;
   if(!confirm('선택한 '+checked.length+'건을 삭제하시겠습니까? 되돌릴 수 없습니다.'))return;
@@ -3533,7 +3519,6 @@ async function frBulkDelete(){
 }
 
 async function frDelete(id){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var r=_frData.find(function(x){return x.id===id;});
   var label=r?(r.record_date+' '+r.room_name+' '+r.quantity+'매'):id;
   if(!confirm('['+label+'] 기록을 삭제하시겠습니까?'))return;
@@ -3545,7 +3530,6 @@ async function frDelete(id){
 }
 
 function frEdit(id){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var r=_frData.find(function(x){return x.id===id;});
   if(!r)return;
   _frEditId=id;
@@ -3565,7 +3549,6 @@ function frCloseEditModal(){
 }
 
 async function frSaveEdit(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!_frEditId)return;
   var date=document.getElementById('fr-m-date').value;
   var room=document.getElementById('fr-m-room').value;
@@ -3749,7 +3732,6 @@ function batchCalcTotal(){
 
 async function batchSave(){
   if(!isAdmin()&&!hasPerm('filter_write'))return;
-  if(isReadOnly()){showReadOnlyToast();return;}
   var rows=[];
   var valid=true;
   var noWorkerTr=null;
@@ -3972,7 +3954,6 @@ function wsCancelEdit(){
 }
 
 async function wsSaveRow(i){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_storage_write')&&!isAdmin()){showToast('보관 현황 쓰기 권한이 없습니다.');return;}
   var inp=document.getElementById('ws-edit-input');
   if(!inp)return;
@@ -4059,7 +4040,6 @@ function wsQuery(){
 
 
 async function wsAddDisposal(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_storage_write')){alert('보관 현황 쓰기 권한이 없습니다.');return;}
   var dateEl=document.getElementById('ws-rec-date');
   var typeEl=document.getElementById('ws-rec-type');
@@ -4101,7 +4081,6 @@ async function wsAddDisposal(){
 }
 
 async function wsDeleteDisposal(id){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_storage_write')){alert('보관 현황 쓰기 권한이 없습니다.');return;}
   if(!confirm('이 배출 기록을 삭제하시겠습니까?'))return;
   try{
@@ -4126,7 +4105,6 @@ function showToast(msg,duration){
 // ── Phase 3: 보관 현황 → 배출 일정 등록 모달 ──
 function wsOpenScheduleModal(i,e){
   if(e)e.stopPropagation();
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 등록 권한이 없습니다.');return;}
   var w=_wsFilteredCache[i];
   if(!w)return;
@@ -4146,7 +4124,6 @@ function wsCloseScheduleModal(){
 }
 
 async function wsSaveSchedule(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var date=document.getElementById('wsm-date').value;
   var vendor=document.getElementById('wsm-vendor').value.trim();
   var type=document.getElementById('wsm-type').value.trim();
@@ -4399,7 +4376,6 @@ function waUpdateSummary(){
 }
 
 async function waSave(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_annual_write')){alert('연간 배출량 쓰기 권한이 없습니다.');return;}
   var yearSel=document.getElementById('wa-year');
   var year=yearSel?parseInt(yearSel.value):new Date().getFullYear();
@@ -4442,7 +4418,6 @@ async function waSave(){
 }
 
 function waCopyPrevYear(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_annual_write')){alert('연간 배출량 쓰기 권한이 없습니다.');return;}
   if(!confirm('전년도 데이터를 현재 표에 복사합니다. (기존 입력값이 초기화됩니다) 계속하시겠습니까?'))return;
   var yearSel=document.getElementById('wa-year');
@@ -4760,7 +4735,6 @@ function createVehicleCombo(container,initial,onSelect,onCancel,modalMode){
   }
 
   async function addNew(plate){
-    if(isReadOnly()){showReadOnlyToast();return;}
     if(!confirm('['+plate+']을(를) 차량번호 목록에 추가하시겠습니까?\n다음 배출 시에도 선택 가능합니다.'))return;
     try{
       await sb('vehicles','',{method:'POST',headers:{'Prefer':'return=minimal'},body:{plate_number:plate,created_by:currentUser?(currentUser.name||currentUser.username):''}});
@@ -4968,7 +4942,6 @@ function wschUpdateProcessMethod(){
 }
 
 function wschOpenModal(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_schedule_write')&&!isAdmin()){alert('배출 일정 등록 권한이 없습니다.');return;}
   document.getElementById('wsch-modal').classList.add('show');
 }
@@ -4983,7 +4956,6 @@ function wschCloseModal(){
 }
 
 async function wschSave(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_schedule_write')&&!isAdmin()){alert('배출 일정 등록 권한이 없습니다.');return;}
   var date=document.getElementById('wsch-m-date').value;
   var vendor=document.getElementById('wsch-m-vendor').value.trim();
@@ -5014,7 +4986,6 @@ var _wschCompleteId=null;
 var _wscmVehicleVal='';
 
 async function wschComplete(id){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 쓰기 권한이 없습니다.');return;}
   var r=(_wschData||[]).find(function(x){return x.id===id;});
   if(!r)return;
@@ -5100,7 +5071,6 @@ function wschCloseCompleteModal(){
 }
 
 async function wschConfirmComplete(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!_wschCompleteId)return;
   var r=(_wschData||[]).find(function(x){return x.id===_wschCompleteId;});
   if(!r)return;
@@ -5169,7 +5139,6 @@ async function wschConfirmComplete(){
 }
 
 function wschInlineEdit(td,id,field,current){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 쓰기 권한이 없습니다.');return;}
   var today=function(){return new Date().toISOString().split('T')[0];};
   var rerender=function(){wschRenderTable(_wschData,today());};
@@ -5232,7 +5201,6 @@ function wschShowDetail(id){
 }
 
 async function wschCancel(id){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!confirm('완료 상태를 취소(예정으로 되돌림)하시겠습니까?'))return;
   await sb('waste_schedule','?id=eq.'+id,{method:'PATCH',body:{status:'scheduled',completed_at:null}});
   showToast('상태를 예정으로 되돌렸습니다.');
@@ -5240,7 +5208,6 @@ async function wschCancel(id){
 }
 
 async function wschDelete(id){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!confirm('이 일정을 삭제하시겠습니까?'))return;
   await sb('waste_schedule','?id=eq.'+id,{method:'DELETE'});
   wschLoad();
@@ -5829,7 +5796,6 @@ function renderSemsRow(date,state){
 }
 
 async function confirmSemsRegister(date){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!confirm('이 일자('+date+') 데이터를 SEMS에 등록 완료한 것으로 처리할까요?'))return;
   var now=new Date().toISOString();
   var by=currentUser.name||currentUser.username;
@@ -5846,7 +5812,6 @@ async function confirmSemsRegister(date){
 }
 
 async function cancelSemsRegister(date){
-  if(isReadOnly()){showReadOnlyToast();return;}
   if(!confirm('SEMS 등록 완료를 취소하시겠습니까? (실수로 누른 경우)'))return;
   try{
     var res=await fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+date,{
@@ -5942,7 +5907,6 @@ async function loadAirLogView(){
 }
 
 async function saveAirLog(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var date=document.getElementById('al-input-date').value;
   if(!date){alert('날짜를 입력해주세요.');return;}
   if(!validatePowerInputs()){
@@ -6257,110 +6221,10 @@ function alCloseConfirm(){
   _alConfirmCb=null;
 }
 
-async function exportSemsEmission(){
-  var errEl=document.getElementById('sems-export-err');
-  errEl.textContent='';
-  var month=document.getElementById('sems-month').value;
-  if(!month){errEl.textContent='월을 선택해주세요.';return;}
-  var parts=month.split('-'),year=parts[0],mon=parts[1];
-  var dateFrom=year+'-'+mon+'-01';
-  var lastDay=new Date(+year,+mon,0).getDate();
-  var dateTo=year+'-'+mon+'-'+String(lastDay).padStart(2,'0');
-  try{
-    var data=await sb('air_operation_log','?facility_type=eq.배출구&log_date=gte.'+dateFrom+'&log_date=lte.'+dateTo+'&select=*&order=log_date.asc,facility_no.asc');
-    if(!data||!data.length){errEl.textContent='해당 월에 배출구 데이터가 없습니다.';return;}
-    var dates=[...new Set(data.map(function(r){return r.log_date;}))].sort();
-    var lookup={};
-    data.forEach(function(r){if(!lookup[r.log_date])lookup[r.log_date]={};lookup[r.log_date][r.facility_no]=r;});
-    var emFac=[
-      {no:1,id:'FCL000155482',seq:2,lic:1,name:'굴뚝1-야외탈청'},
-      {no:2,id:'FCL000155483',seq:3,lic:2,name:'굴뚝2-야외도장1'},
-      {no:3,id:'FCL000155484',seq:4,lic:3,name:'굴뚝3-야외도장2'},
-      {no:4,id:'FCL000155485',seq:5,lic:4,name:'굴뚝4-야외도장3'},
-      {no:5,id:'FCL000155486',seq:6,lic:5,name:'굴뚝5-실내건조'},
-      {no:6,id:'FCL000155487',seq:7,lic:6,name:'굴뚝6-실내건조도장1'},
-      {no:7,id:'FCL000155488',seq:8,lic:7,name:'굴뚝7-실내건조도장2'},
-      {no:8,id:'FCL000155489',seq:9,lic:8,name:'굴뚝8-연마'},
-      {no:9,id:'FCL000155490',seq:10,lic:9,name:'굴뚝9-도장집진(1000㎥)'}
-    ];
-    var rows=[['조사년도','배출구시설ID','배출구일련번호','허가증상배출구일련번호','배출구명','IEPS시설번호','가동일자','가동시간(시간)','가동시간(분)','비고']];
-    dates.forEach(function(date){
-      var dateStr=date.replace(/-/g,'');
-      var dayData=lookup[date]||{};
-      emFac.forEach(function(f){
-        var hrs,mins;
-        if(f.no===8){hrs='00';mins='00';}
-        else{
-          var rec=dayData[f.no];
-          if(!rec)return;
-          var opH=parseFloat(rec.operation_hours)||0;
-          var h=Math.floor(opH);
-          var m=Math.round((opH-h)*60);
-          hrs=String(h).padStart(2,'0');
-          mins=String(m).padStart(2,'0');
-        }
-        rows.push([year,f.id,f.seq,f.lic,f.name,'',dateStr,hrs,mins,'']);
-      });
-    });
-    if(rows.length<=1){errEl.textContent='내보낼 데이터가 없습니다.';return;}
-    var wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'배출구가동시간');
-    XLSX.writeFile(wb,'배출구가동시간_'+year+mon+'.xlsx');
-  }catch(e){errEl.textContent='내보내기 실패: '+e.message;}
-}
-
-async function exportSemsFacility(){
-  var errEl=document.getElementById('sems-export-err');
-  errEl.textContent='';
-  var month=document.getElementById('sems-month').value;
-  if(!month){errEl.textContent='월을 선택해주세요.';return;}
-  var parts=month.split('-'),year=parts[0],mon=parts[1];
-  var dateFrom=year+'-'+mon+'-01';
-  var lastDay=new Date(+year,+mon,0).getDate();
-  var dateTo=year+'-'+mon+'-'+String(lastDay).padStart(2,'0');
-  try{
-    var data=await sb('air_operation_log','?facility_type=eq.방지시설&log_date=gte.'+dateFrom+'&log_date=lte.'+dateTo+'&select=*&order=log_date.asc,facility_no.asc');
-    if(!data||!data.length){errEl.textContent='해당 월에 방지시설 데이터가 없습니다.';return;}
-    var dates=[...new Set(data.map(function(r){return r.log_date;}))].sort();
-    var lookup={};
-    data.forEach(function(r){if(!lookup[r.log_date])lookup[r.log_date]={};lookup[r.log_date][r.facility_no]=r;});
-    var facItems=[
-      {db:1, bSeq:2, bLic:1, bName:'굴뚝1-야외탈청',          fID:'FCL000323470',fSeq:1,fLic:1,fName:'여과집진시설1',      meter:1},
-      {db:2, bSeq:3, bLic:2, bName:'굴뚝2-야외도장1',         fID:'FCL000323471',fSeq:1,fLic:1,fName:'흡착에의한시설2',     meter:1},
-      {db:3, bSeq:4, bLic:3, bName:'굴뚝3-야외도장2',         fID:'FCL000323472',fSeq:1,fLic:1,fName:'흡착에의한시설3',     meter:1},
-      {db:4, bSeq:5, bLic:4, bName:'굴뚝4-야외도장3',         fID:'FCL000323473',fSeq:1,fLic:1,fName:'흡착에의한시설4',     meter:1},
-      {db:5, bSeq:6, bLic:5, bName:'굴뚝5-실내건조',          fID:'FCL000323474',fSeq:1,fLic:1,fName:'흡착에의한시설5',     meter:1},
-      {db:6, bSeq:7, bLic:6, bName:'굴뚝6-실내건조도장1',     fID:'FCL000323475',fSeq:1,fLic:1,fName:'2차흡착에의한시설',  meter:1},
-      {db:6, bSeq:7, bLic:6, bName:'굴뚝6-실내건조도장1',     fID:'FCL000323476',fSeq:2,fLic:2,fName:'1차여과에의한시설',  meter:0},
-      {db:7, bSeq:8, bLic:7, bName:'굴뚝7-실내건조도장2',     fID:'FCL000323477',fSeq:1,fLic:1,fName:'2차흡착에의한시설',  meter:1},
-      {db:7, bSeq:8, bLic:7, bName:'굴뚝7-실내건조도장2',     fID:'FCL000323478',fSeq:2,fLic:2,fName:'1차여과에의한시설',  meter:0},
-      {db:8, bSeq:9, bLic:8, bName:'굴뚝8-연마',              fID:'FCL000323479',fSeq:1,fLic:1,fName:'여과집진시설',       meter:1},
-      {db:9, bSeq:10,bLic:9, bName:'굴뚝9-도장집진(1000㎥)', fID:'FCL000323480',fSeq:1,fLic:1,fName:'2차흡착에의한시설',  meter:1},
-      {db:9, bSeq:10,bLic:9, bName:'굴뚝9-도장집진(1000㎥)', fID:'FCL000323481',fSeq:2,fLic:2,fName:'1차여과집진시설',    meter:0}
-    ];
-    var header=['조사년도','배출구일련번호','허가증상배출구일련번호','배출구명','방지시설ID','방지시설일련번호','허가증상방지시설번호','방지시설명','IEPS시설번호','적산전력계번호','운전일자','전력검침량(kWh)'];
-    var rows=[header,new Array(header.length).fill('')];
-    dates.forEach(function(date){
-      var dateStr=date.replace(/-/g,'');
-      var dayData=lookup[date]||{};
-      facItems.forEach(function(f){
-        var rec=dayData[f.db];
-        var power='';
-        if(rec&&rec.power_today!=null)power=parseFloat(rec.power_today).toFixed(3);
-        rows.push([year,f.bSeq,f.bLic,f.bName,f.fID,f.fSeq,f.fLic,f.fName,'',f.meter,dateStr,power]);
-      });
-    });
-    var wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'시설운전사항');
-    XLSX.writeFile(wb,'시설운전사항_'+year+mon+'.xlsx');
-  }catch(e){errEl.textContent='내보내기 실패: '+e.message;}
-}
-
 // ── 운영기록부 내보내기 (배출시설·방지시설, A안 + ZIP) ──
 var _airExportMode='single';
 
 function openAirLogExportModal(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   document.getElementById('airexport-err').textContent='';
   airExportSetMode('single');
   document.getElementById('airexport-modal').classList.add('show');
@@ -6496,7 +6360,6 @@ async function _airBuildWorkbookForDate(date){
 }
 
 async function runAirLogExport(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var errEl=document.getElementById('airexport-err');
   errEl.textContent='';
   var dates=[];
@@ -6644,7 +6507,6 @@ async function updateAirStatus(id,status,reason){
 }
 
 async function addAirMeasure(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var date=document.getElementById('air-date').value;
   if(!date){alert('측정일을 입력해주세요.');return;}
   var facilities=selectedAirFacilities.join(',');
@@ -6712,7 +6574,6 @@ function markNameDirty(uid){
 }
 
 async function saveUserName(uid){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var inp=document.getElementById('name-inp-'+uid);
   if(!inp)return;
   var name=inp.value.trim();
@@ -6740,7 +6601,6 @@ async function loadUserNameMap(){
 function displayName(u){return u?(userNameMap[u]||u):'-';}
 
 async function saveUserPermissions(uid){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var checkboxes=document.querySelectorAll('input[data-uid="'+uid+'"]:not([disabled])');
   var perms={};
   checkboxes.forEach(function(cb){if(cb.checked)perms[cb.dataset.perm]=true;});
@@ -6757,7 +6617,6 @@ async function saveUserPermissions(uid){
 }
 
 async function addUser(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var username=document.getElementById('new-username').value.trim();
   var name=document.getElementById('new-name').value.trim();
   if(!username){alert('아이디를 입력해주세요.');return;}
@@ -7277,7 +7136,6 @@ function closeInspectDetail(){
 }
 
 async function saveInspectDetail(id){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var status=document.getElementById('detail-status').value;
   var note=document.getElementById('detail-note').value;
   await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{status:status,note:note||null}});
@@ -7368,7 +7226,6 @@ function closeInspectLightbox(){
 }
 
 function openInspectForm(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   inspectBeforeDataUrl=null;inspectAfterDataUrl=null;
   var beforeWrap=document.getElementById('if-before-wrap');
   var preview=document.getElementById('if-before-preview');
@@ -7384,7 +7241,6 @@ function closeInspectForm(){
 }
 
 async function submitInspect(){
-  if(isReadOnly()){showReadOnlyToast();return;}
   var date=document.getElementById('if-date').value;
   var issue=document.getElementById('if-issue').value.trim();
   if(!date||!issue){alert('점검일과 지적 내용은 필수입니다.');return;}
@@ -7409,7 +7265,6 @@ async function submitInspect(){
 
 var pendingDelete={};
 function confirmDelete(table,id,cb){
-  if(isReadOnly()){showReadOnlyToast();return;}
   pendingDelete={table:table,id:id,cb:cb};
   document.getElementById('del-modal').classList.add('show');
   document.getElementById('modal-confirm-btn').onclick=function(){doDelete();};
@@ -8043,7 +7898,6 @@ function _updateSsTotals(ln) {
 }
 
 async function saveSsInspection() {
-  if(isReadOnly()){showReadOnlyToast();return;}
   var month = (document.getElementById('ss-input-month')||{}).value;
   var inspector = ((document.getElementById('ss-inspector-name')||{}).value||'').trim();
   var ln = ssCurrentLine;
@@ -8313,7 +8167,6 @@ function updatePwaHdrStatus() {
 }
 
 function tmpSavePwa() {
-  if(isReadOnly()){showReadOnlyToast();return;}
   var seg = ssP.seg;
   var ln = ssP.line;
   if (!ln) return;
@@ -8325,7 +8178,6 @@ function tmpSavePwa() {
 }
 
 async function finalSavePwa() {
-  if(isReadOnly()){showReadOnlyToast();return;}
   var seg = ssP.seg;
   var lines = seg === 'quality' ? SS_QUALITY_LINES : SS_LINES;
   var inspEl = document.getElementById('ss-pwa-inspector');
@@ -8771,7 +8623,6 @@ async function signSsImprovement(id, name) {
 
 /* 등록 모달 */
 function openSsImpForm() {
-  if(isReadOnly()){showReadOnlyToast();return;}
   ssImpPhotoData = {before: null, after: null};
   ssImpCurrentCat = '정위치';
   var today = new Date().toISOString().split('T')[0];
@@ -8832,7 +8683,6 @@ async function _uploadSsImpPhoto(file, side) {
   return SB_URL + '/storage/v1/object/public/ss-improvements/' + path;
 }
 async function submitSsImprovement() {
-  if(isReadOnly()){showReadOnlyToast();return;}
   var line = document.getElementById('ss-imp-line').value;
   var idate = document.getElementById('ss-imp-inspect-date').value;
   if (!line) { alert('라인을 선택하세요.'); return; }
@@ -9805,7 +9655,6 @@ function renderCarbonFacilityCards() {
 }
 
 async function saveCarbonRecord() {
-  if (isReadOnly()) { showToast('테스트 계정은 조회만 가능합니다'); return; }
   var replaceType = (document.getElementById('carbon-type') || {}).value || 'carbon';
   var facilityNo = parseInt((document.getElementById('carbon-facility') || {}).value);
   var dateVal = (document.getElementById('carbon-date') || {}).value;
@@ -9927,7 +9776,6 @@ function renderCarbonHistory(facilityFilter, yearFilter) {
 }
 
 async function deleteCarbonRecord(id) {
-  if (isReadOnly()) { showToast('테스트 계정은 조회만 가능합니다'); return; }
   if (!isAdmin()) { showToast('관리자만 삭제할 수 있습니다.'); return; }
   if (!confirm('이 교체 기록을 삭제하시겠습니까?')) return;
   try {
