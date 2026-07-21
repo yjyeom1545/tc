@@ -33,9 +33,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f4f6f9;min-height:100vh;p
 .qry-btn{height:38px;padding:0 14px;background:#0f2744;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;flex-shrink:0;display:none;}
 
 /* ── Status chip (신규 입력 모드) ── */
-.status-chip{display:inline-flex;align-items:center;justify-content:center;width:58px;font-size:11px;font-weight:600;padding:4px 0;border-radius:20px;white-space:nowrap;flex-shrink:0;letter-spacing:-.1px;}
+.status-chip{display:inline-flex;align-items:center;justify-content:center;min-width:58px;font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;letter-spacing:-.1px;}
 .chip-new{background:#f1f5f9;color:#64748b;}
 .chip-done{background:#dcfce7;color:#15803d;}
+.chip-part{background:#ffedd5;color:#c2410c;}
 
 /* ── Banners ── */
 .edit-banner{background:#fef9c3;border-bottom:1px solid #fde68a;padding:10px 14px;display:none;align-items:flex-start;gap:6px;}
@@ -236,6 +237,8 @@ var mode='new';
 var emStatus={};
 var prevPow={};
 var semsState={registered:false,at:null,by:null};
+// 날짜 이동 경합 방지용 시퀀스 토큰 (admin.html의 _alLoadSeq와 동일한 방식)
+var _mobLoadSeq=0;
 
 function g(id){return document.getElementById(id);}
 function pad2(n){return String(n).padStart(2,'0');}
@@ -244,6 +247,20 @@ function canEdit9(){
   if(!currentUser) return false;
   if(currentUser.username==='yjyeom') return true;
   return !!(currentUser.permissions&&currentUser.permissions.airlog_9);
+}
+function canEdit1to8(){
+  if(!currentUser) return false;
+  if(currentUser.username==='yjyeom') return true;
+  return !!(currentUser.permissions&&currentUser.permissions.airlog_1to8);
+}
+// 담당 구간(1~8/9) 판정 기준: 방지시설 레코드(power_today) 존재 여부
+function _mobIsDayMissing(prMap){
+  var sec128Done=[1,2,3,4,5,6,7,8].every(function(n){return prMap[n]&&prMap[n].power_today!=null;});
+  var sec9Done=!!(prMap[9]&&prMap[9].power_today!=null);
+  var missing=false;
+  if(canEdit1to8()&&!sec128Done)missing=true;
+  if(canEdit9()&&!sec9Done)missing=true;
+  return missing;
 }
 function getMyEmNos(){
   if(!currentUser) return [];
@@ -384,7 +401,8 @@ function setMode(m){
     g('form').className='form';
     fillDefs();
     var d=g('date-inp').value;
-    if(d){loadPrev(d);updateChip(d);}
+    var seq=++_mobLoadSeq;
+    if(d){loadPrev(d,seq);updateChip(d,seq);}
   } else {
     g('save-btn').style.display='none';
     clearEdit();
@@ -399,29 +417,48 @@ function hideBanners(){
 
 function onDateChange(){
   var d=g('date-inp').value;
+  var seq=++_mobLoadSeq; // 날짜 변경마다 토큰 증가 → 이전 날짜의 지연 응답은 폐기
   if(mode==='new'){
     fillDefs();
     clearPrev();
-    if(d){loadPrev(d);updateChip(d);}
+    if(d){loadPrev(d,seq);updateChip(d,seq);}
   } else {
-    if(d) queryEdit();
+    if(d) queryEdit(seq);
   }
 }
 
-// ── 작성 여부 칩 갱신 ──
-async function updateChip(date){
+// ── 작성 여부 칩 갱신: 담당 구간(1~8/9)별 분리 표기 ──
+async function updateChip(date,seq){
+  if(seq==null)seq=_mobLoadSeq;
   var chip=g('status-chip'); if(!chip) return;
   chip.className='status-chip chip-new'; chip.textContent='조회 중…';
-  var data=await sbGet('air_operation_log','?log_date=eq.'+date+'&select=created_at,submitted_by&limit=1&order=created_at.desc');
-  if(!data||!data.length){
-    chip.className='status-chip chip-new'; chip.textContent='미입력'; chip.title='';
-  } else {
-    var r=data[0];
-    var tStr=r.created_at?fmtAt(r.created_at).slice(11,16):'';
-    var bStr=r.submitted_by||'';
+  if(seq!==_mobLoadSeq)return;
+  var data=await sbGet('air_operation_log','?log_date=eq.'+date+'&facility_type=eq.방지시설&select=facility_no,power_today,submitted_by,created_at&order=facility_no.asc');
+  if(seq!==_mobLoadSeq)return;
+  if(!data)data=[];
+  var prMap={};
+  data.forEach(function(r){prMap[r.facility_no]=r;});
+  var sec128Done=[1,2,3,4,5,6,7,8].every(function(n){return prMap[n]&&prMap[n].power_today!=null;});
+  var sec9Done=!!(prMap[9]&&prMap[9].power_today!=null);
+  function sectionInfo(nos){
+    var recs=nos.map(function(n){return prMap[n];}).filter(function(r){return r&&r.power_today!=null;});
+    if(!recs.length)return null;
+    recs.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at);});
+    var r0=recs[0];
+    var t=r0.created_at?fmtAt(r0.created_at).slice(11,16):'';
+    var b=r0.submitted_by||'';
+    return (t?t:'')+(b?' · '+b:'');
+  }
+  if(sec128Done&&sec9Done){
     chip.className='status-chip chip-done';
     chip.textContent='입력완료';
-    chip.title=(tStr?tStr:'')+(bStr?' · '+bStr:'');
+    chip.title='1~8: '+(sectionInfo([1,2,3,4,5,6,7,8])||'-')+'  ·  9: '+(sectionInfo([9])||'-');
+  } else if(!sec128Done&&!sec9Done){
+    chip.className='status-chip chip-new'; chip.textContent='미입력'; chip.title='';
+  } else {
+    chip.className='status-chip chip-part';
+    chip.textContent=sec128Done?'1~8완료·9미입력':'1~8미입력·9완료';
+    chip.title='1~8: '+(sectionInfo([1,2,3,4,5,6,7,8])||'미입력')+'  ·  9: '+(sectionInfo([9])||'미입력');
   }
 }
 
@@ -539,26 +576,46 @@ function calcD(n){
   updProg();
 }
 
-// ── 전일검침 자동 불러오기 (담당 시설별 독립 조회) ──
-async function loadPrev(date){
+// 방지시설 전체(1~9)의 "이 날짜 이전 가장 최근 검침"을 단일 쿼리로 배칭 조회
+// (시설별 9개 쿼리 대신 1개 쿼리 후 클라이언트에서 시설별 첫 건 추출)
+async function _mobFetchPrevPowerMap(date){
+  var rows=await sbGet('air_operation_log','?log_date=lt.'+date+'&facility_type=eq.방지시설&power_today=not.is.null&order=log_date.desc&limit=100');
+  var map={};
+  (rows||[]).forEach(function(r){
+    if(map[r.facility_no]===undefined)map[r.facility_no]={power_today:r.power_today,log_date:r.log_date};
+  });
+  return map;
+}
+
+// prevPow·pp칸만 채우는 공통 로직 (pt칸 자동채움은 하지 않음 — 모드별로 다르게 처리)
+async function _mobLoadPrevPowerCore(date,seq){
+  if(seq==null)seq=_mobLoadSeq;
   prevPow={};
+  PR_NOS.forEach(function(n){var el=g('pp'+n);if(el)el.value='';});
+  if(seq!==_mobLoadSeq)return false;
+  var map=await _mobFetchPrevPowerMap(date);
+  if(seq!==_mobLoadSeq)return false;
+  PR_NOS.forEach(function(n){
+    if(map[n]&&map[n].power_today!=null){
+      prevPow[n]=map[n].power_today;
+      var el=g('pp'+n); if(el)el.value=map[n].power_today;
+    }
+  });
+  return true;
+}
+
+// ── 전일검침 자동 불러오기 (신규 입력 모드) ──
+async function loadPrev(date,seq){
+  var ok=await _mobLoadPrevPowerCore(date,seq);
+  if(!ok)return; // 최신 요청이 아니면 폐기
   var myPrNos=getMyPrNos();
-  await Promise.all(myPrNos.map(function(n){
-    return sbGet('air_operation_log','?facility_no=eq.'+n+'&facility_type=eq.방지시설&log_date=lt.'+date+'&power_today=not.is.null&select=power_today,log_date&order=log_date.desc&limit=1')
-    .then(function(res){
-      if(res&&res.length&&res[0].power_today!=null){
-        prevPow[n]=res[0].power_today;
-        var el=g('pp'+n); if(el) el.value=res[0].power_today;
-      }
-    });
-  }));
   myPrNos.forEach(function(n){
     if(prevPow[n]!=null){
       var _pt=g('pt'+n);
       if(_pt&&!_pt.disabled&&_pt.value===''){_pt.value=prevPow[n];_pt.classList.add('mob-pr-auto');_pt.dataset.confirmed='0';}
     }
-    calcD(n);
   });
+  PR_NOS.forEach(function(n){calcD(n);});
 }
 
 // ── 진행 카운트 ──
@@ -569,20 +626,26 @@ function updProg(){
 }
 
 // ── 조회·수정 모드: 일자 선택 시 자동 조회 ──
-async function queryEdit(){
+async function queryEdit(seq){
   var date=g('date-inp').value;
   if(!date){showToast('날짜를 선택해주세요.');return;}
+  if(seq==null)seq=++_mobLoadSeq; // 조회 버튼 클릭 등 직접 호출 시 새 토큰 발급
   hideBanners(); clearEdit();
-  g('form').className='form';
+  g('form').className='form dim'; // 폼 먼저 초기화 후 로딩 표시
 
-  var data=await sbGet('air_operation_log','?log_date=eq.'+date+'&select=*&order=facility_type.asc,facility_no.asc');
+  var results=await Promise.all([
+    sbGet('air_operation_log','?log_date=eq.'+date+'&select=*&order=facility_type.asc,facility_no.asc'),
+    _mobLoadPrevPowerCore(date,seq)
+  ]);
+  if(seq!==_mobLoadSeq)return; // 응답 도착 시점에 최신 요청이 아니면 폐기
+  var data=results[0];
   if(!data||!data.length){
     g('no-data').className='no-data on';
     g('form').className='form dim';
     g('save-btn').style.display='none';
     return;
   }
-
+  g('form').className='form';
   g('save-btn').style.display=''; g('save-btn').textContent='수정 저장';
 
   // SEMS 상태
@@ -593,9 +656,6 @@ async function queryEdit(){
   g('edit-banner-txt').textContent='수정 모드 · '+date+' 자료를 불러왔습니다. 값을 고친 뒤 [수정 저장]을 눌러주세요.'+(subs.length?'\n최종 제출: '+subs.join(', '):'');
   g('edit-banner').className='edit-banner on';
   renderSems(date);
-
-  // 전일검침 (DB에 없으면 자동 조회)
-  await loadPrevEdit(date);
 
   // 폼 채우기 (사용자 입력값 = 진한 색)
   data.forEach(function(r){
@@ -609,7 +669,7 @@ async function queryEdit(){
     }
     if(r.facility_type==='방지시설'){
       var n=r.facility_no;
-      if(r.power_prev!=null){var el=g('pp'+n);if(el)el.value=r.power_prev;prevPow[n]=r.power_prev;}
+      // 전일검침은 _mobLoadPrevPowerCore가 채운 실시간 값을 유지 (DB 저장값 power_prev로 덮어쓰지 않음)
       if(r.power_today!=null){setUserV('pt'+n,r.power_today);var _ptEl=g('pt'+n);if(_ptEl)_ptEl.dataset.confirmed='1';}
       calcD(n);
     }
@@ -617,20 +677,6 @@ async function queryEdit(){
   updProg();
   // 조회·수정 모드: 담당 외 시설 읽기전용 적용
   _applyMobPerms();
-}
-
-async function loadPrevEdit(date){
-  // 조회·수정 모드: 전체 시설 독립 조회 (DB에 없는 시설만 fallback)
-  await Promise.all(PR_NOS.map(function(n){
-    if(prevPow[n]!=null) return Promise.resolve();
-    return sbGet('air_operation_log','?facility_no=eq.'+n+'&facility_type=eq.방지시설&log_date=lt.'+date+'&power_today=not.is.null&select=power_today,log_date&order=log_date.desc&limit=1')
-    .then(function(res){
-      if(res&&res.length&&res[0].power_today!=null&&prevPow[n]==null){
-        prevPow[n]=res[0].power_today;
-        var el=g('pp'+n); if(el&&!el.value) el.value=res[0].power_today;
-      }
-    });
-  }));
 }
 
 // ── SEMS ──
@@ -774,12 +820,6 @@ async function doSave(){
 
   var btn=g('save-btn'); btn.disabled=true; btn.textContent='저장 중...';
   var by=currentUser.name||currentUser.username;
-  // 수정 모드: 이전 당일검침 스냅샷
-  var _mobOldPrTodayMap={};
-  if(mode==='edit'){
-    var _snap=await sbGet('air_operation_log','?log_date=eq.'+date+'&facility_type=eq.방지시설&select=facility_no,power_today');
-    (_snap||[]).forEach(function(r){if(r.power_today!=null)_mobOldPrTodayMap[r.facility_no]=parseFloat(r.power_today);});
-  }
   var semsReg=mode==='edit'?semsState.registered:false;
   var semsAt=mode==='edit'?semsState.at:null;
   var semsBy2=mode==='edit'?semsState.by:null;
@@ -841,7 +881,7 @@ async function doSave(){
     if(!res.ok){var t=await res.text();throw new Error(t);}
     showToast(mode==='edit'?'수정 저장 완료':'저장 완료');
     if(mode==='new') updateChip(date);
-    if(mode==='edit') _mobCheckNextDayPrev(date,_mobOldPrTodayMap,recs);
+    if(mode==='edit') _mobAutoUpdateNextDayPrev(date,recs);
   } catch(e){
     showToast('저장 실패'); console.error(e);
   }
@@ -902,47 +942,31 @@ function mobDateShift(delta){
 }
 
 // ── 미입력 일자로 이동 (담당 시설 완료 기준) ──
+// ── 미입력 일자로 이동 (담당 구간 1~8/9 기준: 방지시설 레코드 존재 여부로 판정) ──
 async function mobJumpMissing(){
   var SYS_START='2026-04-01';
   showToast('조회 중...');
   var t=new Date();t.setHours(0,0,0,0);
   var ts=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
-  var myEmNos=getMyEmNos();
-  var myPrNos=getMyPrNos();
   var results=await Promise.all([
-    sbGet('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&select=log_date,facility_no,facility_type,power_today,start_time,end_time,operation_hours,status&limit=99999'),
+    sbGet('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&facility_type=eq.방지시설&select=log_date,facility_no,power_today&limit=99999'),
     sbGet('holidays','?is_active=eq.true&select=holiday_date')
   ]);
   var records=results[0]||[];
   var holidays=new Set((results[1]||[]).map(function(r){return r.holiday_date;}));
   var dateMap={};
   records.forEach(function(r){
-    if(!dateMap[r.log_date])dateMap[r.log_date]={em:{},pr:{}};
-    if(r.facility_type==='배출구')dateMap[r.log_date].em[r.facility_no]=r;
-    if(r.facility_type==='방지시설')dateMap[r.log_date].pr[r.facility_no]=r;
+    if(r.power_today==null)return;
+    if(!dateMap[r.log_date])dateMap[r.log_date]={};
+    dateMap[r.log_date][r.facility_no]=r;
   });
   var sysStart=new Date(SYS_START+'T00:00:00');
   for(var d=new Date(sysStart);d<=t;d.setDate(d.getDate()+1)){
     if(d.getDay()===0||d.getDay()===6) continue;
     var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     if(holidays.has(ds)) continue;
-    var dayData=dateMap[ds]||{em:{},pr:{}};
-    var done=true;
-    // 배출구 완료: 담당 배출구마다 record 존재 + 시간 or status 입력
-    for(var _ei=0;_ei<myEmNos.length;_ei++){
-      var _en=myEmNos[_ei];
-      var er=dayData.em[_en];
-      if(!er||(!er.start_time&&!er.end_time&&er.operation_hours==null&&!er.status)){done=false;break;}
-    }
-    // 방지시설 완료: 담당 방지시설마다 power_today 존재
-    if(done){
-      for(var _pi2=0;_pi2<myPrNos.length;_pi2++){
-        var _pn2=myPrNos[_pi2];
-        var pr=dayData.pr[_pn2];
-        if(!pr||pr.power_today==null){done=false;break;}
-      }
-    }
-    if(!done){
+    var prMap=dateMap[ds]||{};
+    if(_mobIsDayMissing(prMap)){
       g('date-inp').value=ds; onDateChange();
       showToast('미입력 일자: '+ds); return;
     }
@@ -957,56 +981,36 @@ function alAutoFocus(el){
   }
 }
 
-// ── 수정 저장 후: 다음 운영일 전일검침 갱신 확인 ──
-async function _mobCheckNextDayPrev(date,oldTodayMap,savedRecs){
-  if(!Object.keys(oldTodayMap).length) return;
-  var step1=await sbGet('air_operation_log','?log_date=gt.'+date+'&facility_type=eq.방지시설&select=log_date&order=log_date.asc&limit=1');
-  if(!step1||!step1.length) return;
-  var nextDate=step1[0].log_date;
-  var nextData=await sbGet('air_operation_log','?log_date=eq.'+nextDate+'&facility_type=eq.방지시설&select=facility_no,power_prev,power_today');
-  if(!nextData||!nextData.length) return;
-  var nextMap={};
-  nextData.forEach(function(r){nextMap[r.facility_no]={prev:r.power_prev!=null?parseFloat(r.power_prev):null,today:r.power_today!=null?parseFloat(r.power_today):null};});
-  var newTodayMap={};
-  savedRecs.forEach(function(r){if(r.facility_type==='방지시설'&&r.power_today!=null)newTodayMap[r.facility_no]=r.power_today;});
-  var updateMap={};
-  Object.keys(oldTodayMap).forEach(function(no){
-    no=parseInt(no);
-    var oldVal=oldTodayMap[no];
-    var nm=nextMap[no];
-    var newVal=newTodayMap[no];
-    if(nm&&nm.prev!=null&&oldVal!=null&&nm.prev===oldVal&&newVal!=null&&newVal!==oldVal){
-      updateMap[no]=newVal;
-    }
+// ── 수정 저장 후: 다음 운영일 전일검침 자동 갱신 (팝업 없이) ──
+// 저장한 방지시설마다 각자의 다음 기록(log_date > 수정일, 가장 빠른 1건)을 독립적으로 조회·갱신한다
+// (1~8번과 9번의 다음 기록일이 서로 다를 수 있으므로 시설별로 따로 처리)
+async function _mobAutoUpdateNextDayPrev(date,savedRecs){
+  var prSaved=savedRecs.filter(function(r){return r.facility_type==='방지시설'&&r.power_today!=null;});
+  if(!prSaved.length)return;
+  var items=await Promise.all(prSaved.map(function(r){
+    return sbGet('air_operation_log','?facility_type=eq.방지시설&facility_no=eq.'+r.facility_no+'&log_date=gt.'+date+'&select=log_date,power_prev,power_today&order=log_date.asc&limit=1')
+    .then(function(res){
+      return {no:r.facility_no,newToday:r.power_today,next:(res&&res.length)?res[0]:null};
+    });
+  }));
+  var toUpdate=items.filter(function(x){
+    if(!x.next)return false;
+    var curPrev=x.next.power_prev!=null?parseFloat(x.next.power_prev):null;
+    return curPrev==null||curPrev!==x.newToday;
   });
-  if(!Object.keys(updateMap).length) return;
-  var cnt=Object.keys(updateMap).length;
-  showModal(
-    nextDate+' 전일검침 갱신 확인',
-    '수정한 데이터가 '+nextDate+'의 전일검침으로 사용되고 있습니다 ('+cnt+'개 시설).\n'+nextDate+'의 전일검침과 당일사용량도 함께 갱신하시겠습니까?',
-    '갱신',
-    function(){_mobDoUpdateNextDayPrev(nextDate,updateMap,nextData);},
-    '그대로 두기'
-  );
-}
-
-async function _mobDoUpdateNextDayPrev(nextDate,updateMap,nextData){
-  var nextTodayMap={};
-  nextData.forEach(function(r){if(r.power_today!=null)nextTodayMap[r.facility_no]=parseFloat(r.power_today);});
+  if(!toUpdate.length)return;
   try{
-    await Promise.all(Object.keys(updateMap).map(function(no){
-      no=parseInt(no);
-      var newPrev=updateMap[no];
-      var nToday=nextTodayMap[no];
-      var newDaily=(nToday!=null&&newPrev!=null&&(nToday-newPrev)>=0)?(nToday-newPrev):null;
-      return fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+nextDate+'&facility_type=eq.방지시설&facility_no=eq.'+no,{
+    await Promise.all(toUpdate.map(function(x){
+      var nextToday=x.next.power_today!=null?parseFloat(x.next.power_today):null;
+      var newDaily=(nextToday!=null&&(nextToday-x.newToday)>=0)?(nextToday-x.newToday):null;
+      return fetch(SB_URL+'/rest/v1/air_operation_log?log_date=eq.'+x.next.log_date+'&facility_type=eq.방지시설&facility_no=eq.'+x.no,{
         method:'PATCH',
         headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
-        body:JSON.stringify({power_prev:newPrev,power_daily:newDaily})
+        body:JSON.stringify({power_prev:x.newToday,power_daily:newDaily})
       });
     }));
-    showToast(nextDate+' 전일검침 갱신 완료');
-  }catch(e){showToast('갱신 실패: '+e.message);console.error(e);}
+    showToast(toUpdate.length+'개 시설의 다음 기록 전일검침 갱신');
+  }catch(e){console.error(e);showToast('다음 기록 갱신 실패: '+e.message);}
 }
 </script>
 </body>
