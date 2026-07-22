@@ -6068,9 +6068,38 @@ var inspectSelectedId=null;
 var inspectSelectedIds=new Set();
 var inspectBeforeDataUrl=null;
 var inspectAfterDataUrl=null;
+var _inspPhotoLoading={}; // id -> in-flight fetch Promise (중복 조회 방지)
+
+// 목록 조회에서는 사진 컬럼(before_photo/after_photo)을 제외하고,
+// 상세 진입/PDF 내보내기 시점에 id 기준으로 별도 조회한다.
+async function ensureInspectPhotosBatch(ids){
+  var toFetch=[],waits=[];
+  (ids||[]).forEach(function(id){
+    var r=inspectAllData.find(function(x){return x.id===id;});
+    if(!r||r._photosLoaded)return;
+    if(_inspPhotoLoading[id])waits.push(_inspPhotoLoading[id]);
+    else toFetch.push(id);
+  });
+  if(toFetch.length){
+    var p=sb('inspection_records','?select=id,before_photo,after_photo&id=in.('+toFetch.join(',')+')').then(function(rows){
+      (rows||[]).forEach(function(row){
+        var r=inspectAllData.find(function(x){return x.id===row.id;});
+        if(r){r.before_photo=row.before_photo||null;r.after_photo=row.after_photo||null;r._photosLoaded=true;}
+      });
+      toFetch.forEach(function(id){delete _inspPhotoLoading[id];});
+    });
+    toFetch.forEach(function(id){_inspPhotoLoading[id]=p;});
+    waits.push(p);
+  }
+  await Promise.all(waits);
+}
+async function ensureInspectPhotos(id){
+  await ensureInspectPhotosBatch([id]);
+  return inspectAllData.find(function(x){return x.id===id;});
+}
 
 async function loadInspect(){
-  var data=await sb('inspection_records','?select=*&order=inspect_date.desc');
+  var data=await sb('inspection_records','?select=id,inspect_date,category,issue,status,is_external,note,created_at&order=inspect_date.desc');
   if(!data)data=[];
   inspectAllData=data;
   renderInspectKPI(data);
@@ -6111,48 +6140,67 @@ function renderInspectCards(data){
       +'<div class="insp-pwa-kpi-card"><div class="insp-pwa-kpi-val" style="color:#2563eb;">'+rate+'%</div><div class="insp-pwa-kpi-lbl">개선율</div></div>';
   }
   if(!data.length){cardsEl.innerHTML='<div class="empty">점검 이력이 없습니다.</div>';return;}
-  cardsEl.innerHTML=data.map(function(r){
-    var id=r.id;
-    var statusTag=r.status==='miss'?'<span class="status-miss">미개선</span>':r.status==='hold'?'<span class="status-hold">보류</span>':'<span class="status-done">완료</span>';
-    var catBg=r.category==='환경'?'#dbeafe;color:#1e40af':'#dcfce7;color:#166534';
-    var catTag='<span style="display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;background:'+catBg+';">'+r.category+'</span>';
-    var extTag=r.is_external?'<span class="ext-badge">외부기관</span>':'';
-    var noteHtml=r.note?'<div class="insp-card-note">'+escHtml(r.note)+'</div>':'';
-    var canUpBefore=hasPerm('inspect_photo_before');
-    var canUpAfter=hasPerm('inspect_photo_after');
-    var beforeBox='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.before_photo?'<img src="'+r.before_photo+'" alt="개선 전"><div class="insp-photo-upload"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 크게보기</div>':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
-    var beforeHtml='<div style="position:relative;">'+beforeBox+(r.before_photo&&canUpBefore?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'before\')" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')+'</div>';
+  cardsEl.innerHTML=data.map(function(r){return renderInspCardHtml(r,false,false);}).join('');
+}
+
+// isOpen: 카드가 펼쳐진 상태로 그릴지 여부 / photosLoading: 사진 별도 조회가 진행 중인지 여부
+function renderInspCardHtml(r,isOpen,photosLoading){
+  var id=r.id;
+  var statusTag=r.status==='miss'?'<span class="status-miss">미개선</span>':r.status==='hold'?'<span class="status-hold">보류</span>':'<span class="status-done">완료</span>';
+  var catBg=r.category==='환경'?'#dbeafe;color:#1e40af':'#dcfce7;color:#166534';
+  var catTag='<span style="display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;background:'+catBg+';">'+r.category+'</span>';
+  var extTag=r.is_external?'<span class="ext-badge">외부기관</span>':'';
+  var noteHtml=r.note?'<div class="insp-card-note">'+escHtml(r.note)+'</div>':'';
+  var canUpBefore=hasPerm('inspect_photo_before');
+  var canUpAfter=hasPerm('inspect_photo_after');
+  var beforeHtml,afterHtml;
+  if(photosLoading){
+    beforeHtml='<div class="insp-photo-box"><span class="insp-photo-empty">불러오는 중...</span></div>';
+    afterHtml='<div class="insp-photo-box"><span class="insp-photo-empty">불러오는 중...</span></div>';
+  }else{
+    var beforeBox='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.before_photo?'<img loading="lazy" src="'+r.before_photo+'" alt="개선 전"><div class="insp-photo-upload"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 크게보기</div>':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
+    beforeHtml='<div style="position:relative;">'+beforeBox+(r.before_photo&&canUpBefore?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'before\')" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')+'</div>';
     if(canUpBefore)beforeHtml+='<div style="display:flex;gap:5px;margin-top:6px;"><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label></div>';
-    var afterBox='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.after_photo?'<img src="'+r.after_photo+'" alt="개선 후"><div class="insp-photo-upload"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 크게보기</div>':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
-    var afterHtml='<div style="position:relative;">'+afterBox+(r.after_photo&&canUpAfter?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'after\')" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')+'</div>';
+    var afterBox='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.after_photo?'<img loading="lazy" src="'+r.after_photo+'" alt="개선 후"><div class="insp-photo-upload"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 크게보기</div>':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
+    afterHtml='<div style="position:relative;">'+afterBox+(r.after_photo&&canUpAfter?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'after\')" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')+'</div>';
     if(!r.after_photo&&canUpAfter)afterHtml+='<div style="display:flex;gap:5px;margin-top:6px;"><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label></div>';
-    var statusHtml='';
-    if(hasPerm('inspect_status')){
-      var opts=['miss','hold','done'].map(function(v){var lbl=v==='miss'?'미개선':v==='hold'?'보류':'완료';return'<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+lbl+'</option>';}).join('');
-      statusHtml='<div class="insp-card-status-row"><select id="insp-card-status-'+id+'" class="insp-card-status-sel">'+opts+'</select><button class="insp-card-save" onclick="saveInspCardStatus(\''+id+'\')">저장</button></div>';
-    }
-    return'<div class="insp-card" id="insp-card-'+id+'">'
-      +'<div class="insp-card-hdr" onclick="toggleInspCard(\''+id+'\')">'
-        +'<div class="insp-card-hdr-tags">'+catTag+' '+statusTag+extTag+'</div>'
-        +'<div class="insp-card-issue">'+escHtml(r.issue)+'</div>'
-        +'<div class="insp-card-date">'+r.inspect_date+'</div>'
-        +'<span class="insp-card-chevron">▼</span>'
+  }
+  var statusHtml='';
+  if(hasPerm('inspect_status')){
+    var opts=['miss','hold','done'].map(function(v){var lbl=v==='miss'?'미개선':v==='hold'?'보류':'완료';return'<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+lbl+'</option>';}).join('');
+    statusHtml='<div class="insp-card-status-row"><select id="insp-card-status-'+id+'" class="insp-card-status-sel">'+opts+'</select><button class="insp-card-save" onclick="saveInspCardStatus(\''+id+'\')">저장</button></div>';
+  }
+  return'<div class="insp-card'+(isOpen?' open':'')+'" id="insp-card-'+id+'">'
+    +'<div class="insp-card-hdr" onclick="toggleInspCard(\''+id+'\')">'
+      +'<div class="insp-card-hdr-tags">'+catTag+' '+statusTag+extTag+'</div>'
+      +'<div class="insp-card-issue">'+escHtml(r.issue)+'</div>'
+      +'<div class="insp-card-date">'+r.inspect_date+'</div>'
+      +'<span class="insp-card-chevron">▼</span>'
+    +'</div>'
+    +'<div class="insp-card-body">'
+      +noteHtml
+      +'<div class="insp-card-photos">'
+        +'<div><div class="insp-card-photo-lbl">개선 전</div>'+beforeHtml+'</div>'
+        +'<div><div class="insp-card-photo-lbl">개선 후</div>'+afterHtml+'</div>'
       +'</div>'
-      +'<div class="insp-card-body">'
-        +noteHtml
-        +'<div class="insp-card-photos">'
-          +'<div><div class="insp-card-photo-lbl">개선 전</div>'+beforeHtml+'</div>'
-          +'<div><div class="insp-card-photo-lbl">개선 후</div>'+afterHtml+'</div>'
-        +'</div>'
-        +statusHtml
-      +'</div>'
-    +'</div>';
-  }).join('');
+      +statusHtml
+    +'</div>'
+  +'</div>';
 }
 
 function toggleInspCard(id){
   var card=document.getElementById('insp-card-'+id);
   if(!card)return;
+  var willOpen=!card.classList.contains('open');
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(willOpen&&r&&!r._photosLoaded){
+    card.outerHTML=renderInspCardHtml(r,true,true);
+    ensureInspectPhotos(id).then(function(){
+      var card2=document.getElementById('insp-card-'+id);
+      if(card2)card2.outerHTML=renderInspCardHtml(r,true,false);
+    });
+    return;
+  }
   card.classList.toggle('open');
 }
 
@@ -6260,15 +6308,17 @@ function buildInspectPdfHtml(records,forPrint){
   return pages.join('');
 }
 
-function openInspectPdfModal(){
+async function openInspectPdfModal(){
   var records=inspectAllData.filter(function(r){return inspectSelectedIds.has(r.id);});
   if(!records.length)return;
   var modal=document.getElementById('insp-pdf-modal');
   var body=document.getElementById('insp-pdf-modal-body');
   var title=document.getElementById('insp-pdf-modal-title');
   if(title)title.textContent='환경점검 PDF 미리보기 · '+records.length+'건 선택';
-  if(body)body.innerHTML=buildInspectPdfHtml(records,false);
   if(modal){modal.classList.add('show');document.body.style.overflow='hidden';}
+  if(body)body.innerHTML='<div class="loading">사진 불러오는 중...</div>';
+  await ensureInspectPhotosBatch(records.map(function(r){return r.id;}));
+  if(body)body.innerHTML=buildInspectPdfHtml(records,false);
 }
 
 function closeInspectPdfModal(){
@@ -6276,9 +6326,10 @@ function closeInspectPdfModal(){
   if(modal){modal.classList.remove('show');document.body.style.overflow='';}
 }
 
-function printInspectPdf(){
+async function printInspectPdf(){
   var records=inspectAllData.filter(function(r){return inspectSelectedIds.has(r.id);});
   if(!records.length)return;
+  await ensureInspectPhotosBatch(records.map(function(r){return r.id;}));
   // A4 landscape: 297×210mm, margin 15mm → content 267×180mm
   var today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
   var totalPages=records.length;
@@ -6444,11 +6495,16 @@ function showInspectDetail(id){
   if(!r)return;
   inspectSelectedId=id;
   renderInspectTable(getInspectFiltered());
+  renderInspectDetailInto(r,!r._photosLoaded);
+  if(!r._photosLoaded){
+    ensureInspectPhotos(id).then(function(){
+      if(inspectSelectedId===id)renderInspectDetailInto(r,false);
+    });
+  }
+}
 
-  var panel=document.getElementById('inspect-detail-panel');
-  var content=document.getElementById('inspect-detail-content');
-  if(!panel||!content)return;
-
+function buildInspectDetailHtml(r,photosLoading){
+  var id=r.id;
   var canEditStatus=hasPerm('inspect_status');
   var canUploadAfter=hasPerm('inspect_photo_after');
   var canUploadBefore=hasPerm('inspect_photo_before');
@@ -6458,30 +6514,35 @@ function showInspectDetail(id){
     return '<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+label+'</option>';
   }).join('');
 
-  var beforeHtml='<div style="position:relative;">'
-    +'<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.before_photo?'<img src="'+r.before_photo+'" alt="개선 전">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>'
-    +(r.before_photo&&canUploadBefore?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'before\')" title="사진 삭제" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')
-    +'</div>';
-  if(canUploadBefore){
-    beforeHtml+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
-      +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label>'
-      +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label>'
+  var beforeHtml,afterHtml;
+  if(photosLoading){
+    beforeHtml='<div class="insp-photo-box"><span class="insp-photo-empty">불러오는 중...</span></div>';
+    afterHtml='<div class="insp-photo-box"><span class="insp-photo-empty">불러오는 중...</span></div>';
+  }else{
+    beforeHtml='<div style="position:relative;">'
+      +'<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.before_photo?'<img loading="lazy" src="'+r.before_photo+'" alt="개선 전">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>'
+      +(r.before_photo&&canUploadBefore?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'before\')" title="사진 삭제" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')
       +'</div>';
+    if(canUploadBefore){
+      beforeHtml+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
+        +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label>'
+        +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label>'
+        +'</div>';
+    }
+
+    afterHtml='<div style="position:relative;">'
+      +'<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.after_photo?'<img loading="lazy" src="'+r.after_photo+'" alt="개선 후">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>'
+      +(r.after_photo&&canUploadAfter?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'after\')" title="사진 삭제" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')
+      +'</div>';
+    if(canUploadAfter){
+      afterHtml+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
+        +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label>'
+        +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label>'
+        +'</div>';
+    }
   }
 
-  var afterHtml='<div style="position:relative;">'
-    +'<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.after_photo?'<img src="'+r.after_photo+'" alt="개선 후">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>'
-    +(r.after_photo&&canUploadAfter?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'after\')" title="사진 삭제" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')
-    +'</div>';
-  if(canUploadAfter){
-    afterHtml+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
-      +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label>'
-      +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label>'
-      +'</div>';
-  }
-
-  var detailHtml=
-    '<div style="font-size:13px;color:#6b7280;margin-bottom:16px;line-height:2;">'+r.inspect_date+' &nbsp;·&nbsp; '+r.category+(r.is_external?' &nbsp;<span class="ext-badge">외부기관</span>':'')+'</div>'
+  return '<div style="font-size:13px;color:#6b7280;margin-bottom:16px;line-height:2;">'+r.inspect_date+' &nbsp;·&nbsp; '+r.category+(r.is_external?' &nbsp;<span class="ext-badge">외부기관</span>':'')+'</div>'
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">지적 내용</label><div style="font-size:14px;color:#374151;line-height:1.8;padding:12px 14px;background:#f8fafc;border-radius:6px;border:1px solid #e8ecf0;">'+escHtml(r.issue)+'</div></div>'
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">상태'+(canEditStatus?'':' (읽기 전용)')+'</label>'
       +'<select id="detail-status" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;">'+statusOpts+'</select>'
@@ -6497,6 +6558,14 @@ function showInspectDetail(id){
       +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 전</div>'+beforeHtml+'</div>'
       +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 후</div>'+afterHtml+'</div>'
     +'</div>';
+}
+
+function renderInspectDetailInto(r,photosLoading){
+  var panel=document.getElementById('inspect-detail-panel');
+  var content=document.getElementById('inspect-detail-content');
+  if(!panel||!content)return;
+
+  var detailHtml=buildInspectDetailHtml(r,photosLoading);
 
   var isMobilePWA=document.body.classList.contains('is-pwa')&&window.innerWidth<=768;
   if(isMobilePWA){
