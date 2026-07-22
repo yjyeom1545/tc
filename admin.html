@@ -1146,11 +1146,6 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   <!-- 필터 -->
   <div class="ws-filter-section">
     <div class="ws-filter-grid">
-      <div class="ws-filter-label">조회 기간</div>
-      <div class="ws-filter-input">
-        <input type="date" id="ws-from"><span class="ws-dash">~</span><input type="date" id="ws-to">
-        <span class="ws-hint">최대 365일</span>
-      </div>
       <div class="ws-filter-label">폐기물 종류</div>
       <div class="ws-filter-input"><select id="ws-filter-type"></select></div>
       <div class="ws-filter-label">상태 구분</div>
@@ -1184,7 +1179,6 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   </div>
   <div class="ws-action-bar">
     <button class="ws-btn ws-btn-primary" onclick="wsQuery()">조회</button>
-    <button class="ws-btn" onclick="wsExcel()">엑셀</button>
   </div>
 
   <!-- 요약 칩 -->
@@ -3214,14 +3208,9 @@ var _wsMonthDisposed=[]; // 이번달 배출된 waste_type 목록
 var _wsScheduledTypes=new Set(); // 배출예정 waste_type Set (waste_schedule 기반)
 
 async function loadWasteStorage(){
-  // 날짜 초기값 설정 (당월 1일 ~ 말일)
   var now=new Date();
   var y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0');
   var lastDay=new Date(y,now.getMonth()+1,0).getDate();
-  var fromEl=document.getElementById('ws-from');
-  var toEl=document.getElementById('ws-to');
-  if(fromEl&&!fromEl.value) fromEl.value=y+'-'+m+'-01';
-  if(toEl&&!toEl.value) toEl.value=y+'-'+m+'-'+String(lastDay).padStart(2,'0');
 
   // 날짜 기본값 (배출일)
   var recDate=document.getElementById('ws-rec-date');
@@ -3586,22 +3575,6 @@ async function wsSaveSchedule(){
     wsCloseScheduleModal();
     showToast('배출 일정 등록 완료 — 배출 일정 페이지에서 확인');
   }catch(e){showToast('등록 실패: '+e.message);}
-}
-
-function wsExcel(){
-  if(typeof XLSX==='undefined'){alert('엑셀 라이브러리 로딩 중입니다. 잠시 후 다시 시도하세요.');return;}
-  var rows=wsGetFiltered();
-  var data=[['No.','폐기물 종류','단위','현재 보관량','최대 보관','보관률(%)','상태','마지막 배출일','보관 일수']];
-  rows.forEach(function(w,i){
-    var pct=wsPct(w);
-    var s=wsStatus(pct);
-    var days=wsDaysSince(w.last_disposal_date);
-    data.push([i+1,w.waste_type,w.unit,parseFloat(w.current_amount)||0,w.max_amount||'-',pct,s.label,w.last_disposal_date||'-',days!==null?days+' 일':'-']);
-  });
-  var ws=XLSX.utils.aoa_to_sheet(data);
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'보관현황');
-  XLSX.writeFile(wb,'폐기물보관현황_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
 function wsDisposalExcel(){
