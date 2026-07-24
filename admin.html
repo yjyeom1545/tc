@@ -2249,6 +2249,11 @@ function checkAuth(){
   if(semsBar&&isAdmin()){
     semsBar.style.display='block';
   }
+  // 안정화 단계 admin 전용 메뉴 숨김 (차압 관리·종합진단)
+  ADMIN_ONLY_TABS.forEach(function(t){
+    var navEl=document.getElementById('nav-'+t);
+    if(navEl)navEl.style.display=isTabRestricted(t)?'none':'';
+  });
   if(canEditAll()){initBatchWidget();}
   return true;
 }
@@ -2287,6 +2292,10 @@ function getAirLogPrNos(){
   return nos;
 }
 function logout(){localStorage.removeItem('tc_user');window.location.href='login.html';}
+
+// 차압 관리·종합진단: 안정화 단계 동안 admin 전용. 전체 공개 전환 시 이 함수의 조건만 지우면 됨.
+var ADMIN_ONLY_TABS=['pressure','diagnosis'];
+function isTabRestricted(tab){return ADMIN_ONLY_TABS.indexOf(tab)!==-1&&!isAdmin();}
 
 async function sb(table,query,opts){
   opts=opts||{};
@@ -6797,6 +6806,13 @@ function router(){
   });
 
   if(!page||_VALID_TABS.indexOf(page)===-1){
+    history.replaceState(null,'','#home');
+    showTab('home');
+    return;
+  }
+
+  // 안정화 단계 admin 전용 페이지: 직접 접근 시 대시보드로 리다이렉트
+  if(isTabRestricted(page)){
     history.replaceState(null,'','#home');
     showTab('home');
     return;
