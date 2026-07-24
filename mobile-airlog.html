@@ -243,14 +243,17 @@ var _mobLoadSeq=0;
 function g(id){return document.getElementById(id);}
 function pad2(n){return String(n).padStart(2,'0');}
 function today(){return new Date().toISOString().split('T')[0];}
+function canEditAllFacilities(){
+  return !!(currentUser&&(currentUser.role==='admin'||currentUser.role==='safety_env'));
+}
 function canEdit9(){
   if(!currentUser) return false;
-  if(currentUser.username==='yjyeom') return true;
+  if(canEditAllFacilities()) return true;
   return !!(currentUser.permissions&&currentUser.permissions.airlog_9);
 }
 function canEdit1to8(){
   if(!currentUser) return false;
-  if(currentUser.username==='yjyeom') return true;
+  if(canEditAllFacilities()) return true;
   return !!(currentUser.permissions&&currentUser.permissions.airlog_1to8);
 }
 // 담당 구간(1~8/9) 판정 기준: 방지시설 레코드(power_today) 존재 여부
@@ -264,7 +267,7 @@ function _mobIsDayMissing(prMap){
 }
 function getMyEmNos(){
   if(!currentUser) return [];
-  if(currentUser.username==='yjyeom') return [1,2,3,4,5,6,7,9];
+  if(canEditAllFacilities()) return [1,2,3,4,5,6,7,9];
   var nos=[];
   if(currentUser.permissions&&currentUser.permissions.airlog_1to8) nos=nos.concat([1,2,3,4,5,6,7]);
   if(currentUser.permissions&&currentUser.permissions.airlog_9) nos.push(9);
@@ -272,7 +275,7 @@ function getMyEmNos(){
 }
 function getMyPrNos(){
   if(!currentUser) return [];
-  if(currentUser.username==='yjyeom') return [1,2,3,4,5,6,7,8,9];
+  if(canEditAllFacilities()) return [1,2,3,4,5,6,7,8,9];
   var nos=[];
   if(currentUser.permissions&&currentUser.permissions.airlog_1to8) nos=nos.concat([1,2,3,4,5,6,7,8]);
   if(currentUser.permissions&&currentUser.permissions.airlog_9) nos.push(9);

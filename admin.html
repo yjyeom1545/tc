@@ -1765,7 +1765,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         <div class="form-group"><label>비고</label><input type="text" id="if-note" placeholder="선택 입력"></div>
       </div>
       <div class="form-group" style="margin-bottom:10px;">
-        <label>개선 전 사진 (admin만)</label>
+        <label>개선 전 사진</label>
         <div id="if-before-wrap" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <label style="padding:7px 14px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
             파일 선택<input type="file" id="if-before-file" accept="image/*" style="display:none;" onchange="handleInspectPhoto(this,'if-before-preview')">
@@ -1829,25 +1829,8 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         <div class="form-group" style="flex:0 0 200px;"><label>아이디</label><input type="text" id="new-username" placeholder="아이디 입력"></div>
         <div class="form-group" style="flex:0 0 200px;"><label>이름</label><input type="text" id="new-name" placeholder="이름 입력"></div>
       </div>
-      <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;">초기 권한 설정</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-bottom:14px;">
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-filter_write"> 필터기록</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_confirm"> 폐유고상확인</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_complete"> 폐유고상배출완료</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-schedule_write"> 일정작성</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_write"> 점검등록</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_photo_before"> 점검사진(전)</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_photo_after"> 점검사진(후)</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-inspect_status"> 점검상태변경</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-airlog_1to8"> 대기운영 1~8번</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-airlog_9"> 대기운영 9번</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-air_schedule_write"> 대기일정작성</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_storage_write"> 보관현황쓰기</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_annual_write"> 연간배출량쓰기</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="new-perm-waste_schedule_write"> 배출일정쓰기</label>
-      </div>
       <button class="add-btn" onclick="addUser()">사용자 추가</button>
-      <div style="font-size:11px;color:#9ca3af;margin-top:8px;">※ 비밀번호 없이 등록됩니다. 해당 사용자가 최초 로그인 시 비밀번호를 직접 설정합니다.</div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:8px;">※ 비밀번호 없이 등록됩니다. 해당 사용자가 최초 로그인 시 비밀번호를 직접 설정합니다. 역할은 기본 "일반"으로 등록되며, 이후 아래 목록에서 변경할 수 있습니다.</div>
     </div>
   </div>
   <div class="card">
@@ -2245,7 +2228,6 @@ function checkAuth(){
   var u=localStorage.getItem('tc_user');
   if(!u){window.location.href='login.html';return false;}
   currentUser=JSON.parse(u);
-  var roleText={'admin':'관리자','user':'사용자','manager':'담당자','manager1':'담당자1','manager2':'담당자2','viewer':'읽기전용'}[currentUser.role]||currentUser.role;
   // 사이드바 사용자 정보
   var icon=document.getElementById('sb-user-icon');
   var displayUser=currentUser.name||currentUser.username;
@@ -2267,7 +2249,7 @@ function checkAuth(){
   if(semsBar&&isAdmin()){
     semsBar.style.display='block';
   }
-  if(isAdmin()||hasPerm('filter_write')){initBatchWidget();}
+  if(canEditAll()){initBatchWidget();}
   return true;
 }
 
@@ -2282,24 +2264,29 @@ function closeSidebar(){
   document.getElementById('sidebar-overlay').classList.remove('show');
 }
 
-function isAdmin(){return currentUser&&currentUser.username==='yjyeom';}
-function hasPerm(key){if(isAdmin())return true;return !!(currentUser&&currentUser.permissions&&currentUser.permissions[key]);}
+function isAdmin(){return !!(currentUser&&currentUser.role==='admin');}
+function isSafetyEnv(){return !!(currentUser&&currentUser.role==='safety_env');}
+function canEditAll(){return isAdmin()||isSafetyEnv();}
+function canEditAirlog(facilityNum){
+  if(canEditAll())return true;
+  if(facilityNum>=1&&facilityNum<=8)return !!(currentUser&&currentUser.permissions&&currentUser.permissions.airlog_1to8===true);
+  if(facilityNum===9)return !!(currentUser&&currentUser.permissions&&currentUser.permissions.airlog_9===true);
+  return false;
+}
+function canChangeInspectStatus(){return canEditAll();}
 function getAirLogEmNos(){
   var nos=[];
-  if(hasPerm('airlog_1to8'))nos=nos.concat([1,2,3,4,5,6,7]);
-  if(hasPerm('airlog_9'))nos.push(9);
+  for(var i=1;i<=7;i++){if(canEditAirlog(i))nos.push(i);}
+  if(canEditAirlog(9))nos.push(9);
   return nos;
 }
 function getAirLogPrNos(){
   var nos=[];
-  if(hasPerm('airlog_1to8'))nos=nos.concat([1,2,3,4,5,6,7,8]);
-  if(hasPerm('airlog_9'))nos.push(9);
+  for(var i=1;i<=8;i++){if(canEditAirlog(i))nos.push(i);}
+  if(canEditAirlog(9))nos.push(9);
   return nos;
 }
 function logout(){localStorage.removeItem('tc_user');window.location.href='login.html';}
-
-var PERM_LABELS={filter_write:'필터기록',waste_confirm:'폐유고상확인',waste_complete:'폐유고상배출완료',schedule_write:'일정작성',inspect_write:'점검등록',inspect_photo_before:'점검사진(전)',inspect_photo_after:'점검사진(후)',inspect_status:'점검상태',airlog_1to8:'대기1~8번',airlog_9:'대기9번',air_schedule_write:'대기일정',waste_storage_write:'보관현황쓰기',waste_annual_write:'연간배출량쓰기',waste_schedule_write:'배출일정쓰기'};
-var PERM_KEYS=['filter_write','waste_confirm','waste_complete','schedule_write','inspect_write','inspect_photo_before','inspect_photo_after','inspect_status','airlog_1to8','airlog_9','air_schedule_write','waste_storage_write','waste_annual_write','waste_schedule_write'];
 
 async function sb(table,query,opts){
   opts=opts||{};
@@ -2870,7 +2857,7 @@ function frRenderTable(data){
     if(count)count.textContent='';
     return;
   }
-  var canWrite=hasPerm('filter_write')||isAdmin();
+  var canWrite=canEditAll();
   var rows=data.map(function(r,i){
     var editBtn=canWrite?'<button class="wsch-act-btn" onclick="frEdit(\''+r.id+'\')" style="background:white;color:#374151;border:1px solid #d1d5db;">수정</button>':'';
     var delBtn=canWrite?'<button class="wsch-act-btn" onclick="frDelete(\''+r.id+'\')" style="background:white;color:#6b7280;border:1px solid #d1d5db;">삭제</button>':'';
@@ -3128,7 +3115,7 @@ function batchCalcTotal(){
 }
 
 async function batchSave(){
-  if(!isAdmin()&&!hasPerm('filter_write'))return;
+  if(!canEditAll())return;
   var rows=[];
   var valid=true;
   var noWorkerTr=null;
@@ -3286,7 +3273,7 @@ function wsRenderRow(w,i,editing){
       +' <button class="ws-btn-sm" onclick="wsCancelEdit()">취소</button>';
   } else {
     amtCell=parseFloat(w.current_amount)||0;
-    var canWrite=hasPerm('waste_storage_write')||isAdmin();
+    var canWrite=canEditAll();
     mgmtCell=canWrite
       ?'<button class="ws-btn-sm" style="background:#0f6adb;color:white;border-color:#0f6adb;" onclick="wsOpenScheduleModal('+i+',event)">배출</button>'
       :'<span style="color:#d1d5db;font-size:11px;">-</span>';
@@ -3346,7 +3333,7 @@ function wsCancelEdit(){
 }
 
 async function wsSaveRow(i){
-  if(!hasPerm('waste_storage_write')&&!isAdmin()){showToast('보관 현황 쓰기 권한이 없습니다.');return;}
+  if(!canEditAll()){showToast('보관 현황 쓰기 권한이 없습니다.');return;}
   var inp=document.getElementById('ws-edit-input');
   if(!inp)return;
   var val=parseFloat(inp.value);
@@ -3403,7 +3390,7 @@ function wsRenderDisposal(){
     return;
   }
   tbody.innerHTML=rows.map(function(r,i){
-    var canDel=hasPerm('waste_storage_write')||isAdmin();
+    var canDel=canEditAll();
     var delBtn=canDel?'<button class="ws-btn-sm" style="border-color:#dc2626;color:#dc2626;" onclick="wsDeleteDisposal(\''+r.id+'\')">삭제</button>':'';
     return '<tr>'
       +'<td class="ws-td-num">'+(i+1)+'</td>'
@@ -3432,7 +3419,7 @@ function wsQuery(){
 
 
 async function wsAddDisposal(){
-  if(!hasPerm('waste_storage_write')){alert('보관 현황 쓰기 권한이 없습니다.');return;}
+  if(!canEditAll()){alert('보관 현황 쓰기 권한이 없습니다.');return;}
   var dateEl=document.getElementById('ws-rec-date');
   var typeEl=document.getElementById('ws-rec-type');
   var amtEl=document.getElementById('ws-rec-amount');
@@ -3473,7 +3460,7 @@ async function wsAddDisposal(){
 }
 
 async function wsDeleteDisposal(id){
-  if(!hasPerm('waste_storage_write')){alert('보관 현황 쓰기 권한이 없습니다.');return;}
+  if(!canEditAll()){alert('보관 현황 쓰기 권한이 없습니다.');return;}
   if(!confirm('이 배출 기록을 삭제하시겠습니까?'))return;
   try{
     await sb('waste_disposal','?id=eq.'+id,{method:'DELETE'});
@@ -3497,7 +3484,7 @@ function showToast(msg,duration){
 // ── Phase 3: 보관 현황 → 배출 일정 등록 모달 ──
 function wsOpenScheduleModal(i,e){
   if(e)e.stopPropagation();
-  if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 등록 권한이 없습니다.');return;}
+  if(!canEditAll()){showToast('배출 일정 등록 권한이 없습니다.');return;}
   var w=_wsFilteredCache[i];
   if(!w)return;
   var d=new Date();d.setDate(d.getDate()+3);
@@ -3752,7 +3739,7 @@ function waUpdateSummary(){
 }
 
 async function waSave(){
-  if(!hasPerm('waste_annual_write')){alert('연간 배출량 쓰기 권한이 없습니다.');return;}
+  if(!canEditAll()){alert('연간 배출량 쓰기 권한이 없습니다.');return;}
   var yearSel=document.getElementById('wa-year');
   var year=yearSel?parseInt(yearSel.value):new Date().getFullYear();
   var updatedBy=currentUser?(currentUser.name||currentUser.username):'';
@@ -3794,7 +3781,7 @@ async function waSave(){
 }
 
 function waCopyPrevYear(){
-  if(!hasPerm('waste_annual_write')){alert('연간 배출량 쓰기 권한이 없습니다.');return;}
+  if(!canEditAll()){alert('연간 배출량 쓰기 권한이 없습니다.');return;}
   if(!confirm('전년도 데이터를 현재 표에 복사합니다. (기존 입력값이 초기화됩니다) 계속하시겠습니까?'))return;
   var yearSel=document.getElementById('wa-year');
   var year=yearSel?parseInt(yearSel.value):new Date().getFullYear();
@@ -3919,8 +3906,8 @@ async function loadWasteData(){
       var isConfirmed=r.status==='confirmed';
       var statusBadge=isCompleted?'<span class="done-badge">배출완료</span>':isConfirmed?'<span class="badge" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;">확인</span>':'<span class="new-badge">미확인</span>';
       var checkedInfo=isCompleted&&r.checked_at?'<div style="font-size:11px;color:#9ca3af;">'+new Date(r.checked_at).toLocaleDateString('ko-KR')+(r.checked_by?' · '+displayName(r.checked_by):'')+'</div>':'';
-      var canConfirm=hasPerm('waste_confirm')||isAdmin();
-      var canComplete=hasPerm('waste_complete')||isAdmin();
+      var canConfirm=canEditAll();
+      var canComplete=canEditAll();
       var actionBtn='';
       if(!isCompleted){
         var btnConfirm=canConfirm
@@ -3931,7 +3918,7 @@ async function loadWasteData(){
           :'<button disabled style="padding:4px 10px;background:#e5e7eb;color:#9ca3af;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:not-allowed;margin-right:4px;">배출완료</button>';
         actionBtn=btnConfirm+btnComplete;
       }
-      var delBtn=hasPerm('waste_complete')?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_requests\',\''+r.id+'\',loadWasteData)">✕</button>':'';
+      var delBtn=canEditAll()?'<button class="del-btn" onclick="confirmDelete(\'waste_oil_requests\',\''+r.id+'\',loadWasteData)">✕</button>':'';
       var note=r.notes?r.notes:'<span style="color:#d1d5db;">-</span>';
       return'<tr>'+
         '<td>'+r.request_date+'</td>'+
@@ -3973,7 +3960,7 @@ async function loadWasteOilStorage(allData){
       '<div style="font-size:12px;font-weight:700;color:'+c+';margin-bottom:8px;">'+r.line_name+'</div>'+
       '<div style="font-size:28px;font-weight:700;'+warn+'">'+count+'</div>'+
       '<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">개</div>'+
-      (hasPerm('waste_complete')?'<button onclick="adjustStorage(\''+r.id+'\','+count+')" style="padding:4px 12px;background:#f0f2f5;color:#374151;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">수량 조정</button>':'')+
+      (canEditAll()?'<button onclick="adjustStorage(\''+r.id+'\','+count+')" style="padding:4px 12px;background:#f0f2f5;color:#374151;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">수량 조정</button>':'')+
     '</div>';
   }).join('');
   document.getElementById('wo-storage-grid').innerHTML=cards||'<div class="empty">데이터 없음</div>';
@@ -4208,7 +4195,7 @@ function wschRenderTable(data,today){
     if(countEl)countEl.textContent='';
     return;
   }
-  var canWrite=hasPerm('waste_schedule_write')||isAdmin();
+  var canWrite=canEditAll();
   var rows=data.map(function(r,i){
     var statusBadge=wschGetStatusBadge(r,today);
     var isDone=r.status==='completed'||r.status==='cancelled';
@@ -4318,7 +4305,7 @@ function wschUpdateProcessMethod(){
 }
 
 function wschOpenModal(){
-  if(!hasPerm('waste_schedule_write')&&!isAdmin()){alert('배출 일정 등록 권한이 없습니다.');return;}
+  if(!canEditAll()){alert('배출 일정 등록 권한이 없습니다.');return;}
   document.getElementById('wsch-modal').classList.add('show');
 }
 
@@ -4332,7 +4319,7 @@ function wschCloseModal(){
 }
 
 async function wschSave(){
-  if(!hasPerm('waste_schedule_write')&&!isAdmin()){alert('배출 일정 등록 권한이 없습니다.');return;}
+  if(!canEditAll()){alert('배출 일정 등록 권한이 없습니다.');return;}
   var date=document.getElementById('wsch-m-date').value;
   var vendor=document.getElementById('wsch-m-vendor').value.trim();
   var type=document.getElementById('wsch-m-type').value;
@@ -4362,7 +4349,7 @@ var _wschCompleteId=null;
 var _wscmVehicleVal='';
 
 async function wschComplete(id){
-  if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 쓰기 권한이 없습니다.');return;}
+  if(!canEditAll()){showToast('배출 일정 쓰기 권한이 없습니다.');return;}
   var r=(_wschData||[]).find(function(x){return x.id===id;});
   if(!r)return;
   _wschCompleteId=id;
@@ -4515,7 +4502,7 @@ async function wschConfirmComplete(){
 }
 
 function wschInlineEdit(td,id,field,current){
-  if(!hasPerm('waste_schedule_write')&&!isAdmin()){showToast('배출 일정 쓰기 권한이 없습니다.');return;}
+  if(!canEditAll()){showToast('배출 일정 쓰기 권한이 없습니다.');return;}
   var today=function(){return new Date().toISOString().split('T')[0];};
   var rerender=function(){wschRenderTable(_wschData,today());};
 
@@ -4762,8 +4749,8 @@ function _alIsDayMissing(prMap){
   var sec128Done=[1,2,3,4,5,6,7,8].every(function(n){return prMap[n]&&prMap[n].power_today!=null;});
   var sec9Done=!!(prMap[9]&&prMap[9].power_today!=null);
   var missing=false;
-  if(hasPerm('airlog_1to8')&&!sec128Done)missing=true;
-  if(hasPerm('airlog_9')&&!sec9Done)missing=true;
+  if(canEditAirlog(1)&&!sec128Done)missing=true;
+  if(canEditAirlog(9)&&!sec9Done)missing=true;
   return missing;
 }
 
@@ -5898,7 +5885,7 @@ async function loadAirMeasures(){
       :'<span class="badge" style="background:#dbeafe;color:#1e40af;">예정</span>';
     var facilities=r.facilities?r.facilities.split(',').map(function(f){return'<span style="display:inline-block;padding:2px 7px;border-radius:10px;background:#eff6ff;color:#0f2744;font-size:11px;font-weight:500;margin:1px;">'+f.replace('배출구','배').replace('-','<br style="display:none">').trim()+'</span>';}).join(''):'<span style="color:#d1d5db;">-</span>';
     var actionBtns='';
-    if(hasPerm('air_schedule_write')){
+    if(canEditAll()){
       if(r.status!=='완료'&&r.status!=='취소'){
         actionBtns='<button onclick="updateAirStatus(\''+r.id+'\',\'완료\',\'\')" style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;border:none;background:#d1fae5;color:#065f46;cursor:pointer;margin-right:4px;">완료</button>'+
           '<button onclick="showCancelInput(\''+r.id+'\')" style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;border:none;background:#fee2e2;color:#991b1b;cursor:pointer;margin-right:4px;">취소</button>';
@@ -5960,36 +5947,58 @@ function parsePerms(raw){
   return {};
 }
 
+var ROLE_LABELS={admin:'관리자',safety_env:'안전환경팀',general:'일반'};
+
 async function loadUsers(){
   var data=await sb('users','?select=id,username,name,role,permissions,password_set,last_login,created_at&order=created_at.asc');
   if(!data||!data.length){document.getElementById('users-table').innerHTML='<div class="empty">사용자가 없습니다.</div>';return;}
-  var headerPerms=PERM_KEYS.map(function(k){return '<th style="font-size:10px;text-align:center;min-width:56px;white-space:nowrap;">'+PERM_LABELS[k]+'</th>';}).join('');
   var rows=data.map(function(r){
     var perms=parsePerms(r.permissions);
-    var isFixedAdmin=r.username==='yjyeom';
     var uid=r.id;
-    var permCols=PERM_KEYS.map(function(k){
-      var checked=perms[k]===true?' checked':'';
-      var disabled=isFixedAdmin?' disabled':'';
-      return '<td style="text-align:center;padding:6px 4px;"><input type="checkbox" data-uid="'+uid+'" data-perm="'+k+'"'+checked+disabled+' onchange="markPermDirty(this)"></td>';
-    }).join('');
+    var isFixedAdmin=r.role==='admin';
+    var roleOptions=['admin','safety_env','general'].map(function(v){return '<option value="'+v+'"'+(r.role===v?' selected':'')+'>'+ROLE_LABELS[v]+'</option>';}).join('');
+    var roleCell='<select '+(isFixedAdmin?'disabled':'')+' onchange="updateUserRole(\''+uid+'\',this.value)" style="border:1px solid #e8ecf0;border-radius:4px;padding:3px 6px;font-size:12px;font-family:\'Noto Sans KR\',sans-serif;">'+roleOptions+'</select>';
+    var airlogForced=r.role==='admin'||r.role==='safety_env';
+    var airlog18Checked=airlogForced||perms.airlog_1to8===true;
+    var airlog9Checked=airlogForced||perms.airlog_9===true;
+    var airlog18Cell='<td style="text-align:center;padding:6px 4px;"><input type="checkbox" id="perm-airlog18-'+uid+'"'+(airlog18Checked?' checked':'')+(airlogForced?' disabled':'')+' onchange="updateUserAirlogPerm(\''+uid+'\')"></td>';
+    var airlog9Cell='<td style="text-align:center;padding:6px 4px;"><input type="checkbox" id="perm-airlog9-'+uid+'"'+(airlog9Checked?' checked':'')+(airlogForced?' disabled':'')+' onchange="updateUserAirlogPerm(\''+uid+'\')"></td>';
     var lastLogin=r.last_login?new Date(r.last_login).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';
     var pwBadge=r.password_set?'':'<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:1px 5px;border-radius:3px;margin-left:4px;">비번미설정</span>';
-    var safeUsername=r.username.replace(/'/g,"\\'");
     var safeName=(r.name||'').replace(/"/g,'&quot;');
     var nameCell='<input id="name-inp-'+uid+'" data-username="'+r.username+'" value="'+safeName+'" placeholder="이름 입력" style="width:80px;border:1px solid #e8ecf0;border-radius:4px;padding:3px 7px;font-size:12px;font-family:\'Noto Sans KR\',sans-serif;" oninput="markNameDirty(\''+uid+'\')">'
       +'<button id="save-name-'+uid+'" onclick="saveUserName(\''+uid+'\')" style="display:none;margin-left:3px;padding:3px 7px;background:#16a34a;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;">저장</button>';
-    var saveBtn=!isFixedAdmin?'<button id="save-perm-'+uid+'" onclick="saveUserPermissions(\''+uid+'\')" style="display:none;padding:3px 9px;background:#2563eb;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;">저장</button>':'';
-    var delBtn=r.username!=='yjyeom'&&isAdmin()?'<button class="del-btn" style="margin-left:4px;" onclick="confirmDelete(\'users\',\''+uid+'\',loadUsers)">✕</button>':'';
-    return '<tr><td style="white-space:nowrap;">'+r.username+pwBadge+'</td><td style="white-space:nowrap;">'+nameCell+'</td><td style="font-size:11px;color:#9ca3af;white-space:nowrap;">'+lastLogin+'</td>'+permCols+'<td style="white-space:nowrap;">'+saveBtn+delBtn+'</td></tr>';
+    var delBtn=!isFixedAdmin&&isAdmin()?'<button class="del-btn" style="margin-left:4px;" onclick="confirmDelete(\'users\',\''+uid+'\',loadUsers)">✕</button>':'';
+    return '<tr><td style="white-space:nowrap;">'+r.username+pwBadge+'</td><td style="white-space:nowrap;">'+nameCell+'</td><td style="font-size:11px;color:#9ca3af;white-space:nowrap;">'+lastLogin+'</td><td style="white-space:nowrap;">'+roleCell+'</td>'+airlog18Cell+airlog9Cell+'<td style="white-space:nowrap;">'+delBtn+'</td></tr>';
   }).join('');
-  document.getElementById('users-table').innerHTML='<div style="overflow-x:auto;"><table><thead><tr><th>아이디</th><th>이름</th><th>마지막접속</th>'+headerPerms+'<th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  document.getElementById('users-table').innerHTML='<div style="overflow-x:auto;"><table><thead><tr><th>아이디</th><th>이름</th><th>마지막접속</th><th>역할</th><th style="font-size:11px;">대기1~8</th><th style="font-size:11px;">대기9</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
-function markPermDirty(cbEl){
-  var uid=cbEl.dataset.uid;
-  var btn=document.getElementById('save-perm-'+uid);
-  if(btn)btn.style.display='inline-block';
+async function updateUserRole(uid,newRole){
+  var res=await sb('users','?id=eq.'+uid,{method:'PATCH',body:{role:newRole}});
+  if(res.ok){
+    if(currentUser&&currentUser.id===uid){currentUser.role=newRole;localStorage.setItem('tc_user',JSON.stringify(currentUser));}
+  }else{
+    var errText=await res.text().catch(function(){return '';});
+    alert('저장 실패: '+errText);
+  }
+  loadUsers();
+}
+
+async function updateUserAirlogPerm(uid){
+  var cb8=document.getElementById('perm-airlog18-'+uid);
+  var cb9=document.getElementById('perm-airlog9-'+uid);
+  var perms={};
+  if(cb8&&cb8.checked)perms.airlog_1to8=true;
+  if(cb9&&cb9.checked)perms.airlog_9=true;
+  var res=await sb('users','?id=eq.'+uid,{method:'PATCH',body:{permissions:perms}});
+  if(res.ok){
+    if(currentUser&&currentUser.id===uid){currentUser.permissions=perms;localStorage.setItem('tc_user',JSON.stringify(currentUser));}
+  }else{
+    var errText=await res.text().catch(function(){return '';});
+    alert('저장 실패: '+errText);
+    loadUsers();
+  }
 }
 
 function markNameDirty(uid){
@@ -6024,33 +6033,14 @@ async function loadUserNameMap(){
 
 function displayName(u){return u?(userNameMap[u]||u):'-';}
 
-async function saveUserPermissions(uid){
-  var checkboxes=document.querySelectorAll('input[data-uid="'+uid+'"]:not([disabled])');
-  var perms={};
-  checkboxes.forEach(function(cb){if(cb.checked)perms[cb.dataset.perm]=true;});
-  var res=await sb('users','?id=eq.'+uid,{method:'PATCH',body:{permissions:perms}});
-  if(res.ok){
-    var btn=document.getElementById('save-perm-'+uid);
-    if(btn)btn.style.display='none';
-    if(currentUser&&currentUser.id===uid){currentUser.permissions=perms;localStorage.setItem('tc_user',JSON.stringify(currentUser));}
-    alert('권한이 저장되었습니다.');
-  }else{
-    var errText=await res.text().catch(function(){return '';});
-    alert('저장 실패: '+errText);
-  }
-}
-
 async function addUser(){
   var username=document.getElementById('new-username').value.trim();
   var name=document.getElementById('new-name').value.trim();
   if(!username){alert('아이디를 입력해주세요.');return;}
-  var perms={};
-  PERM_KEYS.forEach(function(k){var cb=document.getElementById('new-perm-'+k);if(cb&&cb.checked)perms[k]=true;});
-  var res=await sb('users','',{method:'POST',body:{username:username,name:name||null,password_hash:'',role:'viewer',permissions:perms,password_set:false}});
+  var res=await sb('users','',{method:'POST',body:{username:username,name:name||null,password_hash:'',role:'general',permissions:{},password_set:false}});
   if(res.ok){
     document.getElementById('new-username').value='';
     document.getElementById('new-name').value='';
-    PERM_KEYS.forEach(function(k){var cb=document.getElementById('new-perm-'+k);if(cb)cb.checked=false;});
     loadUsers();
     alert('사용자 "'+username+'" 등록 완료.\n최초 로그인 시 비밀번호를 직접 설정하게 됩니다.');
   }else{
@@ -6151,8 +6141,8 @@ function renderInspCardHtml(r,isOpen,photosLoading){
   var catTag='<span style="display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;background:'+catBg+';">'+r.category+'</span>';
   var extTag=r.is_external?'<span class="ext-badge">외부기관</span>':'';
   var noteHtml=r.note?'<div class="insp-card-note">'+escHtml(r.note)+'</div>':'';
-  var canUpBefore=hasPerm('inspect_photo_before');
-  var canUpAfter=hasPerm('inspect_photo_after');
+  var canUpBefore=true;
+  var canUpAfter=true;
   var beforeHtml,afterHtml;
   if(photosLoading){
     beforeHtml='<div class="insp-photo-box"><span class="insp-photo-empty">불러오는 중...</span></div>';
@@ -6165,11 +6155,9 @@ function renderInspCardHtml(r,isOpen,photosLoading){
     afterHtml='<div style="position:relative;">'+afterBox+(r.after_photo&&canUpAfter?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'after\')" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')+'</div>';
     if(!r.after_photo&&canUpAfter)afterHtml+='<div style="display:flex;gap:5px;margin-top:6px;"><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label></div>';
   }
-  var statusHtml='';
-  if(hasPerm('inspect_status')){
-    var opts=['miss','hold','done'].map(function(v){var lbl=v==='miss'?'미개선':v==='hold'?'보류':'완료';return'<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+lbl+'</option>';}).join('');
-    statusHtml='<div class="insp-card-status-row"><select id="insp-card-status-'+id+'" class="insp-card-status-sel">'+opts+'</select><button class="insp-card-save" onclick="saveInspCardStatus(\''+id+'\')">저장</button></div>';
-  }
+  var canEditCardStatus=canChangeInspectStatus();
+  var opts=['miss','hold','done'].map(function(v){var lbl=v==='miss'?'미개선':v==='hold'?'보류':'완료';return'<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+lbl+'</option>';}).join('');
+  var statusHtml='<div class="insp-card-status-row"><select id="insp-card-status-'+id+'" class="insp-card-status-sel"'+(canEditCardStatus?'':' disabled')+'>'+opts+'</select>'+(canEditCardStatus?'<button class="insp-card-save" onclick="saveInspCardStatus(\''+id+'\')">저장</button>':'')+'</div>';
   return'<div class="insp-card'+(isOpen?' open':'')+'" id="insp-card-'+id+'">'
     +'<div class="insp-card-hdr" onclick="toggleInspCard(\''+id+'\')">'
       +'<div class="insp-card-hdr-tags">'+catTag+' '+statusTag+extTag+'</div>'
@@ -6437,7 +6425,7 @@ function renderInspectTable(data){
     var sel=r.id===inspectSelectedId?'selected':'';
     var chkSel=inspectSelectedIds.has(r.id)?'chk-sel':'';
     var chked=inspectSelectedIds.has(r.id)?'checked':'';
-    var delCell=isAdmin()?'<td class="insp-chk-td" onclick="event.stopPropagation();"><button class="del-btn" onclick="confirmDelete(\'inspection_records\',\''+r.id+'\',function(){inspectSelectedIds.delete(\''+r.id+'\');updateInspectPdfBtn();loadInspect();})">✕</button></td>':'';
+    var delCell=canEditAll()?'<td class="insp-chk-td" onclick="event.stopPropagation();"><button class="del-btn" onclick="confirmDelete(\'inspection_records\',\''+r.id+'\',function(){inspectSelectedIds.delete(\''+r.id+'\');updateInspectPdfBtn();loadInspect();})">✕</button></td>':'';
     return '<tr class="inspect-row '+sel+' '+chkSel+'">'
       +'<td class="insp-chk-td" onclick="event.stopPropagation();"><input type="checkbox" class="insp-chk" '+chked+' onchange="toggleInspectRowSel(\''+r.id+'\',this)"></td>'
       +'<td onclick="showInspectDetail(\''+r.id+'\')">'+r.inspect_date+'</td>'
@@ -6448,7 +6436,7 @@ function renderInspectTable(data){
       +delCell
       +'</tr>';
   }).join('');
-  var delTh=isAdmin()?'<th style="padding:12px 8px;width:38px;"></th>':'';
+  var delTh=canEditAll()?'<th style="padding:12px 8px;width:38px;"></th>':'';
   el.innerHTML='<div style="overflow-x:auto;"><table style="min-width:600px;"><thead><tr>'
     +'<th class="insp-chk-th" style="padding:12px 8px;"><input type="checkbox" class="insp-chk" id="insp-chk-all" '+(allChecked?'checked':'')+' onchange="toggleInspectAll(this,'+JSON.stringify(data.map(function(r){return r.id;})).replace(/"/g,'&quot;')+')"></th>'
     +'<th style="padding:12px 14px;font-size:12px;">점검일</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;"></th><th style="padding:12px 14px;font-size:12px;">상태</th>'
@@ -6505,9 +6493,9 @@ function showInspectDetail(id){
 
 function buildInspectDetailHtml(r,photosLoading){
   var id=r.id;
-  var canEditStatus=hasPerm('inspect_status');
-  var canUploadAfter=hasPerm('inspect_photo_after');
-  var canUploadBefore=hasPerm('inspect_photo_before');
+  var canEditStatus=canChangeInspectStatus();
+  var canUploadAfter=true;
+  var canUploadBefore=true;
 
   var statusOpts=['miss','hold','done'].map(function(v){
     var label=v==='miss'?'미개선':v==='hold'?'보류':'완료';
@@ -6552,7 +6540,7 @@ function buildInspectDetailHtml(r,photosLoading){
     +'</div>'
     +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">'
       +'<button onclick="saveInspectDetail(\''+id+'\')" class="save-btn">저장</button>'
-      +(isAdmin()?'<button onclick="confirmDelete(\'inspection_records\',\''+id+'\',function(){closeInspectDetail();inspectSelectedIds.delete(\''+id+'\');updateInspectPdfBtn();loadInspect();})" style="padding:8px 14px;background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">삭제</button>':'')
+      +(canEditAll()?'<button onclick="confirmDelete(\'inspection_records\',\''+id+'\',function(){closeInspectDetail();inspectSelectedIds.delete(\''+id+'\');updateInspectPdfBtn();loadInspect();})" style="padding:8px 14px;background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;">삭제</button>':'')
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'
       +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 전</div>'+beforeHtml+'</div>'
@@ -6749,13 +6737,8 @@ document.addEventListener('keydown',function(e){
 
 function openInspectForm(){
   inspectBeforeDataUrl=null;inspectAfterDataUrl=null;
-  var beforeWrap=document.getElementById('if-before-wrap');
   var preview=document.getElementById('if-before-preview');
   if(preview)preview.style.display='none';
-  if(!hasPerm('inspect_photo_before')){
-    var lbl=beforeWrap?beforeWrap.querySelectorAll('label'):[];
-    lbl.forEach(function(l){l.style.display='none';});
-  }
   document.getElementById('inspect-form-modal').classList.add('show');
 }
 function closeInspectForm(){
