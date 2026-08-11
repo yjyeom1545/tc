@@ -9,6 +9,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
 <script>
 var SB_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
@@ -643,9 +644,8 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   body.is-pwa .main-area{margin-left:0;padding-bottom:0;}
   /* 서브스크린: nav-header 높이만큼 top 여백 */
   body.is-pwa.pwa-subscreen .main-area{padding-top:calc(54px + env(safe-area-inset-top));}
-  /* TC 챗봇 버블: PWA 완전 숨김 (앱은 에코온 탭으로 접근) */
-  body.is-pwa #dify-chatbot-bubble-button,
-  body.is-pwa #dify-chatbot-bubble-window{display:none!important;}
+  /* 에코온 플로팅 버블: PWA 완전 숨김 (앱은 'TC에코온' 카드로 전체화면 접근) */
+  body.is-pwa .eco-fab{display:none!important;}
 }
 
 /* ── PWA 메인 화면 ── */
@@ -916,17 +916,70 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   .wa-action-bar{flex-direction:column;align-items:stretch;}
 }
 
-/* ── TC에코온 탭 ── */
-#tab-ecoon{padding:0!important;}
-@media(max-width:768px){
-  body.is-pwa.pwa-subscreen #tab-ecoon{
-    position:fixed;
-    top:calc(54px + env(safe-area-inset-top));
-    left:0;right:0;
-    bottom:0;
-    padding:0!important;margin:0!important;z-index:10;overflow:hidden;
-  }
-  body.is-pwa.pwa-subscreen #tab-ecoon iframe{width:100%;height:100%;border:none;display:block;}
+/* ===== 에코온 채팅 UI ===== */
+.eco-fab{position:fixed;right:28px;bottom:28px;width:60px;height:60px;border-radius:50%;background:#0f2744;border:none;cursor:pointer;box-shadow:0 6px 20px rgba(15,39,68,0.35);display:flex;align-items:center;justify-content:center;z-index:9000;transition:transform .2s,box-shadow .2s;}
+.eco-fab:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(15,39,68,0.45);}
+.eco-fab svg{width:26px;height:26px;fill:#fff;}
+.eco-fab.hidden{display:none;}
+
+.eco-panel{position:fixed;right:28px;bottom:28px;width:400px;height:620px;max-height:calc(100vh - 56px);background:#fff;border-radius:16px;box-shadow:0 12px 48px rgba(15,39,68,0.28);display:flex;flex-direction:column;overflow:hidden;z-index:9001;opacity:0;transform:translateY(16px) scale(.98);pointer-events:none;transition:opacity .22s,transform .22s;}
+.eco-panel.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+.eco-panel.expanded{width:720px;height:calc(100vh - 40px);max-height:calc(100vh - 40px);bottom:20px;right:20px;}
+.eco-panel.fullscreen{width:100%;height:100%;max-height:100%;top:0;left:0;right:0;bottom:0;border-radius:0;}
+
+.eco-header{background:#0f2744;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.eco-header .tw{display:flex;align-items:center;gap:10px;}
+.eco-avatar{width:32px;height:32px;border-radius:8px;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.eco-title{color:#fff;font-size:15px;font-weight:700;}
+.eco-sub{color:rgba(202,220,252,.7);font-size:11px;margin-top:1px;}
+.eco-actions{display:flex;gap:4px;}
+.eco-ibtn{width:30px;height:30px;border:none;background:transparent;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.eco-ibtn:hover{background:rgba(255,255,255,.12);}
+.eco-ibtn svg{width:16px;height:16px;fill:rgba(202,220,252,.85);}
+
+.eco-body{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px;background:linear-gradient(180deg,#fafbfc,#f4f6f9);}
+.eco-body::-webkit-scrollbar{width:6px;}
+.eco-body::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}
+
+.eco-msg{display:flex;flex-direction:column;max-width:85%;animation:ecoIn .25s ease;}
+@keyframes ecoIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.eco-msg.user{align-self:flex-end;align-items:flex-end;}
+.eco-msg.bot{align-self:flex-start;align-items:flex-start;}
+.eco-bubble{padding:11px 14px;border-radius:14px;font-size:13.5px;line-height:1.65;word-break:break-word;}
+.eco-msg.user .eco-bubble{background:#0f2744;color:#fff;border-bottom-right-radius:4px;}
+.eco-msg.bot .eco-bubble{background:#fff;color:#1e2633;border:1px solid #e2e8f0;border-bottom-left-radius:4px;}
+.eco-msg.bot .eco-bubble strong{font-weight:700;color:#0f2744;}
+.eco-msg.bot .eco-bubble p{margin:0 0 8px;}
+.eco-msg.bot .eco-bubble p:last-child{margin-bottom:0;}
+.eco-msg.bot .eco-bubble ol,.eco-msg.bot .eco-bubble ul{margin:6px 0 8px;padding-left:20px;}
+.eco-msg.bot .eco-bubble li{margin-bottom:5px;}
+.eco-msg.bot .eco-bubble h1,.eco-msg.bot .eco-bubble h2,.eco-msg.bot .eco-bubble h3{font-size:14px;font-weight:700;color:#0f2744;margin:10px 0 6px;}
+.eco-msg.bot .eco-bubble code{background:#f4f6f9;padding:1px 5px;border-radius:4px;font-size:12px;font-family:monospace;}
+.eco-msg.bot .eco-bubble blockquote{border-left:3px solid #00a066;padding-left:10px;margin:8px 0;color:#5a6b80;}
+.eco-time{font-size:10px;color:#9aaabb;margin-top:4px;padding:0 4px;}
+
+.eco-typing{display:flex;gap:4px;padding:12px 14px;}
+.eco-typing span{width:7px;height:7px;border-radius:50%;background:#b8c4d4;animation:ecoTyp 1.2s infinite;}
+.eco-typing span:nth-child(2){animation-delay:.2s;}
+.eco-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes ecoTyp{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-4px);}}
+
+.eco-input-area{border-top:1px solid #e2e8f0;padding:12px 14px;background:#fff;flex-shrink:0;}
+.eco-input-row{display:flex;gap:8px;align-items:flex-end;}
+.eco-input{flex:1;border:1px solid #e2e8f0;border-radius:12px;padding:10px 14px;font-size:13.5px;font-family:inherit;resize:none;max-height:100px;line-height:1.5;outline:none;transition:border-color .15s;}
+.eco-input:focus{border-color:#0f2744;}
+.eco-send{width:40px;height:40px;border-radius:12px;background:#0f2744;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,opacity .15s;}
+.eco-send:hover{background:#1c3a5e;}
+.eco-send:disabled{opacity:.4;cursor:not-allowed;}
+.eco-send svg{width:18px;height:18px;fill:#fff;}
+
+.eco-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.eco-chip{background:#fff;border:1px solid #e2e8f0;border-radius:100px;padding:6px 12px;font-size:12px;color:#0f2744;cursor:pointer;transition:all .15s;}
+.eco-chip:hover{border-color:#0f2744;background:rgba(15,39,68,.04);}
+
+@media(max-width:460px){
+  .eco-panel{right:0;bottom:0;width:100%;height:100%;max-height:100%;border-radius:0;}
+  .eco-fab{right:20px;bottom:20px;}
 }
 </style>
 
@@ -1884,11 +1937,6 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     </div>
   </div>
 </div>
-<!-- TC에코온 챗봇 탭 -->
-<div id="tab-ecoon" class="content hidden">
-  <iframe src="https://udify.app/chatbot/424d0pBVljsa3ohW" allow="microphone" style="width:100%;height:calc(100vh - 110px);border:none;display:block;"></iframe>
-</div>
-
 <!-- 차압관리 탭 -->
 <div id="tab-pressure" class="content hidden">
 
@@ -7066,7 +7114,7 @@ async function sbQ(table,query){
       </div>
     </div>
     <!-- TC에코온 -->
-    <div class="pwa-menu-card" onclick="showPwaSubscreen('ecoon','TC에코온')">
+    <div class="pwa-menu-card" onclick="openChatFullscreen()">
       <div class="pwa-menu-card-main">
         <div class="pwa-menu-icon">
           <!-- ti-message-chatbot -->
@@ -7192,13 +7240,6 @@ function showPwaSubscreen(tab,title){
   var navTitle=document.getElementById('pwa-nav-title');
   if(navTitle)navTitle.textContent=title;
   document.body.classList.add('pwa-subscreen');
-  if(tab==='ecoon'){
-    document.querySelectorAll('[id^="tab-"]').forEach(function(el){el.classList.add('hidden');});
-    var ecoon=document.getElementById('tab-ecoon');
-    if(ecoon)ecoon.classList.remove('hidden');
-    currentTab='ecoon';
-    return;
-  }
   showTab(tab);
 }
 
@@ -8617,28 +8658,182 @@ function renderDiagnosisLogic(facilityData) {
 }
 </script>
 
-<!-- Dify Chatbot Bubble Button -->
+<!-- 에코온 플로팅 버블 -->
+<button class="eco-fab" id="ecoFab" onclick="openChat()" aria-label="에코온 열기">
+  <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.04 2 11c0 2.6 1.24 4.94 3.24 6.56L4 22l4.9-1.6c.98.26 2.02.4 3.1.4 5.52 0 10-4.04 10-9S17.52 2 12 2z"/></svg>
+</button>
+
+<!-- 에코온 채팅 패널 -->
+<div class="eco-panel" id="ecoPanel">
+  <div class="eco-header">
+    <div class="tw">
+      <div class="eco-avatar">TC</div>
+      <div>
+        <div class="eco-title">에코온 (ECO-ON)</div>
+        <div class="eco-sub">환경·안전 법령 AI 안내</div>
+      </div>
+    </div>
+    <div class="eco-actions">
+      <button class="eco-ibtn" onclick="resetChat()" aria-label="새 대화">
+        <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4a8 8 0 108 8h-2a6 6 0 11-6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      </button>
+      <button class="eco-ibtn" id="ecoExpandBtn" onclick="toggleExpand()" aria-label="확대">
+        <svg id="ecoExpandIcon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+      </button>
+      <button class="eco-ibtn" onclick="closeChat()" aria-label="닫기">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="eco-body" id="ecoBody"></div>
+  <div class="eco-input-area">
+    <div class="eco-input-row">
+      <textarea class="eco-input" id="ecoInput" rows="1" placeholder="에코온과 대화하기..." oninput="ecoAutoGrow(this)" onkeydown="ecoKey(event)"></textarea>
+      <button class="eco-send" id="ecoSend" onclick="ecoHandleSend()" aria-label="전송">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
-  window.difyChatbotConfig = {
-    token: '424d0pBVljsa3ohW'
-  }
+// ===== 에코온 채팅 로직 =====
+let ecoConversationId = ''; // 세션마다 새 대화 (닫거나 새 대화 시 초기화)
+let ecoStreaming = false;
+
+marked.setOptions({ breaks: true });
+
+function ecoGreeting(){
+  return `<div class="eco-msg bot">
+    <div class="eco-bubble">안녕하세요 👋<br>환경·안전 법령에 대해 궁금하신 점을 물어보세요.</div>
+    <div class="eco-chips">
+      <div class="eco-chip" onclick="ecoSuggest('폐페인트는 어떻게 분류하나요?')">폐페인트 분류 기준</div>
+      <div class="eco-chip" onclick="ecoSuggest('대기 배출시설 자가측정 주기가 어떻게 되나요?')">자가측정 주기</div>
+      <div class="eco-chip" onclick="ecoSuggest('폐유 보관 기간 제한이 있나요?')">폐유 보관 기간</div>
+    </div></div>`;
+}
+function openChat(){
+  const p=document.getElementById('ecoPanel');
+  if(!document.getElementById('ecoBody').innerHTML.trim()) document.getElementById('ecoBody').innerHTML=ecoGreeting();
+  p.classList.add('open');
+  document.getElementById('ecoFab').classList.add('hidden');
+  setTimeout(()=>document.getElementById('ecoInput').focus(),250);
+}
+// 앱(PWA)에서 'TC에코온' 카드 클릭 시 호출 → 전체화면으로 염
+function openChatFullscreen(){
+  const p=document.getElementById('ecoPanel');
+  p.classList.add('fullscreen');
+  openChat();
+}
+function closeChat(){
+  const p=document.getElementById('ecoPanel');
+  p.classList.remove('open','expanded','fullscreen');
+  ecoSetExpandIcon(false);
+  document.getElementById('ecoFab').classList.remove('hidden');
+}
+function resetChat(){
+  document.getElementById('ecoBody').innerHTML=ecoGreeting();
+  ecoConversationId='';
+}
+function toggleExpand(){
+  const p=document.getElementById('ecoPanel');
+  if(p.classList.contains('fullscreen')) return; // 앱 전체화면에선 무시
+  ecoSetExpandIcon(p.classList.toggle('expanded'));
+}
+function ecoSetExpandIcon(expanded){
+  const i=document.getElementById('ecoExpandIcon');
+  i.innerHTML = expanded
+    ? '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>'
+    : '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+}
+function ecoAutoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+function ecoKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ecoHandleSend();}}
+function ecoNow(){const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');}
+function ecoSuggest(t){document.getElementById('ecoInput').value=t;ecoHandleSend();}
+
+function ecoHandleSend(){
+  if(ecoStreaming) return;
+  const input=document.getElementById('ecoInput');
+  const text=input.value.trim();
+  if(!text) return;
+  const chips=document.querySelector('.eco-chips'); if(chips) chips.remove();
+  const body=document.getElementById('ecoBody');
+  const um=document.createElement('div');
+  um.className='eco-msg user';
+  um.innerHTML=`<div class="eco-bubble"></div><div class="eco-time">${ecoNow()}</div>`;
+  um.querySelector('.eco-bubble').textContent=text;
+  body.appendChild(um);
+  input.value=''; input.style.height='auto';
+  body.scrollTop=body.scrollHeight;
+
+  ecoStreaming=true;
+  document.getElementById('ecoSend').disabled=true;
+  const tw=document.createElement('div');
+  tw.className='eco-msg bot';
+  tw.innerHTML=`<div class="eco-bubble"><div class="eco-typing"><span></span><span></span><span></span></div></div>`;
+  body.appendChild(tw); body.scrollTop=body.scrollHeight;
+
+  const bm=document.createElement('div');
+  bm.className='eco-msg bot';
+  bm.innerHTML=`<div class="eco-bubble"></div><div class="eco-time">${ecoNow()}</div>`;
+  const bubble=bm.querySelector('.eco-bubble');
+
+  ecoStreamReply(text, bubble, ()=>{
+    ecoStreaming=false;
+    document.getElementById('ecoSend').disabled=false;
+    body.scrollTop=body.scrollHeight;
+  }, ()=>{ tw.remove(); body.appendChild(bm); });
+}
+
+// ⚠️ SSE 파싱 — 그대로 사용 (임의 변경 금지)
+async function ecoStreamReply(userText, bubble, onDone, onFirstChunk){
+  const PROXY_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co/functions/v1/dify-chat';
+  const ANON_KEY = SB_KEY;
+  const USER_ID  = (currentUser && currentUser.username) || 'anonymous';
+
+  let started=false, fullAnswer='';
+  try{
+    const res=await fetch(PROXY_URL,{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${ANON_KEY}`,'Content-Type':'application/json'},
+      body:JSON.stringify({query:userText,user:USER_ID,conversation_id:ecoConversationId})
+    });
+    if(!res.ok){ if(onFirstChunk)onFirstChunk(); bubble.innerHTML='⚠️ 응답을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.'; if(onDone)onDone(); return; }
+
+    const reader=res.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer='';
+    while(true){
+      const {done,value}=await reader.read();
+      if(done) break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split('\n');
+      buffer=lines.pop();
+      for(const line of lines){
+        const t=line.trim();
+        if(!t.startsWith('data:')) continue;
+        const js=t.slice(5).trim();
+        if(!js||js==='[DONE]') continue;
+        try{
+          const data=JSON.parse(js);
+          if(data.event==='message'||data.event==='agent_message'){
+            if(!started){started=true; if(onFirstChunk)onFirstChunk();}
+            fullAnswer+=(data.answer||'');
+            bubble.innerHTML=marked.parse(fullAnswer);
+          }
+          if(data.conversation_id) ecoConversationId=data.conversation_id;
+        }catch(e){}
+      }
+      const b=document.getElementById('ecoBody'); if(b) b.scrollTop=b.scrollHeight;
+    }
+    if(!started&&onFirstChunk) onFirstChunk();
+    if(fullAnswer) bubble.innerHTML=marked.parse(fullAnswer);
+    else if(!fullAnswer) bubble.innerHTML='답변을 받지 못했습니다. 다시 질문해 주세요.';
+  }catch(err){
+    if(onFirstChunk) onFirstChunk();
+    bubble.innerHTML='⚠️ 네트워크 오류가 발생했습니다.';
+  }finally{ if(onDone) onDone(); }
+}
 </script>
-<script
-  src="https://udify.app/embed.min.js"
-  id="424d0pBVljsa3ohW"
-  defer>
-</script>
-<style>
-  /* 웹(PC) 전용: 챗봇 창 우측 하단 고정 */
-  body:not(.is-pwa) #dify-chatbot-bubble-window {
-    position: fixed !important;
-    bottom: 90px !important;
-    right: 20px !important;
-    width: 560px !important;
-    height: 680px !important;
-    z-index: 9999 !important;
-    transform: none !important;
-  }
-</style>
 </body>
 </html>
