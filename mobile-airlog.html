@@ -369,7 +369,7 @@ function buildCards(){
           '<span class="punit">kWh</span></div>'+
         '<div class="prow"><span class="plbl">당일검침</span>'+
           '<div style="display:flex;align-items:stretch;flex:1;">'+
-            '<input type="number" class="pinp today-inp" id="pt'+n+'" placeholder="입력" oninput="mobPrMarkUser(this,'+n+');calcD('+n+')">'+
+            '<input type="text" inputmode="decimal" class="pinp today-inp" id="pt'+n+'" placeholder="입력" oninput="mobPrMarkUser(this,'+n+');calcD('+n+')">'+
             '<div class="pr-step-wrap">'+
               '<button class="pr-step-btn" onclick="mobPrStep('+n+',1)">▲</button>'+
               '<button class="pr-step-btn" onclick="mobPrStep('+n+',-1)">▼</button>'+
@@ -543,6 +543,7 @@ function setStVisual(n,st){
 }
 
 function mobPrMarkUser(el,no){
+  el.value=el.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1'); // 숫자·소수점만 허용, 소수점 중복 방지
   el.classList.remove('mob-pr-auto');
   el.dataset.confirmed='1';
   var pv=prevPow[no]!=null?prevPow[no]:null;
@@ -572,7 +573,7 @@ function calcD(n){
   var pd=g('pd'+n); if(!pd) return;
   if(tv!=null&&pv!=null){
     var diff=tv-pv;
-    pd.textContent=diff>=0?diff.toFixed(0):'오류';
+    pd.textContent=diff>=0?(diff%1===0?diff.toFixed(0):diff.toFixed(1)):'오류';
     var _isAuto=g('pt'+n).classList.contains('mob-pr-auto');
     pd.style.color=diff<0?'#dc2626':(_isAuto?'#9ca3af':'#0f2744');
   } else {pd.textContent='-';pd.style.color='#9ca3af';}
@@ -745,6 +746,29 @@ function onSave(){
     var _hasAnyEm=myEmNos.some(function(n){var el=g('sh'+n);return el&&!el.disabled&&el.value!==''&&g('eh'+n)&&g('eh'+n).value!==''&&!!emStatus[n];});
     var _hasAnyPr=myPrNos.some(function(n){var el=g('pt'+n);return el&&el.value!==''&&el.dataset.confirmed==='1';});
     if(!_hasAnyEm&&!_hasAnyPr){showToast('입력된 데이터가 없습니다');return;}
+    // ── 가동시간 ↔ 전력사용량 짝 검증 (8번·미가동(사용량0)·둘다비움 제외) ──
+    var _pairMiss=[];
+    myEmNos.forEach(function(n){
+      var _sh=g('sh'+n); if(_sh&&_sh.disabled) return;
+      var _emFilled=_sh&&_sh.value!==''&&g('eh'+n)&&g('eh'+n).value!=='';
+      var _ptEl=g('pt'+n);
+      var _prFilled=_ptEl&&_ptEl.value!==''&&_ptEl.dataset.confirmed==='1';
+      var _usage=null;
+      if(_prFilled){
+        var _tv=parseFloat(_ptEl.value);
+        var _pv=prevPow[n]!=null?prevPow[n]:null;
+        if(_pv!=null&&!isNaN(_tv)) _usage=_tv-_pv;
+      }
+      if(_emFilled&&!_prFilled){
+        _pairMiss.push(n+'번 '+PR_NAMES[n]+' — 전력사용량 미입력');
+      } else if(_prFilled&&_usage!=null&&_usage>0&&!_emFilled){
+        _pairMiss.push(n+'번 '+EM_NAMES[n]+' — 가동시간 미입력');
+      }
+    });
+    if(_pairMiss.length>0){
+      showAlert('입력하지 않은 항목이 있습니다.\n\n'+_pairMiss.join('\n')+'\n\n입력 후 다시 저장해 주세요.');
+      return;
+    }
   }
   var isMod=mode==='edit';
   if(isMod){
@@ -947,9 +971,10 @@ function mobDateShift(delta){
 // ── 미입력 일자로 이동 (담당 시설 완료 기준) ──
 // ── 미입력 일자로 이동 (담당 구간 1~8/9 기준: 방지시설 레코드 존재 여부로 판정) ──
 async function mobJumpMissing(){
-  var SYS_START='2026-04-01';
   showToast('조회 중...');
   var t=new Date();t.setHours(0,0,0,0);
+  var _startD=new Date(t);_startD.setDate(_startD.getDate()-30);
+  var SYS_START=_startD.getFullYear()+'-'+String(_startD.getMonth()+1).padStart(2,'0')+'-'+String(_startD.getDate()).padStart(2,'0');
   var ts=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
   var results=await Promise.all([
     sbGet('air_operation_log','?log_date=gte.'+SYS_START+'&log_date=lte.'+ts+'&facility_type=eq.방지시설&select=log_date,facility_no,power_today&limit=99999'),
