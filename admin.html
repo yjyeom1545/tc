@@ -8703,20 +8703,56 @@ let ecoStreaming = false;
 
 marked.setOptions({ breaks: true });
 
-function ecoGreeting(){
-  return `<div class="eco-msg bot">
-    <div class="eco-bubble">안녕하세요 👋<br>환경·안전 법령에 대해 궁금하신 점을 물어보세요.</div>
-    <div class="eco-chips">
-      <div class="eco-chip" onclick="ecoSuggest('폐페인트는 어떻게 분류하나요?')">폐페인트 분류 기준</div>
-      <div class="eco-chip" onclick="ecoSuggest('대기 배출시설 자가측정 주기가 어떻게 되나요?')">자가측정 주기</div>
-      <div class="eco-chip" onclick="ecoSuggest('폐유 보관 기간 제한이 있나요?')">폐유 보관 기간</div>
-    </div></div>`;
+// Dify에서 불러온 인사말/제안질문 (한 번만 로드해서 캐싱)
+let ecoParamsLoaded = false;
+let ecoOpening = '안녕하세요 👋\n환경·안전 법령에 대해 궁금하신 점을 물어보세요.'; // 실패 시 폴백
+let ecoSuggestions = []; // Dify 제안질문
+
+async function ecoLoadParameters(){
+  if(ecoParamsLoaded) return;
+  const PROXY_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co/functions/v1/dify-chat';
+  const ANON_KEY = SB_KEY;
+  try{
+    const res = await fetch(PROXY_URL, {
+      method:'POST',
+      headers:{'Authorization':`Bearer ${ANON_KEY}`,'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'parameters' })
+    });
+    if(res.ok){
+      const data = await res.json();
+      if(data.opening_statement) ecoOpening = data.opening_statement;
+      if(Array.isArray(data.suggested_questions)) ecoSuggestions = data.suggested_questions;
+    }
+  }catch(e){ /* 실패 시 기본 인사말 유지 */ }
+  ecoParamsLoaded = true;
 }
-function openChat(){
+
+function ecoGreeting(){
+  const openingHtml = marked.parse(ecoOpening); // 마크다운/줄바꿈 렌더링
+  let chipsHtml = '';
+  if(ecoSuggestions.length){
+    chipsHtml = '<div class="eco-chips">' +
+      ecoSuggestions.map(q =>
+        `<div class="eco-chip" data-q="${encodeURIComponent(q)}">${q}</div>`
+      ).join('') +
+      '</div>';
+  }
+  return `<div class="eco-msg bot"><div class="eco-bubble">${openingHtml}</div>${chipsHtml}</div>`;
+}
+document.getElementById('ecoBody').addEventListener('click', (e)=>{
+  const chip = e.target.closest('.eco-chip');
+  if(chip && chip.dataset.q){
+    ecoSuggest(decodeURIComponent(chip.dataset.q));
+  }
+});
+async function openChat(){
   const p=document.getElementById('ecoPanel');
-  if(!document.getElementById('ecoBody').innerHTML.trim()) document.getElementById('ecoBody').innerHTML=ecoGreeting();
   p.classList.add('open');
   document.getElementById('ecoFab').classList.add('hidden');
+  if(!document.getElementById('ecoBody').innerHTML.trim()){
+    await ecoLoadParameters();            // Dify 인사말/제안질문 로드
+    document.getElementById('ecoBody').innerHTML = ecoGreeting();
+  }
   setTimeout(()=>document.getElementById('ecoInput').focus(),250);
 }
 // 앱(PWA)에서 'TC에코온' 카드 클릭 시 호출 → 전체화면으로 염
