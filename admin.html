@@ -4803,7 +4803,7 @@ var alEditSemsState={registered:false,at:null,by:null};
 var _alLoadSeq=0;
 // 담당 구간(1~8/9) 판정 기준: 방지시설 레코드(power_today) 존재 여부
 function _alIsDayMissing(prMap){
-  var sec128Done=[1,2,3,4,5,6,7,8].every(function(n){return prMap[n]&&prMap[n].power_today!=null;});
+  var sec128Done=[1,2,3,4,5,6,7].every(function(n){return prMap[n]&&prMap[n].power_today!=null;});
   var sec9Done=!!(prMap[9]&&prMap[9].power_today!=null);
   var missing=false;
   if(canEditAirlog(1)&&!sec128Done)missing=true;
@@ -5112,7 +5112,7 @@ async function updateAirlogStatusChip(date,seq){
   data.forEach(function(r){
     if(r.facility_type==='방지시설')prMap[r.facility_no]=r;
   });
-  var sec128Done=[1,2,3,4,5,6,7,8].every(function(n){return prMap[n]&&prMap[n].power_today!=null;});
+  var sec128Done=[1,2,3,4,5,6,7].every(function(n){return prMap[n]&&prMap[n].power_today!=null;});
   var sec9Done=!!(prMap[9]&&prMap[9].power_today!=null);
   function sectionInfo(nos){
     var recs=nos.map(function(n){return prMap[n];}).filter(function(r){return r&&r.power_today!=null;});
