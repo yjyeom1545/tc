@@ -4798,6 +4798,7 @@ var alStatusMap={};
 var alPrevPower={};
 var alMode='new';
 var alEditSemsState={registered:false,at:null,by:null};
+var alEditOrigSub={em:{},pr:{}};
 // 날짜 이동 경합 방지용 시퀀스 토큰: 날짜가 바뀔 때마다 증가시키고,
 // 비동기 응답 처리 직전 최신 토큰인지 확인해 오래된 응답은 폐기한다
 var _alLoadSeq=0;
@@ -5251,6 +5252,7 @@ async function queryAirLog(){
     return;
   }
   // SEMS 상태 보존
+  alEditOrigSub={em:{},pr:{}};
   alEditSemsState={
     registered:data[0].sems_registered||false,
     at:data[0].sems_registered_at||null,
@@ -5272,6 +5274,7 @@ async function queryAirLog(){
   data.forEach(function(r){
     if(r.facility_type==='배출구'&&r.facility_no!==8){
       var n=r.facility_no;
+      if(r.submitted_by)alEditOrigSub.em[n]=r.submitted_by;
       var roC='#9ca3af';
       if(r.start_time){var p=r.start_time.split(':');var sh=document.getElementById('em'+n+'-sh');var sm=document.getElementById('em'+n+'-sm');if(sh){sh.value=p[0]||'';sh.style.color=sh.disabled?roC:uColor;}if(sm){sm.value=p[1]||'';sm.style.color=sm.disabled?roC:uColor;}}
       if(r.end_time){var p=r.end_time.split(':');var eh=document.getElementById('em'+n+'-eh');var em_=document.getElementById('em'+n+'-em');if(eh){eh.value=p[0]||'';eh.style.color=eh.disabled?roC:uColor;}if(em_){em_.value=p[1]||'';em_.style.color=em_.disabled?roC:uColor;}}
@@ -5280,6 +5283,7 @@ async function queryAirLog(){
     }
     if(r.facility_type==='방지시설'){
       var n=r.facility_no;
+      if(r.submitted_by)alEditOrigSub.pr[n]=r.submitted_by;
       // 전일검침은 loadPrevPower가 채운 실시간 값을 유지 (DB 저장값 power_prev로 덮어쓰지 않음)
       var inp=document.getElementById('pr'+n+'-today');
       if(inp&&r.power_today!=null){inp.value=r.power_today;inp.style.color=inp.disabled?'#9ca3af':uColor;inp.dataset.confirmed='1';}
@@ -5556,7 +5560,7 @@ async function _doActualSaveAirLog(){
     var startTime=(sh||sm)?((sh||'00')+':'+(sm||'00')):null;
     var endTime=(eh||em_)?((eh||'00')+':'+(em_||'00')):null;
     records.push({
-      log_date:date,submitted_by:currentUser.name||currentUser.username,
+      log_date:date,submitted_by:(alMode==='edit'&&alEditOrigSub.em[n])?alEditOrigSub.em[n]:(currentUser.name||currentUser.username),
       facility_no:n,facility_name:emNames[n],facility_type:'배출구',
       start_time:startTime,end_time:endTime,
       operation_hours:hr?parseFloat(hr):null,
@@ -5580,7 +5584,7 @@ async function _doActualSaveAirLog(){
     var prevVal=alPrevPower[no]!=null?alPrevPower[no]:null;
     var daily=(prevVal!=null&&(todayVal-prevVal)>=0)?(todayVal-prevVal):null;
     records.push({
-      log_date:date,submitted_by:currentUser.name||currentUser.username,
+      log_date:date,submitted_by:(alMode==='edit'&&alEditOrigSub.pr[no])?alEditOrigSub.pr[no]:(currentUser.name||currentUser.username),
       facility_no:no,facility_name:prNames[no],facility_type:'방지시설',
       start_time:null,end_time:null,operation_hours:null,status:null,
       power_prev:prevVal,power_today:todayVal,power_daily:daily,
