@@ -5507,6 +5507,7 @@ async function saveAirLog(){
     var _myPrNos=getAirLogPrNos();
     var _prActive=0,_prIdle=[],_prEmpty=0,_prUsage=0;
     _myPrNos.forEach(function(no){
+      if(no===8)return;
       var _tel=document.getElementById('pr'+no+'-today');
       if(!_tel||_tel.disabled)return;
       // 미확정(자동채움 그대로)은 미입력으로 집계
