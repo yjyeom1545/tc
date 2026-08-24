@@ -4826,7 +4826,7 @@ function autoCalcHours(n){
       var overlapEnd=Math.min(end,780);
       total-=Math.max(0,overlapEnd-overlapStart);
       if(hrEl)hrEl.value=(total/60).toFixed(1);
-    }else{if(hrEl)hrEl.value='';}
+    }else if(end===start){if(hrEl)hrEl.value='0.0';}else{if(hrEl)hrEl.value='';}
   }else{if(hrEl)hrEl.value='';}
 }
 
@@ -5448,31 +5448,26 @@ async function saveAirLog(){
       }
     }
   }
-  // ── 가동시간 ↔ 전력사용량 짝 검증 (8번·미가동(사용량0)·둘다비움 제외) ──
-  if(alMode==='new'){
-    var _emNm={1:'탈청시설(1번)',2:'도장시설(2번)',3:'도장시설(3번)',4:'도장시설(4번)',5:'건조시설(5번)',6:'도장및건조시설(6번)',7:'도장및건조시설(7번)',9:'도장시설(9번)'};
-    var _prNm={1:'여과집진시설(1번)',2:'흡착시설(2번)',3:'흡착시설(3번)',4:'흡착시설(4번)',5:'흡착시설(5번)',6:'1차여과2차흡착(6번)',7:'1차여과2차흡착(7번)',9:'흡착시설(9번)'};
-    var _pairMiss=[];
+  // ── 담당 시설 필수입력 검증 (8번 제외, 신규·수정 공통) ──
+  {
+    var _fnm={1:'탈청시설(1번)',2:'도장시설(2번)',3:'도장시설(3번)',4:'도장시설(4번)',5:'건조시설(5번)',6:'도장및건조시설(6번)',7:'도장및건조시설(7번)',9:'도장시설(9번)'};
+    var _miss=[];
     getAirLogEmNos().forEach(function(n){
       var _sh=document.getElementById('em'+n+'-sh'); if(_sh&&_sh.disabled) return;
       var _eh=document.getElementById('em'+n+'-eh');
       var _emFilled=_sh&&_sh.value!==''&&_eh&&_eh.value!=='';
       var _ptEl=document.getElementById('pr'+n+'-today');
       var _prFilled=_ptEl&&_ptEl.value!==''&&_ptEl.dataset.confirmed==='1';
-      var _usage=null;
-      if(_prFilled){
-        var _tv=parseFloat(_ptEl.value);
-        var _pv=alPrevPower[n]!=null?alPrevPower[n]:null;
-        if(_pv!=null&&!isNaN(_tv)) _usage=_tv-_pv;
-      }
-      if(_emFilled&&!_prFilled){
-        _pairMiss.push((_prNm[n]||n+'번')+' — 전력사용량 미입력');
-      } else if(_prFilled&&_usage!=null&&_usage>0&&!_emFilled){
-        _pairMiss.push((_emNm[n]||n+'번')+' — 가동시간 미입력');
+      if(!_emFilled&&!_prFilled){
+        _miss.push('· '+(_fnm[n]||n+'번')+' — 가동시간·전력 미입력');
+      } else if(!_emFilled){
+        _miss.push('· '+(_fnm[n]||n+'번')+' — 가동시간 미입력');
+      } else if(!_prFilled){
+        _miss.push('· '+(_fnm[n]||n+'번')+' — 전력 미입력');
       }
     });
-    if(_pairMiss.length>0){
-      alert('입력하지 않은 항목이 있습니다.\n\n'+_pairMiss.join('\n')+'\n\n입력 후 다시 저장해 주세요.');
+    if(_miss.length>0){
+      alert('['+date+'] 저장할 수 없습니다.\n입력하지 않은 시설이 있습니다.\n\n'+_miss.join('\n')+'\n\n미가동일 경우 시작·종료 시간에 0, 전력량은 전일값을 입력 후 다시 저장해 주세요.');
       return;
     }
   }
