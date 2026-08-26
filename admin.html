@@ -2320,6 +2320,13 @@ function closeSidebar(){
 function isAdmin(){return !!(currentUser&&currentUser.role==='admin');}
 function isSafetyEnv(){return !!(currentUser&&currentUser.role==='safety_env');}
 function canEditAll(){return isAdmin()||isSafetyEnv();}
+function isReadOnly(){
+  if(!currentUser||isAdmin()||isSafetyEnv())return false;
+  var p=currentUser.permissions||{};
+  var wk=['airlog_1to8','airlog_9','filter_write','waste_confirm','waste_complete','schedule_write','inspect_write','inspect_status','air_schedule_write','ss_input'];
+  for(var i=0;i<wk.length;i++){if(p[wk[i]]===true)return false;}
+  return true;
+}
 function canEditAirlog(facilityNum){
   if(canEditAll())return true;
   if(facilityNum>=1&&facilityNum<=8)return !!(currentUser&&currentUser.permissions&&currentUser.permissions.airlog_1to8===true);
@@ -2348,6 +2355,10 @@ function isTabRestricted(tab){return ADMIN_ONLY_TABS.indexOf(tab)!==-1&&!isAdmin
 async function sb(table,query,opts){
   opts=opts||{};
   var url=SB_URL+'/rest/v1/'+table+(query||'');
+  if(opts&&opts.method&&opts.method!=='GET'&&isReadOnly()){
+    showToast('조회 전용 계정입니다. 입력·수정·삭제 권한이 없습니다.');
+    return {ok:false,status:403,json:async function(){return{};}};
+  }
   var res=await fetch(url,{method:opts.method||'GET',headers:Object.assign({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal','Cache-Control':'no-cache'},opts.headers||{}),body:opts.body?JSON.stringify(opts.body):undefined});
   if(opts.method&&opts.method!=='GET')return res;
   return res.json();
