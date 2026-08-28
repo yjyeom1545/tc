@@ -4867,12 +4867,6 @@ function alPrMarkUser(el,no){
   el.value=el.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1'); // 숫자·소수점만 허용, 소수점 중복 방지
   el.classList.remove('al-auto');
   el.dataset.confirmed='1';
-  var pv=alPrevPower[no]!=null?alPrevPower[no]:null;
-  if(pv!=null&&el.value!==''&&parseFloat(el.value)<pv){
-    showToast(no+'번 시설: 당일검침이 전일검침보다 작습니다');
-    el.value=pv;
-    el.classList.add('al-auto');
-  }
 }
 function alPrStep(no,dir){
   var el=document.getElementById('pr'+no+'-today');
