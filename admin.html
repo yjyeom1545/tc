@@ -2364,6 +2364,21 @@ async function sb(table,query,opts){
   return res.json();
 }
 
+async function sbPaged(table,query){
+  var all=[];
+  var offset=0;
+  var pageSize=1000;
+  while(true){
+    var sep=query.indexOf('?')===-1?'?':'&';
+    var page=await sb(table,query+sep+'limit='+pageSize+'&offset='+offset);
+    if(!page||!page.length)break;
+    all=all.concat(page);
+    if(page.length<pageSize)break;
+    offset+=pageSize;
+  }
+  return all;
+}
+
 function showTab(tab){
   // PWA 모바일: home → 메인 화면으로 리다이렉트
   if(tab==='home'&&document.body.classList.contains('is-pwa')&&window.innerWidth<=768){
@@ -2439,7 +2454,7 @@ async function loadDashboard(){
   // 병렬 로드
   var results=await Promise.all([
     sb('air_operation_log','?log_date=gte.'+ym+'-01&facility_type=eq.방지시설&select=log_date,facility_no,power_today&order=log_date.asc'),
-    sb('air_operation_log','?log_date=gte.'+year+'-01-01&select=log_date,facility_type,sems_registered&order=log_date.asc'),
+    sbPaged('air_operation_log','?log_date=gte.'+year+'-01-01&select=log_date,facility_type,sems_registered&order=log_date.asc'),
     sb('inspection_records','?select=id,inspect_date,issue,status,category&order=inspect_date.desc'),
     sb('waste_storage','?select=*&order=display_order.asc'),
     sb('waste_schedule','?status=eq.scheduled&scheduled_date=gte.'+today+'&select=*&order=scheduled_date.asc&limit=5'),
