@@ -5105,9 +5105,20 @@ function loadFormFromDB(data){
 
 // 자동값 입력칸 포커스 시 진한 글씨로 전환
 document.addEventListener('focus',function(e){
+  var _t=e.target;
+  if(_t.tagName==='INPUT'&&_t.id&&/^pr\d+-today$/.test(_t.id)&&!_t.disabled&&_t.value!==''){
+    setTimeout(function(){try{_t.select();}catch(_){}},0);
+  }
   if(e.target.tagName==='INPUT'&&e.target.classList.contains('al-auto')){
     if(e.target.id&&/^pr\d+-today$/.test(e.target.id))return;
     e.target.classList.remove('al-auto');
+  }
+},true);
+
+document.addEventListener('touchend',function(e){
+  var t=e.target;
+  if(t.tagName==='INPUT'&&t.id&&/^pr\d+-today$/.test(t.id)&&!t.disabled&&t.value!==''&&document.activeElement===t&&t.selectionStart===t.selectionEnd){
+    setTimeout(function(){try{t.select();}catch(_){}},0);
   }
 },true);
 
