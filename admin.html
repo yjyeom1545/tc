@@ -6207,7 +6207,7 @@ async function ensureInspectPhotos(id){
 }
 
 async function loadInspect(){
-  var data=await sb('inspection_records','?select=id,inspect_date,category,issue,status,is_external,note,created_at&order=inspect_date.desc');
+  var data=await sb('inspection_records','?select=id,inspect_date,category,issue,status,is_external,note,completed_date,created_at&order=inspect_date.desc');
   if(!data)data=[];
   inspectAllData=data;
   renderInspectKPI(data);
@@ -6259,7 +6259,7 @@ function renderInspCardHtml(r,isOpen,photosLoading){
   var catTag='<span style="display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;background:'+catBg+';">'+r.category+'</span>';
   var extTag=r.is_external?'<span class="ext-badge">외부기관</span>':'';
   var noteHtml=r.note?'<div class="insp-card-note">'+escHtml(r.note)+'</div>':'';
-  var canUpBefore=true;
+  var canUpBefore=canEditAll();
   var canUpAfter=true;
   var beforeHtml,afterHtml;
   if(photosLoading){
@@ -6613,7 +6613,8 @@ function buildInspectDetailHtml(r,photosLoading){
   var id=r.id;
   var canEditStatus=canChangeInspectStatus();
   var canUploadAfter=true;
-  var canUploadBefore=true;
+  var canUploadBefore=canEditAll();
+  var _d=new Date();var today=_d.getFullYear()+'-'+String(_d.getMonth()+1).padStart(2,'0')+'-'+String(_d.getDate()).padStart(2,'0');
 
   var statusOpts=['miss','hold','done'].map(function(v){
     var label=v==='miss'?'미개선':v==='hold'?'보류':'완료';
@@ -6648,11 +6649,13 @@ function buildInspectDetailHtml(r,photosLoading){
     }
   }
 
-  return '<div style="font-size:13px;color:#6b7280;margin-bottom:16px;line-height:2;">'+r.inspect_date+' &nbsp;·&nbsp; '+r.category+(r.is_external?' &nbsp;<span class="ext-badge">외부기관</span>':'')+'</div>'
+  return '<div style="font-size:13px;color:#6b7280;margin-bottom:16px;line-height:2;">'+r.inspect_date+(r.is_external?' &nbsp;<span class="ext-badge">외부기관</span>':'')+'</div>'
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">지적 내용</label><div style="font-size:14px;color:#374151;line-height:1.8;padding:12px 14px;background:#f8fafc;border-radius:6px;border:1px solid #e8ecf0;">'+escHtml(r.issue)+'</div></div>'
+    +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">구분'+(canEditStatus?'':' (읽기 전용)')+'</label><select id="detail-category" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;"><option value="안전"'+(r.category==='안전'?' selected':'')+'>안전</option><option value="환경"'+(r.category==='환경'?' selected':'')+'>환경</option></select></div>'
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">상태'+(canEditStatus?'':' (읽기 전용)')+'</label>'
       +'<select id="detail-status" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;">'+statusOpts+'</select>'
     +'</div>'
+    +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">개선 완료 일자</label><input type="date" id="detail-completed" value="'+(r.completed_date||today)+'" style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;"></div>'
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">비고</label>'
       +'<textarea id="detail-note" style="height:72px;resize:none;border:1px solid #e8ecf0;border-radius:6px;padding:10px 12px;font-size:14px;line-height:1.7;font-family:\'Noto Sans KR\',sans-serif;outline:none;width:100%;">'+escHtml(r.note||'')+'</textarea>'
     +'</div>'
@@ -6737,9 +6740,12 @@ function closeInspectDetail(){
 async function saveInspectDetail(id){
   var status=document.getElementById('detail-status').value;
   var note=document.getElementById('detail-note').value;
-  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{status:status,note:note||null}});
+  var completed=document.getElementById('detail-completed').value||null;
+  var body={status:status,note:note||null,completed_date:completed};
+  if(canEditAll()){body.category=document.getElementById('detail-category').value;}
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){r.status=status;r.note=note;}
+  if(r){r.status=status;r.note=note;r.completed_date=completed;if(canEditAll())r.category=body.category;}
   renderInspectKPI(inspectAllData);
   renderInspectTable(getInspectFiltered());
   alert('저장 완료!');
