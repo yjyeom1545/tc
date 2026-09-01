@@ -415,7 +415,7 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
     <div class="nav-section">점검 관리</div>
     <div class="nav-item" id="nav-inspect" onclick="location.hash='#inspect'">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      환경점검
+      안전/환경 점검
     </div>
     <div class="nav-section" id="nav-section-admin">관리</div>
     <div class="nav-item" id="nav-users" onclick="location.hash='#users'">
@@ -531,7 +531,7 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
 
     <div class="dh-card">
       <div class="dh-card-h">
-        <div class="dh-card-h-t">환경점검 요약</div>
+        <div class="dh-card-h-t">안전/환경 점검 요약</div>
         <div class="dh-card-h-r">
           <button class="dh-card-link" onclick="location.hash='#inspect'">상세 →</button>
         </div>
@@ -1764,7 +1764,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   <div id="inspect-layout" style="display:grid;grid-template-columns:1fr;gap:14px;align-items:start;">
     <div class="card" id="inspect-list-card" style="margin-bottom:0;">
       <div class="table-header">
-        <span class="table-title">환경점검</span>
+        <span class="table-title">안전/환경 점검</span>
         <span class="record-count" id="inspect-count">0건</span>
       </div>
       <div id="inspect-table"><div class="loading">로딩 중...</div></div>
@@ -1840,7 +1840,7 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   <div id="insp-pdf-modal">
     <div class="insp-pdf-modal-inner">
       <div class="insp-pdf-modal-hdr">
-        <span class="insp-pdf-modal-title" id="insp-pdf-modal-title">환경점검 PDF 미리보기</span>
+        <span class="insp-pdf-modal-title" id="insp-pdf-modal-title">안전/환경 점검 PDF 미리보기</span>
         <button class="insp-pdf-modal-close" onclick="closeInspectPdfModal()">×</button>
       </div>
       <div class="insp-pdf-modal-body" id="insp-pdf-modal-body"></div>
@@ -2397,10 +2397,10 @@ function showTab(tab){
   var btabEl=document.getElementById('btab-'+(btabMap[tab]||tab));
   if(btabEl)btabEl.classList.add('active');
   // topbar 타이틀 + 브레드크럼
-  var titles={home:'홈',filter:'필터 교체',pressure:'차압 관리',carbon:'여과재 교체',diagnosis:'종합진단','waste-storage':'폐기물 보관 현황','waste-annual':'연간 폐기물 배출량','waste-schedule':'배출 일정',airlog:'대기운영기록',air:'대기측정 일정',inspect:'환경점검',users:'사용자 관리'};
+  var titles={home:'홈',filter:'필터 교체',pressure:'차압 관리',carbon:'여과재 교체',diagnosis:'종합진단','waste-storage':'폐기물 보관 현황','waste-annual':'연간 폐기물 배출량','waste-schedule':'배출 일정',airlog:'대기운영기록',air:'대기측정 일정',inspect:'안전/환경 점검',users:'사용자 관리'};
   var titleEl=document.getElementById('topbar-title');
   if(titleEl)titleEl.textContent=titles[tab]||tab;
-  var bcMap={home:{section:'',cur:'홈'},filter:{section:'집진설비',cur:'필터 교체'},pressure:{section:'집진설비',cur:'차압 관리'},carbon:{section:'집진설비',cur:'여과재 교체'},diagnosis:{section:'집진설비',cur:'종합진단'},'waste-storage':{section:'폐기물',cur:'보관 현황'},'waste-annual':{section:'폐기물',cur:'연간 배출량'},'waste-schedule':{section:'폐기물',cur:'배출 일정'},airlog:{section:'대기',cur:'대기운영기록'},air:{section:'대기',cur:'대기측정 일정'},inspect:{section:'점검 관리',cur:'환경점검'},users:{section:'관리',cur:'사용자 관리'}};
+  var bcMap={home:{section:'',cur:'홈'},filter:{section:'집진설비',cur:'필터 교체'},pressure:{section:'집진설비',cur:'차압 관리'},carbon:{section:'집진설비',cur:'여과재 교체'},diagnosis:{section:'집진설비',cur:'종합진단'},'waste-storage':{section:'폐기물',cur:'보관 현황'},'waste-annual':{section:'폐기물',cur:'연간 배출량'},'waste-schedule':{section:'폐기물',cur:'배출 일정'},airlog:{section:'대기',cur:'대기운영기록'},air:{section:'대기',cur:'대기측정 일정'},inspect:{section:'점검 관리',cur:'안전/환경 점검'},users:{section:'관리',cur:'사용자 관리'}};
   var bc=bcMap[tab]||{section:'',cur:titles[tab]||tab};
   var secEl=document.getElementById('bc-section'),curEl=document.getElementById('bc-cur');
   var sep1El=document.getElementById('bc-sep1'),sep2El=document.getElementById('bc-sep2');
@@ -6372,7 +6372,7 @@ function buildInspectPdfHtml(records,forPrint){
     var pageNo=Math.floor(i/2)+1;
     var totalPages=Math.ceil(records.length/2);
     var pageHdr='<div class="pdf-page-hdr">'
-      +'<span class="pdf-page-hdr-title">TC 환경관리 · 환경점검 이력</span>'
+      +'<span class="pdf-page-hdr-title">TC 환경관리 · 안전/환경 점검 이력</span>'
       +'<span class="pdf-page-hdr-meta">'+today+' &nbsp;|&nbsp; '+pageNo+' / '+totalPages+'</span>'
       +'</div>';
     var cards=pair.map(function(r,idx){
@@ -6420,7 +6420,7 @@ async function openInspectPdfModal(){
   var modal=document.getElementById('insp-pdf-modal');
   var body=document.getElementById('insp-pdf-modal-body');
   var title=document.getElementById('insp-pdf-modal-title');
-  if(title)title.textContent='환경점검 PDF 미리보기 · '+records.length+'건 선택';
+  if(title)title.textContent='안전/환경 점검 PDF 미리보기 · '+records.length+'건 선택';
   if(modal){modal.classList.add('show');document.body.style.overflow='hidden';}
   if(body)body.innerHTML='<div class="loading">사진 불러오는 중...</div>';
   await ensureInspectPhotosBatch(records.map(function(r){return r.id;}));
@@ -6468,7 +6468,7 @@ async function printInspectPdf(){
 
           // 페이지 상단 헤더
           +'<div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding-bottom:3mm;border-bottom:2pt solid #0f2744;margin-bottom:3mm;-webkit-print-color-adjust:exact;print-color-adjust:exact;">'
-            +'<span style="font-size:13px;font-weight:700;color:#0f2744;">TC 환경관리 · 환경점검 이력</span>'
+            +'<span style="font-size:13px;font-weight:700;color:#0f2744;">TC 환경관리 · 안전/환경 점검 이력</span>'
             +'<span style="font-size:11px;color:#6b7280;">'+today+'&nbsp;&nbsp;|&nbsp;&nbsp;'+pageNo+' / '+totalPages+'</span>'
           +'</div>'
 
@@ -6507,7 +6507,7 @@ async function printInspectPdf(){
   var win=window.open('','_blank','width=1100,height=800');
   if(!win){alert('팝업이 차단되었습니다. 팝업을 허용한 후 다시 시도해주세요.');return;}
   win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    +'<title>환경점검 이력</title>'
+    +'<title>안전/환경 점검 이력</title>'
     +'<style>'
     +'*{box-sizing:border-box;margin:0;padding:0;font-family:\'Malgun Gothic\',\'Apple SD Gothic Neo\',\'Noto Sans KR\',sans-serif;}'
     +'body{background:white;}'
@@ -7129,13 +7129,13 @@ async function sbQ(table,query){
   </div>
   <div class="pwa-menu-area">
     <!-- 환경점검 -->
-    <div class="pwa-menu-card" onclick="showPwaSubscreen('inspect','환경점검')">
+    <div class="pwa-menu-card" onclick="showPwaSubscreen('inspect','안전/환경 점검')">
       <div class="pwa-menu-card-main">
         <div class="pwa-menu-icon">
           <!-- ti-clipboard-check -->
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0f2744" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/><path d="M9 14l2 2l4 -4"/></svg>
         </div>
-        <div class="pwa-menu-title">환경점검</div>
+        <div class="pwa-menu-title">안전/환경 점검</div>
         <div class="pwa-menu-desc">점검사항 조회 및 등록</div>
       </div>
     </div>
