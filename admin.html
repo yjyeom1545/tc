@@ -5506,13 +5506,26 @@ async function saveAirLog(){
       return;
     }
   }
-  // 신규 입력 모드: 담당 시설 기준 중복 여부 확인
+  // 신규 입력 모드: "이번에 실제로 입력한 시설"만 중복 검사 (담당 그룹 간 간섭 방지)
   if(alMode==='new'){
-    var _allMyNos=Array.from(new Set(getAirLogEmNos().concat(getAirLogPrNos())));
-    var existing=await sb('air_operation_log','?log_date=eq.'+date+'&facility_no=in.('+_allMyNos.join(',')+')'+'&select=id&limit=1');
-    if(existing&&existing.length){
-      alert('[이미 작성된 일자입니다]\n\n'+date+' 데이터가 이미 작성되어 있습니다.\n수정하시려면 [조회·수정] 탭을 이용해 주세요.');
-      return;
+    var _inputNos=[];
+    getAirLogEmNos().forEach(function(n){
+      var _sh=document.getElementById('em'+n+'-sh'); if(_sh&&_sh.disabled)return;
+      var _eh=document.getElementById('em'+n+'-eh');
+      if((_sh&&_sh.value!=='')||(_eh&&_eh.value!=='')||alStatusMap['em'+n])_inputNos.push(n);
+    });
+    getAirLogPrNos().forEach(function(n){
+      var _t=document.getElementById('pr'+n+'-today');
+      if(!_t||_t.disabled||_t.value===''||_t.dataset.confirmed!=='1')return;
+      _inputNos.push(n);
+    });
+    _inputNos=Array.from(new Set(_inputNos));
+    if(_inputNos.length){
+      var existing=await sb('air_operation_log','?log_date=eq.'+date+'&facility_no=in.('+_inputNos.join(',')+')'+'&select=facility_no&limit=1');
+      if(existing&&existing.length){
+        alert('[이미 작성된 시설입니다]\n\n'+date+'에 이미 저장된 시설이 포함되어 있습니다.\n수정하시려면 [조회·수정] 탭을 이용해 주세요.');
+        return;
+      }
     }
   }
   // E: 검침 급증 경고 (상수)
