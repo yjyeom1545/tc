@@ -6270,10 +6270,14 @@ function renderInspectCards(data){
 // isOpen: 카드가 펼쳐진 상태로 그릴지 여부 / photosLoading: 사진 별도 조회가 진행 중인지 여부
 function renderInspCardHtml(r,isOpen,photosLoading){
   var id=r.id;
-  var statusTag=r.status==='miss'?'<span class="status-miss">미개선</span>':r.status==='hold'?'<span class="status-hold">보류</span>':'<span class="status-done">완료</span>';
-  var catBg=r.category==='환경'?'#dbeafe;color:#1e40af':'#dcfce7;color:#166534';
-  var catTag='<span style="display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;background:'+catBg+';">'+r.category+'</span>';
-  var extTag=r.is_external?'<span class="ext-badge">외부기관</span>':'';
+  var _bs='display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;';
+  var catCol=r.category==='환경'?'background:#dbeafe;color:#1e40af;':'background:#dcfce7;color:#166534;';
+  var catTag='<span style="'+_bs+catCol+'">'+r.category+'</span>';
+  var procTag=r.process?'<span style="'+_bs+'background:#f1f5f9;color:#475569;">'+r.process+'</span>':'';
+  var stCol=r.status==='miss'?'background:#fee2e2;color:#991b1b;':r.status==='hold'?'background:#fef9c3;color:#854d0e;':'background:#dcfce7;color:#166534;';
+  var stLbl=r.status==='miss'?'미개선':r.status==='hold'?'보류':'완료';
+  var statusTag='<span style="'+_bs+stCol+'">'+stLbl+'</span>';
+  var extTag=r.is_external?'<span style="'+_bs+'background:#ede9fe;color:#5b21b6;">외부기관</span>':'';
   var noteHtml=r.note?'<div class="insp-card-note">'+escHtml(r.note)+'</div>':'';
   var canUpBefore=canEditAll();
   var canUpAfter=true;
@@ -6294,9 +6298,9 @@ function renderInspCardHtml(r,isOpen,photosLoading){
   var statusHtml='<div class="insp-card-status-row"><select id="insp-card-status-'+id+'" class="insp-card-status-sel"'+(canEditCardStatus?'':' disabled')+'>'+opts+'</select>'+(canEditCardStatus?'<button class="insp-card-save" onclick="saveInspCardStatus(\''+id+'\')">저장</button>':'')+'</div>';
   return'<div class="insp-card'+(isOpen?' open':'')+'" id="insp-card-'+id+'">'
     +'<div class="insp-card-hdr" onclick="toggleInspCard(\''+id+'\')">'
-      +'<div class="insp-card-hdr-tags">'+catTag+' '+statusTag+extTag+'</div>'
+      +'<div class="insp-card-hdr-tags">'+catTag+procTag+statusTag+extTag+'</div>'
       +'<div class="insp-card-issue">'+escHtml(r.issue)+'</div>'
-      +'<div class="insp-card-date">'+(r.process?r.process+' · ':'')+r.inspect_date+'</div>'
+      +'<div class="insp-card-date">'+r.inspect_date+'</div>'
       +'<span class="insp-card-chevron">▼</span>'
     +'</div>'
     +'<div class="insp-card-body">'
@@ -6305,6 +6309,7 @@ function renderInspCardHtml(r,isOpen,photosLoading){
         +'<div><div class="insp-card-photo-lbl">개선 전</div>'+beforeHtml+'</div>'
         +'<div><div class="insp-card-photo-lbl">개선 후</div>'+afterHtml+(r.after_photo&&r.after_by?'<div style="font-size:11px;color:#9ca3af;margin-top:4px;">📷 '+escHtml(r.after_by)+' 등록</div>':'')+'</div>'
       +'</div>'
+      +'<div style="margin-bottom:12px;"><label style="display:block;font-size:12px;color:#6b7280;font-weight:600;margin-bottom:6px;">개선 완료일자</label><input type="date" id="insp-card-completed-'+id+'" value="'+(r.completed_date||'')+'" onchange="saveInspCardCompleted(\''+id+'\')" style="width:100%;border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;"></div>'
       +statusHtml
     +'</div>'
   +'</div>';
@@ -6331,6 +6336,16 @@ function setPwaInspFilter(f,el){
   document.querySelectorAll('.insp-pwa-fbtn').forEach(function(b){b.classList.remove('active');});
   if(el)el.classList.add('active');
   renderInspectCards(getInspectFiltered());
+}
+
+async function saveInspCardCompleted(id){
+  var el=document.getElementById('insp-card-completed-'+id);
+  if(!el)return;
+  var v=el.value||null;
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{completed_date:v}});
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(r)r.completed_date=v;
+  if(typeof showToast==='function')showToast('개선 완료일자 저장');
 }
 
 async function saveInspCardStatus(id){
