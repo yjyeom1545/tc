@@ -6565,7 +6565,8 @@ function renderInspectTable(data){
       +'<td onclick="showInspectDetail(\''+r.id+'\')">'+r.category+'</td>'
       +'<td onclick="showInspectDetail(\''+r.id+'\')">'+(r.process||'<span style="color:#cbd5e1;">미지정</span>')+'</td>'
       +'<td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" onclick="showInspectDetail(\''+r.id+'\')">'+escHtml(r.issue)+'</td>'
-      +'<td onclick="showInspectDetail(\''+r.id+'\')">'+(r.completed_date?'<div style="font-size:12.5px;color:#374151;">'+r.completed_date+'</div>':'')+(r.after_by?'<div style="font-size:11px;color:#9ca3af;margin-top:2px;">'+escHtml(r.after_by)+'</div>':'')+((!r.completed_date&&!r.after_by)?'<span style="color:#cbd5e1;">—</span>':'')+'</td>'
+      +'<td onclick="showInspectDetail(\''+r.id+'\')">'+(r.completed_date||'<span style="color:#cbd5e1;">—</span>')+'</td>'
+      +'<td onclick="showInspectDetail(\''+r.id+'\')">'+(r.after_by?escHtml(r.after_by):'<span style="color:#cbd5e1;">—</span>')+'</td>'
       +'<td onclick="showInspectDetail(\''+r.id+'\')">'+statusBadge+'</td>'
       +delCell
       +'</tr>';
@@ -6573,7 +6574,7 @@ function renderInspectTable(data){
   var delTh=canEditAll()?'<th style="padding:12px 8px;width:38px;"></th>':'';
   el.innerHTML='<div style="overflow-x:auto;"><table style="min-width:600px;"><thead><tr>'
     +'<th class="insp-chk-th" style="padding:12px 8px;"><input type="checkbox" class="insp-chk" id="insp-chk-all" '+(allChecked?'checked':'')+' onchange="toggleInspectAll(this,'+JSON.stringify(data.map(function(r){return r.id;})).replace(/"/g,'&quot;')+')"></th>'
-    +'<th style="padding:12px 14px;font-size:12px;">점검일</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">공정</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;">개선 완료</th><th style="padding:12px 14px;font-size:12px;">상태</th>'
+    +'<th style="padding:12px 14px;font-size:12px;">점검일</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">공정</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;">개선 완료일자</th><th style="padding:12px 14px;font-size:12px;">개선자</th><th style="padding:12px 14px;font-size:12px;">상태</th>'
     +delTh
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
   updateInspectPdfBtn();
