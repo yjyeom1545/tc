@@ -5509,8 +5509,10 @@ async function saveAirLog(){
       return;
     }
   }
-  // 신규 입력 모드: "이번에 실제로 입력한 시설"만 중복 검사 (담당 그룹 간 간섭 방지)
-  if(alMode==='new'){
+  // 신규 입력 모드: 중복 검사
+  // - 일반 담당자: 이번에 입력한 시설이 이미 저장돼 있으면 차단 (담당 그룹 간 간섭 방지)
+  // - 관리자·안전환경팀: 이미 저장된 시설은 저장 시 자동 제외되므로 막지 않음 (1~8 대리 취합 저장 지원)
+  if(alMode==='new'&&!canEditAll()){
     var _inputNos=[];
     getAirLogEmNos().forEach(function(n){
       var _sh=document.getElementById('em'+n+'-sh'); if(_sh&&_sh.disabled)return;
@@ -5593,6 +5595,12 @@ async function _doActualSaveAirLog(){
   var emNames={1:'탈청시설 (200HP)',2:'도장시설 (600㎥)',3:'도장시설 (600㎥)',4:'도장시설 (600㎥)',5:'건조시설 (345.6㎥)',6:'도장 및 건조시설 (319㎥)',7:'도장 및 건조시설 (319㎥)',9:'도장시설 (656.6㎥)'};
   var prNames={1:'여과집진시설',2:'흡착에의한시설',3:'흡착에의한시설',4:'흡착에의한시설',5:'흡착에의한시설',6:'1차여과, 2차흡착',7:'1차여과, 2차흡착',8:'흡착에의한시설',9:'흡착에의한시설'};
   var myEmNos=getAirLogEmNos();
+  // 관리자·안전환경팀 신규 대리저장: 이미 저장된 시설은 제외해 기존 작성자 기록 보존
+  var _existSet={};
+  if(alMode==='new'&&canEditAll()){
+    var _er=await sb('air_operation_log','?log_date=eq.'+date+'&select=facility_no,facility_type');
+    (_er||[]).forEach(function(r){_existSet[r.facility_type+'-'+r.facility_no]=true;});
+  }
   var records=[];
   myEmNos.forEach(function(n){
     var shEl=document.getElementById('em'+n+'-sh');
@@ -5605,6 +5613,7 @@ async function _doActualSaveAirLog(){
     // 시간도 status도 없으면 스킵 (DB에 없던 시설이 빈 값으로 새로 저장되는 것 방지)
     var _emStatus=alStatusMap['em'+n];
     if(!sh&&!eh&&!_emStatus)return;
+    if(_existSet['배출구-'+n])return; // 관리자 대리저장 시 이미 저장된 시설 제외
     var startTime=(sh||sm)?((sh||'00')+':'+(sm||'00')):null;
     var endTime=(eh||em_)?((eh||'00')+':'+(em_||'00')):null;
     records.push({
@@ -5628,6 +5637,7 @@ async function _doActualSaveAirLog(){
     if(!todayEl||todayEl.disabled||todayEl.value==='')continue;
     // 신규 모드: 미확정(자동채움 그대로) 시설은 저장 제외
     if(alMode==='new'&&todayEl.dataset.confirmed!=='1')continue;
+    if(_existSet['방지시설-'+no])continue; // 관리자 대리저장 시 이미 저장된 시설 제외
     var todayVal=parseFloat(todayEl.value);
     var prevVal=alPrevPower[no]!=null?alPrevPower[no]:null;
     var daily=(prevVal!=null&&(todayVal-prevVal)>=0)?(todayVal-prevVal):null;
