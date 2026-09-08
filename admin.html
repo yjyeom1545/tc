@@ -2337,6 +2337,10 @@ function canEditAirlog(facilityNum){
   return false;
 }
 function canChangeInspectStatus(){return canEditAll();}
+// 환경점검 "개선 후 처리"(완료일자·비고·상태·개선후 사진): 일반 사용자도 허용하되 tc1234 공용조회 계정만 조회 전용 유지
+function isViewOnlyAccount(){return !!(currentUser&&currentUser.username==='tc1234');}
+function canReworkInspect(){return !isViewOnlyAccount();}
+function inspectReworkBy(){return currentUser?(currentUser.name||currentUser.username):null;}
 function getAirLogEmNos(){
   var nos=[];
   for(var i=1;i<=7;i++){if(canEditAirlog(i))nos.push(i);}
@@ -2358,7 +2362,7 @@ function isTabRestricted(tab){return ADMIN_ONLY_TABS.indexOf(tab)!==-1&&!isAdmin
 async function sb(table,query,opts){
   opts=opts||{};
   var url=SB_URL+'/rest/v1/'+table+(query||'');
-  if(opts&&opts.method&&opts.method!=='GET'&&isReadOnly()){
+  if(opts&&opts.method&&opts.method!=='GET'&&isReadOnly()&&!(opts.allowRework&&!isViewOnlyAccount())){
     showToast('조회 전용 계정입니다. 입력·수정·삭제 권한이 없습니다.');
     return {ok:false,status:403,json:async function(){return{};}};
   }
@@ -6290,7 +6294,7 @@ function renderInspCardHtml(r,isOpen,photosLoading){
   var extTag=r.is_external?'<span style="'+_bs+'background:#ede9fe;color:#5b21b6;">외부기관</span>':'';
   var noteHtml=r.note?'<div class="insp-card-note">'+escHtml(r.note)+'</div>':'';
   var canUpBefore=canEditAll();
-  var canUpAfter=true;
+  var canUpAfter=canReworkInspect();
   var beforeHtml,afterHtml;
   if(photosLoading){
     beforeHtml='<div class="insp-photo-box"><span class="insp-photo-empty">불러오는 중...</span></div>';
@@ -6304,8 +6308,11 @@ function renderInspCardHtml(r,isOpen,photosLoading){
     if(!r.after_photo&&canUpAfter)afterHtml+='<div style="display:flex;gap:5px;margin-top:6px;"><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label></div>';
   }
   var canEditCardStatus=canChangeInspectStatus();
+  var canReworkCard=canReworkInspect()&&!canEditCardStatus;
   var opts=['miss','hold','done'].map(function(v){var lbl=v==='miss'?'미개선':v==='hold'?'보류':'완료';return'<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+lbl+'</option>';}).join('');
-  var statusHtml='<div class="insp-card-status-row"><select id="insp-card-status-'+id+'" class="insp-card-status-sel"'+(canEditCardStatus?'':' disabled')+'>'+opts+'</select>'+(canEditCardStatus?'<button class="insp-card-save" onclick="saveInspCardStatus(\''+id+'\')">저장</button>':'')+'</div>';
+  var statusHtml=canReworkCard
+    ?'<div class="insp-card-status-row"><button class="insp-card-save" style="flex:1;" onclick="completeInspCard(\''+id+'\')">개선 완료 처리</button></div>'
+    :'<div class="insp-card-status-row"><select id="insp-card-status-'+id+'" class="insp-card-status-sel"'+(canEditCardStatus?'':' disabled')+'>'+opts+'</select>'+(canEditCardStatus?'<button class="insp-card-save" onclick="saveInspCardStatus(\''+id+'\')">저장</button>':'')+'</div>';
   return'<div class="insp-card'+(isOpen?' open':'')+'" id="insp-card-'+id+'">'
     +'<div class="insp-card-hdr" onclick="toggleInspCard(\''+id+'\')">'
       +'<div class="insp-card-hdr-tags">'+catTag+procTag+statusTag+extTag+'</div>'
@@ -6352,9 +6359,10 @@ async function saveInspCardCompleted(id){
   var el=document.getElementById('insp-card-completed-'+id);
   if(!el)return;
   var v=el.value||null;
-  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{completed_date:v}});
+  var by=inspectReworkBy();
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{completed_date:v,after_by:by},allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r)r.completed_date=v;
+  if(r){r.completed_date=v;r.after_by=by;}
   if(typeof showToast==='function')showToast('개선 완료일자 저장');
 }
 
@@ -6362,11 +6370,28 @@ async function saveInspCardStatus(id){
   var sel=document.getElementById('insp-card-status-'+id);
   if(!sel)return;
   var status=sel.value;
-  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{status:status}});
+  var body={status:status};
+  if(status==='done')body.after_by=inspectReworkBy();
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r)r.status=status;
+  if(r){r.status=status;if(status==='done')r.after_by=body.after_by;}
   renderInspectKPI(inspectAllData);
   renderInspectCards(getInspectFiltered());
+}
+
+// 일반 사용자용 PWA 카드 개선 완료 처리: 상태를 곧바로 done 으로, 개선자에 로그인 사용자 기록
+async function completeInspCard(id){
+  var el=document.getElementById('insp-card-completed-'+id);
+  var completed=(el&&el.value)?el.value:null;
+  var by=inspectReworkBy();
+  var body={status:'done',after_by:by};
+  if(completed)body.completed_date=completed;
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(r){r.status='done';r.after_by=by;if(completed)r.completed_date=completed;}
+  renderInspectKPI(inspectAllData);
+  renderInspectCards(getInspectFiltered());
+  if(typeof showToast==='function')showToast('개선 완료 처리되었습니다');
 }
 
 function renderInspectKPI(data){
@@ -6654,7 +6679,8 @@ function showInspectDetail(id){
 function buildInspectDetailHtml(r,photosLoading){
   var id=r.id;
   var canEditStatus=canChangeInspectStatus();
-  var canUploadAfter=true;
+  var canReworkStatus=canReworkInspect()&&!canEditStatus;
+  var canUploadAfter=canReworkInspect();
   var canUploadBefore=canEditAll();
   var _d=new Date();var today=_d.getFullYear()+'-'+String(_d.getMonth()+1).padStart(2,'0')+'-'+String(_d.getDate()).padStart(2,'0');
 
@@ -6695,8 +6721,10 @@ function buildInspectDetailHtml(r,photosLoading){
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">지적 내용</label><div style="font-size:14px;color:#374151;line-height:1.8;padding:12px 14px;background:#f8fafc;border-radius:6px;border:1px solid #e8ecf0;">'+escHtml(r.issue)+'</div></div>'
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">구분'+(canEditStatus?'':' (읽기 전용)')+'</label><select id="detail-category" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;"><option value="안전"'+(r.category==='안전'?' selected':'')+'>안전</option><option value="환경"'+(r.category==='환경'?' selected':'')+'>환경</option></select></div>'
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">공정'+(canEditStatus?'':' (읽기 전용)')+'</label><select id="detail-process" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;"><option value="">— 선택 —</option>'+['가공','현대','강건재','도장','마스킹','패킹','16동','제조팀'].map(function(p){return '<option value="'+p+'"'+(r.process===p?' selected':'')+'>'+p+'</option>';}).join('')+'</select></div>'
-    +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">상태'+(canEditStatus?'':' (읽기 전용)')+'</label>'
-      +'<select id="detail-status" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;">'+statusOpts+'</select>'
+    +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">상태'+(canEditStatus||canReworkStatus?'':' (읽기 전용)')+'</label>'
+      +(canReworkStatus
+        ?'<div style="font-size:13px;color:#166534;padding:9px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">저장하면 상태가 <b>완료</b>로 처리됩니다.</div>'
+        :'<select id="detail-status" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;">'+statusOpts+'</select>')
     +'</div>'
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">개선 완료 일자</label><input type="date" id="detail-completed" value="'+(r.completed_date||today)+'" style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;"></div>'
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">비고</label>'
@@ -6781,16 +6809,20 @@ function closeInspectDetail(){
 }
 
 async function saveInspectDetail(id){
-  var status=document.getElementById('detail-status').value;
+  var statusEl=document.getElementById('detail-status');
+  // 일반 사용자: 저장 시 무조건 done / 관리자·안전환경팀: 드롭다운 선택값
+  var status=(canEditAll()&&statusEl)?statusEl.value:'done';
   var note=document.getElementById('detail-note').value;
   var completed=document.getElementById('detail-completed').value||null;
-  var body={status:status,note:note||null,completed_date:completed};
+  var by=inspectReworkBy();
+  var body={status:status,note:note||null,completed_date:completed,after_by:by};
   if(canEditAll()){body.category=document.getElementById('detail-category').value;body.process=document.getElementById('detail-process').value||null;}
-  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body});
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){r.status=status;r.note=note;r.completed_date=completed;if(canEditAll()){r.category=body.category;r.process=body.process;}}
+  if(r){r.status=status;r.note=note;r.completed_date=completed;r.after_by=by;if(canEditAll()){r.category=body.category;r.process=body.process;}}
   renderInspectKPI(inspectAllData);
   renderInspectTable(getInspectFiltered());
+  if(typeof renderInspectCards==='function')renderInspectCards(getInspectFiltered());
   alert('저장 완료!');
 }
 
@@ -6832,7 +6864,7 @@ async function deleteInspectPhoto(id,field){
   var body={};
   body[field==='before'?'before_photo':'after_photo']=null;
   if(field==='after'){body.after_by=null;}
-  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body});
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
   if(r){if(field==='before')r.before_photo=null;else {r.after_photo=null;r.after_by=null;}}
   showInspectDetail(id);
@@ -6843,8 +6875,8 @@ async function uploadInspectPhoto(input,id,field){
   var dataUrl=await compressAndUpload(input.files[0]);
   var body={};
   body[field==='before'?'before_photo':'after_photo']=dataUrl;
-  if(field==='after'){body.after_by=(currentUser&&(currentUser.name||currentUser.username))||null;}
-  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body});
+  if(field==='after'){body.after_by=inspectReworkBy();}
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
   if(r){if(field==='before')r.before_photo=dataUrl;else {r.after_photo=dataUrl;r.after_by=body.after_by;}}
   showInspectDetail(id);
