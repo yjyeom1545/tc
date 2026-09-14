@@ -5500,6 +5500,8 @@ async function saveAirLog(){
       var _emFilled=_sh&&_sh.value!==''&&_eh&&_eh.value!=='';
       var _ptEl=document.getElementById('pr'+n+'-today');
       var _prFilled=_ptEl&&_ptEl.value!==''&&_ptEl.dataset.confirmed==='1';
+      // 관리자·안전환경팀 대리저장: 완전히 비운 시설(시간·전력·상태 모두 없음)은 검증 제외 → 채운 시설만 저장
+      if(canEditAll()&&!_emFilled&&!_prFilled&&!alStatusMap['em'+n])return;
       if(!_emFilled&&!_prFilled){
         _miss.push('· '+(_fnm[n]||n+'번')+' — 가동시간·전력 미입력');
       } else if(!_emFilled){
