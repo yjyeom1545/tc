@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEMS 검증·내보내기 — TC 환경관리</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{color-scheme:light;}
+  body{font-family:'Noto Sans KR','Inter',sans-serif;background:#f4f6f9;min-height:100vh;display:flex;flex-direction:column;color:#1e2633;}
+  /* ── 사이드바 (admin.html 동일) ── */
+  .sidebar{width:224px;min-width:224px;background:#0f2744;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform .25s;}
+  .sidebar-header{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+  .sidebar-logo{font-size:13px;font-weight:700;color:#fff;letter-spacing:.4px;display:flex;align-items:center;gap:8px;}
+  .sidebar-logo-mark{width:24px;height:24px;background:#2563eb;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sidebar-sub{font-size:10px;color:rgba(255,255,255,.38);margin-top:4px;padding-left:32px;}
+  .sidebar-user{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+  .sidebar-user-icon{width:32px;height:32px;border-radius:6px;background:#1e3a6e;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.8);font-weight:700;flex-shrink:0;}
+  .sidebar-user-name{font-size:12px;color:rgba(255,255,255,.85);font-weight:500;}
+  .sidebar-user-role{font-size:10px;color:rgba(255,255,255,.38);margin-top:1px;}
+  .sidebar-nav{flex:1;min-height:0;overflow-y:auto;padding:8px 0 12px;}
+  .sidebar-nav::-webkit-scrollbar{width:3px;} .sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+  .nav-section{padding:14px 20px 5px;font-size:10px;color:rgba(255,255,255,.28);font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:9px 20px;cursor:pointer;color:rgba(255,255,255,.55);font-size:12.5px;font-weight:500;transition:all .12s;border-left:2px solid transparent;margin:1px 0;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.9);}
+  .nav-item.active{background:rgba(37,99,235,.18);color:#fff;border-left-color:#3b82f6;}
+  .nav-item svg{flex-shrink:0;opacity:.7;} .nav-item.active svg{opacity:1;}
+  .sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.07);}
+  .sidebar-footer-btn{width:100%;padding:8px 12px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;transition:all .12s;text-align:left;}
+  .sidebar-footer-btn:hover{background:rgba(220,38,38,.25);color:rgba(255,255,255,.9);border-color:rgba(220,38,38,.4);}
+  /* ── 메인 ── */
+  .main-area{margin-left:224px;flex:1;display:flex;flex-direction:column;min-width:0;}
+  .topbar{background:#fff;border-bottom:1px solid #e8ecf0;padding:0 1.75rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .topbar-title{font-size:14px;font-weight:700;color:#0f2744;}
+  .tc-bc{display:flex;align-items:center;gap:7px;font-size:12px;color:#9ca3af;margin-left:4px;}
+  .tc-bc-home{cursor:pointer;color:#6b7280;} .tc-bc-home:hover{color:#0f2744;}
+  .tc-bc-cur{color:#0f2744;font-weight:600;}
+  .top-btn{background:#f4f6f9;border:1px solid #e8ecf0;color:#4b5563;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;transition:all .12s;}
+  .top-btn:hover{background:#e8ecf0;}
+  .menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:4px;color:#4b5563;}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:199;}
+  .content{width:100%;padding:1.5rem 1.75rem;overflow-x:hidden;}
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%);} .sidebar.open{transform:translateX(0);}
+    .main-area{margin-left:0;} .menu-toggle{display:block;} .sidebar-overlay.show{display:block;}
+    .content{padding:1rem;}
+  }
+  /* ── 공통 요소 ── */
+  .btn{font-family:inherit;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;padding:8px 15px;}
+  .btn:hover{opacity:.93;} .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .btn-navy{background:#0f2744;color:#fff;} .btn-blue{background:#1d4ed8;color:#fff;} .btn-ghost{background:#fff;color:#4b5563;border:1px solid #e8ecf0;}
+  .seg{display:inline-flex;border:1px solid #e8ecf0;border-radius:6px;overflow:hidden;}
+  .seg button{font-family:inherit;font-size:12px;font-weight:600;padding:7px 14px;border:none;background:#fff;color:#6b7280;cursor:pointer;}
+  .seg button.on{background:#0f2744;color:#fff;}
+  input[type=month],input[type=date]{border:1px solid #e8ecf0;border-radius:5px;padding:7px 10px;font-size:12.5px;font-family:inherit;color:#374151;background:#fff;outline:none;}
+  .page-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+  .page-title{font-size:18px;font-weight:700;color:#0f2744;}
+  .page-tag{background:#ecfdf5;color:#059669;font-size:11px;font-weight:700;padding:2px 9px;border-radius:5px;}
+  .page-desc{font-size:12.5px;color:#6b7280;margin:6px 0 16px;}
+  .card{background:#fff;border:1px solid #e8ecf0;border-radius:10px;padding:16px 18px;margin-bottom:14px;}
+  .card-h{font-size:13px;font-weight:700;color:#0f2744;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .card-h .n{width:20px;height:20px;border-radius:6px;background:#0f2744;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;}
+  .card-h .sub{font-weight:400;color:#9ca3af;font-size:11.5px;}
+  .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .sum-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  @media(max-width:640px){.sum-grid{grid-template-columns:repeat(2,1fr);}}
+  .sum{border:1px solid #e8ecf0;border-radius:8px;padding:13px 15px;}
+  .sum .num{font-size:24px;font-weight:700;line-height:1;} .sum .lbl{font-size:11.5px;color:#6b7280;margin-top:5px;}
+  .sum.total .num{color:#0f2744;} .sum.ok .num{color:#059669;} .sum.err .num{color:#dc2626;} .sum.chk .num{color:#b45309;}
+  .okbar{display:flex;align-items:center;justify-content:space-between;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#047857;font-weight:600;}
+  .tbl-scroll{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:660px;}
+  th{background:#f8fafc;color:#0f2744;border-bottom:1px solid #e8ecf0;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;white-space:nowrap;}
+  td{border-bottom:1px solid #eef1f5;padding:8px 10px;color:#374151;} td.mut{color:#9ca3af;} .num-c{text-align:right;font-variant-numeric:tabular-nums;}
+  .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+  .pill.err{background:#fef2f2;color:#dc2626;} .pill.chk{background:#fffbeb;color:#b45309;} .pill.ok{background:#ecfdf5;color:#059669;}
+  .kind{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10.5px;font-weight:700;background:#eef2f8;color:#6b7280;}
+  .why{font-size:11.5px;color:#6b7280;} .lnk{color:#1d4ed8;font-size:11.5px;font-weight:600;cursor:pointer;}
+  .clean{text-align:center;color:#6b7280;padding:22px;font-size:13px;}
+  .note{font-size:11.5px;color:#6b7280;background:#f8fafc;border-left:3px solid #0f2744;border-radius:0 6px 6px 0;padding:9px 13px;margin-top:10px;}
+  .exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:640px){.exp-grid{grid-template-columns:1fr;}}
+  .exp-box{border:1px solid #e8ecf0;border-radius:8px;padding:14px;}
+  .exp-box .t{font-size:12.5px;font-weight:700;color:#0f2744;margin-bottom:4px;} .exp-box .d{font-size:11.5px;color:#6b7280;margin-bottom:10px;}
+  .hidden{display:none;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f2744;color:#fff;font-size:12.5px;font-weight:600;padding:10px 18px;border-radius:8px;opacity:0;transition:opacity .2s;z-index:300;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="sidebar-logo-mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div> TC 환경관리 시스템</div>
+    <div class="sidebar-sub">도장시설 · 폐기물 · 대기 통합 관리</div>
+  </div>
+  <div class="sidebar-user">
+    <div class="sidebar-user-icon" id="sb-user-icon">염</div>
+    <div><div class="sidebar-user-name" id="sb-user-name">염윤정</div><div class="sidebar-user-role" id="sb-user-role">환경관리자</div></div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item" href="admin.html#home"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 대시보드</a>
+    <div class="nav-section">집진설비</div>
+    <a class="nav-item" href="admin.html#filter"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> 필터 교체</a>
+    <a class="nav-item" href="admin.html#pressure"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><circle cx="18" cy="6" r="3"/></svg> 차압 관리</a>
+    <a class="nav-item" href="admin.html#carbon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> 여과재 교체</a>
+    <a class="nav-item" href="admin.html#diagnosis"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/></svg> 종합진단</a>
+    <div class="nav-section">폐기물</div>
+    <a class="nav-item" href="admin.html#waste-storage"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v4H4z"/><path d="M4 6l2 16h12l2-16"/><line x1="12" y1="6" x2="12" y2="22"/></svg> 보관 현황</a>
+    <a class="nav-item" href="admin.html#waste-annual"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> 연간 배출량</a>
+    <a class="nav-item" href="admin.html#waste-schedule"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> 배출 일정</a>
+    <div class="nav-section">대기</div>
+    <a class="nav-item" href="admin.html#airlog"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> 대기운영기록</a>
+    <a class="nav-item active" href="sems.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> SEMS 검증</a>
+    <a class="nav-item" href="admin.html#air"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> 대기측정 일정</a>
+    <div class="nav-section">점검 관리</div>
+    <a class="nav-item" href="admin.html#inspect"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> 안전/환경 점검</a>
+    <div class="nav-section">관리</div>
+    <a class="nav-item" href="admin.html#users"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> 사용자 관리</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="sidebar-footer-btn" onclick="location.href='login.html'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:6px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> 로그아웃</button>
+  </div>
+</aside>
+
+<div class="main-area">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="menu-toggle" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <span class="topbar-title">SEMS 검증</span>
+      <nav class="tc-bc">
+        <span class="tc-bc-home" onclick="location.href='admin.html#home'">TC 환경관리</span><span>›</span>
+        <span class="tc-bc-home" onclick="location.href='admin.html#airlog'">대기운영기록</span><span>›</span>
+        <span class="tc-bc-cur">SEMS 검증·내보내기</span>
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <button class="top-btn" onclick="location.reload()">↻ 새로고침</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-head"><div class="page-title">SEMS 검증 · 내보내기</div><span class="page-tag">교차검증 → 일괄등록 양식</span></div>
+    <p class="page-desc">배출구 가동시간 · 방지시설 전력검침 · 자가측정 실시일을 교차검증하고, SEMS 일괄등록 양식에 검증 완료 데이터를 채워 내보냅니다.</p>
+
+    <div class="toolbar">
+      <div class="seg"><button class="on" id="mDay">일별</button><button id="mMon">월별</button></div>
+      <input type="date" id="dayInput">
+      <input type="month" id="monInput" class="hidden">
+      <button class="btn btn-navy" id="runBtn">검증 실행</button>
+      <span id="loadMsg" style="font-size:12px;color:#6b7280;"></span>
+    </div>
+
+    <div class="card" id="sumCard" style="display:none;">
+      <div class="card-h"><span class="n">1</span> 검증 결과 요약 <span class="sub" id="sumSub"></span></div>
+      <div class="sum-grid">
+        <div class="sum total"><div class="num" id="c-total">0</div><div class="lbl">총 검증 건수</div></div>
+        <div class="sum ok"><div class="num" id="c-ok">0</div><div class="lbl">정상</div></div>
+        <div class="sum err"><div class="num" id="c-err">0</div><div class="lbl">이상 데이터</div></div>
+        <div class="sum chk"><div class="num" id="c-chk">0</div><div class="lbl">확인 필요</div></div>
+      </div>
+      <div class="okbar" style="margin-top:14px;"><span>✓ 정상 판정 <b id="okCount">0</b>건 — 이상 없이 SEMS 등록 가능</span></div>
+    </div>
+
+    <div class="card" id="badCard" style="display:none;">
+      <div class="card-h"><span class="n">2</span> 조치 필요 항목 <span class="sub">이상·확인 필요만 표시</span></div>
+      <div class="tbl-scroll">
+        <table><thead><tr>
+          <th>일자</th><th>배출구·시설</th><th>구분</th><th class="num-c">가동</th>
+          <th class="num-c">전일→당일검침</th><th class="num-c">사용량</th><th>판정</th><th>근거</th><th></th>
+        </tr></thead><tbody id="tbody"></tbody></table>
+      </div>
+      <div class="clean hidden" id="cleanMsg">✓ 조치가 필요한 항목이 없습니다. 모두 정상입니다.</div>
+    </div>
+
+    <div class="card" id="expCard" style="display:none;">
+      <div class="card-h"><span class="n">3</span> SEMS 일괄등록 양식 내보내기 <span class="sub">SEMS에서 내려받은 양식을 올리면 검증 완료 값을 채워 되돌려줍니다</span></div>
+      <div class="exp-grid">
+        <div class="exp-box">
+          <div class="t">① 배출구가동시간 양식</div><div class="d">가동시간(시·분)을 채웁니다.</div>
+          <input type="file" id="fileOut" accept=".xlsx" style="font-size:11.5px;">
+          <div style="margin-top:10px;"><button class="btn btn-navy" id="expOut" disabled>값 채워 내려받기</button></div>
+        </div>
+        <div class="exp-box">
+          <div class="t">② 시설운전사항 양식</div><div class="d">전력검침량을 채웁니다. (1차여과=0)</div>
+          <input type="file" id="fileFac" accept=".xlsx" style="font-size:11.5px;">
+          <div style="margin-top:10px;"><button class="btn btn-navy" id="expFac" disabled>값 채워 내려받기</button></div>
+        </div>
+      </div>
+      <div class="note">이상 데이터는 채우기에서 제외됩니다. 고정값(조사년도·배출구ID·방지시설·적산전력계 등)은 SEMS 양식 값을 그대로 두고, 시스템은 입력칸만 채웁니다. 매달 SEMS에서 양식을 내려받아 여기에 올리시면 됩니다.</div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* Supabase — admin.html 과 동일 (읽기 전용 조회) */
+const SB_URL='https://qaftipqwuhvbvzfqlhgu.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZnRpcHF3dWh2YnZ6ZnFsaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDE3NDEsImV4cCI6MjA5MDE3Nzc0MX0.6klc2PclN4YUIPq7R8AG-calKmnZYJflVfkpSYFFbNQ';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+/* air_operation_log 컬럼 */
+const COL={date:"log_date",fno:"facility_no",name:"facility_name",op_h:"operation_hours",status:"status",prev:"power_prev",curr:"power_today",daily:"power_daily"};
+/* air_measurement 컬럼 — 실제 스키마에 맞게 조정 */
+const MCOL={date:"log_date",fno:"facility_no"};
+
+const SURGE_RATIO=10,SURGE_MIN_DELTA=100,EPS=0.005,NONOP=[8];
+const isNonOp=f=>NONOP.includes(Number(f));
+function fnoOf(name){const m=String(name).match(/굴뚝\s*(\d+)/);return m?Number(m[1]):null;}
+function d2iso(v){const s=String(v).trim();return (s.length>=8&&/^\d+$/.test(s))?`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`:s;}
+
+let nameMap={}, RECORDS=[], mode="day";
+
+async function loadPeriod(){
+  const day=document.getElementById('dayInput').value, month=document.getElementById('monInput').value;
+  let q=sb.from("air_operation_log").select("*");
+  q = mode==="day" ? q.eq(COL.date,day) : q.gte(COL.date,month+"-01").lte(COL.date,month+"-31");
+  const {data,error}=await q; if(error) throw error;
+  const opRows={},pwRows={};
+  for(const row of (data||[])){
+    const f=Number(row[COL.fno]); if(isNaN(f)) continue;
+    const d=String(row[COL.date]).slice(0,10); const key=f+"|"+d;
+    if(row[COL.op_h]!=null){opRows[key]={fno:f,date:d,op_h:Number(row[COL.op_h])||0,outName:row[COL.name]};nameMap[f]=nameMap[f]||row[COL.name];}
+    if(row[COL.curr]!=null){pwRows[key]={prev:Number(row[COL.prev])||0,curr:Number(row[COL.curr])||0,daily:Number(row[COL.daily])||0};}
+  }
+  const keys=new Set([...Object.keys(opRows),...Object.keys(pwRows)]);
+  const combined=[...keys].map(k=>{const o=opRows[k],p=pwRows[k];const [f,d]=k.split("|");
+    return {fno:Number(f),date:d,hasOp:!!o,hasPw:!!p,op_h:o?o.op_h:null,outName:o?o.outName:(nameMap[f]||("배출구"+f)),prev:p?p.prev:null,curr:p?p.curr:null,daily:p?p.daily:null};});
+  let meas=[];
+  try{ let mq=sb.from("air_measurement").select("*"); mq=mode==="day"?mq.eq(MCOL.date,day):mq.gte(MCOL.date,month+"-01").lte(MCOL.date,month+"-31");
+    const mr=await mq; if(!mr.error&&mr.data) meas=mr.data.map(r=>({fno:Number(r[MCOL.fno]),date:String(r[MCOL.date]).slice(0,10)})).filter(r=>!isNaN(r.fno)); }catch(e){}
+  return {combined,meas};
+}
+function verdictOp(list){
+  const byF={};list.forEach(r=>{(byF[r.fno]=byF[r.fno]||[]).push(r);});
+  Object.values(byF).forEach(l=>l.sort((a,b)=>a.date.localeCompare(b.date)));
+  const out=[];
+  for(const l of Object.values(byF)){let lastPos=null;
+    for(const r of l){let v,cls,why;
+      if(!r.hasOp&&r.hasPw){out.push({kind:"가동·전력",...r,usage:null,v:"확인필요",cls:"chk",why:"전력 기록만 있고 가동 기록 없음"});continue;}
+      if(r.hasOp&&!r.hasPw){out.push({kind:"가동·전력",...r,usage:null,v:"확인필요",cls:"chk",why:"가동 기록만 있고 전력 기록 없음"});continue;}
+      const usage=+((r.curr)-(r.prev)).toFixed(3);
+      const running=r.op_h>0,up=usage>EPS,down=usage<-EPS,same=Math.abs(usage)<=EPS,mis=Math.abs(usage-r.daily)>EPS;
+      if(isNonOp(r.fno)){if(running||!same||mis){v="이상";cls="err";why="미가동 시설인데 변동 발생";}else{v="정상";cls="ok";why="미가동·무변동 정합";}}
+      else if(mis){v="이상";cls="err";why=`일일사용량 검산 불일치(${r.daily}≠${usage})`;}
+      else if(!running&&up){v="이상";cls="err";why="가동시간 0인데 전력 증가";}
+      else if(down){v="이상";cls="err";why="전력검침 역전(누적 감소)";}
+      else if(running&&same){v="이상";cls="err";why="가동 있으나 전력 무변동";}
+      else if(!running&&same){v="정상";cls="ok";why="미가동·무변동 정합";}
+      else{if(lastPos!=null&&usage>=SURGE_MIN_DELTA&&usage>=SURGE_RATIO*lastPos){v="확인필요";cls="chk";why=`직전 사용일 대비 ${(usage/lastPos).toFixed(0)}배 급증`;}else{v="정상";cls="ok";why="가동·전력 정합";}}
+      if(up)lastPos=usage;
+      out.push({kind:"가동·전력",...r,usage,v,cls,why});
+    }}
+  return out;
+}
+function verdictMeas(meas,combined){
+  return meas.map(m=>{const c=combined.find(x=>x.fno===m.fno&&x.date===m.date);const op_h=c?c.op_h:null;let v,cls,why;
+    if(isNonOp(m.fno)){v="이상";cls="err";why="미가동 시설에 자가측정 등록";}
+    else if(!c||op_h==null){v="확인필요";cls="chk";why="해당일 가동·전력 자료 없음";}
+    else if(op_h===0){v="이상";cls="err";why="가동시간 0인데 자가측정 등록";}
+    else{v="정상";cls="ok";why="측정일 가동 정합";}
+    return {kind:"자가측정",fno:m.fno,date:m.date,op_h,prev:null,curr:null,usage:null,outName:(nameMap[m.fno]||("배출구"+m.fno)),v,cls,why};});
+}
+async function run(){
+  document.getElementById('loadMsg').textContent="조회 중…";
+  try{
+    const {combined,meas}=await loadPeriod();
+    RECORDS=[...verdictOp(combined),...verdictMeas(meas,combined)];
+    render(mode==="day"?document.getElementById('dayInput').value+" · 당일":document.getElementById('monInput').value+" · 월 전체");
+    document.getElementById('loadMsg').textContent = RECORDS.length? "" : "해당 기간 데이터가 없습니다";
+  }catch(e){ document.getElementById('loadMsg').textContent="조회 오류: "+(e.message||e); }
+}
+function render(label){
+  const c={정상:0,이상:0,확인필요:0};RECORDS.forEach(r=>c[r.v]++);
+  document.getElementById('sumCard').style.display='';document.getElementById('badCard').style.display='';document.getElementById('expCard').style.display='';
+  set('c-total',RECORDS.length);set('c-ok',c['정상']);set('c-err',c['이상']);set('c-chk',c['확인필요']);set('okCount',c['정상']);
+  document.getElementById('sumSub').textContent="배출구 가동 + 방지시설 전력 + 자가측정 교차검증 · "+label;
+  const bad=RECORDS.filter(r=>r.v!=='정상').sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('cleanMsg').classList.toggle('hidden',bad.length>0);
+  document.getElementById('tbody').innerHTML=bad.map(r=>`<tr><td class="mut">${r.date.slice(5)}</td><td>${r.fno}. ${r.outName}</td><td><span class="kind">${r.kind}</span></td><td class="num-c">${r.op_h==null?'—':r.op_h+'h'}</td><td class="num-c">${r.usage==null?'—':r.prev+'→'+r.curr}</td><td class="num-c">${r.usage==null?'—':r.usage}</td><td><span class="pill ${r.cls}">${r.v}</span></td><td class="why">${r.why}</td><td><span class="lnk" onclick="location.href='admin.html#airlog'">수정 →</span></td></tr>`).join('');
+  document.getElementById('expOut').disabled=false;document.getElementById('expFac').disabled=false;
+}
+function set(id,v){document.getElementById(id).textContent=v;}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* SEMS 양식 채우기 */
+function passMap(kind){const m={};RECORDS.filter(r=>r.kind==="가동·전력"&&r.v!=="이상").forEach(r=>{if(kind==="op"&&r.op_h!=null)m[r.fno+"|"+r.date]=r.op_h;if(kind==="pw"&&r.curr!=null)m[r.fno+"|"+r.date]=r.curr;});return m;}
+function readXlsx(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=e=>res(XLSX.read(e.target.result,{type:'array'}));fr.onerror=rej;fr.readAsArrayBuffer(file);});}
+function cell(ws,R,C){const a=XLSX.utils.encode_col(C)+(R+1);return ws[a]?ws[a].v:null;}
+function setCell(ws,R,C,v){ws[XLSX.utils.encode_col(C)+(R+1)]={t:'s',v:String(v)};}
+function download(wb,name){const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/octet-stream'}));a.download=name;a.click();URL.revokeObjectURL(a.href);}
+async function fillOut(file){
+  const wb=await readXlsx(file);const ws=wb.Sheets["배출구_가동시간_일괄업로드"]||wb.Sheets[wb.SheetNames[0]];
+  const map=passMap("op");const rng=XLSX.utils.decode_range(ws['!ref']);let n=0;
+  for(let R=1;R<=rng.e.r;R++){const f=fnoOf(cell(ws,R,4));const date=d2iso(cell(ws,R,6));if(f==null)continue;
+    const key=f+"|"+date;if(key in map){const h=map[key];const H=Math.min(24,Math.floor(h));const M=Math.round((h-H)*60);setCell(ws,R,7,String(H).padStart(2,'0'));setCell(ws,R,8,String(M).padStart(2,'0'));n++;}}
+  download(wb,"배출구가동시간_작성완료.xlsx");toast(`배출구가동시간 ${n}행 채움 — 다운로드 완료`);
+}
+async function fillFac(file){
+  const wb=await readXlsx(file);const ws=wb.Sheets["시설운전사항_일괄업로드"]||wb.Sheets[wb.SheetNames[0]];
+  const map=passMap("pw");const rng=XLSX.utils.decode_range(ws['!ref']);let n=0,z=0;
+  for(let R=2;R<=rng.e.r;R++){const f=fnoOf(cell(ws,R,3));const meter=cell(ws,R,9);const date=d2iso(cell(ws,R,10));if(f==null)continue;
+    const noMeter=(meter==null||String(meter).trim()===""||Number(meter)===0);
+    if(noMeter){setCell(ws,R,11,"0.000");z++;continue;}
+    const key=f+"|"+date;if(key in map){setCell(ws,R,11,Number(map[key]).toFixed(3));n++;}}
+  download(wb,"시설운전사항_작성완료.xlsx");toast(`시설운전사항 검침 ${n}행 채움 (1차여과 ${z}행 0처리) — 다운로드 완료`);
+}
+
+/* 사이드바 토글 */
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebar-overlay').classList.toggle('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('show');}
+
+(function init(){
+  const iso=new Date().toISOString().slice(0,10);
+  document.getElementById('dayInput').value=iso;
+  document.getElementById('monInput').value=iso.slice(0,7);
+})();
+document.getElementById('mDay').addEventListener('click',function(){mode="day";this.classList.add('on');document.getElementById('mMon').classList.remove('on');document.getElementById('dayInput').classList.remove('hidden');document.getElementById('monInput').classList.add('hidden');});
+document.getElementById('mMon').addEventListener('click',function(){mode="mon";this.classList.add('on');document.getElementById('mDay').classList.remove('on');document.getElementById('monInput').classList.remove('hidden');document.getElementById('dayInput').classList.add('hidden');});
+document.getElementById('runBtn').addEventListener('click',run);
+document.getElementById('fileOut').addEventListener('change',e=>{document.getElementById('expOut').disabled=!(e.target.files.length&&RECORDS.length);});
+document.getElementById('fileFac').addEventListener('change',e=>{document.getElementById('expFac').disabled=!(e.target.files.length&&RECORDS.length);});
+document.getElementById('expOut').addEventListener('click',()=>{const f=document.getElementById('fileOut').files[0];if(f)fillOut(f);else toast("SEMS 배출구가동시간 양식을 먼저 올리세요");});
+document.getElementById('expFac').addEventListener('click',()=>{const f=document.getElementById('fileFac').files[0];if(f)fillFac(f);else toast("SEMS 시설운전사항 양식을 먼저 올리세요");});
+</script>
+</body>
+</html>
