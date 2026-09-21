@@ -2344,7 +2344,6 @@ function canChangeInspectStatus(){return canEditAll();}
 // 환경점검 "개선 후 처리"(완료일자·비고·상태·개선후 사진): 일반 사용자도 허용하되 tc1234 공용조회 계정만 조회 전용 유지
 function isViewOnlyAccount(){return !!(currentUser&&currentUser.username==='tc1234');}
 function canReworkInspect(){return !isViewOnlyAccount();}
-function inspectReworkBy(){return currentUser?(currentUser.name||currentUser.username):null;}
 function getAirLogEmNos(){
   var nos=[];
   for(var i=1;i<=7;i++){if(canEditAirlog(i))nos.push(i);}
@@ -6243,7 +6242,7 @@ async function ensureInspectPhotos(id){
 }
 
 async function loadInspect(){
-  var data=await sb('inspection_records','?select=id,inspect_date,category,process,issue,status,is_external,note,completed_date,after_by,created_at&order=inspect_date.desc');
+  var data=await sb('inspection_records','?select=id,inspect_date,category,process,issue,status,is_external,note,completed_date,created_at&order=inspect_date.desc');
   if(!data)data=[];
   inspectAllData=data;
   renderInspectKPI(data);
@@ -6330,7 +6329,7 @@ function renderInspCardHtml(r,isOpen,photosLoading){
       +noteHtml
       +'<div class="insp-card-photos">'
         +'<div><div class="insp-card-photo-lbl">개선 전</div>'+beforeHtml+'</div>'
-        +'<div><div class="insp-card-photo-lbl">개선 후</div>'+afterHtml+(r.after_photo&&r.after_by?'<div style="font-size:11px;color:#9ca3af;margin-top:4px;">📷 '+escHtml(r.after_by)+' 등록</div>':'')+'</div>'
+        +'<div><div class="insp-card-photo-lbl">개선 후</div>'+afterHtml+'</div>'
       +'</div>'
       +'<div style="margin-bottom:12px;"><label style="display:block;font-size:12px;color:#6b7280;font-weight:600;margin-bottom:6px;">개선 완료일자</label><input type="date" id="insp-card-completed-'+id+'" value="'+(r.completed_date||'')+'" onchange="saveInspCardCompleted(\''+id+'\')" style="width:100%;border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;"></div>'
       +statusHtml
@@ -6365,10 +6364,9 @@ async function saveInspCardCompleted(id){
   var el=document.getElementById('insp-card-completed-'+id);
   if(!el)return;
   var v=el.value||null;
-  var by=inspectReworkBy();
-  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{completed_date:v,after_by:by},allowRework:true});
+  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:{completed_date:v},allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){r.completed_date=v;r.after_by=by;}
+  if(r){r.completed_date=v;}
   if(typeof showToast==='function')showToast('개선 완료일자 저장');
 }
 
@@ -6377,24 +6375,22 @@ async function saveInspCardStatus(id){
   if(!sel)return;
   var status=sel.value;
   var body={status:status};
-  if(status==='done')body.after_by=inspectReworkBy();
   await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){r.status=status;if(status==='done')r.after_by=body.after_by;}
+  if(r){r.status=status;}
   renderInspectKPI(inspectAllData);
   renderInspectCards(getInspectFiltered());
 }
 
-// 일반 사용자용 PWA 카드 개선 완료 처리: 상태를 곧바로 done 으로, 개선자에 로그인 사용자 기록
+// 일반 사용자용 PWA 카드 개선 완료 처리: 상태를 곧바로 done 으로 처리
 async function completeInspCard(id){
   var el=document.getElementById('insp-card-completed-'+id);
   var completed=(el&&el.value)?el.value:null;
-  var by=inspectReworkBy();
-  var body={status:'done',after_by:by};
+  var body={status:'done'};
   if(completed)body.completed_date=completed;
   await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){r.status='done';r.after_by=by;if(completed)r.completed_date=completed;}
+  if(r){r.status='done';if(completed)r.completed_date=completed;}
   renderInspectKPI(inspectAllData);
   renderInspectCards(getInspectFiltered());
   if(typeof showToast==='function')showToast('개선 완료 처리되었습니다');
@@ -6622,7 +6618,6 @@ function renderInspectTable(data){
       +'<td onclick="showInspectDetail(\''+r.id+'\')">'+(r.process||'<span style="color:#cbd5e1;">미지정</span>')+'</td>'
       +'<td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" onclick="showInspectDetail(\''+r.id+'\')">'+escHtml(r.issue)+'</td>'
       +'<td onclick="showInspectDetail(\''+r.id+'\')">'+(r.completed_date||'<span style="color:#cbd5e1;">—</span>')+'</td>'
-      +'<td onclick="showInspectDetail(\''+r.id+'\')">'+(r.after_by?escHtml(r.after_by):'<span style="color:#cbd5e1;">—</span>')+'</td>'
       +'<td onclick="showInspectDetail(\''+r.id+'\')">'+statusBadge+'</td>'
       +delCell
       +'</tr>';
@@ -6630,7 +6625,7 @@ function renderInspectTable(data){
   var delTh=canEditAll()?'<th style="padding:12px 8px;width:38px;"></th>':'';
   el.innerHTML='<div style="overflow-x:auto;"><table style="min-width:600px;"><thead><tr>'
     +'<th class="insp-chk-th" style="padding:12px 8px;"><input type="checkbox" class="insp-chk" id="insp-chk-all" '+(allChecked?'checked':'')+' onchange="toggleInspectAll(this,'+JSON.stringify(data.map(function(r){return r.id;})).replace(/"/g,'&quot;')+')"></th>'
-    +'<th style="padding:12px 14px;font-size:12px;">점검일</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">공정</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;">개선 완료일자</th><th style="padding:12px 14px;font-size:12px;">개선자</th><th style="padding:12px 14px;font-size:12px;">상태</th>'
+    +'<th style="padding:12px 14px;font-size:12px;">점검일</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">공정</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;">개선 완료일자</th><th style="padding:12px 14px;font-size:12px;">상태</th>'
     +delTh
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
   updateInspectPdfBtn();
@@ -6742,7 +6737,7 @@ function buildInspectDetailHtml(r,photosLoading){
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'
       +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 전</div>'+beforeHtml+'</div>'
-      +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 후</div>'+afterHtml+(r.after_photo&&r.after_by?'<div style="font-size:11.5px;color:#9ca3af;margin-top:6px;">📷 '+escHtml(r.after_by)+' 등록</div>':'')+'</div>'
+      +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 후</div>'+afterHtml+'</div>'
     +'</div>';
 }
 
@@ -6820,12 +6815,11 @@ async function saveInspectDetail(id){
   var status=(canEditAll()&&statusEl)?statusEl.value:'done';
   var note=document.getElementById('detail-note').value;
   var completed=document.getElementById('detail-completed').value||null;
-  var by=inspectReworkBy();
-  var body={status:status,note:note||null,completed_date:completed,after_by:by};
+  var body={status:status,note:note||null,completed_date:completed};
   if(canEditAll()){body.category=document.getElementById('detail-category').value;body.process=document.getElementById('detail-process').value||null;}
   await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){r.status=status;r.note=note;r.completed_date=completed;r.after_by=by;if(canEditAll()){r.category=body.category;r.process=body.process;}}
+  if(r){r.status=status;r.note=note;r.completed_date=completed;if(canEditAll()){r.category=body.category;r.process=body.process;}}
   renderInspectKPI(inspectAllData);
   renderInspectTable(getInspectFiltered());
   if(typeof renderInspectCards==='function')renderInspectCards(getInspectFiltered());
@@ -6869,10 +6863,9 @@ async function deleteInspectPhoto(id,field){
   if(!confirm((field==='before'?'개선 전':'개선 후')+' 사진을 삭제하시겠습니까?'))return;
   var body={};
   body[field==='before'?'before_photo':'after_photo']=null;
-  if(field==='after'){body.after_by=null;}
   await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){if(field==='before')r.before_photo=null;else {r.after_photo=null;r.after_by=null;}}
+  if(r){if(field==='before')r.before_photo=null;else {r.after_photo=null;}}
   showInspectDetail(id);
 }
 
@@ -6881,10 +6874,9 @@ async function uploadInspectPhoto(input,id,field){
   var dataUrl=await compressAndUpload(input.files[0]);
   var body={};
   body[field==='before'?'before_photo':'after_photo']=dataUrl;
-  if(field==='after'){body.after_by=inspectReworkBy();}
   await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){if(field==='before')r.before_photo=dataUrl;else {r.after_photo=dataUrl;r.after_by=body.after_by;}}
+  if(r){if(field==='before')r.before_photo=dataUrl;else {r.after_photo=dataUrl;}}
   showInspectDetail(id);
 }
 
