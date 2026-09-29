@@ -240,7 +240,16 @@ function verdictOp(list){
   const out=[];
   for(const l of Object.values(byF)){let lastPos=null;
     for(const r of l){let v,cls,why;
-      if(!r.hasOp&&r.hasPw){out.push({kind:"가동·전력",...r,usage:null,v:"확인필요",cls:"chk",why:"전력 기록만 있고 가동 기록 없음"});continue;}
+      if(!r.hasOp&&r.hasPw){
+        const u=+((r.curr)-(r.prev)).toFixed(3);
+        if(isNonOp(r.fno)){
+          const ok=Math.abs(u)<=EPS&&Math.abs(u-r.daily)<=EPS;
+          out.push({kind:"가동·전력",...r,usage:u,v:ok?"정상":"이상",cls:ok?"ok":"err",why:ok?"비가동·무변동 정합":"비가동 시설인데 전력 변동 발생"});
+          continue;
+        }
+        out.push({kind:"가동·전력",...r,usage:u,v:"확인필요",cls:"chk",why:"전력 기록만 있고 가동 기록 없음"});
+        continue;
+      }
       if(r.hasOp&&!r.hasPw){out.push({kind:"가동·전력",...r,usage:null,v:"확인필요",cls:"chk",why:"가동 기록만 있고 전력 기록 없음"});continue;}
       const usage=+((r.curr)-(r.prev)).toFixed(3);
       const running=r.op_h>0,up=usage>EPS,down=usage<-EPS,same=Math.abs(usage)<=EPS,mis=Math.abs(usage-r.daily)>EPS;
