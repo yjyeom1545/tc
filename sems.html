@@ -85,6 +85,14 @@
   @media(max-width:640px){.exp-grid{grid-template-columns:1fr;}}
   .exp-box{border:1px solid #e8ecf0;border-radius:8px;padding:14px;}
   .exp-box .t{font-size:12.5px;font-weight:700;color:#0f2744;margin-bottom:4px;} .exp-box .d{font-size:11.5px;color:#6b7280;margin-bottom:10px;}
+  .dropzone{border:2px dashed #d1d9e6;border-radius:8px;padding:16px 12px;text-align:center;cursor:pointer;background:#f8fafc;transition:border-color .15s,background .15s;}
+  .dropzone svg{width:22px;height:22px;color:#9ca3af;margin-bottom:6px;}
+  .dropzone .dz-txt{font-size:11.5px;color:#6b7280;word-break:break-all;}
+  .dropzone.over{border-color:#0f2744;background:#eef2f8;}
+  .dropzone.over svg,.dropzone.over .dz-txt{color:#0f2744;}
+  .dropzone.has{border-style:solid;border-color:#059669;background:#ecfdf5;}
+  .dropzone.has svg,.dropzone.has .dz-txt{color:#059669;}
+  .dropzone .dz-txt.dz-err{color:#dc2626;}
   .hidden{display:none;}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f2744;color:#fff;font-size:12.5px;font-weight:600;padding:10px 18px;border-radius:8px;opacity:0;transition:opacity .2s;z-index:300;}
   .toast.show{opacity:1;}
@@ -181,12 +189,20 @@
       <div class="exp-grid">
         <div class="exp-box">
           <div class="t">① 배출구가동시간 양식</div><div class="d">가동시간(시·분)을 채웁니다.</div>
-          <input type="file" id="fileOut" accept=".xlsx" style="font-size:11.5px;">
+          <input type="file" id="fileOut" accept=".xlsx" style="display:none;">
+          <div class="dropzone" id="dzOut">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M7.5 8.5 12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+            <div class="dz-txt" id="dzOutTxt">xlsx 파일을 끌어다 놓거나 클릭해서 선택</div>
+          </div>
           <div style="margin-top:10px;"><button class="btn btn-navy" id="expOut" disabled>값 채워 내려받기</button></div>
         </div>
         <div class="exp-box">
           <div class="t">② 시설운전사항 양식</div><div class="d">전력검침량을 채웁니다. (1차여과=0)</div>
-          <input type="file" id="fileFac" accept=".xlsx" style="font-size:11.5px;">
+          <input type="file" id="fileFac" accept=".xlsx" style="display:none;">
+          <div class="dropzone" id="dzFac">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M7.5 8.5 12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+            <div class="dz-txt" id="dzFacTxt">xlsx 파일을 끌어다 놓거나 클릭해서 선택</div>
+          </div>
           <div style="margin-top:10px;"><button class="btn btn-navy" id="expFac" disabled>값 채워 내려받기</button></div>
         </div>
       </div>
@@ -216,8 +232,10 @@ let nameMap={}, RECORDS=[], mode="day";
 
 async function loadPeriod(){
   const day=document.getElementById('dayInput').value, month=document.getElementById('monInput').value;
+  const [y,m]=month.split('-').map(Number);
+  const lastDay=month+'-'+String(new Date(y,m,0).getDate()).padStart(2,'0');
   let q=sb.from("air_operation_log").select("*");
-  q = mode==="day" ? q.eq(COL.date,day) : q.gte(COL.date,month+"-01").lte(COL.date,month+"-31");
+  q = mode==="day" ? q.eq(COL.date,day) : q.gte(COL.date,month+"-01").lte(COL.date,lastDay);
   const {data,error}=await q; if(error) throw error;
   const opRows={},pwRows={};
   for(const row of (data||[])){
@@ -230,7 +248,7 @@ async function loadPeriod(){
   const combined=[...keys].map(k=>{const o=opRows[k],p=pwRows[k];const [f,d]=k.split("|");
     return {fno:Number(f),date:d,hasOp:!!o,hasPw:!!p,op_h:o?o.op_h:null,outName:o?o.outName:(nameMap[f]||("배출구"+f)),prev:p?p.prev:null,curr:p?p.curr:null,daily:p?p.daily:null};});
   let meas=[];
-  try{ let mq=sb.from("air_measurement").select("*"); mq=mode==="day"?mq.eq(MCOL.date,day):mq.gte(MCOL.date,month+"-01").lte(MCOL.date,month+"-31");
+  try{ let mq=sb.from("air_measurement").select("*"); mq=mode==="day"?mq.eq(MCOL.date,day):mq.gte(MCOL.date,month+"-01").lte(MCOL.date,lastDay);
     const mr=await mq; if(!mr.error&&mr.data) meas=mr.data.map(r=>({fno:Number(r[MCOL.fno]),date:String(r[MCOL.date]).slice(0,10)})).filter(r=>!isNaN(r.fno)); }catch(e){}
   return {combined,meas};
 }
@@ -280,7 +298,13 @@ async function run(){
     RECORDS=[...verdictOp(combined),...verdictMeas(meas,combined)];
     render(mode==="day"?document.getElementById('dayInput').value+" · 당일":document.getElementById('monInput').value+" · 월 전체");
     document.getElementById('loadMsg').textContent = RECORDS.length? "" : "해당 기간 데이터가 없습니다";
-  }catch(e){ document.getElementById('loadMsg').textContent="조회 오류: "+(e.message||e); }
+  }catch(e){
+    RECORDS=[];
+    document.getElementById('loadMsg').textContent="조회 오류: "+(e.message||e);
+    document.getElementById('sumCard').style.display='none';
+    document.getElementById('badCard').style.display='none';
+    document.getElementById('expCard').style.display='none';
+  }
 }
 function render(label){
   const c={정상:0,이상:0,확인필요:0};RECORDS.forEach(r=>c[r.v]++);
@@ -334,6 +358,39 @@ document.getElementById('fileOut').addEventListener('change',e=>{document.getEle
 document.getElementById('fileFac').addEventListener('change',e=>{document.getElementById('expFac').disabled=!(e.target.files.length&&RECORDS.length);});
 document.getElementById('expOut').addEventListener('click',()=>{const f=document.getElementById('fileOut').files[0];if(f)fillOut(f);else toast("SEMS 배출구가동시간 양식을 먼저 올리세요");});
 document.getElementById('expFac').addEventListener('click',()=>{const f=document.getElementById('fileFac').files[0];if(f)fillFac(f);else toast("SEMS 시설운전사항 양식을 먼저 올리세요");});
+
+/* 양식 드래그 앤 드롭 */
+function setupDropzone(dzId,txtId,inputId){
+  const el=document.getElementById(dzId),txtEl=document.getElementById(txtId),inp=document.getElementById(inputId);
+  const DEFAULT="xlsx 파일을 끌어다 놓거나 클릭해서 선택";
+  el.addEventListener('click',()=>inp.click());
+  el.addEventListener('dragenter',e=>{e.preventDefault();el.classList.add('over');});
+  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('over');});
+  el.addEventListener('dragleave',e=>{if(!el.contains(e.relatedTarget))el.classList.remove('over');});
+  el.addEventListener('drop',e=>{
+    e.preventDefault();el.classList.remove('over');
+    const f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(!f)return;
+    if(!/\.xlsx$/i.test(f.name)){
+      txtEl.textContent="xlsx 파일만 올릴 수 있습니다";txtEl.classList.add('dz-err');
+      setTimeout(()=>{txtEl.classList.remove('dz-err');txtEl.textContent=el.classList.contains('has')?inp.files[0].name+" — 다시 놓으면 교체":DEFAULT;},2200);
+      return;
+    }
+    const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;
+    inp.dispatchEvent(new Event('change'));
+  });
+  inp.addEventListener('change',()=>{
+    if(inp.files.length){
+      el.classList.add('has');txtEl.classList.remove('dz-err');
+      txtEl.textContent=inp.files[0].name+" — 다시 놓으면 교체";
+    }else{
+      el.classList.remove('has');txtEl.classList.remove('dz-err');txtEl.textContent=DEFAULT;
+    }
+  });
+}
+setupDropzone('dzOut','dzOutTxt','fileOut');
+setupDropzone('dzFac','dzFacTxt','fileFac');
+document.addEventListener('dragover',e=>e.preventDefault());
+document.addEventListener('drop',e=>e.preventDefault());
 </script>
 </body>
 </html>
