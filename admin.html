@@ -5503,8 +5503,8 @@ async function saveAirLog(){
       var _emFilled=_sh&&_sh.value!==''&&_eh&&_eh.value!=='';
       var _ptEl=document.getElementById('pr'+n+'-today');
       var _prFilled=_ptEl&&_ptEl.value!==''&&_ptEl.dataset.confirmed==='1';
-      // 관리자·안전환경팀 대리저장: 완전히 비운 시설(시간·전력·상태 모두 없음)은 검증 제외 → 채운 시설만 저장
-      if(canEditAll()&&!_emFilled&&!_prFilled&&!alStatusMap['em'+n])return;
+      // 관리자·안전환경팀 대리저장: 시간·전력이 모두 빈 시설은 검증 제외 → 채운 시설만 저장 (기본값 '정상' 상태는 입력으로 보지 않음)
+      if(canEditAll()&&!_emFilled&&!_prFilled)return;
       if(!_emFilled&&!_prFilled){
         _miss.push('· '+(_fnm[n]||n+'번')+' — 가동시간·전력 미입력');
       } else if(!_emFilled){
@@ -5620,8 +5620,9 @@ async function _doActualSaveAirLog(){
     var em_=document.getElementById('em'+n+'-em').value;
     var hr=document.getElementById('em'+n+'-hr').value;
     // 시간도 status도 없으면 스킵 (DB에 없던 시설이 빈 값으로 새로 저장되는 것 방지)
+    // 신규 모드는 기본값 '정상' 상태만 있는 빈 시설도 스킵 (다른 담당자 신규 저장이 막히는 것 방지)
     var _emStatus=alStatusMap['em'+n];
-    if(!sh&&!eh&&!_emStatus)return;
+    if(!sh&&!eh&&(alMode==='new'||!_emStatus))return;
     if(_existSet['배출구-'+n])return; // 관리자 대리저장 시 이미 저장된 시설 제외
     var startTime=(sh||sm)?((sh||'00')+':'+(sm||'00')):null;
     var endTime=(eh||em_)?((eh||'00')+':'+(em_||'00')):null;
