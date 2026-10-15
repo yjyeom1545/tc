@@ -235,10 +235,33 @@ tr:hover td{background:#fafbfd;}
 .ext-badge{background:#ede9fe;color:#5b21b6;padding:3px 9px;border-radius:4px;font-size:12px;font-weight:600;white-space:nowrap;}
 .insp-photo-box{width:100%;aspect-ratio:4/3;border-radius:7px;overflow:hidden;background:#f4f6f9;border:1px solid #e8ecf0;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;}
 .insp-photo-box img{width:100%;height:100%;object-fit:cover;}
-#inspect-photo-lightbox .lb-photos{display:flex;flex-direction:row;gap:16px;width:95vw;max-height:85vh;}
-#inspect-photo-lightbox .lb-photo-section{flex:1;display:flex;flex-direction:column;min-width:0;}
-#inspect-photo-lightbox .lb-photo-section img{flex:1;width:100%;height:100%;object-fit:contain;border-radius:8px;background:#111;min-height:0;}
-@media(max-width:600px){#inspect-photo-lightbox .lb-photos{flex-direction:column;max-height:80vh;overflow-y:auto;}}
+#inspect-photo-lightbox .lb-stage{position:relative;width:95vw;height:82vh;display:flex;align-items:center;justify-content:center;touch-action:pan-y;}
+#inspect-photo-lightbox .lb-stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;user-select:none;-webkit-user-drag:none;}
+#inspect-photo-lightbox .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border:none;border-radius:50%;background:rgba(255,255,255,0.15);color:white;font-size:28px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+#inspect-photo-lightbox .lb-nav.prev{left:4px;}
+#inspect-photo-lightbox .lb-nav.next{right:4px;}
+/* 점검 사진 슬라이드 */
+.insp-car-view{touch-action:pan-y;}
+.insp-car-track{display:flex;width:100%;height:100%;transition:transform 0.25s ease;}
+.insp-car-track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;user-select:none;-webkit-user-drag:none;}
+.insp-car-nav{position:absolute;top:50%;transform:translateY(-50%);width:28px;height:28px;border:none;border-radius:50%;background:rgba(0,0,0,0.45);color:white;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;padding:0;}
+.insp-car-nav.prev{left:6px;}
+.insp-car-nav.next{right:6px;}
+body.is-pwa .insp-car-nav{display:none;}
+.insp-car-cnt{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,0.55);color:white;font-size:11px;padding:2px 8px;border-radius:10px;z-index:2;}
+.insp-car-badge{position:absolute;left:6px;top:6px;background:rgba(250,204,21,0.95);color:#713f12;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;z-index:2;}
+.insp-car-repbtn{position:absolute;right:38px;top:6px;background:rgba(0,0,0,0.55);color:white;border:none;font-size:11px;padding:4px 9px;border-radius:12px;cursor:pointer;z-index:2;font-family:'Noto Sans KR',sans-serif;}
+.insp-car-repbtn.no-del{right:6px;}
+.insp-car-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;padding:0;}
+.insp-car-thumbs{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+.insp-car-thumb{position:relative;width:48px;height:36px;border-radius:5px;overflow:hidden;border:2px solid transparent;cursor:pointer;background:#f4f6f9;flex-shrink:0;}
+.insp-car-thumb.active{border-color:#0f2744;}
+.insp-car-thumb img{width:100%;height:100%;object-fit:cover;}
+.insp-car-thumb .star{position:absolute;left:1px;top:-2px;color:#facc15;font-size:12px;text-shadow:0 0 2px rgba(0,0,0,0.7);}
+.insp-car-add{height:36px;padding:0 9px;background:#f4f6f9;border:1px dashed #cbd5e1;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;display:flex;align-items:center;justify-content:center;white-space:nowrap;flex-shrink:0;}
+.insp-new-thumb{position:relative;width:80px;height:60px;border-radius:6px;overflow:hidden;background:#f4f6f9;}
+.insp-new-thumb img{width:100%;height:100%;object-fit:cover;}
+.insp-new-thumb button{position:absolute;top:2px;right:2px;width:20px;height:20px;border:none;border-radius:50%;background:rgba(0,0,0,0.55);color:white;font-size:13px;line-height:1;cursor:pointer;padding:0;}
 .insp-photo-empty{color:#d1d5db;font-size:13px;text-align:center;}
 .insp-photo-upload{position:absolute;bottom:0;left:0;right:0;background:rgba(15,39,68,0.7);color:white;font-size:11px;padding:5px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;}
 tr.inspect-row{cursor:pointer;line-height:1.7;}
@@ -1825,15 +1848,15 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
         <div class="form-group"><label>비고</label><input type="text" id="if-note" placeholder="선택 입력"></div>
       </div>
       <div class="form-group" style="margin-bottom:10px;">
-        <label>개선 전 사진</label>
+        <label>개선 전 사진 (최대 3장)</label>
         <div id="if-before-wrap" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <label style="padding:7px 14px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
-            파일 선택<input type="file" id="if-before-file" accept="image/*" style="display:none;" onchange="handleInspectPhoto(this,'if-before-preview')">
+            파일 선택<input type="file" id="if-before-file" accept="image/*" multiple style="display:none;" onchange="handleInspectPhoto(this,'if-before-preview')">
           </label>
           <label style="padding:7px 14px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;">
             촬영<input type="file" id="if-before-camera" accept="image/*" capture="environment" style="display:none;" onchange="handleInspectPhoto(this,'if-before-preview')">
           </label>
-          <div id="if-before-preview" style="width:80px;height:60px;border-radius:6px;overflow:hidden;background:#f4f6f9;display:none;"><img style="width:100%;height:100%;object-fit:cover;"></div>
+          <div id="if-before-preview" style="display:none;gap:6px;flex-wrap:wrap;"></div>
         </div>
       </div>
       <div class="modal-btns">
@@ -1867,15 +1890,11 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   <!-- 사진 전체화면 팝업 -->
   <div id="inspect-photo-lightbox" onclick="handleInspectLightboxOverlayClick(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;align-items:center;justify-content:center;flex-direction:column;padding:20px;box-sizing:border-box;">
     <button onclick="closeInspectLightbox()" aria-label="닫기" style="position:fixed;top:calc(env(safe-area-inset-top, 0px) + 12px);right:12px;width:44px;height:44px;background:rgba(0,0,0,0.55);border:none;border-radius:50%;color:white;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:9999;">×</button>
-    <div class="lb-photos">
-      <div class="lb-photo-section">
-        <div style="font-size:12px;color:#9ca3af;margin-bottom:8px;text-align:center;flex-shrink:0;">개선 전</div>
-        <img id="lb-before" src="">
-      </div>
-      <div class="lb-photo-section">
-        <div style="font-size:12px;color:#9ca3af;margin-bottom:8px;text-align:center;flex-shrink:0;">개선 후</div>
-        <img id="lb-after" src="">
-      </div>
+    <div style="font-size:13px;color:#d1d5db;margin-bottom:10px;text-align:center;flex-shrink:0;" id="lb-label"></div>
+    <div class="lb-stage" id="lb-stage">
+      <img id="lb-img" src="" alt="">
+      <button class="lb-nav prev" id="lb-prev" onclick="event.stopPropagation();inspLbGo(-1)" aria-label="이전">‹</button>
+      <button class="lb-nav next" id="lb-next" onclick="event.stopPropagation();inspLbGo(1)" aria-label="다음">›</button>
     </div>
   </div>
 </div>
@@ -6210,11 +6229,9 @@ var inspectAllData=[];
 var inspectCurrentFilter='all';
 var inspectSelectedId=null;
 var inspectSelectedIds=new Set();
-var inspectBeforeDataUrl=null;
-var inspectAfterDataUrl=null;
 var _inspPhotoLoading={}; // id -> in-flight fetch Promise (중복 조회 방지)
 
-// 목록 조회에서는 사진 컬럼(before_photo/after_photo)을 제외하고,
+// 목록 조회에서는 사진 컬럼(before_photo/after_photo 및 before_photos/after_photos)을 제외하고,
 // 상세 진입/PDF 내보내기 시점에 id 기준으로 별도 조회한다.
 async function ensureInspectPhotosBatch(ids){
   var toFetch=[],waits=[];
@@ -6225,10 +6242,15 @@ async function ensureInspectPhotosBatch(ids){
     else toFetch.push(id);
   });
   if(toFetch.length){
-    var p=sb('inspection_records','?select=id,before_photo,after_photo&id=in.('+toFetch.join(',')+')').then(function(rows){
+    var p=sb('inspection_records','?select=id,before_photo,after_photo,before_photos,after_photos,before_rep,after_rep&id=in.('+toFetch.join(',')+')').then(function(rows){
       (rows||[]).forEach(function(row){
         var r=inspectAllData.find(function(x){return x.id===row.id;});
-        if(r){r.before_photo=row.before_photo||null;r.after_photo=row.after_photo||null;r._photosLoaded=true;}
+        if(r){
+          r.before_photo=row.before_photo||null;r.after_photo=row.after_photo||null;
+          r.before_photos=Array.isArray(row.before_photos)?row.before_photos:[];r.after_photos=Array.isArray(row.after_photos)?row.after_photos:[];
+          r.before_rep=row.before_rep||0;r.after_rep=row.after_rep||0;
+          r._photosLoaded=true;
+        }
       });
       toFetch.forEach(function(id){delete _inspPhotoLoading[id];});
     });
@@ -6240,6 +6262,234 @@ async function ensureInspectPhotosBatch(ids){
 async function ensureInspectPhotos(id){
   await ensureInspectPhotosBatch([id]);
   return inspectAllData.find(function(x){return x.id===id;});
+}
+
+/* ── 점검 사진 다중 등록 (Storage: inspection-photos) ── */
+var INSP_BUCKET='inspection-photos';
+var INSP_MAX_PHOTOS=3;
+var _inspSlideIdx={}; // 'id_side' -> 현재 슬라이드 위치
+
+// 사진 읽기 단일 진입점: 새 배열 컬럼이 비어 있으면 기존 base64 컬럼을 1장짜리 배열로 간주
+function inspGetPhotos(r,side){
+  if(!r)return [];
+  var arr=r[side+'_photos'];
+  if(Array.isArray(arr)&&arr.length)return arr.slice();
+  var legacy=r[side+'_photo'];
+  return legacy?[legacy]:[];
+}
+function inspGetRep(r,side){
+  var n=inspGetPhotos(r,side).length;
+  var rep=parseInt(r&&r[side+'_rep'],10)||0;
+  return (rep>=0&&rep<n)?rep:0;
+}
+function inspRepPhoto(r,side){
+  var arr=inspGetPhotos(r,side);
+  return arr.length?arr[inspGetRep(r,side)]:null;
+}
+// 기존 inspect 권한 그대로: 개선 전 = canEditAll, 개선 후 = canReworkInspect
+function canInspPhoto(side){return side==='before'?canEditAll():canReworkInspect();}
+
+function inspPublicUrl(path){return SB_URL+'/storage/v1/object/public/'+INSP_BUCKET+'/'+path;}
+function inspPathFromUrl(url){
+  var mark='/storage/v1/object/public/'+INSP_BUCKET+'/';
+  var i=(url||'').indexOf(mark);
+  return i>=0?decodeURIComponent(url.slice(i+mark.length)):null;
+}
+
+// 긴 변 1280px, JPEG 0.8 로 압축 → Blob
+function compressInspectImage(file){
+  return new Promise(function(resolve,reject){
+    var url=URL.createObjectURL(file);
+    var img=new Image();
+    img.onload=function(){
+      var ratio=Math.min(1280/Math.max(img.width,img.height),1);
+      var cw=Math.round(img.width*ratio),ch=Math.round(img.height*ratio);
+      var canvas=document.createElement('canvas');
+      canvas.width=cw;canvas.height=ch;
+      canvas.getContext('2d').drawImage(img,0,0,cw,ch);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(function(blob){blob?resolve(blob):reject(new Error('이미지 변환 실패'));},'image/jpeg',0.8);
+    };
+    img.onerror=function(){URL.revokeObjectURL(url);reject(new Error('이미지를 읽을 수 없습니다'));};
+    img.src=url;
+  });
+}
+
+async function inspUploadBlob(recordId,side,blob,seq){
+  var path=recordId+'/'+side+'_'+(Date.now()+(seq||0))+'.jpg';
+  var res=await fetch(SB_URL+'/storage/v1/object/'+INSP_BUCKET+'/'+path,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'image/jpeg','x-upsert':'false'},body:blob});
+  if(!res.ok)throw new Error('사진 업로드 실패 ('+res.status+')');
+  return inspPublicUrl(path);
+}
+async function inspRemoveFiles(paths){
+  paths=(paths||[]).filter(Boolean);
+  if(!paths.length)return;
+  await fetch(SB_URL+'/storage/v1/object/'+INSP_BUCKET,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({prefixes:paths})});
+}
+// 점검 기록 삭제 시 {record_id}/ 폴더의 사진 전부 삭제
+async function inspRemoveFolder(recordId){
+  try{
+    var res=await fetch(SB_URL+'/storage/v1/object/list/'+INSP_BUCKET,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({prefix:recordId+'/',limit:100,offset:0})});
+    if(!res.ok)return;
+    var items=await res.json();
+    await inspRemoveFiles((items||[]).map(function(o){return recordId+'/'+o.name;}));
+  }catch(e){console.warn('점검 사진 폴더 삭제 실패',e);}
+}
+
+async function inspPatchPhotos(id,body){
+  var res=await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
+  if(!res||!res.ok)throw new Error('저장 실패');
+}
+
+// 사진 추가 (input.files, multiple 지원)
+async function addInspectPhotos(input,id,side){
+  var files=Array.prototype.slice.call(input.files||[]);
+  input.value='';
+  if(!files.length)return;
+  if(!canInspPhoto(side)){showToast('사진 등록 권한이 없습니다.');return;}
+  var r=await ensureInspectPhotos(id);
+  if(!r)return;
+  var cur=inspGetPhotos(r,side);
+  var remain=INSP_MAX_PHOTOS-cur.length;
+  if(remain<=0){showToast('최대 3장까지 등록할 수 있습니다');return;}
+  if(files.length>remain){files=files.slice(0,remain);showToast('최대 3장까지 등록할 수 있습니다');}
+  else showToast('사진 업로드 중...',60000);
+  try{
+    var arr=Array.isArray(r[side+'_photos'])?r[side+'_photos'].slice():[];
+    // 기존 base64 1장만 있는 기록: 그 사진도 목록에 남도록 Storage로 옮겨 배열에 포함 (기존 컬럼은 그대로 둠)
+    if(!arr.length&&r[side+'_photo']){
+      var legacyBlob=await (await fetch(r[side+'_photo'])).blob();
+      arr.push(await inspUploadBlob(id,side,legacyBlob,0));
+    }
+    for(var i=0;i<files.length;i++){
+      var blob=await compressInspectImage(files[i]);
+      arr.push(await inspUploadBlob(id,side,blob,i+1));
+    }
+    var body={};body[side+'_photos']=arr;
+    await inspPatchPhotos(id,body);
+    r[side+'_photos']=arr;
+    _inspSlideIdx[id+'_'+side]=arr.length-1;
+    showToast('사진이 등록되었습니다',1500);
+  }catch(e){showToast(e.message||'사진 업로드 실패');}
+  inspRefreshPhotos(id);
+}
+
+async function deleteInspectPhotoAt(id,side,idx){
+  if(!canInspPhoto(side))return;
+  if(!confirm((side==='before'?'개선 전':'개선 후')+' 사진을 삭제하시겠습니까?'))return;
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(!r)return;
+  var arr=Array.isArray(r[side+'_photos'])?r[side+'_photos'].slice():[];
+  var rep=inspGetRep(r,side);
+  var body={};
+  var removed=null;
+  if(arr.length){
+    removed=arr.splice(idx,1)[0];
+    body[side+'_photos']=arr;
+    body[side+'_rep']=(idx===rep)?0:(idx<rep?rep-1:rep);
+  }
+  // 배열이 비게 되면 기존 base64 사진이 다시 나타나지 않도록 함께 비움 (기존 단일 사진 삭제와 동일 동작)
+  if(!arr.length&&r[side+'_photo'])body[side+'_photo']=null;
+  try{
+    await inspPatchPhotos(id,body);
+    Object.keys(body).forEach(function(k){r[k]=body[k];});
+    if(removed)await inspRemoveFiles([inspPathFromUrl(removed)]);
+  }catch(e){showToast(e.message||'삭제 실패');}
+  var k=id+'_'+side;
+  _inspSlideIdx[k]=Math.max(0,Math.min(_inspSlideIdx[k]||0,inspGetPhotos(r,side).length-1));
+  inspRefreshPhotos(id);
+}
+
+async function setInspectRep(id,side,idx){
+  if(!canInspPhoto(side))return;
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(!r)return;
+  var body={};body[side+'_rep']=idx;
+  try{await inspPatchPhotos(id,body);r[side+'_rep']=idx;showToast('대표 사진으로 지정했습니다',1500);}
+  catch(e){showToast(e.message||'저장 실패');}
+  inspRefreshPhotos(id);
+}
+
+// 슬라이드 HTML (상세 패널·바텀시트·PWA 카드 공통)
+function buildInspPhotoCarousel(r,side){
+  var id=r.id,key=id+'_'+side;
+  var photos=inspGetPhotos(r,side);
+  var n=photos.length;
+  var idx=Math.max(0,Math.min(_inspSlideIdx[key]||0,n-1));
+  _inspSlideIdx[key]=idx;
+  var rep=inspGetRep(r,side);
+  var can=canInspPhoto(side);
+  var alt=side==='before'?'개선 전':'개선 후';
+  var view;
+  if(!n){
+    view='<div class="insp-photo-box"><span class="insp-photo-empty">사진 없음</span></div>';
+  }else{
+    view='<div class="insp-photo-box insp-car-view" onclick="inspCarTap(this)" ontouchstart="inspCarTouchStart(event,this)" ontouchend="inspCarTouchEnd(event,this)">'
+      +'<div class="insp-car-track" style="transform:translateX('+(-idx*100)+'%);">'
+        +photos.map(function(u,i){return '<img loading="lazy" src="'+u+'" alt="'+alt+' '+(i+1)+'">';}).join('')
+      +'</div>'
+      +(n>1?'<button class="insp-car-nav prev" onclick="event.stopPropagation();inspCarGo(\''+key+'\','+(idx-1)+')" aria-label="이전">‹</button><button class="insp-car-nav next" onclick="event.stopPropagation();inspCarGo(\''+key+'\','+(idx+1)+')" aria-label="다음">›</button>':'')
+      +(n>1?'<span class="insp-car-cnt">'+(idx+1)+'/'+n+'</span>':'')
+      +(idx===rep?'<span class="insp-car-badge">⭐ 대표</span>':(can?'<button class="insp-car-repbtn" onclick="event.stopPropagation();setInspectRep(\''+id+'\',\''+side+'\','+idx+')">⭐ 대표</button>':''))
+      +(can?'<button class="insp-car-del" title="사진 삭제" onclick="event.stopPropagation();deleteInspectPhotoAt(\''+id+'\',\''+side+'\','+idx+')">×</button>':'')
+      +'</div>';
+  }
+  var thumbs='';
+  if(n>1||(can&&n<INSP_MAX_PHOTOS)){
+    thumbs='<div class="insp-car-thumbs">'
+      +(n>1?photos.map(function(u,i){return '<div class="insp-car-thumb'+(i===idx?' active':'')+'" onclick="inspCarGo(\''+key+'\','+i+')"><img loading="lazy" src="'+u+'" alt="">'+(i===rep?'<span class="star">★</span>':'')+'</div>';}).join(''):'')
+      +(can&&n<INSP_MAX_PHOTOS
+        ?'<label class="insp-car-add">+ 추가<input type="file" accept="image/*" multiple style="display:none;" onchange="addInspectPhotos(this,\''+id+'\',\''+side+'\')"></label>'
+          +'<label class="insp-car-add">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="addInspectPhotos(this,\''+id+'\',\''+side+'\')"></label>'
+        :'')
+      +'</div>';
+  }
+  return '<div class="insp-car" data-key="'+key+'" data-id="'+id+'" data-side="'+side+'" data-idx="'+idx+'">'+view+thumbs+'</div>';
+}
+
+// 해당 기록의 슬라이드만 다시 그림 (상세/카드 어디에 있든)
+function inspRefreshPhotos(id){
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  if(!r)return;
+  document.querySelectorAll('.insp-car[data-id="'+id+'"]').forEach(function(el){
+    el.outerHTML=buildInspPhotoCarousel(r,el.getAttribute('data-side'));
+  });
+}
+function inspCarGo(key,idx){
+  var parts=key.split('_'),side=parts.pop(),id=parts.join('_');
+  var r=inspectAllData.find(function(x){return x.id===id;});
+  var n=inspGetPhotos(r,side).length;
+  if(!n)return;
+  var from=_inspSlideIdx[key]||0;
+  _inspSlideIdx[key]=Math.max(0,Math.min(idx,n-1));
+  inspRefreshPhotos(id);
+  // 이전 위치에서 새 위치로 미끄러지듯 이동
+  document.querySelectorAll('.insp-car[data-key="'+key+'"] .insp-car-track').forEach(function(tr){
+    var to=tr.style.transform;
+    tr.style.transition='none';tr.style.transform='translateX('+(-from*100)+'%)';
+    void tr.offsetWidth;
+    tr.style.transition='';tr.style.transform=to;
+  });
+}
+var _inspTouch=null;
+function inspCarTouchStart(e,el){
+  var t=e.touches[0];_inspTouch={x:t.clientX,y:t.clientY,el:el,moved:false};
+}
+function inspCarTouchEnd(e,el){
+  if(!_inspTouch||_inspTouch.el!==el)return;
+  var t=e.changedTouches[0];
+  var dx=t.clientX-_inspTouch.x,dy=t.clientY-_inspTouch.y;
+  if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){
+    _inspTouch.moved=true;
+    var car=el.closest('.insp-car');
+    inspCarGo(car.getAttribute('data-key'),parseInt(car.getAttribute('data-idx'),10)+(dx<0?1:-1));
+    e.preventDefault(); // 스와이프 후 click(전체화면) 방지
+  }
+  _inspTouch=null;
+}
+function inspCarTap(el){
+  var car=el.closest('.insp-car');
+  showInspectLightbox(car.getAttribute('data-id'),car.getAttribute('data-side'),parseInt(car.getAttribute('data-idx'),10));
 }
 
 async function loadInspect(){
@@ -6299,19 +6549,13 @@ function renderInspCardHtml(r,isOpen,photosLoading){
   var statusTag='<span style="'+_bs+stCol+'">'+stLbl+'</span>';
   var extTag=r.is_external?'<span style="'+_bs+'background:#ede9fe;color:#5b21b6;">외부기관</span>':'';
   var noteHtml=r.note?'<div class="insp-card-note">'+escHtml(r.note)+'</div>':'';
-  var canUpBefore=canEditAll();
-  var canUpAfter=canReworkInspect();
   var beforeHtml,afterHtml;
   if(photosLoading){
     beforeHtml='<div class="insp-photo-box"><span class="insp-photo-empty">불러오는 중...</span></div>';
     afterHtml='<div class="insp-photo-box"><span class="insp-photo-empty">불러오는 중...</span></div>';
   }else{
-    var beforeBox='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.before_photo?'<img loading="lazy" src="'+r.before_photo+'" alt="개선 전"><div class="insp-photo-upload"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 크게보기</div>':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
-    beforeHtml='<div style="position:relative;">'+beforeBox+(r.before_photo&&canUpBefore?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'before\')" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')+'</div>';
-    if(canUpBefore)beforeHtml+='<div style="display:flex;gap:5px;margin-top:6px;"><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label></div>';
-    var afterBox='<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.after_photo?'<img loading="lazy" src="'+r.after_photo+'" alt="개선 후"><div class="insp-photo-upload"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 크게보기</div>':'<span class="insp-photo-empty">사진 없음</span>')+'</div>';
-    afterHtml='<div style="position:relative;">'+afterBox+(r.after_photo&&canUpAfter?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'after\')" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')+'</div>';
-    if(!r.after_photo&&canUpAfter)afterHtml+='<div style="display:flex;gap:5px;margin-top:6px;"><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label><label style="flex:1;padding:6px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;text-align:center;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label></div>';
+    beforeHtml=buildInspPhotoCarousel(r,'before');
+    afterHtml=buildInspPhotoCarousel(r,'after');
   }
   var canEditCardStatus=canChangeInspectStatus();
   var canReworkCard=canReworkInspect()&&!canEditCardStatus;
@@ -6451,8 +6695,9 @@ function buildInspectPdfHtml(records,forPrint){
       var catBadge='<span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:10px;font-weight:600;'+catColor+';">'+escHtml(r.category)+'</span>';
       var extBadge=r.is_external?'<span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:10px;font-weight:600;background:#ede9fe;color:#7c3aed;margin-left:4px;">외부기관</span>':'';
       var noteHtml=r.note?'<div style="font-size:11px;color:#6b7280;margin-top:2px;">비고: '+escHtml(r.note)+'</div>':'';
-      var beforeImg=r.before_photo?'<img src="'+r.before_photo+'" alt="개선 전">':'<span class="pdf-photo-empty">사진 없음</span>';
-      var afterImg=r.after_photo?'<img src="'+r.after_photo+'" alt="개선 후">':'<span class="pdf-photo-empty">사진 없음</span>';
+      var beforeSrc=inspRepPhoto(r,'before'),afterSrc=inspRepPhoto(r,'after');
+      var beforeImg=beforeSrc?'<img src="'+beforeSrc+'" alt="개선 전">':'<span class="pdf-photo-empty">사진 없음</span>';
+      var afterImg=afterSrc?'<img src="'+afterSrc+'" alt="개선 후">':'<span class="pdf-photo-empty">사진 없음</span>';
       return '<div class="pdf-record">'
         +'<div class="pdf-record-hdr">'
           +'<span class="pdf-record-no">No.'+no+'</span>'
@@ -6501,10 +6746,27 @@ function closeInspectPdfModal(){
   if(modal){modal.classList.remove('show');document.body.style.overflow='';}
 }
 
+// 외부 URL 이미지 로딩 완료까지 대기 (실패·지연 시에도 진행)
+function preloadInspImages(urls,timeoutMs){
+  return Promise.all(urls.filter(Boolean).map(function(u){
+    return new Promise(function(resolve){
+      var img=new Image();var t=setTimeout(resolve,timeoutMs||15000);
+      img.onload=img.onerror=function(){clearTimeout(t);resolve();};
+      img.src=u;
+    });
+  }));
+}
+
 async function printInspectPdf(){
   var records=inspectAllData.filter(function(r){return inspectSelectedIds.has(r.id);});
   if(!records.length)return;
+  // 사용자 클릭 직후 팝업을 먼저 열어 둬야 비동기 대기 후에도 팝업 차단을 피할 수 있다
+  var win=window.open('','_blank','width=1100,height=800');
+  if(!win){alert('팝업이 차단되었습니다. 팝업을 허용한 후 다시 시도해주세요.');return;}
+  win.document.write('<p style="font-family:sans-serif;padding:20px;color:#6b7280;">사진 불러오는 중...</p>');
   await ensureInspectPhotosBatch(records.map(function(r){return r.id;}));
+  var _imgs=[];records.forEach(function(r){_imgs.push(inspRepPhoto(r,'before'),inspRepPhoto(r,'after'));});
+  await preloadInspImages(_imgs);
   // A4 landscape: 297×210mm, margin 15mm → content 267×180mm
   var today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
   var totalPages=records.length;
@@ -6522,11 +6784,12 @@ async function printInspectPdf(){
       var catStyle=r.category==='환경'?'background:#dbeafe;color:#1e40af':'background:#dcfce7;color:#166534';
       var extBadge=r.is_external?'<span style="display:inline-block;padding:1px 7px;border-radius:3px;font-size:11px;font-weight:600;background:#ede9fe;color:#7c3aed;-webkit-print-color-adjust:exact;print-color-adjust:exact;">외부기관</span>':'';
       var noteHtml=r.note?'<div style="font-size:12px;color:#374151;line-height:1.6;margin-top:8px;padding:6px 8px;background:#f8fafc;border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">비고: '+esc(r.note)+'</div>':'';
-      var beforeImg=r.before_photo
-        ?'<img src="'+r.before_photo+'" style="width:100%;height:100%;object-fit:cover;" alt="개선 전">'
+      var beforeSrc=inspRepPhoto(r,'before'),afterSrc=inspRepPhoto(r,'after');
+      var beforeImg=beforeSrc
+        ?'<img src="'+beforeSrc+'" style="width:100%;height:100%;object-fit:cover;" alt="개선 전">'
         :'<span style="font-size:12px;color:#d1d5db;">사진 없음</span>';
-      var afterImg=r.after_photo
-        ?'<img src="'+r.after_photo+'" style="width:100%;height:100%;object-fit:cover;" alt="개선 후">'
+      var afterImg=afterSrc
+        ?'<img src="'+afterSrc+'" style="width:100%;height:100%;object-fit:cover;" alt="개선 후">'
         :'<span style="font-size:12px;color:#d1d5db;">사진 없음</span>';
 
       // 높이 계산 (content: 180mm)
@@ -6573,8 +6836,7 @@ async function printInspectPdf(){
     return html;
   }
 
-  var win=window.open('','_blank','width=1100,height=800');
-  if(!win){alert('팝업이 차단되었습니다. 팝업을 허용한 후 다시 시도해주세요.');return;}
+  win.document.open();
   win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
     +'<title>안전/환경 점검 이력</title>'
     +'<style>'
@@ -6587,7 +6849,11 @@ async function printInspectPdf(){
     +'</style>'
     +'</head><body>'
     +buildPages()
-    +'<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};};<\/script>'
+    +'<script>window.onload=function(){'
+    +'var imgs=Array.prototype.slice.call(document.images);'
+    +'Promise.all(imgs.map(function(im){return im.complete?Promise.resolve():new Promise(function(r){im.onload=im.onerror=r;});}))'
+    +'.then(function(){window.onafterprint=function(){window.close();};window.print();});'
+    +'};<\/script>'
     +'</body></html>');
   win.document.close();
 }
@@ -6682,8 +6948,6 @@ function buildInspectDetailHtml(r,photosLoading){
   var id=r.id;
   var canEditStatus=canChangeInspectStatus();
   var canReworkStatus=canReworkInspect()&&!canEditStatus;
-  var canUploadAfter=canReworkInspect();
-  var canUploadBefore=canEditAll();
   var _d=new Date();var today=_d.getFullYear()+'-'+String(_d.getMonth()+1).padStart(2,'0')+'-'+String(_d.getDate()).padStart(2,'0');
 
   var statusOpts=['miss','hold','done'].map(function(v){
@@ -6696,27 +6960,8 @@ function buildInspectDetailHtml(r,photosLoading){
     beforeHtml='<div class="insp-photo-box"><span class="insp-photo-empty">불러오는 중...</span></div>';
     afterHtml='<div class="insp-photo-box"><span class="insp-photo-empty">불러오는 중...</span></div>';
   }else{
-    beforeHtml='<div style="position:relative;">'
-      +'<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.before_photo?'<img loading="lazy" src="'+r.before_photo+'" alt="개선 전">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>'
-      +(r.before_photo&&canUploadBefore?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'before\')" title="사진 삭제" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')
-      +'</div>';
-    if(canUploadBefore){
-      beforeHtml+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
-        +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label>'
-        +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'before\')"></label>'
-        +'</div>';
-    }
-
-    afterHtml='<div style="position:relative;">'
-      +'<div class="insp-photo-box" onclick="showInspectLightbox(\''+id+'\')">'+(r.after_photo?'<img loading="lazy" src="'+r.after_photo+'" alt="개선 후">':'<span class="insp-photo-empty">사진 없음</span>')+'</div>'
-      +(r.after_photo&&canUploadAfter?'<button onclick="event.stopPropagation();deleteInspectPhoto(\''+id+'\',\'after\')" title="사진 삭제" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2;">×</button>':'')
-      +'</div>';
-    if(canUploadAfter){
-      afterHtml+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
-        +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">파일<input type="file" accept="image/*" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label>'
-        +'<label style="padding:5px 11px;background:#f4f6f9;border:1px solid #e8ecf0;border-radius:5px;font-size:11px;cursor:pointer;color:#374151;">촬영<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadInspectPhoto(this,\''+id+'\',\'after\')"></label>'
-        +'</div>';
-    }
+    beforeHtml=buildInspPhotoCarousel(r,'before');
+    afterHtml=buildInspPhotoCarousel(r,'after');
   }
 
   return '<div style="font-size:13px;color:#6b7280;margin-bottom:16px;line-height:2;">'+r.inspect_date+(r.is_external?' &nbsp;<span class="ext-badge">외부기관</span>':'')+'</div>'
@@ -6827,80 +7072,75 @@ async function saveInspectDetail(id){
   alert('저장 완료!');
 }
 
-async function compressAndUpload(file){
-  return new Promise(function(resolve){
-    var reader=new FileReader();
-    reader.onload=function(e){
-      var img=new Image();
-      img.onload=function(){
-        var maxW=1920,maxH=1440;
-        var w=img.width,h=img.height;
-        var ratio=Math.min(maxW/w,maxH/h,1);
-        var cw=Math.round(w*ratio),ch=Math.round(h*ratio);
-        var canvas=document.createElement('canvas');
-        canvas.width=cw;canvas.height=ch;
-        var ctx=canvas.getContext('2d');
-        ctx.drawImage(img,0,0,cw,ch);
-        function tryQuality(q,done){
-          canvas.toBlob(function(blob){
-            if(blob.size<=500*1024||q<=0.75){
-              var fr=new FileReader();
-              fr.onload=function(e2){done(e2.target.result);};
-              fr.readAsDataURL(blob);
-            }else{
-              tryQuality(Math.max(q-0.05,0.75),done);
-            }
-          },'image/jpeg',q);
-        }
-        tryQuality(0.88,resolve);
-      };
-      img.src=e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-async function deleteInspectPhoto(id,field){
-  if(!confirm((field==='before'?'개선 전':'개선 후')+' 사진을 삭제하시겠습니까?'))return;
-  var body={};
-  body[field==='before'?'before_photo':'after_photo']=null;
-  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
-  var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){if(field==='before')r.before_photo=null;else {r.after_photo=null;}}
-  showInspectDetail(id);
-}
-
-async function uploadInspectPhoto(input,id,field){
-  if(!input.files||!input.files[0])return;
-  var dataUrl=await compressAndUpload(input.files[0]);
-  var body={};
-  body[field==='before'?'before_photo':'after_photo']=dataUrl;
-  await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
-  var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){if(field==='before')r.before_photo=dataUrl;else {r.after_photo=dataUrl;}}
-  showInspectDetail(id);
-}
-
+// 신규 등록 폼: 개선 전 사진 (압축된 Blob, 최대 3장)
+var inspectNewPhotos=[];
 function handleInspectPhoto(input,previewId){
-  if(!input.files||!input.files[0])return;
-  compressAndUpload(input.files[0]).then(function(dataUrl){
-    if(previewId==='if-before-preview'){inspectBeforeDataUrl=dataUrl;}
-    else{inspectAfterDataUrl=dataUrl;}
-    var wrap=document.getElementById(previewId);
-    if(wrap){wrap.style.display='block';var img=wrap.querySelector('img');if(img)img.src=dataUrl;}
-  });
+  var files=Array.prototype.slice.call(input.files||[]);
+  input.value='';
+  if(!files.length)return;
+  var remain=INSP_MAX_PHOTOS-inspectNewPhotos.length;
+  if(remain<=0){showToast('최대 3장까지 등록할 수 있습니다');return;}
+  if(files.length>remain){files=files.slice(0,remain);showToast('최대 3장까지 등록할 수 있습니다');}
+  Promise.all(files.map(compressInspectImage)).then(function(blobs){
+    blobs.forEach(function(b){inspectNewPhotos.push({blob:b,url:URL.createObjectURL(b)});});
+    renderInspectNewPreview();
+  }).catch(function(e){showToast(e.message||'사진을 읽을 수 없습니다');});
+}
+function removeInspectNewPhoto(i){
+  var p=inspectNewPhotos.splice(i,1)[0];
+  if(p)URL.revokeObjectURL(p.url);
+  renderInspectNewPreview();
+}
+function renderInspectNewPreview(){
+  var wrap=document.getElementById('if-before-preview');
+  if(!wrap)return;
+  wrap.style.display=inspectNewPhotos.length?'flex':'none';
+  wrap.innerHTML=inspectNewPhotos.map(function(p,i){
+    return '<div class="insp-new-thumb"><img src="'+p.url+'" alt="">'+(i===0?'<span style="position:absolute;left:3px;bottom:2px;font-size:10px;color:#facc15;text-shadow:0 0 2px #000;">★</span>':'')+'<button type="button" onclick="removeInspectNewPhoto('+i+')">×</button></div>';
+  }).join('');
 }
 
 var _inspectLightboxPushed=false;
 
-function showInspectLightbox(id){
+var _inspLb={photos:[],idx:0,label:''};
+function inspLbRender(){
+  var n=_inspLb.photos.length;
+  var img=document.getElementById('lb-img');
+  if(img)img.src=_inspLb.photos[_inspLb.idx]||'';
+  var lbl=document.getElementById('lb-label');
+  if(lbl)lbl.textContent=_inspLb.label+(n>1?'  '+(_inspLb.idx+1)+'/'+n:'');
+  var pv=document.getElementById('lb-prev'),nx=document.getElementById('lb-next');
+  if(pv)pv.style.display=n>1?'':'none';
+  if(nx)nx.style.display=n>1?'':'none';
+}
+function inspLbGo(d){
+  var n=_inspLb.photos.length;
+  if(n<2)return;
+  _inspLb.idx=(_inspLb.idx+d+n)%n;
+  inspLbRender();
+}
+(function(){
+  var sx=null,sy=null;
+  document.addEventListener('touchstart',function(e){
+    if(!e.target.closest||!e.target.closest('#lb-stage'))return;
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+  },{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(sx===null)return;
+    var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    sx=null;
+    if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy))inspLbGo(dx<0?1:-1);
+  });
+})();
+
+function showInspectLightbox(id,side,idx){
   var r=inspectAllData.find(function(x){return x.id===id;});
   if(!r)return;
+  side=side||'before';
+  _inspLb={photos:inspGetPhotos(r,side),idx:idx||0,label:side==='before'?'개선 전':'개선 후'};
+  if(!_inspLb.photos.length)return;
+  inspLbRender();
   var lb=document.getElementById('inspect-photo-lightbox');
-  var lbBefore=document.getElementById('lb-before');
-  var lbAfter=document.getElementById('lb-after');
-  if(lbBefore)lbBefore.src=r.before_photo||'';
-  if(lbAfter)lbAfter.src=r.after_photo||'';
   if(lb){lb.style.display='flex';}
   if(!_inspectLightboxPushed){
     _inspectLightboxPushed=true;
@@ -6909,7 +7149,7 @@ function showInspectLightbox(id){
 }
 function handleInspectLightboxOverlayClick(e){
   // 배경(오버레이) 영역을 직접 탭했을 때만 닫기 (사진 자체를 탭하면 무시)
-  if(e.target===e.currentTarget)closeInspectLightbox();
+  if(e.target===e.currentTarget||e.target.id==='lb-stage')closeInspectLightbox();
 }
 function closeInspectLightbox(){
   var lb=document.getElementById('inspect-photo-lightbox');
@@ -6932,13 +7172,16 @@ document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
     var lb=document.getElementById('inspect-photo-lightbox');
     if(lb&&lb.style.display!=='none')closeInspectLightbox();
+  }else if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
+    var lb2=document.getElementById('inspect-photo-lightbox');
+    if(lb2&&lb2.style.display!=='none')inspLbGo(e.key==='ArrowLeft'?-1:1);
   }
 });
 
 function openInspectForm(){
-  inspectBeforeDataUrl=null;inspectAfterDataUrl=null;
-  var preview=document.getElementById('if-before-preview');
-  if(preview)preview.style.display='none';
+  inspectNewPhotos.forEach(function(p){URL.revokeObjectURL(p.url);});
+  inspectNewPhotos=[];
+  renderInspectNewPreview();
   document.getElementById('inspect-form-modal').classList.add('show');
 }
 function closeInspectForm(){
@@ -6957,17 +7200,27 @@ async function submitInspect(){
     issue:issue,
     status:'miss',
     is_external:document.getElementById('if-external').value==='true',
-    note:document.getElementById('if-note').value||null,
-    before_photo:inspectBeforeDataUrl||null
+    note:document.getElementById('if-note').value||null
   };
   var res=await fetch(SB_URL+'/rest/v1/inspection_records',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'},body:JSON.stringify(body)});
   if(!res.ok){alert('등록 실패');return;}
+  if(inspectNewPhotos.length){
+    try{
+      var created=(await res.json())[0];
+      showToast('사진 업로드 중...',60000);
+      var urls=[];
+      for(var i=0;i<inspectNewPhotos.length;i++)urls.push(await inspUploadBlob(created.id,'before',inspectNewPhotos[i].blob,i));
+      await inspPatchPhotos(created.id,{before_photos:urls,before_rep:0});
+      showToast('등록되었습니다',1500);
+    }catch(e){alert('점검 항목은 등록됐지만 사진 업로드에 실패했습니다: '+(e.message||e));}
+  }
   closeInspectForm();
   document.getElementById('if-date').value='';
   document.getElementById('if-issue').value='';
   document.getElementById('if-process').value='';
   document.getElementById('if-note').value='';
-  inspectBeforeDataUrl=null;
+  inspectNewPhotos.forEach(function(p){URL.revokeObjectURL(p.url);});
+  inspectNewPhotos=[];
   loadInspect();
 }
 
@@ -6978,7 +7231,8 @@ function confirmDelete(table,id,cb){
   document.getElementById('modal-confirm-btn').onclick=function(){doDelete();};
 }
 async function doDelete(){
-  await sb(pendingDelete.table,'?id=eq.'+pendingDelete.id,{method:'DELETE'});
+  var res=await sb(pendingDelete.table,'?id=eq.'+pendingDelete.id,{method:'DELETE'});
+  if(pendingDelete.table==='inspection_records'&&res&&res.ok)await inspRemoveFolder(pendingDelete.id);
   closeModal();
   if(pendingDelete.cb)pendingDelete.cb();
 }
