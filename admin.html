@@ -655,6 +655,22 @@ tr.inspect-row.chk-sel td{background:#eff6ff !important;}
   body.is-pwa #tab-airlog input[type="text"],body.is-pwa #tab-airlog input[type="number"],body.is-pwa #tab-airlog input[type="date"]{font-size:16px !important;}
   body.is-pwa #sems-export-bar,body.is-pwa #filter-excel-btn{display:none !important;}
 }
+/* ── PWA 공용 팝업(.modal-bg/.modal): 상단 헤더 위로, 상단 기준 배치 + 내부 스크롤 + 하단 버튼 고정 ── */
+@media(max-width:768px){
+  body.is-pwa .modal-bg{z-index:600;padding:0;overflow:hidden;align-items:flex-start;}
+  body.is-pwa .modal{
+    margin:calc(env(safe-area-inset-top) + 16px) auto 16px;
+    max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px);
+    overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+    padding-bottom:0;box-sizing:border-box;
+  }
+  body.is-pwa .modal .modal-btns{
+    position:sticky;bottom:0;z-index:2;background:white;
+    margin:1rem -1.5rem 0;padding:12px 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+    border-top:1px solid #eef0f3;
+  }
+  body.is-pwa .modal input,body.is-pwa .modal select,body.is-pwa .modal textarea{font-size:16px !important;}
+}
 
 /* ── 폐유고상 탭: showTab()의 hidden 클래스가 관리 ── */
 
@@ -7178,6 +7194,25 @@ function openInspectForm(){
 function closeInspectForm(){
   document.getElementById('inspect-form-modal').classList.remove('show');
 }
+
+// PWA: 공용 팝업(.modal-bg)이 하나라도 열려 있으면 뒤쪽 화면 스크롤 잠금 (iOS는 overflow:hidden만으로 안 막혀 position:fixed 사용)
+(function(){
+  var lockedY=null;
+  function sync(){
+    if(!document.body.classList.contains('is-pwa'))return;
+    var open=!!document.querySelector('.modal-bg.show');
+    var bs=document.body.style;
+    if(open&&lockedY===null){
+      lockedY=window.scrollY||0;
+      bs.position='fixed';bs.top=(-lockedY)+'px';bs.left='0';bs.right='0';bs.width='100%';
+    }else if(!open&&lockedY!==null){
+      bs.position='';bs.top='';bs.left='';bs.right='';bs.width='';
+      window.scrollTo(0,lockedY);lockedY=null;
+    }
+  }
+  var mo=new MutationObserver(sync);
+  document.querySelectorAll('.modal-bg').forEach(function(el){mo.observe(el,{attributes:true,attributeFilter:['class']});});
+})();
 
 async function submitInspect(){
   var date=document.getElementById('if-date').value;
