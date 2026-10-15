@@ -6231,8 +6231,9 @@ var inspectSelectedId=null;
 var inspectSelectedIds=new Set();
 var _inspPhotoLoading={}; // id -> in-flight fetch Promise (중복 조회 방지)
 
-// 목록 조회에서는 사진 컬럼(before_photo/after_photo 및 before_photos/after_photos)을 제외하고,
+// 목록 조회에서는 사진 컬럼(before_photos/after_photos)을 제외하고,
 // 상세 진입/PDF 내보내기 시점에 id 기준으로 별도 조회한다.
+// 기존 base64 컬럼(before_photo/after_photo)은 DB에 그대로 두되 조회하지 않는다.
 async function ensureInspectPhotosBatch(ids){
   var toFetch=[],waits=[];
   (ids||[]).forEach(function(id){
@@ -6242,11 +6243,10 @@ async function ensureInspectPhotosBatch(ids){
     else toFetch.push(id);
   });
   if(toFetch.length){
-    var p=sb('inspection_records','?select=id,before_photo,after_photo,before_photos,after_photos,before_rep,after_rep&id=in.('+toFetch.join(',')+')').then(function(rows){
+    var p=sb('inspection_records','?select=id,before_photos,after_photos,before_rep,after_rep&id=in.('+toFetch.join(',')+')').then(function(rows){
       (rows||[]).forEach(function(row){
         var r=inspectAllData.find(function(x){return x.id===row.id;});
         if(r){
-          r.before_photo=row.before_photo||null;r.after_photo=row.after_photo||null;
           r.before_photos=Array.isArray(row.before_photos)?row.before_photos:[];r.after_photos=Array.isArray(row.after_photos)?row.after_photos:[];
           r.before_rep=row.before_rep||0;r.after_rep=row.after_rep||0;
           r._photosLoaded=true;
@@ -6269,13 +6269,11 @@ var INSP_BUCKET='inspection-photos';
 var INSP_MAX_PHOTOS=3;
 var _inspSlideIdx={}; // 'id_side' -> 현재 슬라이드 위치
 
-// 사진 읽기 단일 진입점: 새 배열 컬럼이 비어 있으면 기존 base64 컬럼을 1장짜리 배열로 간주
+// 사진 읽기 단일 진입점
 function inspGetPhotos(r,side){
   if(!r)return [];
   var arr=r[side+'_photos'];
-  if(Array.isArray(arr)&&arr.length)return arr.slice();
-  var legacy=r[side+'_photo'];
-  return legacy?[legacy]:[];
+  return Array.isArray(arr)?arr.slice():[];
 }
 function inspGetRep(r,side){
   var n=inspGetPhotos(r,side).length;
@@ -6356,11 +6354,6 @@ async function addInspectPhotos(input,id,side){
   else showToast('사진 업로드 중...',60000);
   try{
     var arr=Array.isArray(r[side+'_photos'])?r[side+'_photos'].slice():[];
-    // 기존 base64 1장만 있는 기록: 그 사진도 목록에 남도록 Storage로 옮겨 배열에 포함 (기존 컬럼은 그대로 둠)
-    if(!arr.length&&r[side+'_photo']){
-      var legacyBlob=await (await fetch(r[side+'_photo'])).blob();
-      arr.push(await inspUploadBlob(id,side,legacyBlob,0));
-    }
     for(var i=0;i<files.length;i++){
       var blob=await compressInspectImage(files[i]);
       arr.push(await inspUploadBlob(id,side,blob,i+1));
@@ -6388,8 +6381,6 @@ async function deleteInspectPhotoAt(id,side,idx){
     body[side+'_photos']=arr;
     body[side+'_rep']=(idx===rep)?0:(idx<rep?rep-1:rep);
   }
-  // 배열이 비게 되면 기존 base64 사진이 다시 나타나지 않도록 함께 비움 (기존 단일 사진 삭제와 동일 동작)
-  if(!arr.length&&r[side+'_photo'])body[side+'_photo']=null;
   try{
     await inspPatchPhotos(id,body);
     Object.keys(body).forEach(function(k){r[k]=body[k];});
