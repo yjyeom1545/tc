@@ -6246,6 +6246,7 @@ var inspectAllData=[];
 var inspectCurrentFilter='all';
 var inspectSelectedId=null;
 var inspectSelectedIds=new Set();
+var inspectSortKey='date', inspectSortDir='desc'; // 저장하지 않음: 진입 시 항상 점검일 최신순
 var _inspPhotoLoading={}; // id -> in-flight fetch Promise (중복 조회 방지)
 
 // 목록 조회에서는 사진 컬럼(before_photos/after_photos)을 제외하고,
@@ -6541,8 +6542,14 @@ function renderInspectCards(data){
     kpiEl.innerHTML='<div class="insp-pwa-kpi-card"><div class="insp-pwa-kpi-val" style="color:#dc2626;">'+miss+'</div><div class="insp-pwa-kpi-lbl">미개선 건수</div></div>'
       +'<div class="insp-pwa-kpi-card"><div class="insp-pwa-kpi-val" style="color:#2563eb;">'+rate+'%</div><div class="insp-pwa-kpi-lbl">개선율</div></div>';
   }
-  if(!data.length){cardsEl.innerHTML='<div class="empty">점검 이력이 없습니다.</div>';return;}
-  cardsEl.innerHTML=data.map(function(r){return renderInspCardHtml(r,false,false);}).join('');
+  var sortBtn=function(key,lbl){
+    var on=inspectSortKey===key;
+    var arrow=on?(inspectSortDir==='desc'?' ▼':' ▲'):'';
+    return '<button type="button" onclick="setInspectSort(\''+key+'\')" style="padding:5px 10px;border-radius:6px;font-size:12px;font-weight:'+(on?'700':'500')+';font-family:\'Noto Sans KR\',sans-serif;cursor:pointer;border:1px solid '+(on?'#1e3a5f':'#e2e8f0')+';background:'+(on?'#1e3a5f':'white')+';color:'+(on?'white':'#64748b')+';">'+lbl+arrow+'</button>';
+  };
+  var sortBar='<div style="display:flex;gap:6px;justify-content:flex-end;margin-bottom:10px;">'+sortBtn('date','점검일')+sortBtn('done','완료일자')+'</div>';
+  if(!data.length){cardsEl.innerHTML=sortBar+'<div class="empty">점검 이력이 없습니다.</div>';return;}
+  cardsEl.innerHTML=sortBar+data.map(function(r){return renderInspCardHtml(r,false,false);}).join('');
 }
 
 // isOpen: 카드가 펼쳐진 상태로 그릴지 여부 / photosLoading: 사진 별도 조회가 진행 중인지 여부
@@ -6682,7 +6689,33 @@ function getInspectFiltered(){
     if(f==='miss')return r.status==='miss';
     if(f==='hold')return r.status==='hold';
     return true;
-  });
+  }).slice().sort(compareInspectSort);
+}
+
+// 정렬: 'date'=inspect_date, 'done'=completed_date(값 없는 건은 방향과 무관하게 맨 아래). 동일값은 점검일 최신순.
+function compareInspectSort(a,b){
+  var dir=inspectSortDir==='asc'?1:-1;
+  var ad=a.inspect_date||'',bd=b.inspect_date||'';
+  if(inspectSortKey==='done'){
+    var ac=a.completed_date||'',bc=b.completed_date||'';
+    if(!ac&&bc)return 1;
+    if(ac&&!bc)return -1;
+    if(ac!==bc)return ac<bc?-dir:dir;
+    return ad<bd?1:ad>bd?-1:0;
+  }
+  return ad<bd?-dir:ad>bd?dir:0;
+}
+
+function setInspectSort(key){
+  if(inspectSortKey===key)inspectSortDir=inspectSortDir==='desc'?'asc':'desc';
+  else{inspectSortKey=key;inspectSortDir='desc';}
+  renderInspectTable(getInspectFiltered());
+  renderInspectCards(getInspectFiltered());
+}
+
+function inspectSortMark(key){
+  if(inspectSortKey===key)return inspectSortDir==='desc'?' ▼':' ▲';
+  return ' <span style="color:#94a3b8;font-size:10px;">↕</span>';
 }
 
 function buildInspectPdfHtml(records,forPrint){
@@ -6900,7 +6933,7 @@ function renderInspectTable(data){
   var delTh=canEditAll()?'<th style="padding:12px 8px;width:38px;"></th>':'';
   el.innerHTML='<div style="overflow-x:auto;"><table style="min-width:600px;"><thead><tr>'
     +'<th class="insp-chk-th" style="padding:12px 8px;"><input type="checkbox" class="insp-chk" id="insp-chk-all" '+(allChecked?'checked':'')+' onchange="toggleInspectAll(this,'+JSON.stringify(data.map(function(r){return r.id;})).replace(/"/g,'&quot;')+')"></th>'
-    +'<th style="padding:12px 14px;font-size:12px;">점검일</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">공정</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;">개선 완료일자</th><th style="padding:12px 14px;font-size:12px;">상태</th>'
+    +'<th style="padding:12px 14px;font-size:12px;cursor:pointer;" onclick="setInspectSort(\'date\')">점검일'+inspectSortMark('date')+'</th><th style="padding:12px 14px;font-size:12px;">구분</th><th style="padding:12px 14px;font-size:12px;">공정</th><th style="padding:12px 14px;font-size:12px;">지적 내용</th><th style="padding:12px 14px;font-size:12px;cursor:pointer;" onclick="setInspectSort(\'done\')">개선 완료일자'+inspectSortMark('done')+'</th><th style="padding:12px 14px;font-size:12px;">상태</th>'
     +delTh
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
   updateInspectPdfBtn();
