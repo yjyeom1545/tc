@@ -2242,6 +2242,29 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     </div>
   </div>
 
+  <!-- 교체 보류 모달 -->
+  <div class="modal-bg" id="carbon-hold-modal">
+    <div class="modal" style="max-width:380px;">
+      <div class="modal-title" id="carbon-hold-title">교체 보류</div>
+      <div class="form-group" style="margin-bottom:10px;"><label>측정일 <span style="color:#dc2626;">*</span></label><input type="date" id="ch-hold-date" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
+      <div class="form-group" style="margin-bottom:10px;"><label>유량 <span style="color:#dc2626;">*</span></label><input type="number" step="any" id="ch-hold-flow" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
+      <div class="form-group" style="margin-bottom:10px;"><label>농도 <span style="color:#dc2626;">*</span></label><input type="number" step="any" id="ch-hold-conc" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
+      <div class="form-group" style="margin-bottom:10px;"><label>차압 (선택)</label><input type="number" step="any" id="ch-hold-dp" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
+      <div class="form-group" style="margin-bottom:10px;"><label>보류 사유 <span style="color:#dc2626;">*</span></label>
+        <select id="ch-hold-reason" onchange="_carbonHoldReasonChange()" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;background:white;">
+          <option value="">-- 선택 --</option>
+          <option value="good">측정 결과 양호(유량·농도 기준 이내)</option>
+          <option value="etc">기타</option>
+        </select>
+      </div>
+      <div class="form-group" id="ch-hold-etc-wrap" style="margin-bottom:10px;display:none;"><label>기타 사유 <span style="color:#dc2626;">*</span></label><input type="text" id="ch-hold-etc" placeholder="사유 입력..." style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="closeCarbonHoldModal()">취소</button>
+        <button class="ws-btn ws-btn-primary" style="height:36px;padding:0 18px;" onclick="saveCarbonHold()">저장</button>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /tab-carbon -->
 
 <div id="tab-diagnosis" class="content hidden">
@@ -8241,6 +8264,9 @@ var CARBON_FACILITIES = [2, 3, 4, 5, 6, 7, 9];      // 활성탄 시설
 var BAGFILTER_FACILITIES = [1, 8];                   // 백필터 시설 (8번 연마시설 포함)
 var ALL_FILTER_FACILITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 var _carbonAllData = [];
+var _carbonHolds = [];   // filter_holds status='active' 목록
+var _carbonHoldFacility = null;
+var CARBON_HOLD_REASON_GOOD = '측정 결과 양호(유량·농도 기준 이내)';
 
 var FACILITY_NAMES = {
   1: '탈청시설 (쇼트룸)',
@@ -8293,6 +8319,89 @@ function _carbonElapsed(dateStr) {
   return Math.floor((new Date() - new Date(dateStr)) / 86400000);
 }
 
+// ── 교체 보류 (filter_holds) ──
+async function loadCarbonHolds() {
+  var res = await sbCarbon('filter_holds?status=eq.active&select=*&order=created_at.desc');
+  _carbonHolds = res.ok ? await res.json() : [];
+}
+
+function _carbonActiveHold(no) {
+  return _carbonHolds.find(function(h) { return h.facility === no; }) || null;
+}
+
+function openCarbonHoldModal(no) {
+  _carbonHoldFacility = no;
+  var shortName = FACILITY_SHORT[no] ? ' ' + FACILITY_SHORT[no] : '';
+  document.getElementById('carbon-hold-title').textContent = '교체 보류 — ' + no + '번' + shortName;
+  document.getElementById('ch-hold-date').value = _carbonTodayStr();
+  ['ch-hold-flow', 'ch-hold-conc', 'ch-hold-dp', 'ch-hold-reason', 'ch-hold-etc'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  _carbonHoldReasonChange();
+  document.getElementById('carbon-hold-modal').classList.add('show');
+}
+
+function closeCarbonHoldModal() {
+  document.getElementById('carbon-hold-modal').classList.remove('show');
+  _carbonHoldFacility = null;
+}
+
+function _carbonHoldReasonChange() {
+  var isEtc = document.getElementById('ch-hold-reason').value === 'etc';
+  document.getElementById('ch-hold-etc-wrap').style.display = isEtc ? '' : 'none';
+}
+
+async function saveCarbonHold() {
+  if (!_carbonHoldFacility) return;
+  var dateVal = document.getElementById('ch-hold-date').value;
+  var flowStr = document.getElementById('ch-hold-flow').value.trim();
+  var concStr = document.getElementById('ch-hold-conc').value.trim();
+  var dpStr = document.getElementById('ch-hold-dp').value.trim();
+  var reasonSel = document.getElementById('ch-hold-reason').value;
+  var etcText = document.getElementById('ch-hold-etc').value.trim();
+  if (!dateVal) { alert('측정일을 입력해주세요.'); return; }
+  if (flowStr === '' || isNaN(Number(flowStr))) { alert('유량을 입력해주세요.'); return; }
+  if (concStr === '' || isNaN(Number(concStr))) { alert('농도를 입력해주세요.'); return; }
+  if (dpStr !== '' && isNaN(Number(dpStr))) { alert('차압은 숫자로 입력해주세요.'); return; }
+  if (!reasonSel) { alert('보류 사유를 선택해주세요.'); return; }
+  if (reasonSel === 'etc' && !etcText) { alert('기타 사유를 입력해주세요.'); return; }
+
+  var no = _carbonHoldFacility;
+  var payload = {
+    facility: no,
+    measure_date: dateVal,
+    flow: Number(flowStr),
+    concentration: Number(concStr),
+    diff_pressure: dpStr === '' ? null : Number(dpStr),
+    reason: reasonSel === 'etc' ? etcText : CARBON_HOLD_REASON_GOOD,
+    status: 'active',
+    created_by: currentUser ? (currentUser.name || currentUser.username) : null
+  };
+  try {
+    var res = await sbCarbon('filter_holds', { method: 'POST', prefer: 'return=minimal', body: payload });
+    if (!res.ok) {
+      var errText = await res.text();
+      throw new Error('저장 실패 (' + res.status + '): ' + errText);
+    }
+    showToast(no + '번 시설 교체 보류 등록 완료');
+    closeCarbonHoldModal();
+    await loadCarbonHolds();
+    renderCarbonFacilityCards();
+  } catch(e) {
+    console.error('교체 보류 저장 오류:', e);
+    alert('저장 중 오류가 발생했습니다.\n' + e.message);
+  }
+}
+
+// 새 교체 기록 저장 시 해당 시설의 active 보류를 모두 해제
+async function releaseCarbonHolds(no) {
+  var res = await sbCarbon('filter_holds?facility=eq.' + no + '&status=eq.active', {
+    method: 'PATCH', prefer: 'return=minimal',
+    body: { status: 'released', released_at: new Date().toISOString() }
+  });
+  if (!res.ok) throw new Error('보류 해제 실패 (' + res.status + '): ' + await res.text());
+}
+
 function _updateCarbonFacilityOptions() {
   var typeSel = document.getElementById('carbon-type');
   var facSel = document.getElementById('carbon-facility');
@@ -8317,6 +8426,7 @@ async function initCarbonPage() {
     var res = await sbCarbon('activated_carbon_records?select=*&order=replace_date.desc');
     if (!res.ok) throw new Error('activated_carbon_records 로딩 실패: ' + res.status);
     _carbonAllData = await res.json();
+    await loadCarbonHolds();
     _buildCarbonYearFilter();
     renderCarbonSummary();
     renderCarbonFacilityCards();
@@ -8404,13 +8514,17 @@ function renderCarbonFacilityCards() {
 
     var isInactive = INACTIVE_FACILITIES.indexOf(no) >= 0;
     var statusLabel, statusColor, borderColor;
+    var holdBtn = '';
     if (isInactive) {
       // 비가동 시설: 이력과 무관하게 회색 고정
       statusLabel = '비가동'; statusColor = '#9ca3af'; borderColor = '#d1d5db';
     } else if (elapsed === null) {
       statusLabel = '기록 없음'; statusColor = '#9ca3af'; borderColor = '#e8ecf0';
+    } else if (elapsed >= CARBON_CYCLE_DAYS && _carbonActiveHold(no)) {
+      statusLabel = '교체 보류'; statusColor = '#ea580c'; borderColor = '#ea580c';
     } else if (elapsed >= CARBON_CYCLE_DAYS) {
       statusLabel = '교체시기'; statusColor = '#ef4444'; borderColor = '#ef4444';
+      holdBtn = '<button onclick="openCarbonHoldModal(' + no + ')" style="display:block;width:100%;margin-top:6px;padding:4px 0;background:white;border:1px solid #fdba74;border-radius:5px;font-size:11px;font-weight:600;color:#ea580c;cursor:pointer;font-family:inherit;">교체 보류</button>';
     } else if (elapsed >= CARBON_WARN_DAYS) {
       statusLabel = '주의'; statusColor = '#f59e0b'; borderColor = '#f59e0b';
     } else {
@@ -8429,6 +8543,7 @@ function renderCarbonFacilityCards() {
       + '<div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:3px;">' + dateText + '</div>'
       + (elapsedText ? '<div style="font-size:11px;color:#6b7280;margin-bottom:4px;">' + elapsedText + '</div>' : '')
       + '<span style="display:inline-block;padding:1px 7px;border-radius:9px;font-size:10px;font-weight:600;background:' + statusColor + '20;color:' + statusColor + ';">' + statusLabel + '</span>'
+      + holdBtn
       + '</div>';
   }).join('');
 }
@@ -8461,8 +8576,11 @@ async function saveCarbonRecord() {
     showToast(facilityNo + '번 시설 ' + typeLabel + ' 교체 등록 완료');
     var noteEl = document.getElementById('carbon-note');
     if (noteEl) noteEl.value = '';
+    try { await releaseCarbonHolds(facilityNo); }
+    catch(he) { console.error('교체 보류 해제 오류:', he); showToast(he.message); }
     var reload = await sbCarbon('activated_carbon_records?select=*&order=replace_date.desc');
     if (reload.ok) _carbonAllData = await reload.json();
+    await loadCarbonHolds();
     _buildCarbonYearFilter();
     renderCarbonSummary();
     renderCarbonFacilityCards();
@@ -8664,10 +8782,11 @@ function _diagTodayStr() {
 }
 
 async function loadDiagnosisData() {
-  var [prRes, carbonRes, filterRes] = await Promise.all([
+  var [prRes, carbonRes, filterRes, holdRes] = await Promise.all([
     sbDiag('pressure_readings?select=*&order=read_date.desc'),
     sbDiag('activated_carbon_records?select=*&order=replace_date.desc'),
-    sbDiag('filter_records?select=room_name,record_date&order=record_date.desc')
+    sbDiag('filter_records?select=room_name,record_date&order=record_date.desc'),
+    sbDiag('filter_holds?status=eq.active&select=facility,reason')
   ]);
   if (!prRes.ok) throw new Error('pressure_readings 로딩 실패: ' + prRes.status);
   if (!carbonRes.ok) throw new Error('activated_carbon_records 로딩 실패: ' + carbonRes.status);
@@ -8676,6 +8795,7 @@ async function loadDiagnosisData() {
   var prData = await prRes.json();
   var carbonData = await carbonRes.json();
   var filterData = await filterRes.json();
+  var holdData = holdRes.ok ? await holdRes.json() : [];
 
   // room_name별 최신 record_date 맵
   var filterLastDate = {};
@@ -8718,6 +8838,9 @@ async function loadDiagnosisData() {
     var carbonDays = carbonRows.length ? _diagElapsed(carbonRows[0].replace_date) : null;
     var lastCarbonDate = carbonRows.length ? carbonRows[0].replace_date : null;
     var lastPressureDate = latestRow ? latestRow.read_date : null;
+    // 교체 보류: 교체 주기 초과 + active 보류가 있을 때만 적용 (여과재 카드와 동일 기준)
+    var hold = holdData.find(function(h) { return h.facility === no; });
+    var carbonHold = !!(hold && carbonDays != null && carbonDays >= DIAG_CARBON_CYCLE);
 
     // 필터 경과일 (FACILITY_TO_FILTER_ROOM 매핑 기준)
     var roomName = FACILITY_TO_FILTER_ROOM[no] || null;
@@ -8751,6 +8874,8 @@ async function loadDiagnosisData() {
       filterDays: filterDays,
       lastFilterDate: lastFilterDate,
       carbonDays: carbonDays,
+      carbonHold: carbonHold,
+      carbonHoldReason: carbonHold ? hold.reason : null,
       lastCarbonDate: lastCarbonDate,
       lastPressureDate: lastPressureDate,
       isPressureStuck: isPressureStuck,
@@ -8840,7 +8965,7 @@ function severityScore(data, diagnosis) {
   var score = 0;
   if (diagnosis.severity === 'urgent') score += 100;
   if (diagnosis.severity === 'watch') score += 50;
-  if (data.carbonDays != null) {
+  if (data.carbonDays != null && !data.carbonHold) {
     if (data.carbonDays >= SIMPLE_CARBON_URGENT) score += 40;
     else if (data.carbonDays >= SIMPLE_CARBON_CYCLE) score += 30;
   }
@@ -8858,7 +8983,7 @@ function diagnoseSimple(data) {
   if (data.filterType === 'bagfilter')
     return { label:'백필터 — 차압 기반 관리', severity:'none', reason:'백필터 시설은 차압 직접 확인' };
 
-  if (data.carbonDays != null) {
+  if (data.carbonDays != null && !data.carbonHold) {
     if (data.carbonDays >= SIMPLE_CARBON_URGENT)
       return { label:'활성탄 교체 확인 필요', severity:'watch',
                reason:'활성탄 ' + data.carbonDays + '일 경과 (2년 초과) — 교체 기록 1회뿐, 정상 주기 판단 불가, 현장 확인 권장' };
@@ -8870,6 +8995,10 @@ function diagnoseSimple(data) {
   if (data.pressure != null && data.pressure >= 160)
     return { label:'차압 높음 — 관찰', severity:'watch',
              reason:'차압 ' + data.pressure + ' mmAq — 데이터 누적 후 정밀 진단 예정' };
+
+  if (data.carbonHold)
+    return { label:'교체 보류', severity:'none',
+             reason:'활성탄 ' + data.carbonDays + '일 경과 — 교체 보류 중 (' + data.carbonHoldReason + ')' };
 
   return { label:'정상', severity:'none', reason:'활성탄 교체 주기 이내' };
 }
@@ -8977,14 +9106,16 @@ function renderDiagnosisMatrix(facilitiesData) {
     var carbonCell = '—';
     if (d.facilityNo === 1) {
       carbonCell = '<span style="color:#9ca3af;font-size:10px;">백필터</span>';
+    } else if (d.carbonHold) {
+      carbonCell = '<span style="color:#ea580c;font-weight:600;">교체 보류</span>';
     } else if (d.carbonDays != null) {
       var cColor = d.carbonDays >= DIAG_CARBON_CYCLE ? '#ef4444' : d.carbonDays >= DIAG_CARBON_WARN ? '#f59e0b' : '#10b981';
       carbonCell = '<span style="color:' + cColor + ';font-weight:' + (d.carbonDays >= DIAG_CARBON_WARN ? '600' : '400') + ';">' + d.carbonDays + '일</span>';
     }
 
     // 자동 판단 뱃지
-    var diagBg = diag.severity === 'urgent' ? '#fef2f2' : diag.severity === 'watch' ? '#fffbeb' : '#f0fdf4';
-    var diagColor = diag.severity === 'urgent' ? '#ef4444' : diag.severity === 'watch' ? '#d97706' : '#10b981';
+    var diagBg = diag.severity === 'urgent' ? '#fef2f2' : diag.severity === 'watch' ? '#fffbeb' : d.carbonHold ? '#fff7ed' : '#f0fdf4';
+    var diagColor = diag.severity === 'urgent' ? '#ef4444' : diag.severity === 'watch' ? '#d97706' : d.carbonHold ? '#ea580c' : '#10b981';
     var diagBadge = '<span style="padding:2px 8px;border-radius:9px;font-size:11px;font-weight:600;background:' + diagBg + ';color:' + diagColor + ';">' + diag.label + '</span>';
 
     var dEncoded = JSON.stringify(d).replace(/"/g, '&quot;');
@@ -9021,10 +9152,13 @@ function renderDiagnosisLogic(facilityData) {
 
   items.push({
     label: '활성탄 경과',
-    value: d.carbonDays != null
+    value: d.carbonHold
+      ? '교체 보류 (마지막: ' + (d.lastCarbonDate || '—') + ')'
+      : d.carbonDays != null
       ? d.carbonDays + '일 (마지막: ' + (d.lastCarbonDate || '—') + ')'
       : '기록 없음',
-    color: d.carbonDays == null ? '#9ca3af'
+    color: d.carbonHold ? '#ea580c'
+      : d.carbonDays == null ? '#9ca3af'
       : d.carbonDays >= SIMPLE_CARBON_URGENT ? '#ef4444'
       : d.carbonDays >= SIMPLE_CARBON_CYCLE  ? '#f59e0b' : '#10b981'
   });
