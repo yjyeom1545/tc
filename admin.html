@@ -1298,6 +1298,21 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
     </div>
   </div>
 
+  <!-- 배출 완료 모달 (보관 현황 → 배출 버튼) -->
+  <div class="modal-bg" id="ws-dispose-modal">
+    <div class="modal" style="max-width:380px;">
+      <div class="modal-title">배출 등록</div>
+      <div class="form-group" style="margin-bottom:10px;"><label>폐기물 종류</label><input type="text" id="wsd-type" readonly style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;background:#f3f6fa;color:#374151;"></div>
+      <div class="form-group" style="margin-bottom:10px;"><label>배출일 *</label><input type="date" id="wsd-date" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
+      <div class="form-group" style="margin-bottom:6px;"><label>배출 수량 * <span id="wsd-unit-label" style="font-size:11px;color:#6b7280;"></span></label><input type="number" id="wsd-amount" min="0" step="any" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
+      <div id="wsd-current" style="font-size:12px;color:#6b7280;margin-bottom:4px;"></div>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="wsCloseDisposeModal()">취소</button>
+        <button class="ws-btn ws-btn-primary" style="height:36px;padding:0 18px;" onclick="wsSaveDispose()">저장</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- 연간 배출량 탭 -->
@@ -3307,6 +3322,8 @@ var _wsData=[];          // waste_storage 전체 (캐시)
 var _wsDisposal=[];      // 당월 배출 기록 (캐시)
 var _wsMonthDisposed=[]; // 이번달 배출된 waste_type 목록
 var _wsScheduledTypes=new Set(); // 배출예정 waste_type Set (waste_schedule 기반)
+var _wsLastDisposal={};  // 묶음 waste_type → 최신 완료일 (waste_schedule status=completed 기준, 단일 기준)
+var _wsMonthDoneCount=0; // 이번달 배출 완료 건수 (waste_schedule 기준)
 
 async function loadWasteStorage(){
   var now=new Date();
@@ -3324,13 +3341,23 @@ async function loadWasteStorage(){
     var mFrom=y+'-'+m+'-01';
     var mTo=y+'-'+m+'-'+String(lastDay).padStart(2,'0');
     _wsDisposal=await sb('waste_disposal','?disposal_date=gte.'+mFrom+'&disposal_date=lte.'+mTo+'&order=disposal_date.desc,created_at.desc');
-    _wsMonthDisposed=[...(new Set((_wsDisposal||[]).map(function(d){return d.waste_type;})))];
-    // 배출예정 waste_schedule 로드 (scheduled_date >= 오늘 AND completed_at IS NULL)
+    // 배출예정 waste_schedule 로드 (scheduled_date >= 오늘 AND 예정 상태)
     var todayStr=now.toISOString().slice(0,10);
-    var schedData=await sb('waste_schedule','?scheduled_date=gte.'+todayStr+'&completed_at=is.null&select=waste_type');
+    var schedData=await sb('waste_schedule','?scheduled_date=gte.'+todayStr+'&status=in.(scheduled,today)&select=waste_type');
     _wsScheduledTypes=new Set((schedData||[]).map(function(r){return r.waste_type;}));
+    // 배출 완료 기록 → 마지막 배출일·이번달 배출 (waste_schedule 단일 기준)
+    var doneData=await sb('waste_schedule','?status=eq.completed&select=waste_type,scheduled_date');
+    _wsLastDisposal={};
+    var monthTypes=new Set();
+    _wsMonthDoneCount=0;
+    (doneData||[]).forEach(function(r){
+      if(!r.scheduled_date)return;
+      if(!_wsLastDisposal[r.waste_type]||r.scheduled_date>_wsLastDisposal[r.waste_type])_wsLastDisposal[r.waste_type]=r.scheduled_date;
+      if(r.scheduled_date>=mFrom&&r.scheduled_date<=mTo){_wsMonthDoneCount++;monthTypes.add(r.waste_type);}
+    });
+    _wsMonthDisposed=(_wsData||[]).filter(function(w){return monthTypes.has(wsMapToScheduleType(w.waste_type));}).map(function(w){return w.waste_type;});
   }catch(e){
-    _wsData=[];_wsDisposal=[];_wsMonthDisposed=[];_wsScheduledTypes=new Set();
+    _wsData=[];_wsDisposal=[];_wsMonthDisposed=[];_wsScheduledTypes=new Set();_wsLastDisposal={};_wsMonthDoneCount=0;
     console.error('보관 현황 로드 오류:',e);
   }
   wsRenderAll();
@@ -3351,6 +3378,10 @@ function wsMapToScheduleType(wasteType){
 function wsStatus(pct,wasteType){
   if(wasteType&&_wsScheduledTypes.has(wsMapToScheduleType(wasteType)))return{label:'배출예정',cls:'scheduled'};
   return pct>=75?{label:'배출 요청 필요',cls:'warning'}:{label:'정상',cls:'success'};
+}
+// 마지막 배출일: 배출 스케줄 완료 기록 중 해당 폐기물(묶음 기준) 최신 완료일
+function wsLastDate(w){
+  return _wsLastDisposal[wsMapToScheduleType(w.waste_type)]||null;
 }
 
 function wsGetFiltered(){
@@ -3378,7 +3409,7 @@ function wsGetFiltered(){
     if(sortF==='pct_desc')return wsPct(b)-wsPct(a);
     if(sortF==='pct_asc')return wsPct(a)-wsPct(b);
     if(sortF==='date'){
-      var da=a.last_disposal_date||'';var db=b.last_disposal_date||'';
+      var da=wsLastDate(a)||'';var db=wsLastDate(b)||'';
       return da<db?-1:da>db?1:0;
     }
     if(sortF==='name')return (a.waste_type||'').localeCompare(b.waste_type||'','ko');
@@ -3414,8 +3445,9 @@ function wsRenderRow(w,i,editing){
   var pct=wsPct(w);
   var s=wsStatus(pct,w.waste_type);
   var maxDisp=w.unit_type==='count'?(w.max_amount||'-'):'-';
-  var days=wsDaysSince(w.last_disposal_date);
-  var daysStr=days!==null?days+'일':'-';
+  var lastDate=wsLastDate(w);
+  var days=wsDaysSince(lastDate);
+  var daysStr=(days!==null&&(parseFloat(w.current_amount)||0)>0)?days+'일':'-';
   var amtCell,mgmtCell;
   if(editing){
     var maxAttr=w.unit_type==='count'&&w.max_amount?' max="'+w.max_amount+'"':'';
@@ -3427,7 +3459,8 @@ function wsRenderRow(w,i,editing){
     amtCell=parseFloat(w.current_amount)||0;
     var canWrite=canEditAll();
     mgmtCell=canWrite
-      ?'<button class="ws-btn-sm" style="background:#0f6adb;color:white;border-color:#0f6adb;" onclick="wsOpenScheduleModal('+i+',event)">배출</button>'
+      ?'<button class="ws-btn-sm" style="background:#0f6adb;color:white;border-color:#0f6adb;" onclick="wsOpenDisposeModal('+i+',event)">배출</button>'
+        +' <button class="ws-btn-sm" onclick="wsOpenScheduleModal('+i+',event)">예정</button>'
       :'<span style="color:#d1d5db;font-size:11px;">-</span>';
   }
   var rowStyle=editing?'background:#eff6ff;':'cursor:pointer;';
@@ -3445,7 +3478,7 @@ function wsRenderRow(w,i,editing){
     +'<td class="ws-td-num ws-td-muted">'+maxDisp+'</td>'
     +'<td '+progressId+'><div class="ws-progress-wrap"><div class="ws-progress"><div class="ws-progress-fill ws-fill-'+s.cls+'" style="width:'+Math.min(pct,100)+'%"></div></div><span class="ws-progress-pct">'+pct+'%</span></div></td>'
     +'<td><span class="ws-badge ws-badge-'+s.cls+'" id="ws-badge-'+i+'">'+s.label+'</span></td>'
-    +'<td class="ws-td-date">'+(w.last_disposal_date||'-')+'</td>'
+    +'<td class="ws-td-date">'+(lastDate||'-')+'</td>'
     +'<td class="ws-td-num ws-td-muted">'+daysStr+'</td>'
     +'<td>'+mgmtCell+'</td>'
     +'</tr>';
@@ -3514,7 +3547,7 @@ function wsRenderSummary(){
   var sched=data.filter(function(w){return wsStatus(wsPct(w),w.waste_type).cls==='scheduled';}).length;
   var warn=data.filter(function(w){return wsStatus(wsPct(w),w.waste_type).cls==='warning';}).length;
   var succ=data.length-sched-warn;
-  var mnth=(_wsDisposal||[]).length;
+  var mnth=_wsMonthDoneCount;
   var schEl=document.getElementById('ws-cnt-scheduled');
   var wEl=document.getElementById('ws-cnt-warning');
   var sEl=document.getElementById('ws-cnt-success');
@@ -3631,6 +3664,89 @@ function showToast(msg,duration){
   }
   t.textContent=msg;t.style.opacity='1';
   clearTimeout(t._timer);t._timer=setTimeout(function(){t.style.opacity='0';},duration||2800);
+}
+
+// ── 보관 현황 → 배출 등록 (배출 스케줄 완료 기록 생성) ──
+var _wsDisposeItem=null;
+
+function wsOpenDisposeModal(i,e){
+  if(e)e.stopPropagation();
+  if(!canEditAll()){showToast('배출 등록 권한이 없습니다.');return;}
+  var w=_wsFilteredCache[i];
+  if(!w)return;
+  _wsDisposeItem=w;
+  var cur=parseFloat(w.current_amount)||0;
+  document.getElementById('wsd-type').value=w.waste_type||'';
+  var d=new Date();
+  document.getElementById('wsd-date').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var amtEl=document.getElementById('wsd-amount');
+  amtEl.value='';
+  amtEl.max=cur;
+  document.getElementById('wsd-unit-label').textContent=w.unit?'('+w.unit+')':'';
+  document.getElementById('wsd-current').textContent='현재 보관량 '+cur+' '+(w.unit||'');
+  document.getElementById('ws-dispose-modal').classList.add('show');
+}
+
+function wsCloseDisposeModal(){
+  document.getElementById('ws-dispose-modal').classList.remove('show');
+  _wsDisposeItem=null;
+}
+
+async function wsSaveDispose(){
+  var w=_wsDisposeItem;
+  if(!w)return;
+  if(isViewOnlyAccount()){showToast('테스트 계정은 조회만 가능합니다');return;}
+  var date=document.getElementById('wsd-date').value;
+  var amtStr=document.getElementById('wsd-amount').value.trim();
+  var amt=parseFloat(amtStr);
+  var cur=parseFloat(w.current_amount)||0;
+  if(!date){alert('배출일을 입력해주세요.');return;}
+  if(amtStr===''||isNaN(amt)||amt<=0){alert('배출 수량을 입력해주세요.');return;}
+  if(amt>cur){alert('현재 보관량('+cur+' '+(w.unit||'')+')을 초과할 수 없습니다.');return;}
+
+  var schedType=wsMapToScheduleType(w.waste_type);
+  var by=currentUser?(currentUser.name||currentUser.username):'';
+  var now=new Date().toISOString();
+  var chk=function(res,label){if(!res||!res.ok)throw new Error(label+' 실패 ('+(res?res.status:'-')+')');};
+  try{
+    // 같은 폐기물의 배출예정 일정이 있으면 완료 처리할지 확인 (배출일과 가장 가까운 건)
+    var pending=await sb('waste_schedule','?status=in.(scheduled,today)&waste_type=eq.'+encodeURIComponent(schedType)+'&select=id,scheduled_date')||[];
+    var target=null;
+    if(pending.length){
+      pending.sort(function(a,b){return Math.abs(new Date(a.scheduled_date)-new Date(date))-Math.abs(new Date(b.scheduled_date)-new Date(date));});
+      if(confirm('예정된 배출 일정('+pending[0].scheduled_date+')을 완료 처리할까요?'))target=pending[0];
+    }
+    // 1) 배출 스케줄 완료 기록 (완료일=배출일). 보관량 차감은 아래 2)에서 한 번만 수행
+    if(target){
+      chk(await sb('waste_schedule','?id=eq.'+target.id,{method:'PATCH',body:{
+        status:'completed',completed_at:now,scheduled_date:date,
+        expected_amount:amt,expected_unit:w.unit||null
+      }}),'배출 일정 완료 처리');
+    } else {
+      var pm=(typeof PROCESS_METHOD_MAP!=='undefined'&&PROCESS_METHOD_MAP[schedType])||null;
+      var lastVendor=await sb('waste_schedule','?waste_type=eq.'+encodeURIComponent(schedType)+'&select=vendor_name&order=scheduled_date.desc&limit=1')||[];
+      chk(await sb('waste_schedule','',{method:'POST',body:{
+        scheduled_date:date,
+        vendor_name:(lastVendor[0]&&lastVendor[0].vendor_name)||'가람환경',
+        waste_type:schedType,
+        expected_amount:amt,expected_unit:w.unit||null,
+        process_method_name:pm?pm.name:null,
+        process_method_code:pm?pm.code:null,
+        status:'completed',completed_at:now,
+        created_by:by
+      }}),'배출 완료 기록 생성');
+    }
+    // 2) 보관량 차감 (일부 차감 유지)
+    var newAmt=Math.max(0,cur-amt);
+    chk(await sb('waste_storage','?id=eq.'+w.id,{method:'PATCH',body:{
+      current_amount:newAmt,
+      last_disposal_date:date,
+      updated_at:now,updated_by:by
+    }}),'보관량 차감');
+    wsCloseDisposeModal();
+    showToast(w.waste_type+' '+amt+(w.unit||'')+' 배출 등록 완료');
+    loadWasteStorage();
+  }catch(e){showToast('저장 실패: '+e.message);}
 }
 
 // ── Phase 3: 보관 현황 → 배출 일정 등록 모달 ──
@@ -4391,7 +4507,7 @@ function wschRenderTable(data,today){
         '<td style="text-align:left;white-space:nowrap;">'+(r.waste_type||'-')+'</td>'+
         '<td style="text-align:left;">'+processCell+'</td>'+
         '<td style="text-align:right;">'+amtCell+'</td>'+
-        '<td>톤</td>'+
+        '<td>'+ws_esc(r.expected_unit||'톤')+'</td>'+
         '<td>'+vehCell+'</td>'+
         '<td>'+statusBadge+'</td>'+
         '<td>'+actCell+'</td>'+
@@ -4404,7 +4520,7 @@ function wschRenderTable(data,today){
       '<td style="text-align:left;white-space:nowrap;">'+(r.waste_type||'-')+'</td>'+
       '<td style="text-align:left;">'+processCell+'</td>'+
       amtCell+
-      '<td>톤</td>'+
+      '<td>'+ws_esc(r.expected_unit||'톤')+'</td>'+
       vehCell+
       '<td>'+statusBadge+'</td>'+
       '<td>'+actCell+'</td>'+
@@ -4423,7 +4539,7 @@ function wschRenderTable(data,today){
         ?'<button onclick="wschComplete('+crid+')" style="flex:1;height:36px;background:#16a34a;color:white;border:none;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">완료 처리</button>':'';
       var delBtn=canWrite&&!isDone
         ?'<button onclick="wschDelete('+crid+')" style="height:36px;padding:0 12px;background:white;color:#dc2626;border:1px solid #fca5a5;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">삭제</button>':'';
-      var amtStr=r.expected_amount!=null?(r.expected_amount+'톤'):'';
+      var amtStr=r.expected_amount!=null?(r.expected_amount+(r.expected_unit||'톤')):'';
       var pmStr=r.process_method_name?(r.process_method_name+' ('+r.process_method_code+')'):'';
       return'<div style="background:white;border:1px solid #e3e6eb;border-radius:4px;padding:14px 16px;margin-bottom:10px;">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'+
@@ -4709,7 +4825,7 @@ function wschShowDetail(id){
   lines.push('위탁업체: '+(r.vendor_name||'-'));
   lines.push('폐기물 종류: '+(r.waste_type||'-'));
   lines.push('처리방법: '+(r.process_method_name||'-')+(r.process_method_code?' ('+r.process_method_code+')':''));
-  lines.push('실제 위탁량: '+(r.expected_amount!=null?r.expected_amount+'톤':'-'));
+  lines.push('실제 위탁량: '+(r.expected_amount!=null?r.expected_amount+(r.expected_unit||'톤'):'-'));
   lines.push('차량번호: '+(r.vehicle_no||'-'));
   lines.push('비고: '+(r.notes||'-'));
   alert(lines.join('\n'));
