@@ -2261,10 +2261,6 @@ table.wa-annual tbody tr.wa-row-total td.wa-month-total{background:#0f2744;color
   <div class="modal-bg" id="carbon-hold-modal">
     <div class="modal" style="max-width:380px;">
       <div class="modal-title" id="carbon-hold-title">교체 보류</div>
-      <div class="form-group" style="margin-bottom:10px;"><label>측정일 <span style="color:#dc2626;">*</span></label><input type="date" id="ch-hold-date" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
-      <div class="form-group" style="margin-bottom:10px;"><label>유량 <span style="color:#dc2626;">*</span></label><input type="number" step="any" id="ch-hold-flow" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
-      <div class="form-group" style="margin-bottom:10px;"><label>농도 <span style="color:#dc2626;">*</span></label><input type="number" step="any" id="ch-hold-conc" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
-      <div class="form-group" style="margin-bottom:10px;"><label>차압 (선택)</label><input type="number" step="any" id="ch-hold-dp" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;box-sizing:border-box;"></div>
       <div class="form-group" style="margin-bottom:10px;"><label>보류 사유 <span style="color:#dc2626;">*</span></label>
         <select id="ch-hold-reason" onchange="_carbonHoldReasonChange()" style="width:100%;height:34px;border:1px solid #cbd5e1;border-radius:3px;padding:0 8px;font-size:13px;font-family:inherit;background:white;">
           <option value="">-- 선택 --</option>
@@ -8381,6 +8377,7 @@ var BAGFILTER_FACILITIES = [1, 8];                   // 백필터 시설 (8번 �
 var ALL_FILTER_FACILITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 var _carbonAllData = [];
 var _carbonHolds = [];   // filter_holds status='active' 목록
+var _carbonHoldAll = []; // filter_holds 전체 (교체 이력 목록 표시용)
 var _carbonHoldFacility = null;
 var CARBON_HOLD_REASON_GOOD = '측정 결과 양호(유량·농도 기준 이내)';
 
@@ -8437,8 +8434,15 @@ function _carbonElapsed(dateStr) {
 
 // ── 교체 보류 (filter_holds) ──
 async function loadCarbonHolds() {
-  var res = await sbCarbon('filter_holds?status=eq.active&select=*&order=created_at.desc');
-  _carbonHolds = res.ok ? await res.json() : [];
+  var res = await sbCarbon('filter_holds?select=*&order=created_at.desc');
+  _carbonHoldAll = res.ok ? await res.json() : [];
+  _carbonHolds = _carbonHoldAll.filter(function(h) { return h.status === 'active'; });
+}
+
+// 보류일 = created_at의 로컬 날짜
+function _carbonHoldDate(h) {
+  var d = new Date(h.created_at);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
 function _carbonActiveHold(no) {
@@ -8449,8 +8453,7 @@ function openCarbonHoldModal(no) {
   _carbonHoldFacility = no;
   var shortName = FACILITY_SHORT[no] ? ' ' + FACILITY_SHORT[no] : '';
   document.getElementById('carbon-hold-title').textContent = '교체 보류 — ' + no + '번' + shortName;
-  document.getElementById('ch-hold-date').value = _carbonTodayStr();
-  ['ch-hold-flow', 'ch-hold-conc', 'ch-hold-dp', 'ch-hold-reason', 'ch-hold-etc'].forEach(function(id) {
+  ['ch-hold-reason', 'ch-hold-etc'].forEach(function(id) {
     document.getElementById(id).value = '';
   });
   _carbonHoldReasonChange();
@@ -8469,26 +8472,14 @@ function _carbonHoldReasonChange() {
 
 async function saveCarbonHold() {
   if (!_carbonHoldFacility) return;
-  var dateVal = document.getElementById('ch-hold-date').value;
-  var flowStr = document.getElementById('ch-hold-flow').value.trim();
-  var concStr = document.getElementById('ch-hold-conc').value.trim();
-  var dpStr = document.getElementById('ch-hold-dp').value.trim();
   var reasonSel = document.getElementById('ch-hold-reason').value;
   var etcText = document.getElementById('ch-hold-etc').value.trim();
-  if (!dateVal) { alert('측정일을 입력해주세요.'); return; }
-  if (flowStr === '' || isNaN(Number(flowStr))) { alert('유량을 입력해주세요.'); return; }
-  if (concStr === '' || isNaN(Number(concStr))) { alert('농도를 입력해주세요.'); return; }
-  if (dpStr !== '' && isNaN(Number(dpStr))) { alert('차압은 숫자로 입력해주세요.'); return; }
   if (!reasonSel) { alert('보류 사유를 선택해주세요.'); return; }
   if (reasonSel === 'etc' && !etcText) { alert('기타 사유를 입력해주세요.'); return; }
 
   var no = _carbonHoldFacility;
   var payload = {
     facility: no,
-    measure_date: dateVal,
-    flow: Number(flowStr),
-    concentration: Number(concStr),
-    diff_pressure: dpStr === '' ? null : Number(dpStr),
     reason: reasonSel === 'etc' ? etcText : CARBON_HOLD_REASON_GOOD,
     status: 'active',
     created_by: currentUser ? (currentUser.name || currentUser.username) : null
@@ -8503,6 +8494,7 @@ async function saveCarbonHold() {
     closeCarbonHoldModal();
     await loadCarbonHolds();
     renderCarbonFacilityCards();
+    renderCarbonHistory();
   } catch(e) {
     console.error('교체 보류 저장 오류:', e);
     alert('저장 중 오류가 발생했습니다.\n' + e.message);
@@ -8733,6 +8725,16 @@ function renderCarbonHistory(facilityFilter, yearFilter) {
   if (tSel !== 'all') rows = rows.filter(function(r) { return (r.replace_type || 'carbon') === tSel; });
   if (fSel !== 'all') rows = rows.filter(function(r) { return r.facility_no === parseInt(fSel); });
   if (ySel !== 'all') rows = rows.filter(function(r) { return r.replace_date && r.replace_date.startsWith(ySel); });
+
+  // 교체 보류 행 (보류일 = created_at 기준, 시설 종류는 시설 번호로 판단)
+  _carbonHoldAll.forEach(function(h) {
+    var hType = BAGFILTER_FACILITIES.indexOf(h.facility) >= 0 ? 'bagfilter' : 'carbon';
+    var hDate = _carbonHoldDate(h);
+    if (tSel !== 'all' && hType !== tSel) return;
+    if (fSel !== 'all' && h.facility !== parseInt(fSel)) return;
+    if (ySel !== 'all' && !hDate.startsWith(ySel)) return;
+    rows.push({ _hold: h, facility_no: h.facility, replace_date: hDate });
+  });
   rows.sort(function(a, b) { return a.replace_date < b.replace_date ? 1 : -1; });
 
   var tbody = document.getElementById('carbon-history-tbody');
@@ -8746,6 +8748,18 @@ function renderCarbonHistory(facilityFilter, yearFilter) {
   var todayMs = new Date(_carbonTodayStr()).getTime();
 
   tbody.innerHTML = rows.map(function(r, i) {
+    if (r._hold) {
+      var h = r._hold;
+      return '<tr style="border-bottom:1px solid #f3f4f6;background:#fffbf5;">'
+        + '<td style="padding:8px 10px;color:#9ca3af;">' + (i+1) + '</td>'
+        + '<td style="padding:8px 10px;text-align:center;"><span style="padding:2px 7px;border-radius:9px;font-size:10px;font-weight:700;background:#ffedd5;color:#ea580c;">교체 보류</span></td>'
+        + '<td style="padding:8px 10px;font-weight:600;">' + h.facility + '번' + (FACILITY_SHORT[h.facility] ? ' <span style="font-size:10px;color:#6b7280;font-weight:400;">(' + FACILITY_SHORT[h.facility] + ')</span>' : '') + '</td>'
+        + '<td style="padding:8px 10px;">' + r.replace_date + '</td>'
+        + '<td style="padding:8px 10px;color:#9ca3af;">—</td>'
+        + '<td style="padding:8px 10px;color:#6b7280;">' + escHtml(h.reason) + (h.created_by ? ' <span style="font-size:10px;color:#9ca3af;">· ' + escHtml(h.created_by) + '</span>' : '') + '</td>'
+        + '<td style="padding:8px 10px;text-align:center;"><span style="font-size:11px;color:#d1d5db;">—</span></td>'
+        + '</tr>';
+    }
     var nextDate = nextDateMap[r.id] !== undefined ? nextDateMap[r.id] : null;
     var isLatest = nextDate === null;
     var elapsed, elapsedText, elapsedColor, elapsedWeight;
