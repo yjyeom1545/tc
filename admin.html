@@ -6709,10 +6709,12 @@ function renderInspCardHtml(r,isOpen,photosLoading){
   }
   var canEditCardStatus=canChangeInspectStatus();
   var canReworkCard=canReworkInspect()&&!canEditCardStatus;
+  // 개선 완료일자는 상태=완료일 때만 표시 (일반 사용자는 완료 처리 버튼용으로 항상 표시)
+  var cardStatus=canReworkCard?'done':r.status;
   var opts=['miss','hold','done'].map(function(v){var lbl=v==='miss'?'미개선':v==='hold'?'보류':'완료';return'<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+lbl+'</option>';}).join('');
   var statusHtml=canReworkCard
     ?'<div class="insp-card-status-row"><button class="insp-card-save" style="flex:1;" onclick="completeInspCard(\''+id+'\')">개선 완료 처리</button></div>'
-    :'<div class="insp-card-status-row"><select id="insp-card-status-'+id+'" class="insp-card-status-sel"'+(canEditCardStatus?'':' disabled')+'>'+opts+'</select>'+(canEditCardStatus?'<button class="insp-card-save" onclick="saveInspCardStatus(\''+id+'\')">저장</button>':'')+'</div>';
+    :'<div class="insp-card-status-row"><select id="insp-card-status-'+id+'" class="insp-card-status-sel" onchange="toggleInspCardCompleted(\''+id+'\')"'+(canEditCardStatus?'':' disabled')+'>'+opts+'</select>'+(canEditCardStatus?'<button class="insp-card-save" onclick="saveInspCardStatus(\''+id+'\')">저장</button>':'')+'</div>';
   return'<div class="insp-card'+(isOpen?' open':'')+'" id="insp-card-'+id+'">'
     +'<div class="insp-card-hdr" onclick="toggleInspCard(\''+id+'\')">'
       +'<div class="insp-card-hdr-tags">'+catTag+procTag+statusTag+extTag+'</div>'
@@ -6726,7 +6728,7 @@ function renderInspCardHtml(r,isOpen,photosLoading){
         +'<div><div class="insp-card-photo-lbl">개선 전</div>'+beforeHtml+'</div>'
         +'<div><div class="insp-card-photo-lbl">개선 후</div>'+afterHtml+'</div>'
       +'</div>'
-      +'<div style="margin-bottom:12px;"><label style="display:block;font-size:12px;color:#6b7280;font-weight:600;margin-bottom:6px;">개선 완료일자</label><input type="date" id="insp-card-completed-'+id+'" value="'+(r.completed_date||'')+'" onchange="saveInspCardCompleted(\''+id+'\')" style="width:100%;border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;"></div>'
+      +'<div id="insp-card-completed-wrap-'+id+'" style="margin-bottom:12px;'+(cardStatus==='done'?'':'display:none;')+'"><label style="display:block;font-size:12px;color:#6b7280;font-weight:600;margin-bottom:6px;">개선 완료일자</label><input type="date" id="insp-card-completed-'+id+'" value="'+(r.completed_date||_inspTodayStr())+'" onchange="saveInspCardCompleted(\''+id+'\')" style="width:100%;border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;"></div>'
       +statusHtml
     +'</div>'
   +'</div>';
@@ -6765,14 +6767,27 @@ async function saveInspCardCompleted(id){
   if(typeof showToast==='function')showToast('개선 완료일자 저장');
 }
 
+function toggleInspCardCompleted(id){
+  var sel=document.getElementById('insp-card-status-'+id);
+  var wrap=document.getElementById('insp-card-completed-wrap-'+id);
+  if(!sel||!wrap)return;
+  var isDone=sel.value==='done';
+  wrap.style.display=isDone?'':'none';
+  var inp=document.getElementById('insp-card-completed-'+id);
+  if(isDone&&inp&&!inp.value)inp.value=_inspTodayStr();
+}
+
 async function saveInspCardStatus(id){
   var sel=document.getElementById('insp-card-status-'+id);
   if(!sel)return;
   var status=sel.value;
-  var body={status:status};
+  // 완료: 입력란의 개선 완료일자 저장 / 미개선·보류: 비움
+  var el=document.getElementById('insp-card-completed-'+id);
+  var completed=status==='done'?((el&&el.value)||null):null;
+  var body={status:status,completed_date:completed};
   await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
   var r=inspectAllData.find(function(x){return x.id===id;});
-  if(r){r.status=status;}
+  if(r){r.status=status;r.completed_date=completed;}
   renderInspectKPI(inspectAllData);
   renderInspectCards(getInspectFiltered());
 }
@@ -7126,6 +7141,9 @@ function buildInspectDetailHtml(r,photosLoading){
   var canReworkStatus=canReworkInspect()&&!canEditStatus;
   var _d=new Date();var today=_d.getFullYear()+'-'+String(_d.getMonth()+1).padStart(2,'0')+'-'+String(_d.getDate()).padStart(2,'0');
 
+  // 개선 완료 일자는 상태=완료일 때만 표시 (일반 사용자는 저장 시 완료 처리되므로 항상 표시)
+  var detailStatus=canReworkStatus?'done':r.status;
+
   var statusOpts=['miss','hold','done'].map(function(v){
     var label=v==='miss'?'미개선':v==='hold'?'보류':'완료';
     return '<option value="'+v+'"'+(r.status===v?' selected':'')+'>'+label+'</option>';
@@ -7147,9 +7165,9 @@ function buildInspectDetailHtml(r,photosLoading){
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">상태'+(canEditStatus||canReworkStatus?'':' (읽기 전용)')+'</label>'
       +(canReworkStatus
         ?'<div style="font-size:13px;color:#166534;padding:9px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">저장하면 상태가 <b>완료</b>로 처리됩니다.</div>'
-        :'<select id="detail-status" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;">'+statusOpts+'</select>')
+        :'<select id="detail-status" onchange="toggleDetailCompleted()" '+(canEditStatus?'':'disabled')+' style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;">'+statusOpts+'</select>')
     +'</div>'
-    +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">개선 완료 일자</label><input type="date" id="detail-completed" value="'+(r.completed_date||today)+'" style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;"></div>'
+    +'<div class="form-group" id="detail-completed-wrap" style="margin-bottom:16px;'+(detailStatus==='done'?'':'display:none;')+'"><label style="font-size:12px;margin-bottom:6px;display:block;">개선 완료 일자</label><input type="date" id="detail-completed" value="'+(r.completed_date||today)+'" style="border:1px solid #e8ecf0;border-radius:6px;padding:9px 12px;font-size:14px;font-family:\'Noto Sans KR\',sans-serif;outline:none;background:white;width:100%;"></div>'
     +'<div class="form-group" style="margin-bottom:16px;"><label style="font-size:12px;margin-bottom:6px;display:block;">비고</label>'
       +'<textarea id="detail-note" style="height:72px;resize:none;border:1px solid #e8ecf0;border-radius:6px;padding:10px 12px;font-size:14px;line-height:1.7;font-family:\'Noto Sans KR\',sans-serif;outline:none;width:100%;">'+escHtml(r.note||'')+'</textarea>'
     +'</div>'
@@ -7161,6 +7179,22 @@ function buildInspectDetailHtml(r,photosLoading){
       +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 전</div>'+beforeHtml+'</div>'
       +'<div><div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:8px;letter-spacing:0.2px;">개선 후</div>'+afterHtml+'</div>'
     +'</div>';
+}
+
+// 상세: 상태 변경 시 개선 완료 일자 입력란 표시/숨김 (완료로 바뀌고 값이 없으면 오늘)
+function toggleDetailCompleted(){
+  var st=document.getElementById('detail-status');
+  var wrap=document.getElementById('detail-completed-wrap');
+  if(!st||!wrap)return;
+  var isDone=st.value==='done';
+  wrap.style.display=isDone?'':'none';
+  var inp=document.getElementById('detail-completed');
+  if(isDone&&inp&&!inp.value)inp.value=_inspTodayStr();
+}
+
+function _inspTodayStr(){
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
 function renderInspectDetailInto(r,photosLoading){
@@ -7236,7 +7270,8 @@ async function saveInspectDetail(id){
   // 일반 사용자: 저장 시 무조건 done / 관리자·안전환경팀: 드롭다운 선택값
   var status=(canEditAll()&&statusEl)?statusEl.value:'done';
   var note=document.getElementById('detail-note').value;
-  var completed=document.getElementById('detail-completed').value||null;
+  // 미개선·보류는 개선 완료 일자를 비움
+  var completed=status==='done'?(document.getElementById('detail-completed').value||null):null;
   var body={status:status,note:note||null,completed_date:completed};
   if(canEditAll()){body.category=document.getElementById('detail-category').value;body.process=document.getElementById('detail-process').value||null;}
   await sb('inspection_records','?id=eq.'+id,{method:'PATCH',body:body,allowRework:true});
